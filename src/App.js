@@ -113,8 +113,16 @@ function App() {
 
   useEffect(() => {
     if (graph != null) {
+
+      // render the new d3 chart every time with graph data
+      // remove if there is any previous render
+      let svgElement = document.getElementById("svgd3")
+      if (svgElement) svgElement.remove();
+
       let sankeyGraph = { ...graph }
-      let svg = d3.select(svgRef.current).append("svg")
+      let svg = d3.select(svgRef.current)
+        .append("svg")
+        .attr("id", "svgd3")
 
       let tooltip = d3.select(tooltipRef.current)
         .attr("class", "tooltip")
@@ -244,7 +252,7 @@ function App() {
           </label>
         ))
       }
-      <div ref={svgRef} style={{ position: 'absolute', height: '100%', width: '100%' }} ></div>
+      <div ref={svgRef} style={{ height: '100%', width: '100%' }} ></div>
       <div ref={tooltipRef} style={styles.tooltip}></div>
     </div>
   )
