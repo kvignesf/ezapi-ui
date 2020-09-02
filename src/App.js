@@ -46,6 +46,7 @@ function App() {
   const [filterTag, setFilterTag] = useState(null)
   const [sankeyData, setSankeyData] = useState(null)
   const [tags, setTags] = useState(null)
+  const [errorMessage, setErrorMessage] = useState(null)
 
   const svgRef = useRef(null);
   const tooltipRef = useRef(null)
@@ -87,6 +88,12 @@ function App() {
   }
 
   const parseFile = async (file) => {
+    setErrorMessage(null)
+    // render the new d3 chart every time with graph data
+    // remove if there is any previous render
+    let svgElement = document.getElementById("svgd3")
+    if (svgElement) svgElement.remove();
+
     const formData = new FormData();
     formData.append('file', file)
 
@@ -108,6 +115,12 @@ function App() {
         setGraph(sankey_result.data.graph[0])
         setFilterTag([sankey_result.data.graph[0]['tag']])
       }
+      else {
+        setErrorMessage(sankey_result.message)
+      }
+    }
+    else {
+      setErrorMessage(parsed_result.message)
     }
   }
 
@@ -252,9 +265,13 @@ function App() {
           </label>
         ))
       }
+      {
+        errorMessage &&
+        <div style={{ 'color': 'red' }}>{errorMessage}</div>
+      }
       <div ref={svgRef} style={{ height: '100%', width: '100%' }} ></div>
       <div ref={tooltipRef} style={styles.tooltip}></div>
-    </div>
+    </div >
   )
 }
 
