@@ -236,11 +236,11 @@ function App() {
     <div>
       <UploadFile parseFile={parseFile} />
       {
-        tags &&
+        tags && filterTag &&
         tags.map((item, t) => (
           <label key={t}>
             {item}
-            <input type="checkbox" name={item} onChange={() => handleCheckboxes(item)} />
+            <input type="checkbox" name={item} checked={filterTag.indexOf(item) > -1} onChange={() => handleCheckboxes(item)} />
           </label>
         ))
       }
