@@ -1,0 +1,35 @@
+# Docker Image location on hub.docker.com, its normally your-username/repo-name
+image: anushbmx/react-js-docker
+# pipeline will use this image unless specifed in the stage definition
+# Define the stages
+stages:
+  - test
+  - build
+  - deploy
+# Define the process for each stage
+test:
+  stage: test
+  script:
+  - npm install
+  - npm test
+build:
+  stage: build
+  script:
+    - npm install
+    - npm run build
+    - ls -la build
+    - zip build.zip -r ./build
+  artifacts:
+    paths:
+    - build.zip
+deploy:
+  stage: deploy
+   script:
+    # Copy files and execute commands
+    - scp build.zip jvenkatakrishnan@34.123.13.63:/tmp/build.zip
+    - ssh jvenkatakrishnan@34.123.13.63 "unzip /tmp/build.zip && exit"
+    - ssh jvenkatakrishnan@34.123.13.63 "mv /tmp/build /var/www/ && exit"
+    - ssh jvenkatakrishnan@34.123.13.63 "systemctl restart nginx"
+only:
+  - shubham
+  # this stage will only be executed for master branch
