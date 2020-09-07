@@ -1,13 +1,20 @@
 # Docker Image location on hub.docker.com, its normally your-username/repo-name
 image: anushbmx/react-js-docker
 # pipeline will use this image unless specifed in the stage definition
-
 # Define the stages
 stages:
   - test
   - build
   - deploy
-
+ before_script:
+  # Setup SSH
+    - which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )
+    - eval $(ssh-agent -s)
+    - ssh-add <(cat $SSH_PRIVATE_KEY)
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan  >> ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
 # Define the process for each stage
 test:
   stage: test
@@ -27,16 +34,7 @@ build:
     - build.zip
 deploy:
   stage: deploy
-  before_script:
-  # Setup SSH
-    - which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )
-    - eval $(ssh-agent -s)
-    - ssh-add <(cat $SSH_PRIVATE_KEY)
-    - mkdir -p ~/.ssh
-    - chmod 700 ~/.ssh
-    - ssh-keyscan  >> ~/.ssh/known_hosts
-    - chmod 644 ~/.ssh/known_hosts
-  script:
+   script:
     # Copy files and execute commands
     - scp build.zip jvenkatakrishnan@34.123.13.63:/tmp/build.zip
     - ssh jvenkatakrishnan@34.123.13.63 "unzip /tmp/build.zip && exit"
