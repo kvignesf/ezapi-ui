@@ -6,7 +6,7 @@ image: anushbmx/react-js-docker
 stages:
   - test
   - build
-  - test
+  - deploy
 
 # Define the process for each stage
 test:
