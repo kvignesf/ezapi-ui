@@ -23,6 +23,9 @@ build:
     paths:
     - build.zip
 deploy:
+  only:
+    refs:
+      - shubham
   before_script:
   # Setup SSH
     - which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )
@@ -39,3 +42,4 @@ deploy:
     - ssh jvenkatakrishnan@34.123.13.63 "unzip /tmp/build.zip && exit"
     - ssh jvenkatakrishnan@34.123.13.63 "mv /tmp/build /var/www/ && exit"
     - ssh jvenkatakrishnan@34.123.13.63 "systemctl restart nginx"
+  
