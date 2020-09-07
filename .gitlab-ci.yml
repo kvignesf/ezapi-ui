@@ -25,7 +25,7 @@ build:
 deploy:
   only:
     refs:
-      - shubham
+      - Shubham
   before_script:
   # Setup SSH
     - which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )
