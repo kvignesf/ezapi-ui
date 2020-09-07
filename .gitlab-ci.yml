@@ -25,17 +25,23 @@ build:
   artifacts:
     paths:
     - build.zip
-
-deploy_staging:
-     stage: staging
-  script:
-    - unzip build.zip
-    - cd build
-    - ls -la
-    - ssh-keygen -t rsa -b 4096 -C '' -f ~/.ssh/deploy_rsa
-    - ssh-keyscan -H 34.123.13.63 >> ~/.ssh/known_hosts
-    - ssh-copy-id -i ~/.ssh/deploy_rsa.pub $SERVER_USER@34.123.13.63
-    - rsync -avuz  $SERVER_USER@34.123.13.63/var/www/build
-    only:
+deploy:
+  stage: deploy
+before_script:
+  # Setup SSH
+  - which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )
+  - eval $(ssh-agent -s)
+  - ssh-add <(cat $SSH_PRIVATE_KEY)
+  - mkdir -p ~/.ssh
+  - chmod 700 ~/.ssh
+  - ssh-keyscan  >> ~/.ssh/known_hosts
+  - chmod 644 ~/.ssh/known_hosts
+script:
+  # Copy files and execute commands
+  - scp build.zip jvenkatakrishnan@34.123.13.63:/tmp/build.zip
+  - ssh jvenkatakrishnan@34.123.13.63 "unzip /tmp/build.zip && exit"
+  - ssh jvenkatakrishnan@34.123.13.63 "mv /tmp/build /var/www/ && exit"
+  - ssh jvenkatakrishnan@34.123.13.63 "systemctl restart nginx"
+only:
   - shubham
   # this stage will only be executed for master branch
