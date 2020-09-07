@@ -24,7 +24,7 @@ build:
     - build.zip
 deploy:
   stage: deploy
-   script:
+  script:
     # Copy files and execute commands
     - scp build.zip jvenkatakrishnan@34.123.13.63:/tmp/build.zip
     - ssh jvenkatakrishnan@34.123.13.63 "unzip /tmp/build.zip && exit"
