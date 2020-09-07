@@ -3,15 +3,9 @@ image: anushbmx/react-js-docker
 # pipeline will use this image unless specifed in the stage definition
 # Define the stages
 stages:
-  - test
   - build
   - deploy
 # Define the process for each stage
-test:
-  stage: test
-  script:
-  - npm install
-  - npm test
 build:
   stage: build
   script:
