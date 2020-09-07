@@ -23,6 +23,15 @@ build:
     paths:
     - build.zip
 deploy:
+  before_script:
+  # Setup SSH
+    - which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )
+    - eval $(ssh-agent -s)
+    - ssh-add <(cat $SSH_PRIVATE_KEY)
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan  >> ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
   stage: deploy
   script:
     # Copy files and execute commands
