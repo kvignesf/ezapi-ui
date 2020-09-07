@@ -1,17 +1,11 @@
 # Docker Image location on hub.docker.com, its normally your-username/repo-name
-image: anushbmx/react-js-docker
+image: node:latest
 # pipeline will use this image unless specifed in the stage definition
 # Define the stages
 stages:
-  - test
   - build
   - deploy
 # Define the process for each stage
-test:
-  stage: test
-  script:
-  - npm install
-  - npm test
 build:
   stage: build
   script:
@@ -23,9 +17,6 @@ build:
     paths:
     - build.zip
 deploy:
-  only:
-    refs:
-      - Shubham
   before_script:
   # Setup SSH
     - which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )
@@ -42,4 +33,3 @@ deploy:
     - ssh jvenkatakrishnan@34.123.13.63 "unzip /tmp/build.zip && exit"
     - ssh jvenkatakrishnan@34.123.13.63 "mv /tmp/build /var/www/ && exit"
     - ssh jvenkatakrishnan@34.123.13.63 "systemctl restart nginx"
-  
