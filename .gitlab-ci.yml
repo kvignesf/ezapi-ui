@@ -1,5 +1,5 @@
 # Docker Image location on hub.docker.com, its normally your-username/repo-name
-image: anushbmx/react-js-docker
+image: ubuntu:latest
 # pipeline will use this image unless specifed in the stage definition
 # Define the stages
 stages:
@@ -9,6 +9,8 @@ stages:
 build:
   stage: build
   script:
+    - curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
+    - sudo apt-get install nodejs
     - npm install
     - npm run build
     - ls -la build
