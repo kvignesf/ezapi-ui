@@ -1,5 +1,5 @@
 # Docker Image location on hub.docker.com, its normally your-username/repo-name
-image: node:latest
+image: node:12.18.3
 # pipeline will use this image unless specifed in the stage definition
 # Define the stages
 stages:
