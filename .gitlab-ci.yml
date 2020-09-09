@@ -18,6 +18,6 @@ build:
     paths:
     - build.zip
 deploy:
-    stage: deploy
-        image: tetraweb/php:7.0       
+  image: tetraweb/php:7.0      
+  stage: deploy 
    
