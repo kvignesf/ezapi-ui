@@ -21,9 +21,9 @@ deploy:
   image: ubuntu:latest
   before_script:
   - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
-  -  ssh-add <(cat $ID_RSA)
+  -  mkdir -p ~/.ssh
   -  echo "$ID_RSA" | tr -d '\r' > ~/.ssh/id_rsa
-  -  chmod 700 ~/.ssh
+  -  chmod 700 ~/.ssh/id_rsa
   -  eval "$(ssh-agent -s)"
   -  ssh-add ~/.ssh/id_rsa
   -  ssh-keyscan -t rsa 34.123.13.63 >> ~/.ssh/known_hosts
