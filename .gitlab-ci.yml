@@ -26,5 +26,5 @@ deploy:
             - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'      
   stage: deploy 
   script:
-    - add-apk
-   
+    - scp build.zip deploy@34.123.13.63:/tmp/build.zip 
+      
