@@ -20,27 +20,4 @@ build:
 deploy:
     stage: deploy
         image: tetraweb/php:7.0       
-                        
-    before_script:
-            - mkdir -p ~/.ssh
-            - echo -e "$DEPLOY_KEY" > ~/.ssh/id_rsa
-            - chmod 600 ~/.ssh/id_rsa
-            - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
-        
-        script:
-            - ssh user@server-name.com "
-                cd /var/www/ &&
-                php artisan down &&
-                git checkout . &&
-                git checkout master &&
-                git pull &&
-                composer install &&
-                php artisan migrate &&
-                php artisan up
-            "
-                                    
-        environment:
-            name: 
-            
-        only:
-            - Shubham
+   
