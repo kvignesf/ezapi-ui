@@ -18,7 +18,12 @@ build:
     paths:
     - build.zip
 deploy:
-  image: tetraweb/php:7.0      
+  image: tetraweb/php:7.0
+  before_script:
+            - mkdir -p ~/.ssh
+            - echo -e "$DEPLOY_KEY" > ~/.ssh/id_rsa
+            - chmod 600 ~/.ssh/id_rsa
+            - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'      
   stage: deploy 
   script:
     - add-apk
