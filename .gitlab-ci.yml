@@ -24,8 +24,8 @@ deploy:
     - echo -e "$DEPLOY_KEY" > ~/.ssh/id_rsa     
     - chmod 600 ~/.ssh/id_rsa     
     - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config' 
-    - apt-get install openssh-client
-  stage: deploy 
+      stage: deploy 
   script:
+    - apt-get install openssh-client
     - scp build.zip deploy@34.123.13.63:/tmp/build.zip
       
