@@ -21,12 +21,13 @@ deploy:
   image: ubuntu:latest
   before_script:
     - mkdir -p ~/.ssh     
-    - echo "$DEPLOY_KEY" > ~/.ssh/id_rsa 
+    - mv "$DEPLOY_KEY" > ~/.ssh/id_rsa 
     - chmod 600 ~/.ssh/id_rsa
     - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client git -y )'
     -  eval "$(ssh-agent -s)"
+    -  cat ~/.ssh/id_rsa.pub > /home/deploy/.ssh/authorized_keys
     -  ssh-add ~/.ssh/id_rsa
-    -  ssh-keyscan -H 'gitlab.com' >> ~/.ssh/known_hosts     
+    -  ssh-keyscan -H '34.123.13.63' >> /home/deploy/.ssh/known_hosts     
   stage: deploy 
   script:
     - scp build.zip deploy@34.123.13.63:/tmp/build.zip
