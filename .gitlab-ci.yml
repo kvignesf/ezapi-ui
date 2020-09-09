@@ -9,6 +9,7 @@ stages:
 build:
   stage: build
   script:
+    - apk add zip
     - npm install
     - npm run build
     - ls -la build
