@@ -18,16 +18,14 @@ build:
     paths:
     - build.zip
 deploy:
-  before_script:
-  # Setup SSH
-    - which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )
-    - eval $(ssh-agent -s)
-    - ssh-add <(cat $SSH_PRIVATE_KEY)
-    - mkdir -p ~/.ssh
-    - chmod 700 ~/.ssh
-    - ssh-keyscan  >> ~/.ssh/known_hosts
-    - chmod 644 ~/.ssh/known_hosts
   stage: deploy
+    image: ubuntu:latest
+before_script:
+  # Setup SSH
+     mkdir -p ~/.ssh
+	- echo -e "$DEPLOY_KEY" > ~/.ssh/id_rsa
+	- chmod 600 ~/.ssh/id_rsa
+	- '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
   script:
     # Copy files and execute commands
     - scp build.zip jvenkatakrishnan@34.123.13.63:/tmp/build.zip
