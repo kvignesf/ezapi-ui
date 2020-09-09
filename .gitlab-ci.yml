@@ -21,7 +21,7 @@ deploy:
   image: ubuntu:latest
   before_script:
     - mkdir -p ~/.ssh     
-    - mv "$DEPLOY_KEY" ~/.ssh/id_rsa 
+    - echo "$DEPLOY_KEY" > ~/.ssh/id_rsa 
     - chmod 600 ~/.ssh/id_rsa
     - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client git -y )'
     -  eval "$(ssh-agent -s)"
