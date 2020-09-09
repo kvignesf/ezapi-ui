@@ -117,7 +117,7 @@ var d3sankey = function () {
             nextNodes,
             x = 0;
 
-        while (remainingNodes.length) {
+        /* while (remainingNodes.length) {
             nextNodes = [];
             remainingNodes.forEach(function (node) {
                 node.x = x;
@@ -128,6 +128,27 @@ var d3sankey = function () {
             });
             remainingNodes = nextNodes;
             ++x;
+        } */
+
+        var nodefn = function (node) {
+            node.x = x;
+            node.dx = nodeWidth;
+            node.sourceLinks.forEach((linkitem)=>{
+                linkfn(linkitem)
+            });
+        }
+
+        var linkfn = function (link) {
+            nextNodes.push(link.target);
+        }
+
+        while (remainingNodes.length) {
+            nextNodes = [];
+            remainingNodes.forEach((nodeItem)=>{
+                nodefn(nodeItem)
+            });
+            remainingNodes = nextNodes;
+            ++x;
         }
 
         //
@@ -135,13 +156,13 @@ var d3sankey = function () {
         scaleNodeBreadths((size[0] - nodeWidth) / (x - 0.6));
     }
 
-    function moveSourcesRight() {
+    /* function moveSourcesRight() {
         nodes.forEach(function (node) {
             if (!node.targetLinks.length) {
                 node.x = d3.min(node.sourceLinks, function (d) { return d.target.x; }) - 1;
             }
         });
-    }
+    } */
 
     function moveSinksRight(x) {
         nodes.forEach(function (node) {

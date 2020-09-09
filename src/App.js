@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 
 import axios from 'axios';
-import styled from 'styled-components';
+//import styled from 'styled-components';
 import * as d3 from 'd3';
 
 import d3sankey from './sankey';
@@ -41,6 +41,7 @@ const resourceToColor = (nodes) => {
 }
 
 function App() {
+  //const [parsed, setParsed] = useState(false)
   const [parsed, setParsed] = useState(false)
   const [graph, setGraph] = useState(null)
   const [filterTag, setFilterTag] = useState(null)
@@ -75,10 +76,10 @@ function App() {
     setGraph(newGraph)
   }
 
-  const selectCheckBoxes = (item) => {
+  /* const selectCheckBoxes = (item) => {
     let index = filterTag.indexOf(item)
     return index > -1 ? true : false
-  }
+  } */
 
   const handleCheckboxes = (item) => {
     let index = filterTag.indexOf(item)
@@ -103,7 +104,9 @@ function App() {
 
     if (parsed_result.success) {
       setParsed(true)
+      if (parsed!= null) {
 
+      }
       let api_ops_id = parsed_result.data['api_ops_id']
       let params = { 'api_ops_id': api_ops_id }
       let sankey_result = await axios.get(VISULIZER_URL, { params: params })
@@ -175,10 +178,11 @@ function App() {
         .links(sankeyGraph.links)
         .layout(32);
 
-      let text = svg.selectAll("text")
+      //let text = 
+      svg.selectAll("text")
         .data(apiops_types)
         .enter().append("text")
-        .attr("x", function (d, i) { return i == 0 ? 0 : width / 6 * i * 1.1 + sankey.nodeWidth() })
+        .attr("x", function (d, i) { return i === 0 ? 0 : width / 6 * i * 1.1 + sankey.nodeWidth() })
         .attr("y", function (d, i) { return 20 })
         .attr("fill", "#000")
         .text(function (d) { return d })
