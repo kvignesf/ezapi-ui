@@ -20,4 +20,6 @@ build:
 deploy:
   image: tetraweb/php:7.0      
   stage: deploy 
+  script:
+    - add-apk
    
