@@ -19,7 +19,7 @@ build:
     - build.zip
 deploy:
   stage: deploy
-    image: ubuntu:latest
+     image: ubuntu:latest
   before_script:
     # Setup SSH
     - mkdir -p ~/.ssh
