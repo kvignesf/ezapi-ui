@@ -18,13 +18,16 @@ build:
     paths:
     - build.zip
 deploy:
-  image: tetraweb/php:7.0
+  image: ubuntu:latest
   before_script:
-            - mkdir -p ~/.ssh
-            - echo -e "$DEPLOY_KEY" > ~/.ssh/id_rsa
-            - chmod 600 ~/.ssh/id_rsa
-            - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'      
+    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client git -y )'
+    -  eval $(ssh-agent -s)
+    -  echo "$DEPLOY_KEY" | tr -d '\r' | ssh-add -
+    -  mkdir -p ~/.ssh
+    -  chmod 700 ~/.ssh
+    -  ssh-keyscan 34.123.13.63 >> ~/.ssh/known_hosts
+    -  chmod 644 ~/.ssh/known_hosts
   stage: deploy 
   script:
-    - scp build.zip deploy@34.123.13.63:/tmp/build.zip 
+    - ssh deploy@34.123.13.63
       
