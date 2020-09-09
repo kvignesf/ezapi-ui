@@ -20,13 +20,13 @@ build:
 deploy:
   image: ubuntu:latest
   before_script:
-    - mkdir -p ~/.ssh
-    - echo "$ID_RSA" | tr -d '\r' > ~/.ssh/id_rsa
-    - chmod 600 ~/.ssh/id_rsa
-    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client git -y )'
-    - eval "$(ssh-agent -s)"
-    - ssh-add ~/.ssh/id_rsa
-    - ssh-keyscan -H '34.123.13.63' >> ~/.ssh/known_hosts
+  - which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )
+  - eval $(ssh-agent -s)
+  - ssh-add <(cat $ID_RSA)
+  - mkdir -p ~/.ssh
+  - chmod 700 ~/.ssh
+  - ssh-keyscan 34.123.13.63 >> ~/.ssh/known_hosts
+  - chmod 644 ~/.ssh/known_hosts
   stage: deploy 
   script:
     - scp build.zip deploy@34.123.13.63:/tmp/build.zip
