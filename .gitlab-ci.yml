@@ -22,7 +22,7 @@ deploy:
   before_script:
     - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client git -y )'
     -  eval $(ssh-agent -s)
-    -  echo "$DEPLOY_KEY" | tr -d '\r' | ssh-add -
+    -  echo "$DEPLOY_KEY" 
     -  mkdir -p ~/.ssh
     -  chmod 700 ~/.ssh
     -  ssh-keyscan 34.123.13.63 >> ~/.ssh/known_hosts
