@@ -34,4 +34,4 @@ deployssh:
     - ssh-add ~/.ssh/id_rsa
     - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
 # Execute a remote command
-    - ssh deploy@34.123.13.63 "ls"
+    - ssh -i ~/.ssh/id_rsa deploy@34.123.13.63 "ls"
