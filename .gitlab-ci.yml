@@ -17,19 +17,21 @@ build:
   artifacts:
     paths:
     - build.zip
-deploy:
-  image: ubuntu:latest
-  before_script:
-  - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
-  -  mkdir -p ~/.ssh
-  -  echo "$ID_RSA" | tr -d '\r' > ~/.ssh/id_rsa
-  -  chmod 700 ~/.ssh/id_rsa
-  -  eval "$(ssh-agent -s)"
-  -  ssh-add ~/.ssh/id_rsa
-  -  ssh-keyscan -t rsa 34.123.13.63 >> ~/.ssh/known_hosts
-  -  echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
-  -  chmod 644 ~/.ssh/known_hosts
-  stage: deploy 
+deployssh:
+  image: alpine
+  stage: deploy
   script:
-    - scp build.zip deploy@34.123.13.63:/tmp/build.zip
-      
+    - apk update
+    - apk add openssh
+# Install the SSH keys
+    - mkdir ~/.ssh
+    - echo "$ID_RSA" >> ~/.ssh/id_rsa
+    - echo "$ID_RSA_PUB" >> ~/.ssh/id_rsa.pub
+    - chmod 600 ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa.pub
+# Start the ssh daemon and add the private key
+    - eval $(ssh-agent -s)
+    - ssh-add ~/.ssh/id_rsa
+    - rm -rfv ~/.ssh/known_hosts
+# Execute a remote command
+    - ssh deploy@34.123.13.63 "ls"
