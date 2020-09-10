@@ -36,4 +36,5 @@ deployssh:
     - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
 # Execute a remote command
     - scp build.zip deploy@34.123.13.63:/tmp/build.zip
+    - ssh deploy@34.123.13.63 "unzip /tmp/build.zip && exit"
   
