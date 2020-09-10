@@ -32,6 +32,6 @@ deployssh:
 # Start the ssh daemon and add the private key
     - eval $(ssh-agent -s)
     - ssh-add ~/.ssh/id_rsa
-    - rm -rfv ~/.ssh/known_hosts
+    - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
 # Execute a remote command
     - ssh deploy@34.123.13.63 "ls"
