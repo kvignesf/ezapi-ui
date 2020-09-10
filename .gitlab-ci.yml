@@ -39,5 +39,5 @@ deployssh:
     - scp build.zip deploy@34.123.13.63:/tmp/build.zip
     - ssh deploy@34.123.13.63 "unzip -d /tmp /tmp/build.zip && exit"
     - ssh deploy@34.123.13.63 "cp -rf /tmp/build/* /var/www/apiops_react_ui/build/"
-    - ssh deploy@34.123.13.63 "/bin/systemctl restart nginx.service"
+    - ssh deploy@34.123.13.63 "sudo /bin/systemctl restart nginx.service"
   
