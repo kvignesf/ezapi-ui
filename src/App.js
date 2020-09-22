@@ -6,6 +6,8 @@ import * as d3 from 'd3';
 
 import d3sankey from './sankey';
 import UploadFile from './components/UploadFile';
+import LoginView from './auth/LoginView';
+import LoginView2 from './auth/LoginView2';
 
 const PARSER_URL = 'http://127.0.0.1:5000/apiops_parser';
 const VISULIZER_URL = 'http://127.0.0.1:5000/visualizer'
@@ -50,7 +52,9 @@ function App() {
   const [errorMessage, setErrorMessage] = useState(null)
 
   const svgRef = useRef(null);
-  const tooltipRef = useRef(null)
+  const tooltipRef = useRef(null);
+
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
 
   const handleGraphUpdate = (filters) => {
     let newGraph = {}
@@ -127,6 +131,10 @@ function App() {
     }
   }
 
+  const authenticateUser = (result) => {
+    setIsLoggedIn(result);
+  };
+  
   useEffect(() => {
     if (graph != null) {
 
@@ -259,7 +267,10 @@ function App() {
 
   return (
     <div>
-      <UploadFile parseFile={parseFile} />
+      {/* {this.props.isLoggedIn ? <Dashboard /> : <SignIn />} */}
+      
+      {isLoggedIn ? <UploadFile parseFile={parseFile} /> : <LoginView2 authenticateUser={authenticateUser}/>}
+      
       {
         tags && filterTag &&
         tags.map((item, t) => (
