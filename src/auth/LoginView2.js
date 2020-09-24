@@ -15,6 +15,7 @@ import {
 import ezLogo from "../static/images/ez-logo.png";
 import { Container, CssBaseline } from "@material-ui/core";
 import DividerWithText from "../common/components/DividerWithText";
+import { LinkedIn } from "@material-ui/icons";
 
 const useStyles = makeStyles(theme => ({
   paper: {
@@ -22,7 +23,8 @@ const useStyles = makeStyles(theme => ({
     padding: "20px",
     display: "flex",
     flexDirection: "column",
-    alignItems: "center"
+    alignItems: "center",
+    backgroundColor: "white"
   },
   avatar: {
     paddingBottom: "10px",
@@ -51,11 +53,11 @@ export default function LoginView2(props) {
   function handleLogin(e) {
     e.preventDefault();
     if (email == 'test' && password == 'test') {
-        props.authenticateUser(true);
+      props.authenticateUser(true);
     } else {
-        props.authenticateUser(false);
+      props.authenticateUser(false);
     }
-    
+
     /*  
     var headers = {
       'Content-Type': 'application/x-www-form-urlencoded'
@@ -94,39 +96,22 @@ export default function LoginView2(props) {
       <CssBaseline />
       <Paper className={classes.root}>
         <div className={classes.paper}>
-          {/* <img src={ezLogo} alt="EZ API" className={classes.avatar} className={classes.avatar} /> */}
-          
+          <img src={ezLogo} alt="EZ API" className={classes.avatar} className={classes.avatar} />
+
           <form className={classes.form} noValidate onSubmit={handleLogin}>
-          <Grid container spacing={2} alignItems="center">
-                <Grid item xs={12} sm={12} md={12}>
-                  <Typography color="primary">
-                  LOGIN WITH
-                  </Typography>
-                </Grid>
-                <Grid item xs={12} sm={6} md={6}>
-                  <Button
-                    type="submit"
-                    className={classes.submit}
-                    variant="contained"
-                    color="primary"
-                    fullWidth
-                  >
-                    GOOGLE
+            <Box display="flex" justifyContent="center" m={1} p={1} bgcolor="background.paper">
+                <Button
+                  type="submit"
+                  className={classes.submit}
+                  variant="contained"
+                  color="primary"
+                  className={classes.button}
+                  startIcon={<LinkedIn />}
+                >
+                  SIGN IN WITH LINKEDIN
                   </Button>
-                </Grid>
-                <Grid item xs={12} sm={6} md={6}>
-                  <Button
-                    type="submit"
-                    className={classes.submit}
-                    variant="contained"
-                    color="primary"
-                    fullWidth
-                  >
-                    LINKEDIN
-                  </Button>
-                </Grid>
-            </Grid>
-          <DividerWithText>Or</DividerWithText>
+            </Box>
+            <DividerWithText>Or</DividerWithText>
             <TextField
               id="userName"
               name="userName"
@@ -165,6 +150,12 @@ export default function LoginView2(props) {
             >
               SIGN IN
             </Button>
+            <Box display="flex" justifyContent="center" bgcolor="background.paper">
+              <Typography variant="subheading1" display="block" gutterBottom>
+                Don't have an account <Link href="/">SIGN UP NOW?</Link>
+              </Typography>
+
+            </Box>
             {/* <div>{JSON.stringify(props.errorMessage)}</div>
             <pre>{JSON.stringify(props)}</pre> */}
           </form>

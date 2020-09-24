@@ -8,9 +8,10 @@ import d3sankey from './sankey';
 import UploadFile from './components/UploadFile';
 import LoginView from './auth/LoginView';
 import LoginView2 from './auth/LoginView2';
+import { connect } from 'react-redux';
 
-const PARSER_URL = 'http://127.0.0.1:5000/apiops_parser';
-const VISULIZER_URL = 'http://127.0.0.1:5000/visualizer'
+const PARSER_URL = 'http://104.197.42.14:5000/apiops_parser';
+const VISULIZER_URL = 'http://104.197.42.14:5000/visualizer'
 
 const apiops_types = ["Business Function", "Elements", "Resource", "Endpoint", "Operation", "Status"]
 
@@ -42,7 +43,7 @@ const resourceToColor = (nodes) => {
   return resourceColor
 }
 
-function App() {
+function App(props) {
   //const [parsed, setParsed] = useState(false)
   const [parsed, setParsed] = useState(false)
   const [graph, setGraph] = useState(null)
@@ -269,8 +270,9 @@ function App() {
     <div>
       {/* {this.props.isLoggedIn ? <Dashboard /> : <SignIn />} */}
       
-      {isLoggedIn ? <UploadFile parseFile={parseFile} /> : <LoginView2 authenticateUser={authenticateUser}/>}
-      
+      {props.isLoggedIn ? <UploadFile parseFile={parseFile} /> : <LoginView authenticateUser={authenticateUser}/>}
+      {/* {isLoggedIn ? <UploadFile parseFile={parseFile} /> : <SignIn />} */}
+
       {
         tags && filterTag &&
         tags.map((item, t) => (
@@ -309,4 +311,15 @@ const styles = {
   }
 }
 
-export default App;
+// export default App;
+const mapStateToProps = state => {
+  return {
+    isLoggedIn: state.authReducer.isLoggedIn,
+    errorMessage: state.authReducer.erronMessage
+  };
+};
+
+const mapDispatchToProps = dispatch => ({
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(App)
