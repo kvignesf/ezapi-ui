@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import LockOutlined from "@material-ui/icons/LockOutlined";
 import { connect } from "react-redux";
-import { authenticateUser } from "./AuthAction";
+import { authenticateUser, authenticateUserWithLinkedin } from "./AuthAction";
 import {
   Typography,
   Avatar,
@@ -20,6 +20,7 @@ import ezLogo from "../static/images/ez-logo.png";
 import { Container, CssBaseline } from "@material-ui/core";
 import DividerWithText from "../common/components/DividerWithText";
 import { LinkedIn } from "@material-ui/icons";
+import LoginWithLinkedin from './Linkedin/LoginWithLinkedIn';
 
 const useStyles = makeStyles((theme) => ({
   paper: {
@@ -48,11 +49,16 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function LoginView(props) {
+
+  var LINKEDIN_URL = "https://www.linkedin.com/oauth/v2/authorization?response_type=code&state=987654321&scope=r_liteprofile&client_id=77hqgq6vt20utk&redirect_uri=http%3A%2F%2Finstance-1.ezapi.ai";
+  
   const classes = useStyles();
 
   const [user, setUser] = useState("result");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [linkCode, setLinkCode] = useState("");
+  const [linkError, setLinkError] = useState("");
 
   function handleLogin(e) {
     e.preventDefault();
@@ -64,6 +70,15 @@ function LoginView(props) {
     props.authenticateUser(email, password);
   }
 
+  function handleLinkedLogin() {
+    // if (email == 'test' && password == 'test') {
+    //   props.authenticateUser(true);
+    // } else {
+    //   props.authenticateUser(false);
+    // }
+    props.authenticateUser('test', 'test');
+  }
+
   function handleEmail(e) {
     e.preventDefault();
     setEmail(e.target.value);
@@ -72,6 +87,22 @@ function LoginView(props) {
   function handlePassword(e) {
     e.preventDefault();
     setPassword(e.target.value);
+  }
+
+  function handleSuccess(data){
+    setLinkCode(data.code);
+    props.authenticateWithLinkedin(data.code);
+    // this.setState({
+    //   code: data.code
+    // });
+  }
+
+  function handleFailure(error){
+    setLinkError(error.errorMessage);
+    // this.setState({
+    //   code: '',
+    //   errorMessage: error.errorMessage,
+    // });
   }
 
   return (
@@ -94,16 +125,27 @@ function LoginView(props) {
               p={1}
               bgcolor="background.paper"
             >
-              <Button
-                type="submit"
+              {/* <Button
+                type="button"
                 className={classes.submit}
                 variant="contained"
                 color="primary"
                 className={classes.button}
                 startIcon={<LinkedIn />}
+                onClick={handleLinkedLogin}
               >
                 SIGN IN WITH LINKEDIN
-              </Button>
+              </Button> */}
+              <LoginWithLinkedin
+                  clientId="77hqgq6vt20utk"
+                  redirectUri="http://localhost:3000/linkedin"
+                  scope="r_liteprofile"
+                  state="987654321"
+                  onFailure={handleFailure}
+                  onSuccess={handleSuccess}
+                  redirectPath='/linkedin'
+                >
+              </LoginWithLinkedin>
             </Box>
             <DividerWithText>Or</DividerWithText>
             <TextField
@@ -174,6 +216,25 @@ function LoginView(props) {
             ) : (
               ""
             )}
+            {(linkError != "") || (linkCode != "") ? (
+              <Box
+                display="flex"
+                justifyContent="center"
+                bgcolor="background.paper"
+              >
+                <Typography
+                  variant="subheading1"
+                  display="block"
+                  gutterBottom
+                  color="secondary"
+                  pt={20}
+                >
+                   Linkedin Error: {linkError} Linkedin code: {linkCode}
+                </Typography>
+              </Box>
+            ) : (
+              ""
+            )}
 
             {/* <div>{JSON.stringify(props.errorMessage)}</div>
             <pre>{JSON.stringify(props.isLoggedIn)}</pre> */}
@@ -194,6 +255,8 @@ const mapStateToProps = (state) => {
 const mapDispatchToProps = (dispatch) => ({
   authenticateUser: (userName, userPassword) =>
     dispatch(authenticateUser(userName, userPassword)),
+  authenticateWithLinkedin: (code) =>
+    dispatch(authenticateUserWithLinkedin(code)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(LoginView);

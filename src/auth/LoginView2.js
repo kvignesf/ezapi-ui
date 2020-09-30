@@ -81,6 +81,15 @@ export default function LoginView2(props) {
      */
   }
 
+  function handleLinkedLogin(e) {
+    // if (email == 'test' && password == 'test') {
+    //   props.authenticateUser(true);
+    // } else {
+    //   props.authenticateUser(false);
+    // }
+    props.authenticateUser('test', 'test');
+  }
+
   function handleEmail(e) {
     e.preventDefault();
     setEmail(e.target.value);
@@ -101,12 +110,13 @@ export default function LoginView2(props) {
           <form className={classes.form} noValidate onSubmit={handleLogin}>
             <Box display="flex" justifyContent="center" m={1} p={1} bgcolor="background.paper">
                 <Button
-                  type="submit"
+                  type="button"
                   className={classes.submit}
                   variant="contained"
                   color="primary"
                   className={classes.button}
                   startIcon={<LinkedIn />}
+                  onclick={handleLinkedLogin}
                 >
                   SIGN IN WITH LINKEDIN
                   </Button>

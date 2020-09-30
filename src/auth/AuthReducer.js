@@ -7,13 +7,13 @@ import { LocalStorageService } from "../common/services/LocalStorageService";
 import { Constants } from "../Constants";
 
 let user = JSON.parse(LocalStorageService.get(Constants.USER_DETAILS));
-const initialState = user ? { user, isLoggedIn: true, token: "" } : {};
+const initialState = user ? { user, isLoggedIn: false, token: "" } : {};
 
 export default (state = initialState, action) => {
   switch (action.type) {
     case AUTHENTICATION_REQUEST:
       return {
-        loggingIn: true,
+        loggingIn: false,
         userName: action.payload
       };
 
