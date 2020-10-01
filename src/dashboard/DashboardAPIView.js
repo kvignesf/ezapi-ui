@@ -30,6 +30,7 @@ import * as d3 from 'd3';
 import d3sankey from '../sankey';
 import axios from 'axios';
 import Title from './Title';
+import { BottomNavigation } from '@material-ui/core';
 
 const PARSER_URL = 'http://104.197.42.14:5000/apiops_parser';
 const VISULIZER_URL = 'http://104.197.42.14:5000/visualizer'
@@ -176,13 +177,13 @@ const useStyles = makeStyles((theme) => ({
     height: 240,
   },
   fullHeight: {
-    height: "100%",
+    height: "500px",
   },
 }));
 
 export default function DashboardAPIView(props) {
   const classes = useStyles();
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = React.useState(true);
   const handleDrawerOpen = () => {
     setOpen(true);
   };
@@ -437,10 +438,12 @@ export default function DashboardAPIView(props) {
             color="inherit"
             aria-label="open drawer"
             onClick={handleDrawerOpen}
-            className={clsx(classes.menuButton, open && classes.menuButtonHidden)}
+            className={clsx(
+              classes.menuButton,
+              open && classes.menuButtonHidden
+            )}
           >
             <MenuIcon />
-            
           </IconButton>
           {/* <IconButton
             edge="start"
@@ -492,23 +495,43 @@ export default function DashboardAPIView(props) {
         <Divider />
         <List>{mainListItems}</List>
         <Divider />
-          {/* <Paper className={fixedHeightPaper}>
-            <UploadAPIView parseFile={parseFile} isOpen={open} />
-          </Paper>
-          <Paper className={fixedHeightPaper}>
-            <DownloadAPIView />
-          </Paper> */}
+
+        {open ? (
+          <Grid
+          container
+          spacing={4}
+          container
+          direction="column"
+          justify="center"
+        >
+          <Grid item xs={12} md={12} lg={12}>
+
+          </Grid>
+          <Grid item xs={12} md={12} lg={12}>
+            <Paper className={fixedHeightPaper}>
+              <UploadAPIView parseFile={parseFile} />
+            </Paper>
+          </Grid>
+          <Grid item xs={12} md={12} lg={12}>
+            <Paper className={fixedHeightPaper}>
+              <DownloadAPIView />
+            </Paper>
+          </Grid>
+        </Grid>
+        ) : (
+          ""
+        )}
+        
         <Divider />
       </Drawer>
       <main className={classes.content}>
         <div className={classes.appBarSpacer} />
         <Container maxWidth="lg" className={classes.container}>
           <Grid container spacing={3}>
-            <Grid item xs={12} md={4} lg={3}></Grid>
-            <Grid item xs={12} md={8} lg={9}>
+            <Grid item xs={12} md={12} lg={12}>
               <Header title="sections" sections={sections} />
             </Grid>
-            <Grid item xs={12} md={4} lg={3}>
+            {/* <Grid item xs={12} md={4} lg={3}>
               <Grid container spacing={3} direction="column">
                 <Grid item xs={12} md={12} lg={12}>
                   <Paper className={fixedHeightPaper}>
@@ -521,8 +544,8 @@ export default function DashboardAPIView(props) {
                   </Paper>
                 </Grid>
               </Grid>
-            </Grid>
-            <Grid item xs={12} md={8} lg={9}>
+            </Grid> */}
+            <Grid item xs={12} md={12} lg={12}>
               <Paper className={fullHeightPaper}>
                 {/* <VisualizeAPIView /> */}
                 <Title>Visualiza API</Title>
