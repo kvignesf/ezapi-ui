@@ -59,7 +59,7 @@ function App(props) {
       {/* {props.isLoggedIn ? <UploadFile parseFile={parseFile} /> : <LoginView authenticateUser={authenticateUser}/>} */}
       {/* {props.isLoggedIn ? <UploadFile /> : <Dashboard/>} */}
 
-      {props.isLoggedIn ? <DashboardAPIView/> : <LoginView />}
+      {props.isLoggedIn ? <DashboardAPIView user={props.user}/> : <LoginView />}
 
     </div >
   )
@@ -88,7 +88,8 @@ const styles = {
 const mapStateToProps = state => {
   return {
     isLoggedIn: state.authReducer.isLoggedIn,
-    errorMessage: state.authReducer.erronMessage
+    errorMessage: state.authReducer.erronMessage,
+    user: state.authReducer.user
   };
 };
 

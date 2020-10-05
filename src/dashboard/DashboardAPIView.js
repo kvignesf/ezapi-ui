@@ -477,6 +477,20 @@ export default function DashboardAPIView(props) {
             color="inherit"
           >
             <AccountCircle />
+            {props.user ? (
+              <Typography
+                component="h6"
+                variant="h6"
+                color="inherit"
+                noWrap
+                className={classes.title}
+              >
+                {"  "}
+                {(props.user.localizedFirstName, props.user.localizedLastName)}
+              </Typography>
+            ) : (
+              ""
+            )}
           </IconButton>
         </Toolbar>
       </AppBar>
