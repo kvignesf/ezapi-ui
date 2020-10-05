@@ -55,6 +55,29 @@ const logIn = (email, password) => {
     );
 };
 
+const logInWithCode = (code) => {
+  const loginUrl = Constants.localURL + "/auth";
+  const requestOptions = {
+    method: "POST",
+    headers: new Headers({
+      "content-type": "application/json"
+    }),
+    body: JSON.stringify({ code })
+  };
+
+  return fetch(loginUrl, requestOptions)
+    .then(handleResponse)
+    .then(
+      user => {
+        LocalStorageService.put(Constants.USER_DETAILS, JSON.stringify(user));
+        return user;
+      },
+      error => {
+        return error;
+      }
+    );
+};
+
 const logOut = () => {};
 
 function handleResponse(response) {
@@ -79,6 +102,7 @@ function handleResponse(response) {
 }
 
 export const AuthService = {
+  logInWithCode,
   logInWithLinkedin,
   logIn,
   logOut

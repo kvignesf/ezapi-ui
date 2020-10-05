@@ -49,9 +49,6 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function LoginView(props) {
-
-  var LINKEDIN_URL = "https://www.linkedin.com/oauth/v2/authorization?response_type=code&state=987654321&scope=r_liteprofile&client_id=77hqgq6vt20utk&redirect_uri=http%3A%2F%2Finstance-1.ezapi.ai";
-  
   const classes = useStyles();
 
   const [user, setUser] = useState("result");
@@ -91,7 +88,7 @@ function LoginView(props) {
 
   function handleSuccess(data){
     setLinkCode(data.code);
-    props.authenticateWithLinkedin(data.code);
+    props.authenticateUserWithLinkedin(data.code);
     // this.setState({
     //   code: data.code
     // });
@@ -255,7 +252,7 @@ const mapStateToProps = (state) => {
 const mapDispatchToProps = (dispatch) => ({
   authenticateUser: (userName, userPassword) =>
     dispatch(authenticateUser(userName, userPassword)),
-  authenticateWithLinkedin: (code) =>
+  authenticateUserWithLinkedin: (code) =>
     dispatch(authenticateUserWithLinkedin(code)),
 });
 

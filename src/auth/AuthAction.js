@@ -30,7 +30,7 @@ export function authenticateUser(userName, userPassword) {
   };
 }
 
-export function authenticateUserWithLinkedin(code) {
+export function authenticateWithLinkedin(code) {
   console.log("step0 code: ", code)
   return dispatch => {
     dispatch(authRequest());
@@ -38,6 +38,27 @@ export function authenticateUserWithLinkedin(code) {
       authData => {
         console.log("resp3: ", authData);
         if (authData) {
+          dispatch({ type: AUTHENTICATION_SUCCESS, payload: authData });
+        } else {
+          dispatch({ type: AUTHENTICATION_SUCCESS, payload: '' });
+        }
+      },
+      error => {
+        console.log("resp3 error: ", error);
+        dispatch({ type: AUTHENTICATION_FAILURE });
+      }
+    );
+  };
+}
+
+export function authenticateUserWithLinkedin(code) {
+  console.log("step0 code: ", code)
+  return dispatch => {
+    dispatch(authRequest());
+    AuthService.logInWithCode(code).then(
+      authData => {
+        console.log("auth token with user: ", authData);
+        if (authData.token) {
           dispatch({ type: AUTHENTICATION_SUCCESS, payload: authData });
         } else {
           dispatch({ type: AUTHENTICATION_SUCCESS, payload: '' });
