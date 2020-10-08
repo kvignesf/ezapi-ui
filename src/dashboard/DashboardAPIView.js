@@ -25,6 +25,7 @@ import DownloadAPIView from './DownloadAPIView';
 import VisualizeAPIView from './VisualizeAPIView';
 import Header2 from './Header2';
 import { AccountCircle } from '@material-ui/icons';
+import InputIcon from '@material-ui/icons/Input';
 
 import * as d3 from 'd3';
 import d3sankey from '../sankey';
@@ -486,11 +487,14 @@ export default function DashboardAPIView(props) {
                 className={classes.title}
               >
                 {"  "}
-                {(props.user.localizedFirstName, props.user.localizedLastName)}
+                {(props.user.firstName)}
               </Typography>
             ) : (
               ""
             )}
+          </IconButton>
+          <IconButton color="inherit"  onClick={props.logout}>
+            <InputIcon />
           </IconButton>
         </Toolbar>
       </AppBar>

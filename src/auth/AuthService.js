@@ -1,32 +1,27 @@
 import { Constants } from "../Constants";
 import { LocalStorageService } from "../common/services/LocalStorageService";
 
-const logInWithLinkedin = (linkedinCode) => {
-  const loginUrl = Constants.linkedinApiUrl + "/accessToken";
-  const bodyUrlParams = new URLSearchParams([
-    ['grant_type', 'authorization_code'],
-    ['code', linkedinCode],
-    ['redirect_uri', encodeURIComponent(Constants.redirectUri)],
-    ['client_id', Constants.linkedClientId],
-    ['client_secret', Constants.linkedClientSecret]
-  ]);
+const logInWithToken = (token) => {
+  const loginUrl = Constants.localURL + "/auth/verify";
+  const tokenString = "Bearer " + token;
   const requestOptions = {
-    method: "POST",
+    method: "GET",
     headers: new Headers({
       "content-type": "application/x-www-form-urlencoded",
-      "Access-Control-Allow-Origin": "*"
+      "Access-Control-Allow-Origin": "*",
+      "Authorization": tokenString
     }),
-    body: bodyUrlParams,
   };
 
   return fetch(loginUrl, requestOptions)
     .then(handleResponse)
     .then(
       user => {
-        LocalStorageService.put(Constants.USER_DETAILS, JSON.stringify(user));
+        console.log("token success data: ", user);
         return user;
       },
       error => {
+        console.log("token Error data: ", error)
         return error;
       }
     );
@@ -78,7 +73,9 @@ const logInWithCode = (code) => {
     );
 };
 
-const logOut = () => {};
+const logOut = () => {
+  LocalStorageService.clear(Constants.USER_DETAILS);
+};
 
 function handleResponse(response) {
   console.log("resp1: ", response)
@@ -92,7 +89,7 @@ function handleResponse(response) {
         //location.reload(true);
       }
 
-      const error = (data && data.message) || response.statusText;
+      const error = (data) || response.statusText;
       console.log("resp2 error: ", error);
       return Promise.reject(error);
     }
@@ -103,7 +100,7 @@ function handleResponse(response) {
 
 export const AuthService = {
   logInWithCode,
-  logInWithLinkedin,
+  logInWithToken,
   logIn,
   logOut
 };

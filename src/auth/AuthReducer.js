@@ -1,7 +1,8 @@
 import {
   AUTHENTICATION_REQUEST,
   AUTHENTICATION_SUCCESS,
-  AUTHENTICATION_FAILURE
+  AUTHENTICATION_FAILURE,
+  AUTH_USER_LOGOUT
 } from "./AuthAction";
 import { LocalStorageService } from "../common/services/LocalStorageService";
 import { Constants } from "../Constants";
@@ -28,6 +29,13 @@ export default (state = initialState, action) => {
       return {
         isLoggedIn: false,
         erronMessage: action.payload
+      };
+
+    case AUTH_USER_LOGOUT:
+      return {
+        isLoggedIn: false,
+        user: action.payload.user,
+        token: action.payload.token
       };
 
     default:

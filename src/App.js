@@ -11,6 +11,7 @@ import LoginView2 from './auth/LoginView2';
 import { connect } from 'react-redux';
 import Dashboard from './dashboard/Dashboard';
 import DashboardAPIView from './dashboard/DashboardAPIView';
+import { logoutUser } from './auth/AuthAction';
 
 const PARSER_URL = 'http://104.197.42.14:5000/apiops_parser';
 const VISULIZER_URL = 'http://104.197.42.14:5000/visualizer'
@@ -52,6 +53,12 @@ function App(props) {
     setIsLoggedIn(result);
   };
   
+  function handleLogout(e) {
+    console.log("logout clicked");
+    e.preventDefault();
+    props.logoutUser();
+  }
+
   return (
     <div>
       {/* {this.props.isLoggedIn ? <Dashboard /> : <SignIn />} */}
@@ -59,7 +66,7 @@ function App(props) {
       {/* {props.isLoggedIn ? <UploadFile parseFile={parseFile} /> : <LoginView authenticateUser={authenticateUser}/>} */}
       {/* {props.isLoggedIn ? <UploadFile /> : <Dashboard/>} */}
 
-      {props.isLoggedIn ? <DashboardAPIView user={props.user}/> : <LoginView />}
+      {props.isLoggedIn ? <DashboardAPIView user={props.user} logout={handleLogout}/> : <LoginView user={props.user}/>}
 
     </div >
   )
@@ -93,7 +100,9 @@ const mapStateToProps = state => {
   };
 };
 
-const mapDispatchToProps = dispatch => ({
+const mapDispatchToProps = (dispatch) => ({
+  logoutUser: () =>
+    dispatch(logoutUser())
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(App)

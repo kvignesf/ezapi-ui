@@ -30,28 +30,28 @@ export function authenticateUser(userName, userPassword) {
   };
 }
 
-export function authenticateWithLinkedin(code) {
-  console.log("step0 code: ", code)
+export function authenticateWithToken(user) {
+  console.log("step0 token: ", user.token)
   return dispatch => {
     dispatch(authRequest());
-    AuthService.logInWithLinkedin(code).then(
+    AuthService.logInWithToken(user.token).then(
       authData => {
-        console.log("resp3: ", authData);
-        if (authData) {
-          dispatch({ type: AUTHENTICATION_SUCCESS, payload: authData });
+        console.log("token resp3: ", authData);
+        if (authData.auth === false) {
+          dispatch({ type: AUTHENTICATION_FAILURE, payload: authData.message });
         } else {
-          dispatch({ type: AUTHENTICATION_SUCCESS, payload: '' });
+          dispatch({ type: AUTHENTICATION_SUCCESS, payload: user });
         }
       },
       error => {
-        console.log("resp3 error: ", error);
+        console.log("token resp3 error: ", error);
         dispatch({ type: AUTHENTICATION_FAILURE });
       }
     );
   };
 }
 
-export function authenticateUserWithLinkedin(code) {
+export function authenticateWithLinkedinCode(code) {
   console.log("step0 code: ", code)
   return dispatch => {
     dispatch(authRequest());
@@ -73,11 +73,12 @@ export function authenticateUserWithLinkedin(code) {
 }
 
 export const logoutUser = () => dispatch => {
+  AuthService.logOut();
   dispatch({
     type: AUTH_USER_LOGOUT,
     payload: {
-      userName: "",
-      userPassword: ""
+      user: null,
+      token: null
     }
   });
 };

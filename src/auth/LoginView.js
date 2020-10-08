@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import LockOutlined from "@material-ui/icons/LockOutlined";
 import { connect } from "react-redux";
-import { authenticateUser, authenticateUserWithLinkedin } from "./AuthAction";
+import { authenticateUser, authenticateWithToken, authenticateWithLinkedinCode } from "./AuthAction";
 import {
   Typography,
   Avatar,
@@ -51,7 +51,6 @@ const useStyles = makeStyles((theme) => ({
 function LoginView(props) {
   const classes = useStyles();
 
-  const [user, setUser] = useState("result");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [linkCode, setLinkCode] = useState("");
@@ -73,7 +72,7 @@ function LoginView(props) {
     // } else {
     //   props.authenticateUser(false);
     // }
-    props.authenticateUser('test', 'test');
+    props.authenticateWithToken(props.user);
   }
 
   function handleEmail(e) {
@@ -88,7 +87,7 @@ function LoginView(props) {
 
   function handleSuccess(data){
     setLinkCode(data.code);
-    props.authenticateUserWithLinkedin(data.code);
+    props.authenticateWithLinkedinCode(data.code);
     // this.setState({
     //   code: data.code
     // });
@@ -122,6 +121,29 @@ function LoginView(props) {
               p={1}
               bgcolor="background.paper"
             >
+              {props.user && props.user.token ? (
+                <Button
+                  type="button"
+                  className={classes.submit}
+                  variant="contained"
+                  color="primary"
+                  className={classes.button}
+                  startIcon={<LinkedIn />}
+                  onClick={handleLinkedLogin}
+                >
+                  SIGN IN WITH LINKEDIN
+                </Button>
+              ) : (
+                <LoginWithLinkedin
+                  clientId="77hqgq6vt20utk"
+                  redirectUri="http://localhost:3000/linkedin"
+                  scope="r_liteprofile"
+                  state="987654321"
+                  onFailure={handleFailure}
+                  onSuccess={handleSuccess}
+                  redirectPath="/linkedin"
+                ></LoginWithLinkedin>
+              )}
               {/* <Button
                 type="button"
                 className={classes.submit}
@@ -132,7 +154,7 @@ function LoginView(props) {
                 onClick={handleLinkedLogin}
               >
                 SIGN IN WITH LINKEDIN
-              </Button> */}
+              </Button> 
               <LoginWithLinkedin
                   clientId="77hqgq6vt20utk"
                   redirectUri="http://localhost:3000/linkedin"
@@ -142,7 +164,7 @@ function LoginView(props) {
                   onSuccess={handleSuccess}
                   redirectPath='/linkedin'
                 >
-              </LoginWithLinkedin>
+              </LoginWithLinkedin>*/}
             </Box>
             <DividerWithText>Or</DividerWithText>
             <TextField
@@ -207,13 +229,13 @@ function LoginView(props) {
                   color="secondary"
                   pt={20}
                 >
-                  Error Occured: {props.errorMessage}
+                  {props.errorMessage}
                 </Typography>
               </Box>
             ) : (
               ""
             )}
-            {(linkError != "") || (linkCode != "") ? (
+            {linkError != "" || linkCode != "" ? (
               <Box
                 display="flex"
                 justifyContent="center"
@@ -226,7 +248,7 @@ function LoginView(props) {
                   color="secondary"
                   pt={20}
                 >
-                   Linkedin Error: {linkError} Linkedin code: {linkCode}
+                  Linkedin Error: {linkError} Linkedin code: {linkCode}
                 </Typography>
               </Box>
             ) : (
@@ -252,8 +274,10 @@ const mapStateToProps = (state) => {
 const mapDispatchToProps = (dispatch) => ({
   authenticateUser: (userName, userPassword) =>
     dispatch(authenticateUser(userName, userPassword)),
-  authenticateUserWithLinkedin: (code) =>
-    dispatch(authenticateUserWithLinkedin(code)),
+  authenticateWithLinkedinCode: (code) =>
+    dispatch(authenticateWithLinkedinCode(code)),
+  authenticateWithToken: (user) =>
+    dispatch(authenticateWithToken(user)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(LoginView);
