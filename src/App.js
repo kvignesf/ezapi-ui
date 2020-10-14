@@ -66,7 +66,7 @@ function App(props) {
       {/* {props.isLoggedIn ? <UploadFile parseFile={parseFile} /> : <LoginView authenticateUser={authenticateUser}/>} */}
       {/* {props.isLoggedIn ? <UploadFile /> : <Dashboard/>} */}
 
-      {props.isLoggedIn ? <DashboardAPIView user={props.user} logout={handleLogout}/> : <LoginView user={props.user}/>}
+      {props.isLoggedIn ? <DashboardAPIView token={props.token} user={props.user} logout={handleLogout}/> : <LoginView user={props.user}/>}
 
     </div >
   )
@@ -96,7 +96,8 @@ const mapStateToProps = state => {
   return {
     isLoggedIn: state.authReducer.isLoggedIn,
     errorMessage: state.authReducer.erronMessage,
-    user: state.authReducer.user
+    user: state.authReducer.user,
+    token: state.authReducer.token
   };
 };
 

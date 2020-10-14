@@ -22,9 +22,9 @@ import { mainListItems, secondaryListItems } from './listItems';
 import Header from './Header';
 import UploadAPIView from './UploadAPIView';
 import DownloadAPIView from './DownloadAPIView';
-import VisualizeAPIView from './VisualizeAPIView';
 import Header2 from './Header2';
 import { AccountCircle } from '@material-ui/icons';
+import VisualizeAPIView from './visualize/VisualizeAPIView';
 
 function Copyright() {
   return (
