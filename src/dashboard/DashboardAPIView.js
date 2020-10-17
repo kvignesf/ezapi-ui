@@ -27,6 +27,8 @@ import InputIcon from '@material-ui/icons/Input';
 
 import Title from './Title';
 import VisualizeView from './visualize/VisualizeView';
+import Axios from 'axios';
+import { Constants } from '../Constants';
 
 const styles = {
   'tooltip': {
@@ -146,6 +148,7 @@ const useStyles = makeStyles((theme) => ({
 
 export default function DashboardAPIView(props) {
   const ref = React.useRef(null);
+  const downloadRef = React.useRef(null);
   const classes = useStyles();
   const [open, setOpen] = React.useState(true);
   const handleDrawerOpen = () => {
@@ -168,15 +171,31 @@ export default function DashboardAPIView(props) {
   ];
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isNewUpload, setIsNewUpload] = useState(true);
   const [inputFile, setInputFile] = useState(null);
 
-  const parseFile = async (file) => {
-    ref.current.parseFile(file, props.token);
-  }
+  const uploadFile = async (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
 
-  const authenticateUser = (result) => {
-    setIsLoggedIn(result);
-  };
+    let headers = { 'Content-Type': 'multipart/form-data' }
+    if (props.token) {
+      headers['Authorization'] = "Bearer " + props.token;
+    }
+
+    const config = {headers:headers};
+
+    let parsed_result = await Axios.post(Constants.localURL + '/upload_file', formData, config);
+    parsed_result = parsed_result.data;
+    if (parsed_result.success) {
+      let api_ops_id = parsed_result.data['api_ops_id'];
+      ref.current.parseFile(api_ops_id);
+      setIsNewUpload(!isNewUpload);
+    }
+    else {
+      //setErrorMessage(parsed_result.message)
+    }
+  }
   
   useEffect(() => {
     if (inputFile) {
@@ -205,17 +224,6 @@ export default function DashboardAPIView(props) {
           >
             <MenuIcon />
           </IconButton>
-          {/* <IconButton
-            edge="start"
-            color="inherit"
-            aria-label="open drawer"
-            className={clsx(
-              classes.menuButton,
-              open && classes.menuButtonHidden
-            )}
-          >
-            <MenuIcon />
-          </IconButton> */}
           <Typography
             component="h1"
             variant="h6"
@@ -286,12 +294,12 @@ export default function DashboardAPIView(props) {
           </Grid>
           <Grid item xs={12} md={12} lg={12}>
             <Paper className={fixedHeightPaper}>
-              <UploadAPIView parseFile={parseFile} />
+              <UploadAPIView uploadFile={uploadFile} />
             </Paper>
           </Grid>
           <Grid item xs={12} md={12} lg={12}>
             <Paper className={fixedHeightPaper}>
-              <DownloadAPIView />
+              <DownloadAPIView token={props.token} isUploaded={isNewUpload}/>
             </Paper>
           </Grid>
         </Grid>
@@ -308,47 +316,10 @@ export default function DashboardAPIView(props) {
             <Grid item xs={12} md={12} lg={12}>
               <Header title="sections" sections={sections} />
             </Grid>
-            {/* <Grid item xs={12} md={4} lg={3}>
-              <Grid container spacing={3} direction="column">
-                <Grid item xs={12} md={12} lg={12}>
-                  <Paper className={fixedHeightPaper}>
-                    <UploadAPIView parseFile={parseFile} />
-                  </Paper>
-                </Grid>
-                <Grid item xs={12} md={12} lg={12}>
-                  <Paper className={fixedHeightPaper}>
-                    <DownloadAPIView />
-                  </Paper>
-                </Grid>
-              </Grid>
-            </Grid> */}
             <Grid item xs={12} md={12} lg={12}>
               <Paper className={fullHeightPaper}>
                 <Title>Visualiza API</Title>
                 <VisualizeView ref={ref}/>
-                {/* <VisualizeAPIView /> 
-                <Title>Visualiza API</Title>
-                {tags &&
-                  filterTag &&
-                  tags.map((item, t) => (
-                    <label key={t}>
-                      {item}
-                      <input
-                        type="checkbox"
-                        name={item}
-                        checked={filterTag.indexOf(item) > -1}
-                        onChange={() => handleCheckboxes(item)}
-                      />
-                    </label>
-                  ))}
-                {errorMessage && (
-                  <div style={{ color: "red" }}>{errorMessage}</div>
-                )}
-                <div
-                  ref={svgRef}
-                  style={{ height: "100%", width: "100%" }}
-                ></div>
-                <div ref={tooltipRef} style={styles.tooltip}></div>*/}
               </Paper>
             </Grid>
           </Grid>

@@ -103,58 +103,28 @@ const useStyles = makeStyles((theme) => ({
 
 const VisualizeView = React.forwardRef((props, ref) => {
   useImperativeHandle(ref, () => ({
-    async parseFile(file, token) {
+    async parseFile(api_id) {
       setErrorMessage(null)
-    // render the new d3 chart every time with graph data
-    // remove if there is any previous render
-    let svgElement = document.getElementById("svgd3")
-    if (svgElement) svgElement.remove();
+      let svgElement = document.getElementById("svgd3")
+      if (svgElement) svgElement.remove();
 
-    const formData = new FormData();
-    formData.append('file', file)
+      if (api_id) {
+        let params = { 'api_ops_id': api_id }
+        let sankey_result = await axios.get(Constants.localURL + '/sankey', { params: params });
+        sankey_result = sankey_result.data
 
-    let headers = { 'Content-Type': 'multipart/form-data' }
-    //let headers = { 'Content-Type': 'multipart/form-data' }
-    if (token) {
-      headers['Authorization'] = "Bearer " + token;
-    }
-
-    const config = {headers:headers};
-
-    let parsed_result = await axios.post(Constants.localURL + '/upload_file', formData, config)
-    parsed_result = parsed_result.data;
-
-    if (parsed_result.success) {
-      setParsed(true)
-      if (parsed!= null) {
-
+        if (sankey_result.success && sankey_result.data) {
+          setSankeyData(sankey_result.data.graph)
+          setTags(sankey_result.data.tags)
+          setGraph(sankey_result.data.graph[0])
+          if (sankey_result.data.graph) {
+            setFilterTag([sankey_result.data.graph[0]['tag']])
+          }
+        }
+        else {
+          setErrorMessage(sankey_result.message)
+        }
       }
-      let api_ops_id = parsed_result.data['api_ops_id']
-      let params = { 'api_ops_id': api_ops_id }
-
-      let headers1 = { 'Content-Type': 'application/json' }
-      if (token) {
-        headers1['Authorization'] = "Bearer " + token;
-      }
-
-      const config1 = {headers:headers1};
-
-      let sankey_result = await axios.get(Constants.localURL + '/sankey', { params: params });
-      sankey_result = sankey_result.data
-
-      if (sankey_result.success) {
-        setSankeyData(sankey_result.data.graph)
-        setTags(sankey_result.data.tags)
-        setGraph(sankey_result.data.graph[0])
-        setFilterTag([sankey_result.data.graph[0]['tag']])
-      }
-      else {
-        setErrorMessage(sankey_result.message)
-      }
-    }
-    else {
-      setErrorMessage(parsed_result.message)
-    }
     }
   }));
 
