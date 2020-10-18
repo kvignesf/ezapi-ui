@@ -11,7 +11,7 @@ build:
   script:
     - apk add zip
     - npm install
-    - npm run build
+    - CI='false' npm run build
     - ls -la build
     - zip build.zip -r ./build
   artifacts:
