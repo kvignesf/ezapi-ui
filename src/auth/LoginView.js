@@ -136,7 +136,7 @@ function LoginView(props) {
               ) : (
                 <LoginWithLinkedin
                   clientId="77hqgq6vt20utk"
-                  redirectUri="http://instance-1.ezapi.ai:3000/linkedin"
+                  redirectUri="http://instance-1.ezapi.ai/linkedin"
                   scope="r_liteprofile"
                   state="987654321"
                   onFailure={handleFailure}
