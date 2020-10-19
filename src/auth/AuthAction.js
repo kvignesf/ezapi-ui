@@ -16,11 +16,7 @@ export function authenticateUser(userName, userPassword) {
         if (authData.token) {
           dispatch({ type: AUTHENTICATION_SUCCESS, payload: authData });
         } else {
-          if (userName == 'test' && userPassword == 'test') {
-            dispatch({ type: AUTHENTICATION_SUCCESS, payload: '' });
-          } else {
-            dispatch({ type: AUTHENTICATION_FAILURE, payload: authData.message });
-          }
+          dispatch({ type: AUTHENTICATION_FAILURE, payload: authData.message });
         }
       },
       error => {
@@ -60,8 +56,6 @@ export function authenticateWithLinkedinCode(code) {
         console.log("auth token with user: ", authData);
         if (authData.token) {
           dispatch({ type: AUTHENTICATION_SUCCESS, payload: authData });
-        } else {
-          dispatch({ type: AUTHENTICATION_SUCCESS, payload: '' });
         }
       },
       error => {
