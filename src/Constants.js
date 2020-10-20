@@ -1,6 +1,6 @@
 export const Constants = {
   apiURL: "http://ezapi.ai",
-  localURL: "http://instance-1.ezapi.ai:7744",
+  localURL: "https://instance-1.ezapi.ai/node",
   USER_DETAILS: "LOGGEDIN-USER-DETAILS",
   linkedinApiUrl: "https://www.linkedin.com/oauth/v2",
   linkedClientId: "77hqgq6vt20utk",
