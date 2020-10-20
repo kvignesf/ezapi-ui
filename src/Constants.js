@@ -5,5 +5,5 @@ export const Constants = {
   linkedinApiUrl: "https://www.linkedin.com/oauth/v2",
   linkedClientId: "77hqgq6vt20utk",
   linkedClientSecret: "kUQEH6uLaNAiEVbb",
-  redirectUri: "http://instance-1.ezapi.ai:3000/linkedin",
+  redirectUri: "https://instance-1.ezapi.ai/linkedin",
 };
