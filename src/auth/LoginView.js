@@ -16,11 +16,12 @@ import {
   Grid,
 } from "@material-ui/core";
 
-import ezLogo from "../static/images/ez-logo.png";
+import ezLogo from "../static/images/logo/svg.svg";
 import { Container, CssBaseline } from "@material-ui/core";
 import DividerWithText from "../common/components/DividerWithText";
 import { LinkedIn } from "@material-ui/icons";
 import LoginWithLinkedin from './Linkedin/LoginWithLinkedIn';
+import { Constants } from "../Constants";
 
 const useStyles = makeStyles((theme) => ({
   paper: {
@@ -32,9 +33,8 @@ const useStyles = makeStyles((theme) => ({
     backgroundColor: "white",
   },
   avatar: {
-    paddingBottom: "10px",
-    width: "100px",
-    height: "100px",
+    width: "160px",
+    height: "160px",
   },
   form: {
     width: "100%", // Fix IE 11 issue.
@@ -136,7 +136,7 @@ function LoginView(props) {
               ) : (
                 <LoginWithLinkedin
                   clientId="77hqgq6vt20utk"
-                  redirectUri="https://instance-1.ezapi.ai/linkedin"
+                  redirectUri={Constants.redirectUri}
                   scope="r_liteprofile"
                   state="987654321"
                   onFailure={handleFailure}
@@ -144,27 +144,6 @@ function LoginView(props) {
                   redirectPath="/linkedin"
                 ></LoginWithLinkedin>
               )}
-              {/* <Button
-                type="button"
-                className={classes.submit}
-                variant="contained"
-                color="primary"
-                className={classes.button}
-                startIcon={<LinkedIn />}
-                onClick={handleLinkedLogin}
-              >
-                SIGN IN WITH LINKEDIN
-              </Button> 
-              <LoginWithLinkedin
-                  clientId="77hqgq6vt20utk"
-                  redirectUri="http://localhost:3000/linkedin"
-                  scope="r_liteprofile"
-                  state="987654321"
-                  onFailure={handleFailure}
-                  onSuccess={handleSuccess}
-                  redirectPath='/linkedin'
-                >
-              </LoginWithLinkedin>*/}
             </Box>
             <DividerWithText>Or</DividerWithText>
             <TextField
@@ -235,7 +214,7 @@ function LoginView(props) {
             ) : (
               ""
             )}
-            {linkError != "" || linkCode != "" ? (
+            {linkError != "" ? (
               <Box
                 display="flex"
                 justifyContent="center"
@@ -248,15 +227,12 @@ function LoginView(props) {
                   color="secondary"
                   pt={20}
                 >
-                  Linkedin Error: {linkError} Linkedin code: {linkCode}
+                  Linkedin Error: {linkError}
                 </Typography>
               </Box>
             ) : (
               ""
             )}
-
-            {/* <div>{JSON.stringify(props.errorMessage)}</div>
-            <pre>{JSON.stringify(props.isLoggedIn)}</pre> */}
           </form>
         </div>
       </Paper>

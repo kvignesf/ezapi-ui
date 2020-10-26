@@ -19,6 +19,7 @@ import Tooltip from '@material-ui/core/Tooltip';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Switch from '@material-ui/core/Switch';
 import DeleteIcon from '@material-ui/icons/Delete';
+import GetAppIcon from '@material-ui/icons/GetApp';
 import FilterListIcon from '@material-ui/icons/FilterList';
 import { Link } from '@material-ui/core';
 import { Constants } from '../Constants';
@@ -201,7 +202,6 @@ const useStyles = makeStyles((theme) => ({
     marginBottom: theme.spacing(2),
   },
   table: {
-    minWidth: 100,
   },
   visuallyHidden: {
     border: 0,
@@ -225,10 +225,30 @@ export default function DownloadList(props) {
   const [dense, setDense] = React.useState(false);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
 
+  function getClientOS() {
+    var userAgent = window.navigator.userAgent,
+        platform = window.navigator.platform,
+        macosPlatforms = ['Macintosh', 'MacIntel', 'MacPPC', 'Mac68K'],
+        windowsPlatforms = ['Win32', 'Win64', 'Windows', 'WinCE'],
+        iosPlatforms = ['iPhone', 'iPad', 'iPod'],
+        os = null;
+  
+    if (macosPlatforms.indexOf(platform) !== -1) {
+      os = 'Mac OS';
+    } else if (iosPlatforms.indexOf(platform) !== -1) {
+      os = 'iOS';
+    } else if (windowsPlatforms.indexOf(platform) !== -1) {
+      os = 'Windows';
+    } else if (/Android/.test(userAgent)) {
+      os = 'Android';
+    } else if (!os && /Linux/.test(platform)) {
+      os = 'Linux';
+    }
+  
+    return os;
+  }
+  
   useEffect(() => {
-    // if (props.apiList && props.apiList.length > 0) {
-    //   handleClick(null, props.apiList[0].id);
-    // }
     if (props.apiList && props.apiList[0]) {
       handleClick(null, props.apiList[0].id);
     }
@@ -261,14 +281,7 @@ export default function DownloadList(props) {
       }
     } else if (selectedIndex === 0) {
       newSelected = newSelected.concat(selected.slice(1));
-    } /* else if (selectedIndex === selected.length - 1) {
-      newSelected = newSelected.concat(selected.slice(0, -1));
-    } else if (selectedIndex > 0) {
-      newSelected = newSelected.concat(
-        selected.slice(0, selectedIndex),
-        selected.slice(selectedIndex + 1),
-      );
-    } */
+    }
 
     props.selectAPI(newSelected);
     setSelected(newSelected);
@@ -276,9 +289,16 @@ export default function DownloadList(props) {
 
   const handleDownload = (event, api, osType) => {
     props.throwError('');
+    let clientOS = getClientOS();
+    console.log("client operating system is : " + clientOS);
+    if (clientOS === 'Windows') {
+      clientOS = 'windows'
+    } else {
+      clientOS = null;
+    }
     const bodyUrlParams = new URLSearchParams([
         ["api_ops_id", api.api_ops_id],
-        ["os_type", osType],
+        ["os_type", clientOS],
       ]);
 
       const requestOptions = {
@@ -354,33 +374,16 @@ export default function DownloadList(props) {
                       key={row.id}
                       selected={isItemSelected}
                     >
-                      {/* <TableCell padding="checkbox">
-                        <Checkbox
-                          checked={isItemSelected}
-                          inputProps={{ 'aria-labelledby': labelId }}
-                        />
-                      </TableCell> */}
-                      <TableCell component="th" id={labelId} scope="row" padding="none">
+                      <TableCell component="th" id={labelId} scope="row" padding="none" size="small" 
+                                title={new Date(row.dtStamp).toLocaleString()} padding="checkbox">
                         {row.name}
                       </TableCell>
-                      {/* <TableCell align="right">{row.dbname}</TableCell> */}
-                      <TableCell component="th" id={labelId} scope="row" padding="none">
-                        <Link
-                            component="button"
-                            variant="body2"
-                            onClick={(event) => handleDownload(event, row, 'windows')}
-                        >
-                        Windows
-                        </Link>
-                      </TableCell>
-                      <TableCell component="th" id={labelId} scope="row" padding="none">
-                        <Link
-                            component="button"
-                            variant="body2"
-                            onClick={(event) => handleDownload(event, row)}
-                        >
-                        Linux
-                        </Link>
+                      <TableCell component="th" id={labelId} scope="row" padding="none" align="right">
+                        <IconButton aria-label="download" component="button"
+                            variant="body2" fontSize="small" color="primary"
+                            onClick={(event) => handleDownload(event, row)}>
+                          <GetAppIcon />
+                        </IconButton>
                       </TableCell>
                     </TableRow>
                   );

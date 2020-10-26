@@ -29,6 +29,9 @@ import Title from './Title';
 import VisualizeView from './visualize/VisualizeView';
 import Axios from 'axios';
 import { Constants } from '../Constants';
+import ezLogo from "../static/images/logo/png.png";
+import { Avatar, Icon } from '@material-ui/core';
+import { red, white } from '@material-ui/core/colors';
 
 const styles = {
   'tooltip': {
@@ -141,8 +144,19 @@ const useStyles = makeStyles((theme) => ({
   fixedHeight: {
     height: 240,
   },
+  uploadHeight: {
+    height: 120,
+  },
+  downloadHeight: {
+    height: 360,
+  },
   fullHeight: {
     height: "500px",
+  },
+  bigAvatar: {
+    width: 50,
+    height: 50,
+    backgroundColor: "#ffffff",
   },
 }));
 
@@ -159,7 +173,8 @@ export default function DashboardAPIView(props) {
   };
   const fixedHeightPaper = clsx(classes.paper, classes.fixedHeight);
   const fullHeightPaper = clsx(classes.paper, classes.fullHeight);
-
+  const uploadHeight = clsx(classes.paper, classes.uploadHeight);
+  const downloadHeight = clsx(classes.paper, classes.downloadHeight);
   const sections = [
     { title: 'Visualize', url: '#' },
     { title: 'Virtualize', url: '#' },
@@ -189,12 +204,16 @@ export default function DashboardAPIView(props) {
     parsed_result = parsed_result.data;
     if (parsed_result.success) {
       let api_ops_id = parsed_result.data['api_ops_id'];
-      ref.current.parseFile(api_ops_id);
+      //ref.current.parseFile(api_ops_id);
       setIsNewUpload(!isNewUpload);
     }
     else {
       //setErrorMessage(parsed_result.message)
     }
+  }
+
+  const updateVisualization = (api_id) => {
+    ref.current.parseFile(api_id);
   }
   
   useEffect(() => {
@@ -231,8 +250,20 @@ export default function DashboardAPIView(props) {
             noWrap
             className={classes.title}
           >
-            EzAPI
+            <Avatar
+            className={classes.bigAvatar}
+            src={ezLogo}
+            variant="rounded"
+          ></Avatar>
+            {/* <img src={ezLogo} height={50} width={50}/> */}
           </Typography>
+          {/* <img
+            src={ezLogo}
+            alt="EZ API"
+            className={classes.avatar}
+            className={classes.avatar}
+          /> */}
+          
           <IconButton color="inherit">
             <Badge badgeContent={4} color="secondary">
               <NotificationsIcon />
@@ -293,13 +324,13 @@ export default function DashboardAPIView(props) {
 
           </Grid>
           <Grid item xs={12} md={12} lg={12}>
-            <Paper className={fixedHeightPaper}>
+            <Paper className={uploadHeight}>
               <UploadAPIView uploadFile={uploadFile} />
             </Paper>
           </Grid>
           <Grid item xs={12} md={12} lg={12}>
-            <Paper className={fixedHeightPaper}>
-              <DownloadAPIView token={props.token} isUploaded={isNewUpload}/>
+            <Paper className={downloadHeight}>
+              <DownloadAPIView token={props.token} isUploaded={isNewUpload} updateVisualization={updateVisualization}/>
             </Paper>
           </Grid>
         </Grid>

@@ -6,8 +6,8 @@ import Axios from 'axios';
 import { Box, Grid, Typography } from '@material-ui/core';
 import DownloadList from './DownloadList';
 
-function createData(id, name, dbname, api_ops_id) {
-  return {id, name, dbname, api_ops_id};
+function createData(id, name, dbname, api_ops_id, dtStamp) {
+  return {id, name, dbname, api_ops_id, dtStamp};
 }
 
 export default function DownloadAPIView(props) {
@@ -20,7 +20,9 @@ export default function DownloadAPIView(props) {
   const selectAPI = async (apiID) => {
     const selItem = APIRecords.find(item=>item.id == apiID);
     setSelectedAPI(selItem);
-    //props.resetSelectAPI(selItem);
+    if (selItem) {
+      props.updateVisualization(selItem.api_ops_id);
+    }
   }
 
   const showError = async (message) => {
@@ -53,7 +55,7 @@ export default function DownloadAPIView(props) {
 
         if (api_result.length > 0) {
           const data = api_result.map(item => {
-            return createData(item._id, item.filename, item.dbname, item.api_ops_id);
+            return createData(item._id, item.filename, item.dbname, item.api_ops_id, item.dtstamp);
           });
           setAPIRecords(data);
         }
@@ -70,7 +72,7 @@ export default function DownloadAPIView(props) {
   return (
     <React.Fragment>
       <Title>Download Ez API / History</Title>
-      <Grid container spacing={3}>
+      <Grid container spacing={1}>
       
         <Grid item xs={12} md={12} lg={12}>
           {errorMessage && errorMessage !='' ? (
