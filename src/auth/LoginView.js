@@ -72,6 +72,7 @@ function LoginView(props) {
     // } else {
     //   props.authenticateUser(false);
     // }
+    console.log("env: ", process.env);
     props.authenticateWithToken(props.user);
   }
 
@@ -135,10 +136,10 @@ function LoginView(props) {
                 </Button>
               ) : (
                 <LoginWithLinkedin
-                  clientId="77hqgq6vt20utk"
-                  redirectUri={Constants.redirectUri}
-                  scope="r_liteprofile"
-                  state="987654321"
+                  clientId={Constants.linkedClientId}
+                  redirectUri={window.location.origin + Constants.redirectUri}
+                  scope={Constants.linkedin_profile}
+                  state={Constants.linkedin_state}
                   onFailure={handleFailure}
                   onSuccess={handleSuccess}
                   redirectPath="/linkedin"
