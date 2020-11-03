@@ -21,7 +21,7 @@ export default function DownloadAPIView(props) {
     const selItem = APIRecords.find(item=>item.id == apiID);
     setSelectedAPI(selItem);
     if (selItem) {
-      props.updateVisualization(selItem.api_ops_id);
+      props.updateVisualization(selItem);
     }
   }
 

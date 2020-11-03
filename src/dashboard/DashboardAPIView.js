@@ -22,7 +22,7 @@ import { mainListItems } from './listItems';
 import Header from './Header';
 import UploadAPIView from './UploadAPIView';
 import DownloadAPIView from './DownloadAPIView';
-import { AccountCircle } from '@material-ui/icons';
+import { AccountCircle, Fullscreen } from '@material-ui/icons';
 import InputIcon from '@material-ui/icons/Input';
 
 import Title from './Title';
@@ -30,8 +30,8 @@ import VisualizeView from './visualize/VisualizeView';
 import Axios from 'axios';
 import { Constants } from '../Constants';
 import ezLogo from "../static/images/logo/png.png";
-import { Avatar, Icon } from '@material-ui/core';
-import { red, white } from '@material-ui/core/colors';
+import { Avatar, Button } from '@material-ui/core';
+import VisualizeAPIFullView from './visualize/VisualizeAPIFullView';
 
 const styles = {
   'tooltip': {
@@ -158,6 +158,9 @@ const useStyles = makeStyles((theme) => ({
     height: 50,
     backgroundColor: "#ffffff",
   },
+  button: {
+    textTransform: 'capitalize',
+  },
 }));
 
 export default function DashboardAPIView(props) {
@@ -188,6 +191,8 @@ export default function DashboardAPIView(props) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isNewUpload, setIsNewUpload] = useState(true);
   const [inputFile, setInputFile] = useState(null);
+  const [isFullScreen, setIsFullScreen] = React.useState(false);
+  const [selectedAPI, setSelectedAPI] = React.useState(null);
 
   const uploadFile = async (file) => {
     const formData = new FormData();
@@ -212,10 +217,20 @@ export default function DashboardAPIView(props) {
     }
   }
 
-  const updateVisualization = (api_id) => {
-    ref.current.parseFile(api_id);
+  const updateVisualization = (api) => {
+    setSelectedAPI(api);
+    ref.current.parseFile(api.api_ops_id);
   }
   
+  const handleOpenFullscreen = () => {
+    setIsFullScreen(true);
+  };
+
+  const handleCloseFullscreen = () => {
+    setIsFullScreen(false);
+    ref.current.parseFile(selectedAPI.api_ops_id);
+  };
+
   useEffect(() => {
     if (inputFile) {
       ref.current.parseFile(inputFile);
@@ -349,7 +364,26 @@ export default function DashboardAPIView(props) {
             </Grid>
             <Grid item xs={12} md={12} lg={12}>
               <Paper className={fullHeightPaper}>
-                <Title>Visualiza API</Title>
+                <Grid
+                  justify="space-between" // Add it here :)
+                  container 
+                  spacing={24}
+                >
+                  <Grid item>
+                    <Title>Visualize API {selectedAPI && selectedAPI.name != '' ? ": " + selectedAPI.name:""}</Title>
+                  </Grid>
+                  <Grid item>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      size="small"
+                      className={classes.button}
+                      startIcon={<Fullscreen/>} 
+                      onClick={handleOpenFullscreen}>
+                        Full Screen
+                    </Button>
+                  </Grid>
+                </Grid>
                 <VisualizeView ref={ref}/>
               </Paper>
             </Grid>
@@ -357,6 +391,7 @@ export default function DashboardAPIView(props) {
           <Box pt={4}>
             <Copyright/>
           </Box>
+          <VisualizeAPIFullView selectedAPI={selectedAPI} isFullScreen={isFullScreen} handleCloseFullscreen={handleCloseFullscreen}/>
         </Container>
       </main>
     </div>
