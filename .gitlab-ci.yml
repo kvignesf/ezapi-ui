@@ -41,5 +41,5 @@ deployssh:
     - ssh deploy@34.123.13.63 "cp -rf /tmp/build/* /var/www/apiops_react_ui/build/"
     - ssh deploy@34.123.13.63 "sudo /bin/systemctl restart nginx.service"
 only:
-    - Master
+    - master
   
