@@ -17,6 +17,8 @@ build:
   artifacts:
     paths:
     - build.zip
+  only:
+    - master
 deployssh:
   image: alpine
   stage: deploy
