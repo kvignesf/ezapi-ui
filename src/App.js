@@ -12,6 +12,7 @@ import { connect } from 'react-redux';
 import Dashboard from './dashboard/Dashboard';
 import DashboardAPIView from './dashboard/DashboardAPIView';
 import { logoutUser } from './auth/AuthAction';
+import { useHistory } from 'react-router-dom';
 
 const PARSER_URL = 'http://104.197.42.14:5000/apiops_parser';
 const VISULIZER_URL = 'http://104.197.42.14:5000/visualizer'
@@ -47,6 +48,7 @@ const resourceToColor = (nodes) => {
 }
 
 function App(props) {
+  const history = useHistory();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const authenticateUser = (result) => {
@@ -57,6 +59,7 @@ function App(props) {
     console.log("logout clicked");
     e.preventDefault();
     props.logoutUser();
+    history.push("/");
   }
 
   return (

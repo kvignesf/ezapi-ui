@@ -219,7 +219,7 @@ const useStyles = makeStyles((theme) => ({
 export default function DownloadList(props) {
   const classes = useStyles();
   const [order, setOrder] = React.useState('asc');
-  const [orderBy, setOrderBy] = React.useState('dbname');
+  const [orderBy, setOrderBy] = React.useState('_id');
   const [selected, setSelected] = React.useState([]);
   const [page, setPage] = React.useState(0);
   const [dense, setDense] = React.useState(false);

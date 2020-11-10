@@ -115,10 +115,15 @@ const VisualizeView = React.forwardRef((props, ref) => {
 
         if (sankey_result.success && sankey_result.data) {
           setSankeyData(sankey_result.data.graph)
-          setTags(sankey_result.data.tags)
-          setGraph(sankey_result.data.graph[0])
-          if (sankey_result.data.graph) {
-            setFilterTag([sankey_result.data.graph[0]['tag']])
+          if (sankey_result.data && sankey_result.data.tags) {
+            setTags(sankey_result.data.tags)
+          }
+
+          if (sankey_result.data && sankey_result.data.graph) {
+            setGraph(sankey_result.data.graph[0]);
+            if (sankey_result.data.graph[0]) {
+              setFilterTag([sankey_result.data.graph[0]["tag"]]);
+            }
           }
         }
         else {
