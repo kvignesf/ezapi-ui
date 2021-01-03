@@ -297,7 +297,13 @@ const VisualizeView = React.forwardRef((props, ref) => {
         .style("fill", function (d) {
           return d.color = resourceColor[d.tag]
         })
-        .on("mouseover", function (d) { tooltip.text(d.summary); return tooltip.style("visibility", "visible"); })
+        .on("mouseover", function (d) { 
+          if (typeof d.summary == 'undefined') {
+            return tooltip.style("visibility", "invisible"); 
+          } else {
+            tooltip.text(d.summary); return tooltip.style("visibility", "visible"); 
+          }
+        })
         .on("mousemove", function () { return tooltip.style("top", (d3.event.y - 28) + "px").style("left", (d3.event.x) + "px"); })
         .on("mouseout", function () {
           return tooltip.style("visibility", "hidden")
@@ -314,6 +320,9 @@ const VisualizeView = React.forwardRef((props, ref) => {
         .text(function (d) { return d.name.split("|")[0]; })
         .attr("x", 6 + sankey.nodeWidth())
         .attr("text-anchor", "start");
+
+      
+
 
       // the function for moving the nodes
       function dragmove(d) {
