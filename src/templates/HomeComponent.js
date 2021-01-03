@@ -25,8 +25,8 @@ function Copyright() {
   return (
     <Typography variant="body2" color="textSecondary" align="center">
       {'Copyright © '}
-      <Link color="inherit" href="https://material-ui.com/">
-        Your Website
+      <Link color="inherit">
+        EzAPI
       </Link>{' '}
       {new Date().getFullYear()}
       {'.'}
@@ -137,10 +137,10 @@ const footers = [
     title: 'Features',
     description: ['Team feature', 'Developer stuff'],
   },
-  {
+  /* {
     title: 'Legal',
     description: ['Privacy policy', 'Terms of use'],
-  },
+  }, */
 ];
 
 export default function HomeComponent() {
@@ -154,17 +154,17 @@ export default function HomeComponent() {
           Get to know about EZAPI
         </Typography>
       </Container>
-      <Container maxWidth="md" component="main">
+      {/* <Container maxWidth="md" component="main">
         <Grid container spacing={5} alignItems="flex-end">
         <img className={classes.fullImage}
             src={homeImg}
             alt="EZ API"
         />
         </Grid>
-      </Container>
+      </Container> */}
 
       
-      <Container maxWidth="sm" component="main" className={classes.heroContent1}>
+      {/* <Container maxWidth="sm" component="main" className={classes.heroContent1}>
         <Grid container spacing={5} alignItems="flex-end">
           <Grid item xs={12} sm={6} md={6}>
             <TextField id="outlined-basic" label="Enter you email address" variant="outlined" size="small"/>
@@ -175,7 +175,7 @@ export default function HomeComponent() {
             </Button>
           </Grid>
         </Grid>
-      </Container>
+      </Container> */}
 
       <Container maxWidth="md" component="main" className={classes.heroContent}>
       <Typography component="h5" variant="h5" align="center" color="textPrimary" gutterBottom>
@@ -208,7 +208,7 @@ export default function HomeComponent() {
 
 
       {/* End hero unit */}
-      <Container maxWidth="md" component="main">
+      {/* <Container maxWidth="md" component="main">
         <Box pt={2} pb={2}>
         
         </Box>
@@ -254,7 +254,7 @@ export default function HomeComponent() {
             </Grid>
           ))}
         </Grid>
-      </Container>
+      </Container> */}
     </React.Fragment>
   );
 }

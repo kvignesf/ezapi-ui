@@ -44,7 +44,7 @@ const useStyles = makeStyles((theme) => ({
     margin: theme.spacing(3, 0, 2),
   },
   forgotLink: {
-    paddingLeft: "80px",
+    paddingLeft: "80px" ,
   },
 }));
 
@@ -175,9 +175,9 @@ function LoginView(props) {
               label="Remember me"
               control={<Checkbox value="remember" color="primary" />}
             ></FormControlLabel>
-            <Link href="/" className={classes.forgotLink}>
-              Forgot Password?
-            </Link>
+            {/* <Link href="/" className={classes.forgotLink}> */}
+              <span className={classes.forgotLink}>Forgot Password? </span>
+            {/* </Link> */}
             <Button
               type="submit"
               className={classes.submit}
@@ -191,9 +191,10 @@ function LoginView(props) {
               display="flex"
               justifyContent="center"
               bgcolor="background.paper"
+              disabled="disabled"
             >
               <Typography variant="subheading1" display="block" gutterBottom>
-                Don't have an account <Link href="/">SIGN UP NOW?</Link>
+                Don't have an account <span to="/">SIGN UP NOW?</span>
               </Typography>
             </Box>
             {props.errorMessage && !props.isLoggedIn ? (
