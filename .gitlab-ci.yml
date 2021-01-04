@@ -48,8 +48,8 @@ deployssh:
     - ssh deploy@35.192.217.208 "cp -rf /tmp/build/* /var/www/apiops_react_ui/build/"
     - ssh deploy@35.192.217.208 "sudo /bin/systemctl restart nginx.service"
   environment:
-    name: Test
-    url: https://instance-1.ezapi.ai
+    name: Demo
+    url: https://demo-1.ezapi.ai
   only:
     - master    
   
