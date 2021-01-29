@@ -36,7 +36,8 @@ deployssh:
     - ssh-add ~/.ssh/id_rsa
     - cat ~/.ssh/id_rsa.pub > ~/.ssh/authorized_keys
     - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
-# Execute a remote command
+# Execute a remote command.
+    - ssh deploy@35.192.217.208 "rm -rf /tmp/build* && exit"
     - scp build.zip deploy@35.192.217.208:/tmp/build.zip
     - ssh deploy@35.192.217.208 "unzip -d /tmp /tmp/build.zip && exit"
     - ssh deploy@35.192.217.208  "rm -rf /var/www/apiops_react_ui/build/*"
