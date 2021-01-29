@@ -37,11 +37,16 @@ deployssh:
     - cat ~/.ssh/id_rsa.pub > ~/.ssh/authorized_keys
     - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
 # Execute a remote command
-    - ssh deploy@34.123.13.63 "rm -rf /tmp/build* && exit"
-    - scp build.zip deploy@34.123.13.63:/tmp/build.zip
-    - ssh deploy@34.123.13.63 "unzip -d /tmp /tmp/build.zip && exit"
-    - ssh deploy@34.123.13.63 "cp -rf /tmp/build/* /var/www/apiops_react_ui/build/"
-    - ssh deploy@34.123.13.63 "sudo /bin/systemctl restart nginx.service"
+    - scp build.zip deploy@35.192.217.208:/tmp/build.zip
+    - ssh deploy@35.192.217.208 "unzip -d /tmp /tmp/build.zip && exit"
+    - ssh deploy@35.192.217.208  "rm -rf /var/www/apiops_react_ui/build/*"
+    - ssh deploy@35.192.217.208  "cp -rf /tmp/build/* /var/www/apiops_react_ui/build/"
+    - ssh deploy@35.192.217.208  "sudo /bin/systemctl restart nginx.service"
+    #- ssh deploy@34.123.13.63 "rm -rf /tmp/build* && exit"
+    #- scp build.zip deploy@34.123.13.63:/tmp/build.zip
+    #- ssh deploy@34.123.13.63 "unzip -d /tmp /tmp/build.zip && exit"
+    #- ssh deploy@34.123.13.63 "cp -rf /tmp/build/* /var/www/apiops_react_ui/build/"
+    #- ssh deploy@34.123.13.63 "sudo /bin/systemctl restart nginx.service"
   #only:
   #  - master
   
