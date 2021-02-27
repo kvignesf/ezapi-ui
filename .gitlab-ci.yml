@@ -1,5 +1,5 @@
 include:
-  - remote: 'https://gitlab.com/ezapi_poc/infra_poc.git/master/.reactuici.yaml'
+  - remote: 'https://gitlab.com/ezapi_poc/infra_poc.git/master/reactuici.yaml'
 image: node:alpine
 stages:
   - build
