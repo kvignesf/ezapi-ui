@@ -1,6 +1,6 @@
 include:
   project: 'infra_poc'
-  file: '.reacti.yml'  
+  file: '.reactici.yml'  
 image: node:alpine
 stages:
   - build
