@@ -3,7 +3,7 @@ include:
   project: 'ezapi_poc/infra_poc'
   file: 
     - 'reactuici.yaml'
-    -  'deploy-reactui-demo-1.yaml'
+    - 'deploy-reactui-demo-1.yaml'
   
 
 
