@@ -9,16 +9,15 @@ stages:
   - deploy 
 build:
   stage: build 
+  extends: .build
   script:
     - echo " running the build job"
-  useTemplate:
-    image: node:alpine
-    extends: .build
+     
 deploy:  
   stage: deploy
+  image: alpine  
+  extends: .deploy-demo1
   script:  
     - echo " running the deploy job"
-  useTemplate:
-      image: alpine  
-      extends: .deploy-demo1
-
+  
+      
