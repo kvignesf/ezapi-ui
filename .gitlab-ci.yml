@@ -4,15 +4,22 @@ include:
   file: 
     - 'reactuici.yaml'
     - 'deploy-reactui-demo-1.yaml'
+    - 'deploy-reactui-instance-1.yaml'
 stages:
   - build
-  - deploy 
+  - deploy-demo1
+  - deploy-instance1 
 build:
   stage: build 
   extends: .build
-deploy:  
-  stage: deploy
+deploy-demo1:  
+  stage: deploy-demo1
   image: alpine  
   extends: .deploy-demo1
-  
+deploy-instance1:
+  stage: deploy-instance1
+  image: alpine  
+  extends: .deploy-instance-1
+only: master   
+
       
