@@ -10,14 +10,9 @@ stages:
 build:
   stage: build 
   extends: .build
-  script:
-    - echo " running the build job"
-     
 deploy:  
   stage: deploy
   image: alpine  
   extends: .deploy-demo1
-  script:  
-    - echo " running the deploy job"
   
       
