@@ -1,21 +1,9 @@
+include:
+  - template: 'https://gitlab.com/ezapi_poc/infra_poc.git/master/.reactuici.yaml'
 image: node:alpine
 stages:
   - build
-  - deploy-demo
-  - deploy-instance1
-build:    
-  script:
-  include:
-  - template: 'https://gitlab.com/ezapi_poc/infra_poc.git/master/.reactuici.yaml'
-deploy-demo:
-  script:
-  include:
-    - template: 'https://gitlab.com/ezapi_poc/infra_poc.git/master/.deploy-reactui-demo-1.yaml' 
-  only: Anoop 
-  where: manual 
-deploy-instance1:
-  script: 
-  include:
-    - template: 'https://gitlab.com/ezapi_poc/infra_poc.git/master/.deploy-reactui-instance-1.yaml' 
-  only: master 
-  where: manual
+  
+
+
+
