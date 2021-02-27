@@ -19,7 +19,7 @@ deploy-demo1:
 deploy-instance1:
   stage: deploy-instance1
   image: alpine  
-  extends: .deploy-instance-1
+  extends: .deploy-instance1
 only: master   
 
       
