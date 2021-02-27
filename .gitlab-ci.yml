@@ -5,14 +5,14 @@ stages:
   - deploy-instance1
 build:    
   include:
-  - remote: 'https://gitlab.com/ezapi_poc/infra_poc.git/master/.reactuici.yaml'
+  - template: 'https://gitlab.com/ezapi_poc/infra_poc.git/master/.reactuici.yaml'
 deploy-demo:
   include:
-    - remote: 'https://gitlab.com/ezapi_poc/infra_poc.git/master/.deploy-reactui-demo-1.yaml' 
+    - template: 'https://gitlab.com/ezapi_poc/infra_poc.git/master/.deploy-reactui-demo-1.yaml' 
   only: Anoop 
   where: manual 
 deploy-instance1: 
   include:
-    - remote: 'https://gitlab.com/ezapi_poc/infra_poc.git/master/.deploy-reactui-instance-1.yaml' 
+    - template: 'https://gitlab.com/ezapi_poc/infra_poc.git/master/.deploy-reactui-instance-1.yaml' 
   only: master 
   where: manual
