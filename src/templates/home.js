@@ -18,6 +18,7 @@ import flowImg from "../static/images/logo/flow.jpg";
 import homeImg from "../static/images/home1.png";
 import visualImg from "../static/images/visual.jpg";
 import { Avatar, CardMedia, Paper, TextField } from '@material-ui/core';
+import ezLogo from "../static/images/logo/jpg.jpg";
 import HomeComponent from './HomeComponent';
 import ProductComponent from './ProductComponent';
 import { BrowserRouter, Route, Switch } from 'react-router-dom';
@@ -157,8 +158,21 @@ export default function Home() {
         color="primary"
         elevation={0}
         className={classes.appBar}
+        style={{ background: '#C72C71' }}
       >
         <Toolbar className={classes.toolbar}>
+        <Avatar
+            className={classes.bigAvatar}
+            src={ezLogo}
+            variant="rounded"
+          ></Avatar>
+          <Typography
+            variant="h8"
+            color="inherit"  
+            WrappedComponent          
+            className={classes.link}
+          >      
+          </Typography>
           <Typography
             variant="h6"
             color="inherit"
@@ -171,8 +185,9 @@ export default function Home() {
             variant="h6"
             color="inherit"
             noWrap
-            className={classes.toolbarTitle}
+            className={classes.toolbarTitle}            
           >
+            
             {/* <Avatar
             className={classes.bigAvatar}
             src={ezLogo}
@@ -205,14 +220,14 @@ export default function Home() {
             >
               Contact Us
             </Link>
-            <Link
+            {/* <Link
               variant="button"
               color="inherit"
               href="#"
               className={classes.link}
             >
               Pricing
-            </Link>
+            </Link> */}
           </nav>
           <Button
             href="/app"

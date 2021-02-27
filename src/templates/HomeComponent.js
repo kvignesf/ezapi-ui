@@ -44,6 +44,7 @@ const useStyles = makeStyles((theme) => ({
   },
   appBar: {
     borderBottom: `1px solid ${theme.palette.divider}`,
+    
   },
   toolbar: {
     flexWrap: 'wrap',
@@ -78,7 +79,7 @@ const useStyles = makeStyles((theme) => ({
     [theme.breakpoints.up('sm')]: {
       paddingTop: theme.spacing(6),
       paddingBottom: theme.spacing(6),
-    },
+    },    
   },
   fullImage : {
     width: "100%",
@@ -151,7 +152,7 @@ export default function HomeComponent() {
       <CssBaseline />
       <Container maxWidth="sm" component="main" className={classes.heroContent}>
         <Typography component="h5" variant="h5" align="center" color="textPrimary" gutterBottom>
-          Get to know about EZAPI
+          Get to know EZAPI
         </Typography>
       </Container>
       {/* <Container maxWidth="md" component="main">
@@ -190,7 +191,9 @@ export default function HomeComponent() {
           <Grid item xs={12} sm={6} md={6}>
             <Box pl={4} pr={4}>
             <Typography color="textPrimary" gutterBottom className={classes.textStyle}>
-            "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+            "In the digital era, doing business online is easy and simplified. APIs and 3rd party APIs have been the center pivot of all online interactions and integrations. Business powered technology and innovation is the next big transformation. Yet, API development is ages behind in bringing the citizen developer empowerment. Designing an API anymore should be in the context of business, products and services as against standards in API specification. Visualization and knowledge respresentation of API specification today is in stone age. EzAPI brings simplicity and ease to the whole API ecosystem." &nbsp;&nbsp;&nbsp;&nbsp;    Go visualize 
+            @ ezapi !!.<br />
+             Hashtag: #ezapi_visualize, #ezapi"
             </Typography>
             </Box>
             
