@@ -2,27 +2,36 @@ image: node:alpine
 include:
   project: 'ezapi_poc/infra_poc'
   file: 
-    - 'reactuici.yaml'
+    - 'reactuicidev.yaml'
+    - 'reactuiciprod.yaml'
     - 'deploy-reactui-demo-1.yaml'
     - 'deploy-reactui-instance-1.yaml'
 stages:
-  - build
+  - build-dev
+  - build-prod 
   - deploy-demo1
   - deploy-instance1 
-build:
+build-dev:
   stage: build 
-  extends: .build
+  extends: .build-dev
+  except:
+    - master
+build-prod:
+  stage: build 
+  extends: .build-prod
+  only:
+    - master    
 deploy-demo1:  
   stage: deploy-demo1
   image: alpine  
   extends: .deploy-demo1
-  except:
+  only:
     - master
 deploy-instance1:
   stage: deploy-instance1
   image: alpine  
   extends: .deploy-instance1
-  only: 
+  except: 
     - master   
 
       
