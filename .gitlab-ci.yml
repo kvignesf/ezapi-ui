@@ -4,10 +4,15 @@ include:
   file: 
     - 'reactuici.yaml'
     - 'deploy-reactui-demo-1.yaml'
-useTemplate:
-  image: node:alpine
-  extends: .build
-useTemplate:
-  image: alpine  
-  extends: .deploy-demo1
+stages:
+  - build
+  - deploy 
+build:
+  useTemplate:
+    image: node:alpine
+    extends: .build
+deploy:    
+  useTemplate:
+    image: alpine  
+    extends: .deploy-demo1
 
