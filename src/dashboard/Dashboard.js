@@ -30,7 +30,7 @@ function Copyright() {
   return (
     <Typography variant="body2" color="textSecondary" align="center">
       {'Copyright © '}
-      <Link color="inherit" href="http://ezapi.ai/">
+      <Link color="inherit">
         EzAPI
       </Link>{' '}
       {new Date().getFullYear()}

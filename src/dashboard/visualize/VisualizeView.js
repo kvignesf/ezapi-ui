@@ -115,10 +115,15 @@ const VisualizeView = React.forwardRef((props, ref) => {
 
         if (sankey_result.success && sankey_result.data) {
           setSankeyData(sankey_result.data.graph)
-          setTags(sankey_result.data.tags)
-          setGraph(sankey_result.data.graph[0])
-          if (sankey_result.data.graph) {
-            setFilterTag([sankey_result.data.graph[0]['tag']])
+          if (sankey_result.data && sankey_result.data.tags) {
+            setTags(sankey_result.data.tags)
+          }
+
+          if (sankey_result.data && sankey_result.data.graph) {
+            setGraph(sankey_result.data.graph[0]);
+            if (sankey_result.data.graph[0]) {
+              setFilterTag([sankey_result.data.graph[0]["tag"]]);
+            }
           }
         }
         else {
@@ -292,7 +297,13 @@ const VisualizeView = React.forwardRef((props, ref) => {
         .style("fill", function (d) {
           return d.color = resourceColor[d.tag]
         })
-        .on("mouseover", function (d) { tooltip.text(d.summary); return tooltip.style("visibility", "visible"); })
+        .on("mouseover", function (d) { 
+          if (typeof d.summary == 'undefined') {
+            return tooltip.style("visibility", "invisible"); 
+          } else {
+            tooltip.text(d.summary); return tooltip.style("visibility", "visible"); 
+          }
+        })
         .on("mousemove", function () { return tooltip.style("top", (d3.event.y - 28) + "px").style("left", (d3.event.x) + "px"); })
         .on("mouseout", function () {
           return tooltip.style("visibility", "hidden")
@@ -309,6 +320,9 @@ const VisualizeView = React.forwardRef((props, ref) => {
         .text(function (d) { return d.name.split("|")[0]; })
         .attr("x", 6 + sankey.nodeWidth())
         .attr("text-anchor", "start");
+
+      
+
 
       // the function for moving the nodes
       function dragmove(d) {

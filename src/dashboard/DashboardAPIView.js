@@ -56,7 +56,7 @@ function Copyright() {
   return (
     <Typography variant="body2" color="textSecondary" align="center">
       {'Copyright © '}
-      <Link color="inherit" href="http://ezapi.ai/">
+      <Link color="inherit">
         EzAPI
       </Link>{' '}
       {new Date().getFullYear()}
@@ -244,6 +244,7 @@ export default function DashboardAPIView(props) {
       <AppBar
         position="absolute"
         className={clsx(classes.appBar, open && classes.appBarShift)}
+		style={{ background: '#C72C71' }}
       >
         <Toolbar className={classes.toolbar}>
           <IconButton

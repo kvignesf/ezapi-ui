@@ -69,7 +69,7 @@ function VisualizeAPIFullView(props) {
   return (
     <div>
       <Dialog fullScreen open={props.isFullScreen} onClose={props.handleCloseFullscreen} TransitionComponent={Transition}>
-        <AppBar className={classes.appBar}>
+        <AppBar className={classes.appBar} style={{ background: '#C72C71' }}>
           <Toolbar variant="dense">
             <IconButton edge="start" color="inherit" onClick={props.handleCloseFullscreen} aria-label="close">
               <CloseIcon />

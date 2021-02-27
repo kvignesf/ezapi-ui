@@ -23,6 +23,6 @@ deploy-instance1:
   image: alpine  
   extends: .deploy-instance1
   only: 
-    - master
-  
-  
+    - master   
+
+      

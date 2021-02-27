@@ -33,10 +33,10 @@ export function authenticateWithToken(user) {
     AuthService.logInWithToken(user.token).then(
       authData => {
         console.log("token resp3: ", authData);
-        if (authData.auth === false) {
-          dispatch({ type: AUTHENTICATION_FAILURE, payload: authData.message });
-        } else {
+        if (authData.auth === true) {
           dispatch({ type: AUTHENTICATION_SUCCESS, payload: user });
+        } else {
+          dispatch({ type: AUTHENTICATION_FAILURE, payload: authData.message });
         }
       },
       error => {
@@ -54,8 +54,10 @@ export function authenticateWithLinkedinCode(code) {
     AuthService.logInWithCode(code).then(
       authData => {
         console.log("auth token with user: ", authData);
-        if (authData.token) {
+        if (authData.auth === true) {
           dispatch({ type: AUTHENTICATION_SUCCESS, payload: authData });
+        } else {
+          dispatch({ type: AUTHENTICATION_FAILURE, payload: authData.message });
         }
       },
       error => {

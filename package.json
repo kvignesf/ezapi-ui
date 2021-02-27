@@ -32,7 +32,7 @@
     "eject": "react-scripts eject",
     "build:dev": "env-cmd -f .env.dev react-scripts build",
     "build:prod": "env-cmd -f .env.prod react-scripts build",
-    "serve": "serve -l 3000 -s build"
+    "serve": "serve -s build"
   },
   "eslintConfig": {
     "extends": "react-app"
