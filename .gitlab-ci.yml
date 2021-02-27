@@ -1,8 +1,9 @@
 image: node:alpine
 include:
   project: 'ezapi_poc/infra_poc'
-  file: 'reactuici.yaml'
-  file: 'deploy-reactui-demo-1.yaml'
+  file: 
+    - 'reactuici.yaml'
+    -  'deploy-reactui-demo-1.yaml'
   
 
 
