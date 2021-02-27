@@ -4,15 +4,10 @@ include:
   file: 
     - 'reactuici.yaml'
     - 'deploy-reactui-demo-1.yaml'
-stages:
-  - build
-  - deploy-Demo1
-build:
-  script: 
-    - echo "running the NPM install and building artifact"
-deploy-Demo1:          
-  script: 
-    - echo "Deploy to Demo-1 Instance"    
-
-
+useTemplate:
+  image: node:alpine
+  extends: .build
+useTemplate:
+  image: alpine  
+  extends: .deploy-demo1
 
