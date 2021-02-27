@@ -12,12 +12,12 @@ stages:
   - deploy-demo1
   - deploy-instance1 
 build-dev:
-  stage: build 
+  stage: build-dev 
   extends: .build-dev
   except:
     - master
 build-prod:
-  stage: build 
+  stage: build-prod
   extends: .build-prod
   only:
     - master    
