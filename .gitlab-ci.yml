@@ -1,5 +1,5 @@
 include:
-  project: 'infra_poc'
+  project: 'ezapi_poc/infra_poc'
   file: '.reactici.yml'  
 image: node:alpine
 stages:
