@@ -1,15 +1,17 @@
-include:
-  project: 'ezapi_poc/infra_poc'
-  file: 'reactuici.yaml'
-  file: 'deploy-reactui-demo-1.yaml'  
 image: node:alpine
 stages:
   - build
   - deploy-reactui
 build:
   stage: build
+  include:
+  project: 'ezapi_poc/infra_poc'
+  file: 'reactuici.yaml'
 deploy-reactui:
   stage: deploy-reactui
+  include:
+  project: 'ezapi_poc/infra_poc'
+  file: 'deploy-reactui-demo-1.yaml'
   
 
 
