@@ -1,6 +1,6 @@
 include:
   project: 'ezapi_poc/infra_poc'
-  file: 'reactici.yaml'  
+  file: 'reactuici.yaml'  
 image: node:alpine
 stages:
   - build
