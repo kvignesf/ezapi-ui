@@ -1,55 +1,26 @@
-# Docker Image location on hub.docker.com, its normally your-username/repo-name
 image: node:alpine
-# pipeline will use this image unless specifed in the stage definition
-# Define the stages
+include:
+  project: 'ezapi_poc/infra_poc'
+  file: 
+    - 'reactuici.yaml'
+    - 'deploy-reactui-demo-1.yaml'
+    - 'deploy-reactui-instance-1.yaml'
 stages:
   - build
-  - deploy
-# Define the process for each stage
+  - deploy-demo1
+  - deploy-instance1 
 build:
-  stage: build
-  script:
-    - apk add zip
-    - npm install
-    - CI='false' npm run build:prod
-    - ls -la build
-    - zip build.zip -r ./build
-  artifacts:
-    paths:
-    - build.zip
-deployssh:
-  image: alpine
-  stage: deploy
-
-  script:
-    - apk update
-    - apk add openssh
-# Install the SSH keys
-    - mkdir ~/.ssh
-    - echo "$ID_RSA" >> ~/.ssh/id_rsa
-    - echo "$ID_RSA_PUB" >> ~/.ssh/id_rsa.pub
-    - chmod 600 ~/.ssh/id_rsa
-    - chmod 600 ~/.ssh/id_rsa.pub
-# Start the ssh daemon and add the private key
-    - eval $(ssh-agent -s)
-    - ssh-add ~/.ssh/id_rsa
-    - cat ~/.ssh/id_rsa.pub > ~/.ssh/authorized_keys
-    - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
-# Execute a remote command
-    #- ssh deploy@34.123.13.63 "rm -rf /tmp/build* && exit"
-    # - scp build.zip deploy@34.123.13.63:/tmp/build.zip
-    #- ssh deploy@34.123.13.63 "unzip -d /tmp /tmp/build.zip && exit"
-    #- ssh deploy@34.123.13.63 "cp -rf /tmp/build/* /var/www/apiops_react_ui/build/"
-    #- ssh deploy@34.123.13.63 "sudo /bin/systemctl restart nginx.service"
-    - ssh deploy@35.192.217.208 "rm -rf /tmp/build* && exit"
-    - scp build.zip deploy@35.192.217.208:/tmp/build.zip
-    - ssh deploy@35.192.217.208 "unzip -d /tmp /tmp/build.zip && exit"
-    - ssh deploy@35.192.217.208 "rm -rf /var/www/apiops_react_ui/build/*"
-    - ssh deploy@35.192.217.208 "cp -rf /tmp/build/* /var/www/apiops_react_ui/build/"
-    - ssh deploy@35.192.217.208 "sudo /bin/systemctl restart nginx.service"
-  environment:
-    name: Demo
-    url: https://demo-1.ezapi.ai
-  only:
-    - master    
+  stage: build 
+  extends: .build
+deploy-demo1:  
+  stage: deploy-demo1
+  image: alpine  
+  extends: .deploy-demo1
+deploy-instance1:
+  stage: deploy-instance1
+  image: alpine  
+  extends: .deploy-instance1
+  only: 
+    - master
+  
   
