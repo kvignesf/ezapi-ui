@@ -3,7 +3,13 @@ include:
   file: 'reactuici.yaml'
   file: 'deploy-reactui-demo-1.yaml'  
 image: node:alpine
-
+stages:
+  - build
+  - deploy-reactui
+build:
+  stage: build
+deploy-reactui:
+  stage: deploy-reactui
   
 
 
