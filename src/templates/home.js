@@ -199,7 +199,7 @@ export default function Home() {
             <Link
               variant="button"
               color="inherit"
-              href="/product"
+              
               className={classes.link}
             >
               Product
@@ -207,7 +207,7 @@ export default function Home() {
             <Link
               variant="button"
               color="inherit"
-              href="/home"
+              
               className={classes.link}
             >
               Company
