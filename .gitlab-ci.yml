@@ -1,4 +1,11 @@
 image: node:alpine
+before_script:
+  - 'echo \REACT_APP_API_URL\ = \"$APIURL\">> .env.dev'
+  - 'echo \REACT_APP_LINKEDIN_CLIENT_ID\ = \"$LINKEDINCLIENTID\">> .env.dev'
+  -  cat .env.dev
+  - 'echo \REACT_APP_API_URL\ = \"$PAPIURL\">> .env.prod'
+  - 'echo \REACT_APP_LINKEDIN_CLIENT_ID\ = \"$PLINKEDINCLIENTID\">> .env.prod'
+  -  cat .env.prod
 include:
   project: 'ezapi_poc/infra_poc'
   file: 
