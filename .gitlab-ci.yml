@@ -12,20 +12,20 @@ before_script:
 include:
   project: 'ezapi_poc/infra_poc'
   file: 
-    - 'reactuicidev.yaml'
+    - 'reactuicitest.yml'
     - 'reactuiciprod.yaml'
     - 'deploy-reactui-test-1.yaml'
     - 'deploy-reactui-demo-1.yaml'
     - 'deploy-reactui-instance-1.yaml'
 stages:
-  - build-dev
+  - build-test
   - build-prod 
   - deploy-test1
   - deploy-demo1
   - deploy-instance1 
-build-dev:
-  stage: build-dev 
-  extends: .build-dev
+build-test:
+  stage: build-test 
+  extends: .build-test
   except:
     - master
 build-prod:
