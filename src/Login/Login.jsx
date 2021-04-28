@@ -14,6 +14,7 @@ const Login = () => {
 
   const handleSuccess = (data) => {
     setLinkedInToken(data?.code);
+    // TODO - Api call to get the user details
     history.replace(routes.projects);
   };
 
