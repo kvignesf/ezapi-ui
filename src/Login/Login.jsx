@@ -5,23 +5,19 @@ import linkedin from 'react-linkedin-login-oauth2/assets/linkedin.png';
 
 import Logo from '../static/images/logo/jpg.jpg';
 import Constants from '../shared/constants';
+import routes from '../shared/routes';
+import { setLinkedInToken } from '../shared/storage';
+import { useHistory } from 'react-router-dom';
 
 const Login = () => {
+  const history = useHistory();
+
   const handleSuccess = (data) => {
-    console.log('LinkedIn login success', data);
-    this.setState({
-      code: data.code,
-      errorMessage: '',
-    });
+    setLinkedInToken(data?.code);
+    history.replace(routes.projects);
   };
 
-  const handleFailure = (error) => {
-    console.log('LinkedIn login failure', error);
-    this.setState({
-      code: '',
-      errorMessage: error.errorMessage,
-    });
-  };
+  const handleFailure = (error) => {};
 
   return (
     <div className='h-screen flex justify-center items-center'>
@@ -37,8 +33,9 @@ const Login = () => {
           clientId={Constants.linkedClientId}
           onFailure={handleFailure}
           onSuccess={handleSuccess}
-          redirectUri={Constants.redirectUri}
-          scope='r_liteprofile%20r_emailaddress%20w_member_social'
+          redirectUri={encodeURIComponent(`${window.location.origin}/linkedin`)}
+          redirectPath={'/signin'}
+          scope='r_liteprofile r_emailaddress'
         >
           <img
             src={linkedin}

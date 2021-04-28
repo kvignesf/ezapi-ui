@@ -1,11 +1,14 @@
+import _ from 'lodash';
 import React from 'react';
 import { Redirect, Route } from 'react-router';
 
 import routes from '../routes';
+import { getLinkedInToken } from '../storage';
 
 const PrivateRoute = ({ component: Component, ...rest }) => {
   const isAuthenticated = () => {
-    return true;
+    const token = getLinkedInToken();
+    return token && !_.isEmpty(token);
   };
 
   return (
@@ -14,7 +17,7 @@ const PrivateRoute = ({ component: Component, ...rest }) => {
       render={(props) => {
         return (
           <>
-            {isAuthenticated() || (isLoggingOut ?? false) ? (
+            {isAuthenticated() ? (
               <Component {...props} />
             ) : (
               <Redirect
