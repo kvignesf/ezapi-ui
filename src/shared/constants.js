@@ -8,14 +8,15 @@
   redirectUri: "https://instance-1.ezapi.ai/linkedin",
 }; */
 
-export const Constants = {
-  apiURL: "http://ezapi.ai",
+const Constants = {
+  apiURL: 'http://ezapi.ai',
   localURL: process.env.REACT_APP_API_URL,
-  USER_DETAILS: "LOGGEDIN-USER-DETAILS",
-  linkedinApiUrl: "https://www.linkedin.com/oauth/v2",
+  linkedinApiUrl: 'https://www.linkedin.com/oauth/v2',
   linkedClientId: process.env.REACT_APP_LINKEDIN_CLIENT_ID,
   linkedClientSecret: process.env.REACT_APP_LINKEDIN_CLIENT_SECRET,
-  redirectUri: "/linkedin",
-  linkedin_profile: "r_liteprofile",
-  linkedin_state: "987654321",
+  redirectUri: '/linkedin',
+  linkedin_profile: 'r_liteprofile',
+  linkedin_state: '987654321',
 };
+
+export default Constants;
