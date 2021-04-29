@@ -96,11 +96,29 @@ h6,
 .text-mediumLabel {
   @apply font-semibold;
   font-size: 0.875rem;
-  line-height: 1.42;
+  line-height: 1.375;
 }
 
 .text-lead2 {
   @apply font-medium;
   font-size: 0.875rem;
   line-height: 1.42;
+}
+
+.text-overline1 {
+  @apply font-medium;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.text-overline2 {
+  @apply font-medium;
+  font-size: 0.875rem;
+  line-height: 1.375;
+}
+
+.text-overline3 {
+  @apply font-medium;
+  font-size: 0.75rem;
+  line-height: 1.5;
 }
