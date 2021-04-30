@@ -1,16 +1,24 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import Card from '@material-ui/core/Card';
 import { LinkedIn } from 'react-linkedin-login-oauth2';
 import linkedin from 'react-linkedin-login-oauth2/assets/linkedin.png';
+import { useHistory } from 'react-router-dom';
+import { useRecoilValue, useSetRecoilState } from 'recoil';
 
-import Logo from '../static/images/logo/jpg.jpg';
+import Logo from '../static/images/logo/png.png';
 import Constants from '../shared/constants';
 import routes from '../shared/routes';
 import { setLinkedInToken } from '../shared/storage';
-import { useHistory } from 'react-router-dom';
+import { isUserLoggedIn } from '../shared/utils';
 
 const Login = () => {
   const history = useHistory();
+
+  // useEffect(() => {
+  //   if (isUserLoggedIn()) {
+  //     history.replace(routes.projects);
+  //   }
+  // }, []);
 
   const handleSuccess = (data) => {
     setLinkedInToken(data?.code);
@@ -18,7 +26,9 @@ const Login = () => {
     history.replace(routes.projects);
   };
 
-  const handleFailure = (error) => {};
+  const handleFailure = (error) => {
+    setLinkedInToken(null);
+  };
 
   return (
     <div className='h-screen flex justify-center items-center'>
