@@ -14,7 +14,12 @@ module.exports = {
           gray7: '#F1F2F6',
           gray8: '#F9FAFC',
         },
-        brand: { primary: '#C72C71', secondary: '#2C71C7', green: '#71C72C' },
+        brand: {
+          primary: '#C72C71',
+          primarySubtle: '#FFEFF1',
+          secondary: '#2C71C7',
+          green: '#71C72C',
+        },
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],

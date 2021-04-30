@@ -7,20 +7,20 @@ import {
   MuiThemeProvider,
 } from '@material-ui/core';
 import CloseIcon from '@material-ui/icons/Close';
-import { createMuiTheme } from '@material-ui/core/styles';
-import classNames from 'classnames';
-import { useRecoilValue } from 'recoil';
+import { useRecoilState } from 'recoil';
 
 import AppIcon from '../shared/components/AppIcon';
 import { PrimaryButton, TextButton } from '../shared/components/AppButton';
+import { isEmailValid } from '../shared/utils';
 import ProjectDetails from './ProjectDetails';
-import InviteCollaborators from './InviteCollaborators';
+import InviteCollaborators from '../shared/components/InviteCollaborators';
 import projectAtom from './projectAtom';
 import _ from 'lodash';
 
 const AddProject = ({ onClose }) => {
   const [currentTab, setTab] = useState(0);
-  const projectDetails = useRecoilValue(projectAtom);
+  const [projectDetails, setProjectDetails] = useRecoilState(projectAtom);
+
   const formRef = useRef();
 
   const handleNext = () => {
@@ -42,6 +42,24 @@ const AddProject = ({ onClose }) => {
       setTab(0);
       return;
     }
+  };
+
+  const handleCollaboratorsChange = (collaborators) => {
+    setProjectDetails((currProjectDetails) => {
+      const updatedProjectDetails = _.cloneDeep(currProjectDetails);
+
+      updatedProjectDetails.collaborators = [];
+      collaborators.forEach((collaborator) => {
+        if (
+          !_.find(updatedProjectDetails.collaborators, collaborator) &&
+          isEmailValid(collaborator)
+        ) {
+          updatedProjectDetails.collaborators.push(collaborator);
+        }
+      });
+
+      return updatedProjectDetails;
+    });
   };
 
   return (
@@ -80,8 +98,11 @@ const AddProject = ({ onClose }) => {
             <ProjectDetails formRef={formRef} />
           </div>
         ) : (
-          <div>
-            <InviteCollaborators />
+          <div className='h-80 pt-4 mb-4'>
+            <InviteCollaborators
+              handleChange={handleCollaboratorsChange}
+              collaborators={projectDetails?.collaborators}
+            />
           </div>
         )}
       </div>

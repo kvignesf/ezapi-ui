@@ -28,6 +28,7 @@
     "react-sage": "^0.2.3",
     "react-scripts": "^4.0.3",
     "react-smooth-scrollbar": "^8.0.6",
+    "react-timeago": "^5.2.0",
     "recoil": "^0.2.0",
     "serve": "^11.3.2",
     "smooth-scrollbar": "^8.6.1",

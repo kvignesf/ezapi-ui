@@ -15,6 +15,7 @@ import routes from '../shared/routes';
 import AppIcon from '../shared/components/AppIcon';
 import AddProject from '../AddProject';
 import projectAtom, { defaultState } from '../AddProject/projectAtom';
+import InitialsAvatar from '../shared/components/InitialsAvatar';
 
 const useStyles = makeStyles({
   selectedItem: {
@@ -101,19 +102,18 @@ const Dashboard = ({ selectedIndex, children }) => {
         </div>
 
         {/* Initials logo */}
-        <div
-          className='bg-white'
+        <InitialsAvatar
+          firstName={'as'}
+          lastName={'bb'}
           style={{
-            borderRadius: '9999px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
+            // borderRadius: '9999px',
+            // display: 'flex',
+            // alignItems: 'center',
+            // justifyContent: 'center',
             marginRight: '0.5rem',
-            padding: '0.5rem',
+            // padding: '0.5rem',
           }}
-        >
-          <p className='text-overline1 text-brand-primary'>AS</p>
-        </div>
+        />
 
         {/* Name */}
         <p className='text-overline2 text-white mr-0'>Aravind</p>

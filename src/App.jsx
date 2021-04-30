@@ -10,7 +10,6 @@ import NotFound from './shared/components/NotFound';
 import PrivateRoute from './shared/components/PrivateRoute';
 import routes from './shared/routes';
 import Colors from './shared/colors';
-import { isLoggedIn } from './shared/atoms/userAtom';
 import Login from './Login';
 import Projects from './Projects';
 import Landing from './Landing';
