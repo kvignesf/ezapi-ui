@@ -34,6 +34,8 @@ const ExistingCollaborator = ({ collab }) => {
 const ModifyCollaborators = ({ invitedCollaborators, onClose }) => {
   const handleCollaboratorsChange = (newCollabs) => {};
 
+  const handleSendInvite = () => {};
+
   return (
     <div className='p-4'>
       <div className='flex flex-row justify-between items-center'>
@@ -50,7 +52,9 @@ const ModifyCollaborators = ({ invitedCollaborators, onClose }) => {
           handleChange={handleCollaboratorsChange}
           style={{ width: '100%', marginRight: '1rem' }}
         />
-        <PrimaryButton classes='self-end'>Send Invite</PrimaryButton>
+        <PrimaryButton classes='self-end' onClick={handleSendInvite}>
+          Send Invite
+        </PrimaryButton>
       </div>
 
       {!_.isEmpty(invitedCollaborators) ? (
