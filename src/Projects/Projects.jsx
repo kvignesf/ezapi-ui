@@ -4,6 +4,9 @@ import GetAppIcon from '@material-ui/icons/GetApp';
 import TimeAgo from 'react-timeago';
 import _ from 'lodash';
 import classNames from 'classnames';
+import Menu from '@material-ui/core/Menu';
+import MenuItem from '@material-ui/core/MenuItem';
+import Fade from '@material-ui/core/Fade';
 
 import Dashboard from '../Dashboard';
 import AppIcon from '../shared/components/AppIcon';
@@ -12,6 +15,8 @@ import AddProject from '../AddProject';
 import InviteCollaborators from '../shared/components/InviteCollaborators';
 import ModifyCollaborators from './ModifyCollaborators/ModifyCollaborators';
 import InitialsAvatar from '../shared/components/InitialsAvatar';
+import Colors from '../shared/colors';
+import RenameProject from './RenameProject/RenameProject';
 
 const MembersImages = ({ members, ...rest }) => {
   return (
@@ -55,6 +60,9 @@ const Content = () => {
     type: null,
     data: null,
   });
+
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const open = Boolean(anchorEl);
 
   const projects = [
     {
@@ -114,6 +122,14 @@ const Content = () => {
     });
   };
 
+  const showRenameProjectDialog = (project) => {
+    setDialog({
+      show: true,
+      type: 'rename-project',
+      data: project,
+    });
+  };
+
   const handleCloseDialog = () => {
     setDialog({
       show: false,
@@ -121,6 +137,22 @@ const Content = () => {
       type: null,
     });
   };
+
+  const handleOnOptionsClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleOnView = (project) => {};
+
+  const handleOnInvite = (project) => {
+    showMembersDialog(project?.members);
+  };
+
+  const handleOnRename = (project) => {
+    showRenameProjectDialog(project);
+  };
+
+  const handleOnDeleteApi = (project) => {};
 
   return (
     <div className='p-3'>
@@ -138,6 +170,10 @@ const Content = () => {
             onClose={handleCloseDialog}
             invitedCollaborators={dialog?.data}
           />
+        )}
+
+        {dialog?.type === 'rename-project' && (
+          <RenameProject onClose={handleCloseDialog} project={dialog?.data} />
         )}
       </Dialog>
 
@@ -169,10 +205,58 @@ const Content = () => {
               </td>
 
               <td align='right'>
-                <AppIcon>
+                <AppIcon onClick={handleOnOptionsClick}>
                   <MoreVertIcon />
                 </AppIcon>
               </td>
+
+              <Menu
+                id='fade-menu'
+                anchorEl={anchorEl}
+                keepMounted
+                open={open}
+                onClose={() => {
+                  setAnchorEl(null);
+                }}
+                TransitionComponent={Fade}
+                style={{ borderRadius: '1rem' }}
+              >
+                <MenuItem
+                  onClick={() => {
+                    setAnchorEl(null);
+                    handleOnView(project);
+                  }}
+                >
+                  View
+                </MenuItem>
+
+                <MenuItem
+                  onClick={() => {
+                    setAnchorEl(null);
+                    handleOnInvite(project);
+                  }}
+                >
+                  Invite
+                </MenuItem>
+
+                <MenuItem
+                  onClick={() => {
+                    setAnchorEl(null);
+                    handleOnRename(project);
+                  }}
+                >
+                  Rename
+                </MenuItem>
+
+                <MenuItem
+                  onClick={() => {
+                    setAnchorEl(null);
+                  }}
+                  style={{ color: Colors.accent.red }}
+                >
+                  Delete API
+                </MenuItem>
+              </Menu>
             </tr>
           );
         })}
