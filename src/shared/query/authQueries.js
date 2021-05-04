@@ -15,9 +15,7 @@ const login = async ({ linkedInAuthToken }) => {
 
   try {
     const { data } = await client.post(endpoint.login, {
-      data: {
-        code: linkedInAuthToken,
-      },
+      code: linkedInAuthToken,
     });
     return data;
   } catch (error) {

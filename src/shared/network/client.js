@@ -3,7 +3,7 @@ import axios from "axios";
 import { getAccessToken, setAccessToken, clearSession } from "../storage";
 import routes from "../routes";
 
-const baseUrl = "/node";
+const baseUrl = "node";
 
 export const endpoint = Object.freeze({
   login: "/auth",
@@ -16,6 +16,8 @@ const client = axios.create({
   timeout: 10000,
   responseType: "json",
 });
+
+console.log("client.defaults.baseURL", client.defaults.baseURL);
 
 // Setting token for requests
 client.interceptors.request.use((request) => {
