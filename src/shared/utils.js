@@ -21,8 +21,8 @@ export const getApiError = (error) => {
     const url = error?.config?.url;
 
     if (url) {
-      if (url === endpoint.login || url.includes("trusted-release")) {
-        return new Error("User Id or the password is not matching");
+      if (url === endpoint.login) {
+        return new Error("Failed to get the user details, please try again.");
       } else if (url === endpoint.addUser) {
         const message = error?.response?.data?.error?.message;
 

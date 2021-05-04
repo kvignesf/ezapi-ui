@@ -1,3 +1,4 @@
+import axios from "axios";
 import _ from "lodash";
 import { useMutation, useQueryClient } from "react-query";
 import { useHistory } from "react-router-dom";
@@ -8,7 +9,7 @@ import routes from "../routes";
 import { clearSession, setAccessToken } from "../storage";
 import { getApiError } from "../utils";
 
-const login = async ({ linkedInAuthToken }) => {
+const login = async ({ linkedInAuthToken, redirect_uri }) => {
   if (!linkedInAuthToken || _.isEmpty(linkedInAuthToken)) {
     throw Error("Need to login using LinkedIn");
   }
@@ -16,6 +17,7 @@ const login = async ({ linkedInAuthToken }) => {
   try {
     const { data } = await client.post(endpoint.login, {
       code: linkedInAuthToken,
+      redirect_uri: redirect_uri,
     });
     return data;
   } catch (error) {

@@ -17,9 +17,9 @@ import { isUserLoggedIn } from "../shared/utils";
 
 const Login = () => {
   const history = useHistory();
+  const redirect_uri = `${window.location.origin}/linkedin`;
 
   const {
-    data: loginData,
     error: loginError,
     isLoading: isLoggingIn,
     isSuccess: isLoginSuccess,
@@ -29,8 +29,7 @@ const Login = () => {
 
   const handleSuccess = (data) => {
     if (data?.code && !_.isEmpty(data?.code)) {
-      login({ linkedInAuthToken: data?.code });
-      setAccessToken(data?.code); // TODO - Remove
+      login({ linkedInAuthToken: data?.code, redirect_uri: redirect_uri });
     }
   };
 
@@ -45,8 +44,7 @@ const Login = () => {
     setAccessToken(null);
   };
 
-  // if (isLoginSuccess&& !isLoggingIn && !loginError) {
-  if ((isLoginSuccess || loginError) && !isLoggingIn) {
+  if (isLoginSuccess && !isLoggingIn && !loginError) {
     history.replace(routes.projects);
     return null;
   }
@@ -67,9 +65,7 @@ const Login = () => {
               clientId={Constants.linkedClientId}
               onFailure={handleFailure}
               onSuccess={handleSuccess}
-              redirectUri={encodeURIComponent(
-                `${window.location.origin}/linkedin`
-              )}
+              redirectUri={encodeURIComponent(redirect_uri)}
               redirectPath={"/signin"}
               scope='r_liteprofile r_emailaddress'
             >

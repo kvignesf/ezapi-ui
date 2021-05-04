@@ -10,8 +10,8 @@ import { getApiError } from "../shared/utils";
 
 const getProjects = async () => {
   try {
-    // const { data } = await client.get(endpoint.projects);
-    // return data;
+    const { data } = await client.get(endpoint.projects);
+    return data;
     throw Error("Something failed");
   } catch (error) {
     throw getApiError(error);
