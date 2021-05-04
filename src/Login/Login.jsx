@@ -45,7 +45,8 @@ const Login = () => {
     setAccessToken(null);
   };
 
-  if (isLoginSuccess && !isLoggingIn && !loginError) {
+  // if (isLoginSuccess&& !isLoggingIn && !loginError) {
+  if ((isLoginSuccess || loginError) && !isLoggingIn) {
     history.replace(routes.projects);
     return null;
   }
