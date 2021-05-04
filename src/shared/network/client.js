@@ -1,19 +1,20 @@
-import axios from 'axios';
+import axios from "axios";
 
-import { getAccessToken, setAccessToken, clearSession } from '../storage';
-import routes from '../routes';
+import { getAccessToken, setAccessToken, clearSession } from "../storage";
+import routes from "../routes";
 
-const baseUrl = 'http://52.14.145.61:5000/api/v1';
+const baseUrl = "test-1.ezapi.ai/node";
 
 export const endpoint = Object.freeze({
-  login: '/auth',
-  logout: '/auth',
+  login: "/auth",
+  logout: "/auth",
+  projects: "/projects",
 });
 
 const client = axios.create({
   baseURL: baseUrl,
   timeout: 10000,
-  responseType: 'json',
+  responseType: "json",
 });
 
 // Setting token for requests
@@ -22,7 +23,7 @@ client.interceptors.request.use((request) => {
   const url = request.url;
 
   if (accessToken && url && url !== endpoint.login) {
-    request.headers['Authorization'] = `Bearer ${accessToken}`;
+    request.headers["Authorization"] = `Bearer ${accessToken}`;
   }
   return request;
 });

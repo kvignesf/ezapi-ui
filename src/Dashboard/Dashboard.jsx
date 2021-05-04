@@ -1,35 +1,42 @@
-import React, { useState } from 'react';
-import classNames from 'classnames';
-import { useHistory } from 'react-router-dom';
-import { Dialog, makeStyles } from '@material-ui/core/index';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import DashboardSharpIcon from '@material-ui/icons/DashboardSharp';
-import { List, ListItem } from '@material-ui/core';
-import AddIcon from '@material-ui/icons/Add';
-import { useRecoilState } from 'recoil';
+import React, { useState } from "react";
+import classNames from "classnames";
+import { useHistory } from "react-router-dom";
+import {
+  Dialog,
+  Fade,
+  makeStyles,
+  Menu,
+  MenuItem,
+} from "@material-ui/core/index";
+import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
+import ListItemIcon from "@material-ui/core/ListItemIcon";
+import DashboardSharpIcon from "@material-ui/icons/DashboardSharp";
+import { List, ListItem } from "@material-ui/core";
+import AddIcon from "@material-ui/icons/Add";
+import { useRecoilState } from "recoil";
 
-import Logo from '../static/images/logo/svg.svg';
-import Colors from '../shared/colors';
-import routes from '../shared/routes';
-import AppIcon from '../shared/components/AppIcon';
-import AddProject from '../AddProject';
-import projectAtom, { defaultState } from '../AddProject/projectAtom';
-import InitialsAvatar from '../shared/components/InitialsAvatar';
+import Logo from "../static/images/logo/svg.svg";
+import Colors from "../shared/colors";
+import routes from "../shared/routes";
+import AppIcon from "../shared/components/AppIcon";
+import AddProject from "../AddProject";
+import projectAtom, { defaultState } from "../AddProject/projectAtom";
+import InitialsAvatar from "../shared/components/InitialsAvatar";
+import { useLogout } from "../shared/query/authQueries";
 
 const useStyles = makeStyles({
   selectedItem: {
     background: Colors.brand.primarySubtle,
     borderLeft: `5px solid ${Colors.brand.primary}`,
-    borderLeftWidth: '5px',
-    borderTopRightRadius: '5px',
-    borderBottomRightRadius: '5px',
+    borderLeftWidth: "5px",
+    borderTopRightRadius: "5px",
+    borderBottomRightRadius: "5px",
   },
   root: {
-    '&$selected': {
+    "&$selected": {
       backgroundColor: Colors.brand.primarySubtle,
-      '&:hover': {
-        backgroundColor: 'none',
+      "&:hover": {
+        backgroundColor: "none",
       },
     },
   },
@@ -43,9 +50,9 @@ const Dashboard = ({ selectedIndex, children }) => {
     show: false,
     data: null,
   });
+  const [profileMenuAnchorEl, setProfilemenuAnchorEl] = useState(false);
   const [projectState, setProjectState] = useRecoilState(projectAtom);
-
-  const handleOptionsClick = () => {};
+  const { isLoading: isLoggingOut, mutate: logout } = useLogout();
 
   const handleSideMenuItemClick = (index) => {
     if (index !== selectedIndex) {
@@ -73,23 +80,36 @@ const Dashboard = ({ selectedIndex, children }) => {
     });
   };
 
+  const handleProfileMenuClick = (event) => {
+    setProfilemenuAnchorEl(event?.currentTarget);
+  };
+
+  const handleOnLogout = () => {
+    logout();
+  };
+
   return (
     <div className='flex flex-col'>
       <Dialog
         onClose={handleCloseDialog}
         aria-labelledby='dashboard-dialog'
-        open={dialog?.show ?? false}
+        open={isLoggingOut || (dialog?.show ?? false)}
         fullWidth
         PaperProps={{
           style: { borderRadius: 8 },
         }}
+        disableBackdropClick
       >
-        <AddProject onClose={handleCloseDialog} />
+        {dialog?.type === "add-project" && (
+          <AddProject onClose={handleCloseDialog} />
+        )}
+
+        {isLoggingOut && <div className='p-4'>Logging you out ...</div>}
       </Dialog>
 
       <header
         className='fixed w-full top-0 bg-brand-primary flex flex-row p-4 items-center'
-        style={{ height: '56px' }}
+        style={{ height: "56px" }}
       >
         {/* EZAPI logo */}
         <div className='w-full'>
@@ -97,20 +117,20 @@ const Dashboard = ({ selectedIndex, children }) => {
             src={Logo}
             alt='ezapi logo'
             className='bg-white'
-            style={{ height: '28px', width: '28px' }}
+            style={{ height: "28px", width: "28px" }}
           />
         </div>
 
         {/* Initials logo */}
         <InitialsAvatar
-          firstName={'as'}
-          lastName={'bb'}
+          firstName={"as"}
+          lastName={"bb"}
           style={{
             // borderRadius: '9999px',
             // display: 'flex',
             // alignItems: 'center',
             // justifyContent: 'center',
-            marginRight: '0.5rem',
+            marginRight: "0.5rem",
             // padding: '0.5rem',
           }}
         />
@@ -121,14 +141,36 @@ const Dashboard = ({ selectedIndex, children }) => {
         {/* Options */}
         <AppIcon
           aria-label='profile options'
-          style={{ color: 'white' }}
-          onClick={handleOptionsClick}
+          style={{ color: "white" }}
+          onClick={handleProfileMenuClick}
         >
           <ExpandMoreIcon />
         </AppIcon>
+
+        <Menu
+          id='profile-menu'
+          anchorEl={profileMenuAnchorEl}
+          keepMounted
+          open={Boolean(profileMenuAnchorEl)}
+          onClose={() => {
+            setProfilemenuAnchorEl(null);
+          }}
+          TransitionComponent={Fade}
+          style={{ borderRadius: "1rem" }}
+        >
+          <MenuItem
+            onClick={() => {
+              setProfilemenuAnchorEl(null);
+              handleOnLogout();
+            }}
+            style={{ color: Colors.accent.red }}
+          >
+            Logout
+          </MenuItem>
+        </Menu>
       </header>
 
-      <section className='h-full flex flex-row' style={{ marginTop: '56px' }}>
+      <section className='h-full flex flex-row' style={{ marginTop: "56px" }}>
         <div className='h-full w-52 fixed left-0 border-r-2 border-gray-100'>
           <List>
             <ListItem
@@ -138,32 +180,31 @@ const Dashboard = ({ selectedIndex, children }) => {
                 handleSideMenuItemClick(0);
               }}
               style={{
-                padding: '1rem',
+                padding: "1rem",
                 background:
-                  selectedIndex === 0 ? Colors.brand.primarySubtle : 'white',
+                  selectedIndex === 0 ? Colors.brand.primarySubtle : "white",
               }}
               className={selectedIndex === 0 ? styles.selectedItem : null}
-              disableFocusRipple
               disableTouchRipple
             >
               <ListItemIcon
                 style={{
-                  minWidth: '0',
-                  marginRight: '1rem',
+                  minWidth: "0",
+                  marginRight: "1rem",
                 }}
               >
                 <AddIcon
                   className={`${classNames({
-                    'text-brand-primary': selectedIndex === 0,
-                    'text-neutral-gray2': selectedIndex !== 0,
+                    "text-brand-primary": selectedIndex === 0,
+                    "text-neutral-gray2": selectedIndex !== 0,
                   })}`}
-                  style={selectedIndex === 0 ? {} : { color: 'grey' }}
+                  style={selectedIndex === 0 ? {} : { color: "grey" }}
                 />
               </ListItemIcon>
               <p
                 className={`text-overline2 ${classNames({
-                  'text-brand-primary': selectedIndex === 0,
-                  'text-neutral-gray2': selectedIndex !== 0,
+                  "text-brand-primary": selectedIndex === 0,
+                  "text-neutral-gray2": selectedIndex !== 0,
                 })}`}
               >
                 Create New API
@@ -177,25 +218,24 @@ const Dashboard = ({ selectedIndex, children }) => {
                 handleSideMenuItemClick(1);
               }}
               style={{
-                padding: '1rem',
+                padding: "1rem",
               }}
               className={selectedIndex === 1 ? styles.selectedItem : null}
               classes={{ root: styles.root, selected: styles.selected }}
-              disableFocusRipple
               disableTouchRipple
             >
-              <ListItemIcon style={{ minWidth: '0', marginRight: '1rem' }}>
+              <ListItemIcon style={{ minWidth: "0", marginRight: "1rem" }}>
                 <DashboardSharpIcon
                   className={`${classNames({
-                    'text-brand-primary': selectedIndex === 1,
-                    'text-neutral-gray2': selectedIndex !== 1,
+                    "text-brand-primary": selectedIndex === 1,
+                    "text-neutral-gray2": selectedIndex !== 1,
                   })}`}
                 />
               </ListItemIcon>
               <p
                 className={`text-overline2 ${classNames({
-                  'text-brand-primary': selectedIndex === 1,
-                  'text-neutral-gray2': selectedIndex !== 1,
+                  "text-brand-primary": selectedIndex === 1,
+                  "text-neutral-gray2": selectedIndex !== 1,
                 })}`}
               >
                 Dashboard
@@ -204,7 +244,9 @@ const Dashboard = ({ selectedIndex, children }) => {
           </List>
         </div>
         <div className='ml-52 w-full' style={{ height: `calc(100vh - 56px)` }}>
-          {children}
+          {React.cloneElement(children, {
+            showCreateProjectDialog: showAddProjectDialog,
+          })}
         </div>
       </section>
     </div>

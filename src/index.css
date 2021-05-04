@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -45,14 +45,14 @@ h5,
 .text-subtitle1 {
   @apply font-medium;
   font-size: 1.25rem;
-  line-height: 1.4;
+  line-height: 1.375;
 }
 
 h6,
 .text-subtitle2 {
   @apply font-medium;
   font-size: 1.125rem;
-  line-height: 1.44;
+  line-height: 1.375;
 }
 
 .text-body1 {

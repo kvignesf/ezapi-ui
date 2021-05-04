@@ -1,18 +1,16 @@
-import _ from 'lodash';
-import { useMutation, useQueryClient } from 'react-query';
-import { useHistory } from 'react-router-dom';
+import _ from "lodash";
+import { useMutation, useQueryClient } from "react-query";
+import { useHistory } from "react-router-dom";
 
-import client, { endpoint } from '../network/client';
-import { queries } from '../network/queryClient';
-import routes from '../routes';
-import { clearSession, getLinkedInToken } from '../storage';
-import { getApiError } from '../utils';
+import client, { endpoint } from "../network/client";
+import { clearQueryCache, queries } from "../network/queryClient";
+import routes from "../routes";
+import { clearSession, setAccessToken } from "../storage";
+import { getApiError } from "../utils";
 
-const login = async () => {
-  const linkedInAuthToken = getLinkedInToken();
-
+const login = async ({ linkedInAuthToken }) => {
   if (!linkedInAuthToken || _.isEmpty(linkedInAuthToken)) {
-    throw Error('Need to login using LinkedIn');
+    throw Error("Need to login using LinkedIn");
   }
 
   try {
@@ -31,6 +29,7 @@ export const useLogin = () => {
   const mutation = useMutation(login, {
     onSuccess: (data) => {
       if (data) {
+        setAccessToken(data?.code);
       }
     },
   });

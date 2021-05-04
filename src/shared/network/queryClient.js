@@ -1,6 +1,8 @@
-import { QueryClient } from 'react-query';
+import { QueryClient } from "react-query";
 
-export const queries = {};
+export const queries = {
+  projects: "projects",
+};
 
 const queryClient = new QueryClient({
   defaultOptions: {
