@@ -59,7 +59,7 @@ const RenameProject = ({ project, onClose }) => {
                   Cancel
                 </TextButton>
 
-                <PrimaryButton type='submit'>Next</PrimaryButton>
+                <PrimaryButton type='submit'>Save</PrimaryButton>
               </div>
             </Form>
           </>

@@ -13,11 +13,12 @@ export const PrimaryButton = ({
   ...rest
 }) => {
   let classnames = classNames(
-    `rounded-md px-6 py-2 w-min flex items-center ${classes}`,
+    `rounded-md px-6 py-2 w-min flex items-center`,
     {
       'cursor-pointer bg-brand-secondary hover:opacity-80': !disabled,
       'bg-neutral-gray4': disabled,
-    }
+    },
+    classes
   );
 
   return (

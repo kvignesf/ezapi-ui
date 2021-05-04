@@ -5,7 +5,7 @@ import { BrowserRouter, Route, Switch, Redirect } from 'react-router-dom';
 import { LinkedInPopUp } from 'react-linkedin-login-oauth2';
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core';
 
-import queryClient from './shared/queryClient';
+import queryClient from './shared/network/queryClient';
 import NotFound from './shared/components/NotFound';
 import PrivateRoute from './shared/components/PrivateRoute';
 import routes from './shared/routes';

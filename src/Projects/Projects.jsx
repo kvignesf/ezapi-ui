@@ -17,6 +17,7 @@ import ModifyCollaborators from './ModifyCollaborators/ModifyCollaborators';
 import InitialsAvatar from '../shared/components/InitialsAvatar';
 import Colors from '../shared/colors';
 import RenameProject from './RenameProject/RenameProject';
+import DeleteProject from './DeleteProject/DeleteProject';
 
 const MembersImages = ({ members, ...rest }) => {
   return (
@@ -130,6 +131,14 @@ const Content = () => {
     });
   };
 
+  const showDeleteProjectDialog = (project) => {
+    setDialog({
+      show: true,
+      type: 'del-project',
+      data: project,
+    });
+  };
+
   const handleCloseDialog = () => {
     setDialog({
       show: false,
@@ -152,7 +161,9 @@ const Content = () => {
     showRenameProjectDialog(project);
   };
 
-  const handleOnDeleteApi = (project) => {};
+  const handleOnDeleteApi = (project) => {
+    showDeleteProjectDialog(project);
+  };
 
   return (
     <div className='p-3'>
@@ -174,6 +185,10 @@ const Content = () => {
 
         {dialog?.type === 'rename-project' && (
           <RenameProject onClose={handleCloseDialog} project={dialog?.data} />
+        )}
+
+        {dialog?.type === 'del-project' && (
+          <DeleteProject onClose={handleCloseDialog} project={dialog?.data} />
         )}
       </Dialog>
 
@@ -251,6 +266,7 @@ const Content = () => {
                 <MenuItem
                   onClick={() => {
                     setAnchorEl(null);
+                    handleOnDeleteApi(project);
                   }}
                   style={{ color: Colors.accent.red }}
                 >

@@ -14,12 +14,6 @@ import { isUserLoggedIn } from '../shared/utils';
 const Login = () => {
   const history = useHistory();
 
-  // useEffect(() => {
-  //   if (isUserLoggedIn()) {
-  //     history.replace(routes.projects);
-  //   }
-  // }, []);
-
   const handleSuccess = (data) => {
     setLinkedInToken(data?.code);
     // TODO - Api call to get the user details
