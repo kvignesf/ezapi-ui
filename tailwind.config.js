@@ -20,6 +20,9 @@ module.exports = {
           secondary: '#2C71C7',
           green: '#71C72C',
         },
+        accent: {
+          red: '#E53535',
+        },
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],

@@ -4,12 +4,10 @@ import { Redirect, Route } from 'react-router';
 
 import routes from '../routes';
 import { getLinkedInToken } from '../storage';
+import { isUserLoggedIn } from '../utils';
 
 const PrivateRoute = ({ component: Component, ...rest }) => {
-  const isAuthenticated = () => {
-    const token = getLinkedInToken();
-    return token && !_.isEmpty(token);
-  };
+  const isAuthenticated = () => isUserLoggedIn();
 
   return (
     <Route

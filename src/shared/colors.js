@@ -15,6 +15,9 @@ const Colors = Object.freeze({
     secondary: '#2C71C7',
     green: '#71C72C',
   },
+  accent: {
+    red: '#E53535',
+  },
 });
 
 export default Colors;
