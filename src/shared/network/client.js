@@ -3,7 +3,7 @@ import axios from "axios";
 import { getAccessToken, setAccessToken, clearSession } from "../storage";
 import routes from "../routes";
 
-const baseUrl = "test-1.ezapi.ai/node";
+const baseUrl = "/node";
 
 export const endpoint = Object.freeze({
   login: "/auth",
