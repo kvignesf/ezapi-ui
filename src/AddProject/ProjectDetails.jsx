@@ -1,35 +1,23 @@
-import React, { useEffect, useCallback } from 'react';
-import { TextField } from '@material-ui/core';
-import { useRecoilState } from 'recoil';
-import { Field, ErrorMessage, Form, Formik } from 'formik';
-import * as Yup from 'yup';
-import debounce from 'lodash.debounce';
-import { useFilePicker } from 'use-file-picker';
-import _ from 'lodash';
-import CloseIcon from '@material-ui/icons/Close';
-import Scrollbar from 'react-smooth-scrollbar';
+import React, { useEffect, useCallback } from "react";
+import { TextField } from "@material-ui/core";
+import { useRecoilState } from "recoil";
+import { Field, ErrorMessage, Form, Formik } from "formik";
+import * as Yup from "yup";
+import debounce from "lodash.debounce";
+import { useFilePicker } from "use-file-picker";
+import _ from "lodash";
+import CloseIcon from "@material-ui/icons/Close";
+import Scrollbar from "react-smooth-scrollbar";
 
-import projectAtom from './projectAtom';
-import { PrimaryButton } from '../shared/components/AppButton';
-import AppIcon from '../shared/components/AppIcon';
+import projectAtom from "./projectAtom";
+import { PrimaryButton } from "../shared/components/AppButton";
+import AppIcon from "../shared/components/AppIcon";
 
-const ProjectDetails = ({ formRef }) => {
+const ProjectDetails = ({ formRef, specsError, dbsError }) => {
   const [projectDetails, setProjectDetails] = useRecoilState(projectAtom);
-  const specUploader = useFilePicker({
-    multiple: true,
-    readAs: 'BinaryString',
-    accept: ['.json'],
-  });
-  const dbUploader = useFilePicker({
-    multiple: true,
-    readAs: 'Text',
-    accept: ['.db', '.sql'],
-  });
 
   const debouncedSetName = useCallback(
     debounce((nextValue) => {
-      console.log('changes');
-
       setProjectDetails((currProjectDetails) => {
         return {
           ...currProjectDetails,
@@ -40,69 +28,51 @@ const ProjectDetails = ({ formRef }) => {
     [] // will be created only once initially
   );
 
-  useEffect(() => {
-    const pickedSpecs = specUploader[0];
+  const handleOnSpecsPick = (pickedSpecs) => {
+    setProjectDetails((currProjectDetails) => {
+      const updatedProjectDetails = _.cloneDeep(currProjectDetails);
 
-    if (pickedSpecs && !_.isEmpty(pickedSpecs)) {
-      setProjectDetails((currProjectDetails) => {
-        const updatedProjectDetails = _.cloneDeep(currProjectDetails);
-
-        pickedSpecs.forEach((pickedSpec) => {
-          if (
-            !_.find(
-              updatedProjectDetails.specs,
-              (existingSpec) => existingSpec.name === pickedSpec.name
-            )
-          ) {
-            console.log('something', pickedSpec);
-            if (!updatedProjectDetails.specs) {
-              updatedProjectDetails.specs = [];
-            }
-
-            updatedProjectDetails.specs.push(pickedSpec);
+      pickedSpecs.forEach((pickedSpec) => {
+        if (
+          !_.find(
+            updatedProjectDetails.specs,
+            (existingSpec) => existingSpec.name === pickedSpec.name
+          )
+        ) {
+          console.log("something", pickedSpec);
+          if (!updatedProjectDetails.specs) {
+            updatedProjectDetails.specs = [];
           }
-        });
 
-        return updatedProjectDetails;
+          updatedProjectDetails.specs.push(pickedSpec);
+        }
       });
-    }
-  }, [specUploader[0]]);
 
-  useEffect(() => {
-    const pickedDbs = dbUploader[0];
-
-    if (pickedDbs && !_.isEmpty(pickedDbs)) {
-      setProjectDetails((currProjectDetails) => {
-        const updatedProjectDetails = _.cloneDeep(currProjectDetails);
-
-        pickedDbs.forEach((pickedDb) => {
-          if (
-            !_.find(
-              updatedProjectDetails.dbs,
-              (existingDb) => existingDb.name === pickedDb.name
-            )
-          ) {
-            if (!updatedProjectDetails.dbs) {
-              updatedProjectDetails.dbs = [];
-            }
-
-            updatedProjectDetails.dbs.push(pickedDb);
-          }
-        });
-
-        return updatedProjectDetails;
-      });
-    }
-  }, [dbUploader[0]]);
-
-  const handleUploadSpec = () => {
-    const openFileSelector = specUploader[2];
-    openFileSelector();
+      return updatedProjectDetails;
+    });
   };
 
-  const handleUploadDb = () => {
-    const openFileSelector = dbUploader[2];
-    openFileSelector();
+  const handleOnDbsPick = (pickedDbs) => {
+    setProjectDetails((currProjectDetails) => {
+      const updatedProjectDetails = _.cloneDeep(currProjectDetails);
+
+      pickedDbs.forEach((pickedDb) => {
+        if (
+          !_.find(
+            updatedProjectDetails.dbs,
+            (existingDb) => existingDb.name === pickedDb.name
+          )
+        ) {
+          if (!updatedProjectDetails.dbs) {
+            updatedProjectDetails.dbs = [];
+          }
+
+          updatedProjectDetails.dbs.push(pickedDb);
+        }
+      });
+
+      return updatedProjectDetails;
+    });
   };
 
   const removeSelectedSpec = (filename) => {
@@ -137,10 +107,10 @@ const ProjectDetails = ({ formRef }) => {
       <div className='mb-6'>
         <Formik
           initialValues={{
-            name: projectDetails?.name ?? '',
+            name: projectDetails?.name ?? "",
           }}
           validationSchema={Yup.object().shape({
-            name: Yup.string().required('API name is required'),
+            name: Yup.string().required("API name is required"),
           })}
           innerRef={formRef}
         >
@@ -167,7 +137,22 @@ const ProjectDetails = ({ formRef }) => {
 
       <div className='mb-6'>
         <p className='text-mediumLabel mb-2'>Upload Spec</p>
-        <PrimaryButton onClick={handleUploadSpec}>Upload</PrimaryButton>
+        <input
+          id='specs'
+          type='file'
+          accept='.json'
+          multiple
+          hidden
+          onChange={(e) => {
+            handleOnSpecsPick(Array.from(e.target.files));
+          }}
+        />
+        <label
+          for='specs'
+          className='bg-brand-secondary rounded-md px-4 py-2 text-white text-mediumLabel hover:opacity-90'
+        >
+          Upload
+        </label>
 
         {/* Spec list */}
         {!_.isEmpty(projectDetails?.specs) ? (
@@ -176,15 +161,17 @@ const ProjectDetails = ({ formRef }) => {
               <ul>
                 {projectDetails?.specs?.map((file) => {
                   return (
-                    <li>
+                    <li key={file.name}>
                       <div className='rounded-md border bg-neutral-gray7 p-2 mb-2 flex flex-row items-center justify-between'>
-                        <p className='text-overline2'>{file.name}</p>
+                        <p className='text-overline2'>
+                          {file.name} {Math.round(file.size / 1024)} KB
+                        </p>
                         <AppIcon
                           aria-label='remove'
                           onClick={() => {
                             removeSelectedSpec(file.name);
                           }}
-                          style={{ width: '18px', height: '18px' }}
+                          style={{ width: "18px", height: "18px" }}
                         >
                           <CloseIcon />
                         </AppIcon>
@@ -196,11 +183,33 @@ const ProjectDetails = ({ formRef }) => {
             </Scrollbar>
           </div>
         ) : null}
+
+        {specsError &&
+          _.isEmpty(projectDetails?.specs) &&
+          !_.isEmpty(specsError) && (
+            <p className='text-accent-red text-overline2 mt-2'>{specsError}</p>
+          )}
       </div>
 
       <div className='mb-3'>
         <p className='text-mediumLabel mb-2'>Connect DB</p>
-        <PrimaryButton onClick={handleUploadDb}>Upload</PrimaryButton>
+        <input
+          id='dbs'
+          type='file'
+          accept='.db, .sql'
+          multiple
+          hidden
+          onChange={(e) => {
+            handleOnDbsPick(Array.from(e.target.files));
+          }}
+        />
+        <label
+          for='dbs'
+          className='bg-brand-secondary rounded-md px-4 py-2
+           text-white text-mediumLabel hover:opacity-90'
+        >
+          Upload
+        </label>
 
         {/* Connected Dbs */}
         {!_.isEmpty(projectDetails?.dbs) ? (
@@ -209,15 +218,17 @@ const ProjectDetails = ({ formRef }) => {
               <ul>
                 {projectDetails?.dbs?.map((file) => {
                   return (
-                    <li>
+                    <li key={file.name}>
                       <div className='rounded-md border bg-neutral-gray7 p-2 mb-2 flex flex-row items-center justify-between'>
-                        <p className='text-overline2'>{file.name}</p>
+                        <p className='text-overline2'>
+                          {file.name} {Math.round(file.size / 1024)} KB
+                        </p>
                         <AppIcon
                           aria-label='remove'
                           onClick={() => {
                             removeSelectedDb(file.name);
                           }}
-                          style={{ width: '18px', height: '18px' }}
+                          style={{ width: "18px", height: "18px" }}
                         >
                           <CloseIcon />
                         </AppIcon>
@@ -229,6 +240,10 @@ const ProjectDetails = ({ formRef }) => {
             </Scrollbar>
           </div>
         ) : null}
+
+        {dbsError && _.isEmpty(projectDetails?.dbs) && !_.isEmpty(dbsError) && (
+          <p className='text-accent-red text-overline2 mt-2'>{dbsError}</p>
+        )}
       </div>
     </div>
   );

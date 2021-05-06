@@ -6,7 +6,14 @@ import { useHistory } from "react-router-dom";
 import client, { endpoint } from "../network/client";
 import { clearQueryCache, queries } from "../network/queryClient";
 import routes from "../routes";
-import { clearSession, setAccessToken } from "../storage";
+import {
+  clearSession,
+  getAccessToken,
+  setAccessToken,
+  setFirstName,
+  setLastName,
+  setUserId,
+} from "../storage";
 import { getApiError } from "../utils";
 
 const login = async ({ linkedInAuthToken, redirect_uri }) => {
@@ -29,7 +36,10 @@ export const useLogin = () => {
   const mutation = useMutation(login, {
     onSuccess: (data) => {
       if (data) {
-        setAccessToken(data?.code);
+        setAccessToken(data?.jwtToken);
+        setFirstName(data?.userData?.firstName);
+        setLastName(data?.userData?.lastName);
+        setUserId(data?.userData?.user_id);
       }
     },
   });
@@ -38,6 +48,8 @@ export const useLogin = () => {
 };
 
 const logout = async () => {
+  const accessToken = getAccessToken();
+
   /**
    * Clearing the tokens optimistically
    * so that even if user refreshes while
@@ -45,11 +57,21 @@ const logout = async () => {
    */
   clearSession();
 
-  try {
-    const { data } = await client.post(endpoint.logout);
-    return data;
-  } catch (error) {
-    throw getApiError(error);
+  if (accessToken && !_.isEmpty(accessToken)) {
+    try {
+      const { data } = await client.post(
+        endpoint.logout,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+      return data;
+    } catch (error) {
+      throw getApiError(error);
+    }
   }
 };
 

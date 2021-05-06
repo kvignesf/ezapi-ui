@@ -23,6 +23,7 @@ import AddProject from "../AddProject";
 import projectAtom, { defaultState } from "../AddProject/projectAtom";
 import InitialsAvatar from "../shared/components/InitialsAvatar";
 import { useLogout } from "../shared/query/authQueries";
+import { getFirstName, getLastName } from "../shared/storage";
 
 const useStyles = makeStyles({
   selectedItem: {
@@ -48,11 +49,14 @@ const Dashboard = ({ selectedIndex, children }) => {
   const history = useHistory();
   const [dialog, setDialog] = useState({
     show: false,
+    type: null,
     data: null,
   });
   const [profileMenuAnchorEl, setProfilemenuAnchorEl] = useState(false);
   const [projectState, setProjectState] = useRecoilState(projectAtom);
   const { isLoading: isLoggingOut, mutate: logout } = useLogout();
+  const firstName = getFirstName();
+  const lastName = getLastName();
 
   const handleSideMenuItemClick = (index) => {
     if (index !== selectedIndex) {
@@ -68,6 +72,7 @@ const Dashboard = ({ selectedIndex, children }) => {
   const showAddProjectDialog = () => {
     setDialog({
       show: true,
+      type: "add-project",
     });
   };
 
@@ -109,7 +114,7 @@ const Dashboard = ({ selectedIndex, children }) => {
 
       <header
         className='fixed w-full top-0 bg-brand-primary flex flex-row p-4 items-center'
-        style={{ height: "56px" }}
+        style={{ height: "56px", zIndex: "9999" }}
       >
         {/* EZAPI logo */}
         <div className='w-full'>
@@ -123,20 +128,17 @@ const Dashboard = ({ selectedIndex, children }) => {
 
         {/* Initials logo */}
         <InitialsAvatar
-          firstName={"as"}
-          lastName={"bb"}
+          firstName={firstName}
+          lastName={lastName}
           style={{
-            // borderRadius: '9999px',
-            // display: 'flex',
-            // alignItems: 'center',
-            // justifyContent: 'center',
             marginRight: "0.5rem",
-            // padding: '0.5rem',
           }}
         />
 
         {/* Name */}
-        <p className='text-overline2 text-white mr-0'>Aravind</p>
+        <p className='text-overline2 text-white mr-0 whitespace-nowrap'>
+          {firstName} {lastName}
+        </p>
 
         {/* Options */}
         <AppIcon

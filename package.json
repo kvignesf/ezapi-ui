@@ -33,7 +33,7 @@
     "serve": "^11.3.2",
     "smooth-scrollbar": "^8.6.1",
     "twin.macro": "^2.4.0",
-    "use-file-picker": "^0.2.4",
+    "use-file-picker": "^1.0.1",
     "yup": "^0.32.9"
   },
   "scripts": {

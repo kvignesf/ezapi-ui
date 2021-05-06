@@ -8,12 +8,14 @@ const baseUrl = "https://test-1.ezapi.ai/node";
 export const endpoint = Object.freeze({
   login: "/auth",
   logout: "/logout",
+  project: "/project",
   projects: "/projects",
 });
 
 const client = axios.create({
   baseURL: baseUrl,
   timeout: 10000,
+  timeoutErrorMessage: "Something went wrong, please try again",
   responseType: "json",
 });
 

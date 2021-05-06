@@ -27,8 +27,8 @@ const ExistingCollaborator = ({
   return (
     <div className='flex flex-row items-center mb-2'>
       <InitialsAvatar
-        firstName={collab?.firstName}
-        lastName={collab?.lastName}
+        firstName={collab?.email?.charAt(0)}
+        lastName={collab?.email?.charAt(1)}
         className='border-none mr-3'
       />
 
@@ -36,7 +36,7 @@ const ExistingCollaborator = ({
         <p className='text-mediumLabel'>
           {collab?.firstName} {collab?.lastName}
         </p>
-        <p className='text-overline2 text-neutral-gray4'>{collab?.email}</p>
+        <p className='text-overline2 text-neutral-gray3'>{collab?.email}</p>
       </div>
 
       {!optionsDisabled && (

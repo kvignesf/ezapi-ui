@@ -10,16 +10,17 @@ import { getApiError } from "../shared/utils";
 
 const getProjects = async () => {
   try {
-    const { data } = await client.get(endpoint.projects);
+    const { data } = await client.get(endpoint.project);
     return data;
-    throw Error("Something failed");
   } catch (error) {
     throw getApiError(error);
   }
 };
 
 export const useGetProjects = () => {
-  const mutation = useQuery([queries.projects], getProjects);
+  const mutation = useQuery([queries.projects], getProjects, {
+    refetchOnWindowFocus: false,
+  });
 
   return mutation;
 };

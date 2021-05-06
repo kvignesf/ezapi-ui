@@ -7,7 +7,7 @@ import classNames from "classnames";
 import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
 import Fade from "@material-ui/core/Fade";
-import { Dialog } from "@material-ui/core";
+import { CircularProgress, Dialog } from "@material-ui/core";
 
 import Dashboard from "../Dashboard";
 import AppIcon from "../shared/components/AppIcon";
@@ -21,6 +21,7 @@ import DeleteProject from "./DeleteProject/DeleteProject";
 import { useGetProjects } from "./listProjectQueries";
 import EmptyLogo from "../static/images/empty-state.svg";
 import { PrimaryButton } from "../shared/components/AppButton";
+import LoaderWithMessage from "../shared/components/LoaderWithMessage";
 
 const MembersImages = ({ members, ...rest }) => {
   return (
@@ -35,8 +36,8 @@ const MembersImages = ({ members, ...rest }) => {
         if (index < 3) {
           return (
             <InitialsAvatar
-              firstName={member?.firstName}
-              lastName={member?.lastName}
+              firstName={member?.email?.charAt(0)}
+              lastName={member?.email?.charAt(1)}
               className={classNames(
                 "rounded-full p-2 bg-brand-primarySubtle w-min",
                 {
@@ -58,9 +59,100 @@ const MembersImages = ({ members, ...rest }) => {
   );
 };
 
+const ProjectRow = ({
+  project,
+  showMembersDialog,
+  handleOnDeleteApi,
+  handleOnView,
+  handleOnInvite,
+  handleOnRename,
+}) => {
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const datetime = new Date(project?.updatedAt);
+
+  const handleOnOptionsClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  return (
+    <tr className='text-overline2'>
+      <td className='p-3'>{project?.projectName}</td>
+      <td>
+        <MembersImages
+          members={project?.invites}
+          onClick={() => {
+            showMembersDialog(project?.invites);
+          }}
+        />
+      </td>
+      <td>
+        <TimeAgo date={datetime} />
+      </td>
+
+      <td></td>
+
+      <td align='right'>
+        <AppIcon onClick={handleOnOptionsClick}>
+          <MoreVertIcon />
+        </AppIcon>
+      </td>
+
+      {/* Profile options */}
+      <Menu
+        id={`fade-menu-${project?.projectName}`}
+        anchorEl={anchorEl}
+        keepMounted
+        open={Boolean(anchorEl)}
+        onClose={() => {
+          setAnchorEl(null);
+        }}
+        TransitionComponent={Fade}
+        style={{ borderRadius: "1rem" }}
+      >
+        <MenuItem
+          onClick={() => {
+            setAnchorEl(null);
+            handleOnView(project);
+          }}
+        >
+          View
+        </MenuItem>
+
+        <MenuItem
+          onClick={() => {
+            setAnchorEl(null);
+            handleOnInvite(project);
+          }}
+        >
+          Invite
+        </MenuItem>
+
+        <MenuItem
+          onClick={() => {
+            setAnchorEl(null);
+            handleOnRename(project);
+          }}
+        >
+          Rename
+        </MenuItem>
+
+        <MenuItem
+          onClick={() => {
+            setAnchorEl(null);
+            handleOnDeleteApi(project);
+          }}
+          style={{ color: Colors.accent.red }}
+        >
+          Delete API
+        </MenuItem>
+      </Menu>
+    </tr>
+  );
+};
+
 const Content = ({ showCreateProjectDialog }) => {
   const {
-    data: fetchedProjects,
+    data: projects,
     isLoading: isFetchingProjects,
     error: fetchProjectsError,
     isFetching: isFetchingProjectsBg,
@@ -71,58 +163,6 @@ const Content = ({ showCreateProjectDialog }) => {
     type: null,
     data: null,
   });
-
-  const [anchorEl, setAnchorEl] = React.useState(null);
-
-  const projects = [
-    {
-      name: "name1",
-      members: [
-        {
-          firstName: "Firstname",
-          lastName: "Lastname",
-          email: "first@last.com",
-        },
-        {
-          firstName: "Firstname",
-          lastName: "Lastname",
-          email: "first@last.com",
-        },
-        {
-          firstName: "Firstname",
-          lastName: "Lastname",
-          email: "first@last.com",
-        },
-        {
-          firstName: "Firstname",
-          lastName: "Lastname",
-          email: "first@last.com",
-        },
-      ],
-      lastModifiedDate: "2021-04-30T13:50:27.87",
-    },
-    {
-      name: "name1",
-      members: null,
-      lastModifiedDate: "2021-04-30T13:50:27.87",
-    },
-    {
-      name: "name1",
-      members: [
-        {
-          firstName: "Firstname",
-          lastName: "Lastname",
-          email: "first@last.com",
-        },
-        {
-          firstName: "Firstname",
-          lastName: "Lastname",
-          email: "first@last.com",
-        },
-      ],
-      lastModifiedDate: "2021-04-30T13:50:27.87",
-    },
-  ];
 
   const showMembersDialog = (members) => {
     setDialog({
@@ -156,14 +196,10 @@ const Content = ({ showCreateProjectDialog }) => {
     });
   };
 
-  const handleOnOptionsClick = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-
   const handleOnView = (project) => {};
 
   const handleOnInvite = (project) => {
-    showMembersDialog(project?.members);
+    showMembersDialog(project?.invites);
   };
 
   const handleOnRename = (project) => {
@@ -173,6 +209,10 @@ const Content = ({ showCreateProjectDialog }) => {
   const handleOnDeleteApi = (project) => {
     showDeleteProjectDialog(project);
   };
+
+  if (isFetchingProjects) {
+    return <LoaderWithMessage message={"Fetching Projects"} />;
+  }
 
   return (
     <div className='p-3 h-full'>
@@ -208,87 +248,29 @@ const Content = ({ showCreateProjectDialog }) => {
             <th className='w-1/3'>MEMBERS</th>
             <th className='w-1/3'>LAST ACTIVITY</th>
             <th></th>
-            <th className='rounded-tr-md rounded-br-md'></th>
+            <th className='rounded-tr-md rounded-br-md'>
+              {isFetchingProjectsBg && (
+                <CircularProgress size='20px' className='ml-6' />
+              )}
+            </th>
           </tr>
 
           {projects.map((project) => {
-            const datetime = new Date(project?.lastModifiedDate);
-
             return (
-              <tr className='text-overline2'>
-                <td className='p-3'>{project.name}</td>
-                <td>
-                  <MembersImages
-                    members={project?.members}
-                    onClick={() => {
-                      showMembersDialog(project?.members);
-                    }}
-                  />
-                </td>
-                <td>
-                  <TimeAgo date={datetime} />
-                </td>
-
-                <td align='right'>
-                  <AppIcon onClick={handleOnOptionsClick}>
-                    <MoreVertIcon />
-                  </AppIcon>
-                </td>
-
-                <Menu
-                  id='fade-menu'
-                  anchorEl={anchorEl}
-                  keepMounted
-                  open={Boolean(anchorEl)}
-                  onClose={() => {
-                    setAnchorEl(null);
-                  }}
-                  TransitionComponent={Fade}
-                  style={{ borderRadius: "1rem" }}
-                >
-                  <MenuItem
-                    onClick={() => {
-                      setAnchorEl(null);
-                      handleOnView(project);
-                    }}
-                  >
-                    View
-                  </MenuItem>
-
-                  <MenuItem
-                    onClick={() => {
-                      setAnchorEl(null);
-                      handleOnInvite(project);
-                    }}
-                  >
-                    Invite
-                  </MenuItem>
-
-                  <MenuItem
-                    onClick={() => {
-                      setAnchorEl(null);
-                      handleOnRename(project);
-                    }}
-                  >
-                    Rename
-                  </MenuItem>
-
-                  <MenuItem
-                    onClick={() => {
-                      setAnchorEl(null);
-                      handleOnDeleteApi(project);
-                    }}
-                    style={{ color: Colors.accent.red }}
-                  >
-                    Delete API
-                  </MenuItem>
-                </Menu>
-              </tr>
+              <ProjectRow
+                project={project}
+                showMembersDialog={showMembersDialog}
+                handleOnRename={handleOnRename}
+                handleOnInvite={handleOnInvite}
+                handleOnView={handleOnView}
+                handleOnDeleteApi={handleOnDeleteApi}
+              />
             );
           })}
         </table>
       )}
 
+      {/* Empty state */}
       {!projects ||
         (_.isEmpty(projects) && (
           <div className='h-full flex flex-col items-center justify-center'>
