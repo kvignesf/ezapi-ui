@@ -114,7 +114,7 @@ const Dashboard = ({ selectedIndex, children }) => {
 
       <header
         className='fixed w-full top-0 bg-brand-primary flex flex-row p-4 items-center'
-        style={{ height: "56px", zIndex: "9999" }}
+        style={{ height: "56px", zIndex: "99" }}
       >
         {/* EZAPI logo */}
         <div className='w-full'>
@@ -158,7 +158,7 @@ const Dashboard = ({ selectedIndex, children }) => {
             setProfilemenuAnchorEl(null);
           }}
           TransitionComponent={Fade}
-          style={{ borderRadius: "1rem" }}
+          style={{ borderRadius: "1rem", zIndex: "100" }}
         >
           <MenuItem
             onClick={() => {
