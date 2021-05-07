@@ -13,6 +13,7 @@ import {
   setFirstName,
   setLastName,
   setUserId,
+  setEmailId,
 } from "../storage";
 import { getApiError } from "../utils";
 
@@ -40,6 +41,7 @@ export const useLogin = () => {
         setFirstName(data?.userData?.firstName);
         setLastName(data?.userData?.lastName);
         setUserId(data?.userData?.user_id);
+        setEmailId(data?.userData?.email);
       }
     },
   });

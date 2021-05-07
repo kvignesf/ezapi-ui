@@ -1,7 +1,7 @@
 import _ from "lodash";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useHistory } from "react-router-dom";
-import { useRecoilState, useRecoilValue } from "recoil";
+import { useRecoilValue } from "recoil";
 
 import client, { endpoint } from "../shared/network/client";
 import { clearQueryCache, queries } from "../shared/network/queryClient";
@@ -31,17 +31,10 @@ export const useAddProject = () => {
   */
   const dbMutation = useUploadProjectDbs();
   const specsMutation = useUploadProjectSpecs(dbMutation);
-  const [projectDetails, setProjectDetails] = useRecoilState(projectAtom);
+  const projectDetails = useRecoilValue(projectAtom);
 
   const mutation = useMutation(addProject, {
     onSuccess: (data) => {
-      setProjectDetails((currState) => {
-        return {
-          ...currState,
-          id: data?._id,
-        };
-      });
-
       specsMutation.mutate({
         id: data?._id,
         files: projectDetails?.specs,
@@ -86,11 +79,12 @@ const useUploadProjectSpecs = (dbMutation) => {
 
   const mutation = useMutation(uploadProjectSpecs, {
     onSuccess: (data) => {
-      dbMutation.mutate({
-        id: projectDetails?.id,
-        files: projectDetails?.dbs,
-        type: "db",
-      });
+      if (data?.projectId) {
+        dbMutation.mutate({
+          id: data?.projectId,
+          files: projectDetails?.dbs,
+        });
+      }
     },
   });
 

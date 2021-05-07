@@ -34,8 +34,6 @@ export const getApiError = (error) => {
     }
     return new Error("Invalid data provided, please check and retry");
   }
-  if (error?.response?.status === 404) {
-    return new Error("No data available!");
-  }
+
   return new Error("Something went wrong, please try again");
 };

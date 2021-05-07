@@ -34,10 +34,25 @@ const MembersImages = ({ members, ...rest }) => {
 
       {members?.map((member, index) => {
         if (index < 3) {
+          let firstName, lastName;
+
+          if (member?.userData?.firstName) {
+            firstName = member?.userData?.firstName;
+          }
+
+          if (member?.userData?.lastName) {
+            lastName = member?.userData?.lastName;
+          }
+
+          if (!firstName || _.isEmpty(firstName)) {
+            firstName = member?.email?.charAt(0);
+            lastName = member?.email?.charAt(0);
+          }
+
           return (
             <InitialsAvatar
-              firstName={member?.email?.charAt(0)}
-              lastName={member?.email?.charAt(1)}
+              firstName={firstName}
+              lastName={lastName}
               className={classNames(
                 "rounded-full p-2 bg-brand-primarySubtle w-min",
                 {
@@ -81,7 +96,7 @@ const ProjectRow = ({
         <MembersImages
           members={project?.invites}
           onClick={() => {
-            showMembersDialog(project?.invites);
+            showMembersDialog(project);
           }}
         />
       </td>
@@ -164,11 +179,11 @@ const Content = ({ showCreateProjectDialog }) => {
     data: null,
   });
 
-  const showMembersDialog = (members) => {
+  const showMembersDialog = (project) => {
     setDialog({
       show: true,
       type: "members",
-      data: members,
+      data: project,
     });
   };
 
@@ -199,7 +214,7 @@ const Content = ({ showCreateProjectDialog }) => {
   const handleOnView = (project) => {};
 
   const handleOnInvite = (project) => {
-    showMembersDialog(project?.invites);
+    showMembersDialog(project);
   };
 
   const handleOnRename = (project) => {
@@ -224,11 +239,13 @@ const Content = ({ showCreateProjectDialog }) => {
         PaperProps={{
           style: { borderRadius: 8 },
         }}
+        disableBackdropClick
       >
         {dialog?.type === "members" && (
           <ModifyCollaborators
+            projectId={dialog?.data?._id}
             onClose={handleCloseDialog}
-            invitedCollaborators={dialog?.data}
+            invitedCollaborators={dialog?.data?.invites}
           />
         )}
 

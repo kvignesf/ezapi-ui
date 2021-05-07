@@ -196,7 +196,7 @@ const ProjectDetails = ({ formRef, specsError, dbsError }) => {
         <input
           id='dbs'
           type='file'
-          accept='.db, .sql'
+          accept='.sql'
           multiple
           hidden
           onChange={(e) => {

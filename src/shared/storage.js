@@ -3,6 +3,7 @@ const StorageKey = Object.freeze({
   firstName: "first_name",
   lastName: "last_name",
   userId: "user_id",
+  emailId: "email_id",
 });
 
 export const setAccessToken = (value) =>
@@ -24,5 +25,10 @@ export const setUserId = (value) =>
   sessionStorage.setItem(StorageKey.userId, value);
 
 export const getUserId = () => sessionStorage.getItem(StorageKey.userId);
+
+export const setEmailId = (value) =>
+  sessionStorage.setItem(StorageKey.emailId, value);
+
+export const getEmailId = () => sessionStorage.getItem(StorageKey.emailId);
 
 export const clearSession = () => sessionStorage.clear();
