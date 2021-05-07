@@ -23,6 +23,12 @@ const addProject = async ({ name, invitees }) => {
 };
 
 export const useAddProject = () => {
+  /*
+    This is a chain API in the following order - 
+    1. /project (POST) - uploads basic details of the project - name, invites
+    2. /project/{project_id}/upload (POST) - uploads the spec files
+    3. /project/{project_id}/upload (POST) - uploads the db files
+  */
   const dbMutation = useUploadProjectDbs();
   const specsMutation = useUploadProjectSpecs(dbMutation);
   const [projectDetails, setProjectDetails] = useRecoilState(projectAtom);
@@ -116,7 +122,13 @@ const uploadProjectDbs = async ({ id, files }) => {
 };
 
 const useUploadProjectDbs = () => {
-  const mutation = useMutation(uploadProjectDbs);
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation(uploadProjectDbs, {
+    onSuccess: (data) => {
+      queryClient.invalidateQueries(queries.projects);
+    },
+  });
 
   return mutation;
 };

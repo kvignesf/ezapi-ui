@@ -4,12 +4,22 @@ import { CircularProgress } from "@material-ui/core";
 import Colors from "../colors";
 import classNames from "classnames";
 
-const LoaderWithMessage = ({ message, contained = false }) => {
+const LoaderWithMessage = ({
+  message,
+  contained = false,
+  className,
+  ...rest
+}) => {
   return (
     <div
-      className={classNames("flex flex-col items-center justify-center", {
-        "h-screen w-screen": !contained,
-      })}
+      className={classNames(
+        "flex flex-col items-center justify-center",
+        {
+          "h-screen w-screen": !contained,
+        },
+        `${className}`
+      )}
+      {...rest}
     >
       <CircularProgress
         size='32px'
