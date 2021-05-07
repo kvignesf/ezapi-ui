@@ -18,7 +18,6 @@ const ExistingCollaborator = ({
   optionsDisabled = false,
 }) => {
   const [anchorEl, setAnchorEl] = React.useState(null);
-  const open = Boolean(anchorEl);
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -49,8 +48,10 @@ const ExistingCollaborator = ({
         id='fade-menu'
         anchorEl={anchorEl}
         keepMounted
-        open={open}
-        onClose={handleClick}
+        open={Boolean(anchorEl)}
+        onClose={() => {
+          setAnchorEl(null);
+        }}
         TransitionComponent={Fade}
       >
         <MenuItem
@@ -70,9 +71,7 @@ const ExistingCollaborator = ({
 const ModifyCollaborators = ({ invitedCollaborators, onClose }) => {
   const handleCollaboratorsChange = (newCollabs) => {};
 
-  const handleOnRemove = (collab) => {
-    console.log(collab);
-  };
+  const handleOnRemove = (collab) => {};
 
   return (
     <div className='p-4'>
