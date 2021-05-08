@@ -29,6 +29,7 @@ stages:
   - deploy-instance1
 Sast-Whitesource:
   stage: Sast-Whitesource 
+  image: ubuntu:18.04
   extends: .sast-whitesource
 build-stage:
   stage: build-stage 
