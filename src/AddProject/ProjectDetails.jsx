@@ -39,7 +39,6 @@ const ProjectDetails = ({ formRef, specsError, dbsError }) => {
             (existingSpec) => existingSpec.name === pickedSpec.name
           )
         ) {
-          console.log("something", pickedSpec);
           if (!updatedProjectDetails.specs) {
             updatedProjectDetails.specs = [];
           }

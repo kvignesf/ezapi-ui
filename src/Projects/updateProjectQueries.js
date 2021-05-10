@@ -8,24 +8,17 @@ import routes from "../shared/routes";
 import { clearSession, setAccessToken } from "../shared/storage";
 import { getApiError } from "../shared/utils";
 
-const updateProject = async ({
-  id,
-  projectName,
-  addInvites,
-  removeInvites,
-}) => {
+const updateProject = async ({ id, projectName, removeInvites }) => {
   let requestData = {};
 
   if (projectName && !_.isEmpty(projectName)) {
     requestData["projectName"] = projectName;
   }
 
-  if (addInvites && !_.isEmpty(addInvites)) {
-    requestData["addInvites"] = addInvites;
-  }
-
   if (removeInvites && !_.isEmpty(removeInvites)) {
-    requestData["removeInvites"] = removeInvites;
+    requestData["removeInvites"] = removeInvites.map((invite) => {
+      return invite?.email;
+    });
   }
 
   if (requestData && !_.isEmpty(requestData)) {
@@ -44,7 +37,7 @@ const updateProject = async ({
 export const useUpdateProject = () => {
   const queryClient = useQueryClient();
 
-  const mutation = useMutation(updateProject, {
+  const mutation = new useMutation(updateProject, {
     onSuccess: (data) => {
       queryClient.invalidateQueries(queries.projects);
     },

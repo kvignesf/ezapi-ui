@@ -53,6 +53,7 @@ const ExistingCollaborator = ({ projectId, collab, handleDeletedCollab }) => {
     }
   };
 
+  console.log("isProjectUpdated", isProjectUpdated);
   if (isProjectUpdated) {
     handleDeletedCollab(collab);
   }
@@ -138,7 +139,8 @@ const ModifyCollaborators = ({ projectId, invitedCollaborators, onClose }) => {
   };
 
   const handleDeletedCollab = (collab) => {
-    setDeletedCollabs([...deletedCollabs, collab]);
+    // setDeletedCollabs([...deletedCollabs, collab]);
+    onClose();
   };
 
   const getNonDeletedCollaborators = () => {
@@ -182,7 +184,6 @@ const ModifyCollaborators = ({ projectId, invitedCollaborators, onClose }) => {
       {!_.isEmpty(getNonDeletedCollaborators()) ? (
         <div className='border-t-2 pt-3'>
           {getNonDeletedCollaborators()?.map((collab) => {
-            console.log("collab", collab);
             return (
               <ExistingCollaborator
                 projectId={projectId}
