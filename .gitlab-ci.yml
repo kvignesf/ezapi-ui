@@ -12,6 +12,7 @@ before_script:
 include:
   project: 'ezapi_poc/infra_poc'
   file: 
+    - 'sast-whitesource-reactui.yaml'
     - 'reactuicitest.yml'
     - 'reactuicistage.yaml'
     - 'reactuiciprod.yaml'
@@ -19,12 +20,17 @@ include:
     - 'deploy-reactui-demo-1.yaml'
     - 'deploy-reactui-instance-1.yaml'
 stages:
+  - Sast-Whitesource
   - build-test
   - build-stage
   - build-prod 
   - deploy-test1
   - deploy-demo1
-  - deploy-instance1 
+  - deploy-instance1
+Sast-Whitesource:
+  stage: Sast-Whitesource 
+  image: ubuntu:18.04
+  extends: .sast-whitesource
 build-stage:
   stage: build-stage 
   extends: .build-stage
