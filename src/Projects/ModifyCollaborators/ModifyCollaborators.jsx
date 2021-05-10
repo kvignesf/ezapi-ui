@@ -53,7 +53,6 @@ const ExistingCollaborator = ({ projectId, collab, handleDeletedCollab }) => {
     }
   };
 
-  console.log("isProjectUpdated", isProjectUpdated);
   if (isProjectUpdated) {
     handleDeletedCollab(collab);
   }
@@ -126,7 +125,7 @@ const ModifyCollaborators = ({ projectId, invitedCollaborators, onClose }) => {
   } = useInviteCollaborator();
 
   const [invitedCollabs, setInvitedCollabs] = useState([]);
-  const [deletedCollabs, setDeletedCollabs] = useState([]);
+  // const [deletedCollabs, setDeletedCollabs] = useState([]);
 
   const handleCollaboratorsChange = (newCollabs) => {
     setInvitedCollabs(newCollabs);
@@ -143,9 +142,9 @@ const ModifyCollaborators = ({ projectId, invitedCollaborators, onClose }) => {
     onClose();
   };
 
-  const getNonDeletedCollaborators = () => {
-    return _.difference(invitedCollaborators, deletedCollabs);
-  };
+  // const getNonDeletedCollaborators = () => {
+  //   return _.difference(invitedCollaborators, deletedCollabs);
+  // };
 
   if (isInviteCollaboratorsSuccess) {
     onClose();
@@ -181,9 +180,9 @@ const ModifyCollaborators = ({ projectId, invitedCollaborators, onClose }) => {
         {inviteCollaboratorsError?.message}
       </p>
 
-      {!_.isEmpty(getNonDeletedCollaborators()) ? (
+      {!_.isEmpty(invitedCollaborators) ? (
         <div className='border-t-2 pt-3'>
-          {getNonDeletedCollaborators()?.map((collab) => {
+          {invitedCollaborators?.map((collab) => {
             return (
               <ExistingCollaborator
                 projectId={projectId}
