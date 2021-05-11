@@ -48,7 +48,12 @@ const RenameProject = ({ project, onClose }) => {
           name: project?.projectName ?? "",
         }}
         validationSchema={Yup.object().shape({
-          name: Yup.string().required("API name is required"),
+          name: Yup.string()
+            .required("API name is required")
+            .matches(
+              `^(?=[a-zA-Z0-9-_]*$)`,
+              "Only - and _ are allowed as special characters"
+            ),
         })}
         onSubmit={handleNext}
       >
@@ -66,6 +71,7 @@ const RenameProject = ({ project, onClose }) => {
                   variant='outlined'
                   as={TextField}
                   disabled={isUpdatingProject}
+                  inputProps={{ maxLength: 24 }}
                 />
               </div>
 

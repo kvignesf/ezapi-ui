@@ -22,17 +22,20 @@ import { useGetProjects } from "./listProjectQueries";
 import EmptyLogo from "../static/images/empty-state.svg";
 import { PrimaryButton } from "../shared/components/AppButton";
 import LoaderWithMessage from "../shared/components/LoaderWithMessage";
+import { getUserId } from "../shared/storage";
 
-const MembersImages = ({ members, ...rest }) => {
+const MembersImages = ({ project, ...rest }) => {
+  const loggedInUserId = getUserId();
+
   return (
     <div className='flex flex-row cursor-pointer' {...rest}>
-      {_.isEmpty(members) ? (
+      {_.isEmpty(project?.invites) && loggedInUserId === project?.author ? (
         <p className='capitalize text-brand-secondary text-overline2'>
           Invite Collaborators
         </p>
       ) : null}
 
-      {members?.map((member, index) => {
+      {project?.invites?.map((member, index) => {
         if (index < 3) {
           let firstName, lastName;
 
@@ -51,6 +54,7 @@ const MembersImages = ({ members, ...rest }) => {
 
           return (
             <InitialsAvatar
+              key={member?.email}
               firstName={firstName}
               lastName={lastName}
               className={classNames(
@@ -65,9 +69,9 @@ const MembersImages = ({ members, ...rest }) => {
         return null;
       })}
 
-      {members?.length > 3 ? (
+      {project?.invites?.length > 3 ? (
         <p className='text-overline2 self-center ml-2'>
-          + {members?.length - 3} more
+          + {project?.invites?.length - 3} more
         </p>
       ) : null}
     </div>
@@ -84,6 +88,7 @@ const ProjectRow = ({
 }) => {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const datetime = new Date(project?.updatedAt);
+  const loggedInUserId = getUserId();
 
   const handleOnOptionsClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -94,9 +99,11 @@ const ProjectRow = ({
       <td className='p-3'>{project?.projectName}</td>
       <td>
         <MembersImages
-          members={project?.invites}
+          project={project}
           onClick={() => {
-            showMembersDialog(project);
+            if (loggedInUserId === project?.author) {
+              showMembersDialog(project);
+            }
           }}
         />
       </td>
@@ -133,33 +140,35 @@ const ProjectRow = ({
           View
         </MenuItem>
 
-        <MenuItem
-          onClick={() => {
-            setAnchorEl(null);
-            handleOnInvite(project);
-          }}
-        >
-          Invite
-        </MenuItem>
-
-        <MenuItem
-          onClick={() => {
-            setAnchorEl(null);
-            handleOnRename(project);
-          }}
-        >
-          Rename
-        </MenuItem>
-
-        <MenuItem
-          onClick={() => {
-            setAnchorEl(null);
-            handleOnDeleteApi(project);
-          }}
-          style={{ color: Colors.accent.red }}
-        >
-          Delete API
-        </MenuItem>
+        {loggedInUserId === project?.author && (
+          <div>
+            <MenuItem
+              onClick={() => {
+                setAnchorEl(null);
+                handleOnInvite(project);
+              }}
+            >
+              Invite
+            </MenuItem>
+            <MenuItem
+              onClick={() => {
+                setAnchorEl(null);
+                handleOnRename(project);
+              }}
+            >
+              Rename
+            </MenuItem>
+            <MenuItem
+              onClick={() => {
+                setAnchorEl(null);
+                handleOnDeleteApi(project);
+              }}
+              style={{ color: Colors.accent.red }}
+            >
+              Delete API
+            </MenuItem>{" "}
+          </div>
+        )}
       </Menu>
     </tr>
   );
