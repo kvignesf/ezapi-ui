@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import CloseIcon from "@material-ui/icons/Close";
 import MoreVertIcon from "@material-ui/icons/MoreVert";
 import _ from "lodash";
@@ -24,9 +24,17 @@ const ExistingCollaborator = ({ projectId, collab, handleDeletedCollab }) => {
     isLoading: isUpdatingProject,
     isSuccess: isProjectUpdated,
     error: updateProjectError,
+    data: updateProjectData,
     mutate: updateProject,
   } = useUpdateProject();
   const loggedInUserEmail = getEmailId();
+
+  useEffect(() => {
+    if (isProjectUpdated) {
+      console.log("called", updateProjectData?.project?.invites);
+      handleDeletedCollab(updateProjectData?.project?.invites);
+    }
+  }, [isProjectUpdated]);
 
   let firstName, lastName;
 
@@ -52,10 +60,6 @@ const ExistingCollaborator = ({ projectId, collab, handleDeletedCollab }) => {
       updateProject({ id: projectId, removeInvites: [collab] });
     }
   };
-
-  if (isProjectUpdated) {
-    handleDeletedCollab(collab);
-  }
 
   return (
     <div className='flex flex-row items-center mb-2'>
@@ -124,27 +128,31 @@ const ModifyCollaborators = ({ projectId, invitedCollaborators, onClose }) => {
     mutate: inviteCollaborators,
   } = useInviteCollaborator();
 
-  const [invitedCollabs, setInvitedCollabs] = useState([]);
-  // const [deletedCollabs, setDeletedCollabs] = useState([]);
+  const [toBeInvitedCollabs, setToBeInvitedCollabs] = useState([]);
+  const [updatedInvitedCollabs, setUpdatedInvitedCollabs] = useState([]);
+  const [isInvitedCollabsUpdated, setUpdated] = useState(false);
 
   const handleCollaboratorsChange = (newCollabs) => {
-    setInvitedCollabs(newCollabs);
+    setToBeInvitedCollabs(newCollabs);
   };
 
   const handleInviteCollabs = () => {
-    if (invitedCollabs && !_.isEmpty(invitedCollabs)) {
-      inviteCollaborators({ id: projectId, collaborators: invitedCollabs });
+    if (toBeInvitedCollabs && !_.isEmpty(toBeInvitedCollabs)) {
+      inviteCollaborators({ id: projectId, collaborators: toBeInvitedCollabs });
     }
   };
 
-  const handleDeletedCollab = (collab) => {
-    // setDeletedCollabs([...deletedCollabs, collab]);
-    onClose();
+  const handleDeletedCollab = (updatedCollabs) => {
+    setUpdatedInvitedCollabs(updatedCollabs);
+    setUpdated(true);
   };
 
-  // const getNonDeletedCollaborators = () => {
-  //   return _.difference(invitedCollaborators, deletedCollabs);
-  // };
+  const getInvitedCollabs = () => {
+    if (isInvitedCollabsUpdated) {
+      return updatedInvitedCollabs;
+    }
+    return invitedCollaborators;
+  };
 
   if (isInviteCollaboratorsSuccess) {
     onClose();
@@ -163,7 +171,7 @@ const ModifyCollaborators = ({ projectId, invitedCollaborators, onClose }) => {
 
       <div className='flex flex-row items-end mb-4'>
         <InviteCollaborators
-          collaborators={invitedCollabs}
+          collaborators={toBeInvitedCollabs}
           handleChange={handleCollaboratorsChange}
           style={{ width: "100%", marginRight: "1rem" }}
         />
@@ -180,9 +188,9 @@ const ModifyCollaborators = ({ projectId, invitedCollaborators, onClose }) => {
         {inviteCollaboratorsError?.message}
       </p>
 
-      {!_.isEmpty(invitedCollaborators) ? (
+      {!_.isEmpty(getInvitedCollabs()) ? (
         <div className='border-t-2 pt-3'>
-          {invitedCollaborators?.map((collab) => {
+          {getInvitedCollabs()?.map((collab) => {
             return (
               <ExistingCollaborator
                 projectId={projectId}
