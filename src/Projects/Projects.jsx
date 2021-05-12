@@ -252,7 +252,7 @@ const Content = ({ showCreateProjectDialog }) => {
       >
         {dialog?.type === "members" && (
           <ModifyCollaborators
-            projectId={dialog?.data?._id}
+            projectId={dialog?.data?.projectId}
             onClose={handleCloseDialog}
             invitedCollaborators={dialog?.data?.invites}
           />

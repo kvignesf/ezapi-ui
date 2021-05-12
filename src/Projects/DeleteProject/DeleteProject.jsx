@@ -15,7 +15,7 @@ const DeleteProject = ({ project, onClose }) => {
   } = useDeleteProject();
 
   const handleOnDelete = () => {
-    deleteProject({ id: project?._id });
+    deleteProject({ id: project?.projectId });
   };
 
   if (isDeleteSuccess) {

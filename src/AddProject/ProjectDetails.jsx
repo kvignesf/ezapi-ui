@@ -2,7 +2,6 @@ import React, { useEffect, useCallback } from "react";
 import { TextField } from "@material-ui/core";
 import { useRecoilState } from "recoil";
 import { Field, ErrorMessage, Form, Formik } from "formik";
-import * as Yup from "yup";
 import debounce from "lodash.debounce";
 import { useFilePicker } from "use-file-picker";
 import _ from "lodash";
@@ -12,6 +11,7 @@ import Scrollbar from "react-smooth-scrollbar";
 import projectAtom from "./projectAtom";
 import { PrimaryButton } from "../shared/components/AppButton";
 import AppIcon from "../shared/components/AppIcon";
+import apiNameSchema from "../shared/schemas/apiNameSchema";
 
 const ProjectDetails = ({ formRef, specsError, dbsError }) => {
   const [projectDetails, setProjectDetails] = useRecoilState(projectAtom);
@@ -108,9 +108,7 @@ const ProjectDetails = ({ formRef, specsError, dbsError }) => {
           initialValues={{
             name: projectDetails?.name ?? "",
           }}
-          validationSchema={Yup.object().shape({
-            name: Yup.string().required("API name is required"),
-          })}
+          validationSchema={apiNameSchema}
           innerRef={formRef}
         >
           {({ errors, touched }) => (
@@ -127,6 +125,7 @@ const ProjectDetails = ({ formRef, specsError, dbsError }) => {
                   debouncedSetName(value);
                 }}
                 variant='outlined'
+                inputProps={{ maxLength: 24 }}
                 as={TextField}
               />
             </Form>

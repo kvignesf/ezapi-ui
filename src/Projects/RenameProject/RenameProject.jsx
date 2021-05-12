@@ -1,12 +1,12 @@
 import React from "react";
 import CloseIcon from "@material-ui/icons/Close";
 import { Field, ErrorMessage, Form, Formik } from "formik";
-import * as Yup from "yup";
 import { CircularProgress, TextField } from "@material-ui/core";
 
 import AppIcon from "../../shared/components/AppIcon";
 import { PrimaryButton, TextButton } from "../../shared/components/AppButton";
 import { useUpdateProject } from "../updateProjectQueries";
+import apiNameSchema from "../../shared/schemas/apiNameSchema";
 
 const RenameProject = ({ project, onClose }) => {
   const {
@@ -18,7 +18,7 @@ const RenameProject = ({ project, onClose }) => {
 
   const handleNext = (values) => {
     if (values?.name !== project?.projectName) {
-      updateProject({ id: project?._id, projectName: values?.name });
+      updateProject({ id: project?.projectId, projectName: values?.name });
     } else {
       onClose();
     }
@@ -47,14 +47,7 @@ const RenameProject = ({ project, onClose }) => {
         initialValues={{
           name: project?.projectName ?? "",
         }}
-        validationSchema={Yup.object().shape({
-          name: Yup.string()
-            .required("API name is required")
-            .matches(
-              `^(?=[a-zA-Z0-9-_]*$)`,
-              "Only - and _ are allowed as special characters"
-            ),
-        })}
+        validationSchema={apiNameSchema}
         onSubmit={handleNext}
       >
         {({ errors, touched }) => (

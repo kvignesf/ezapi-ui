@@ -36,7 +36,7 @@ export const useAddProject = () => {
   const mutation = useMutation(addProject, {
     onSuccess: (data) => {
       specsMutation.mutate({
-        id: data?._id,
+        id: data?.projectId,
         files: projectDetails?.specs,
         type: "apiSpec",
       });
