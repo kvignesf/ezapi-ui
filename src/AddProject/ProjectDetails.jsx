@@ -108,7 +108,7 @@ const ProjectDetails = ({ formRef, specsError, dbsError }) => {
           initialValues={{
             name: projectDetails?.name ?? "",
           }}
-          validationSchema={apiNameSchema}
+          validationSchema={apiNameSchema("API name is required")}
           innerRef={formRef}
         >
           {({ errors, touched }) => (

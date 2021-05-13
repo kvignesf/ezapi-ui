@@ -124,7 +124,7 @@ const AddProject = ({ onClose }) => {
 
   return (
     <div className='p-4'>
-      <div className='flex flex-row items-center justify-between'>
+      <div className='flex flex-row items-center justify-between mb-3'>
         <h5>Create New API Project</h5>
 
         {!isUploadingProjectDetails && !isUploadingDbs && !isUploadingSpecs && (

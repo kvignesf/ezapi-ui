@@ -10,6 +10,7 @@ export const endpoint = Object.freeze({
   logout: "/logout",
   project: "/project",
   projects: "/projects",
+  resource: "/resource",
 });
 
 const client = axios.create({

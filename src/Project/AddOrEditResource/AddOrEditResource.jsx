@@ -1,0 +1,97 @@
+import React from "react";
+import CloseIcon from "@material-ui/icons/Close";
+import { CircularProgress, TextField } from "@material-ui/core";
+import { ErrorMessage, Field, Form, Formik } from "formik";
+
+import AppIcon from "../../shared/components/AppIcon";
+import { PrimaryButton, TextButton } from "../../shared/components/AppButton";
+import apiNameSchema from "../../shared/schemas/apiNameSchema";
+import { useAddResource, useEditResource } from "./resourceQuery";
+
+const AddOrEditResource = ({ title, name, onClose }) => {
+  const {
+    isLoading: isAddingResource,
+    isSuccess: isAddingResourceSuccess,
+    error: addResourceError,
+    mutate: addResource,
+  } = useAddResource();
+  const {
+    isLoading: isEditingResource,
+    isSuccess: isEditingResourceSuccess,
+    error: editResourceError,
+    mutate: editResource,
+  } = useEditResource();
+  const isUpdatingProject = false;
+  const updateProjectError = null;
+
+  const handleSubmit = (values) => {
+    const resourceName = values?.name;
+  };
+
+  return (
+    <div>
+      <div className='p-3 flex flex-row justify-between border-b-2'>
+        <h5>{title}</h5>
+
+        <AppIcon onClick={onClose}>
+          <CloseIcon />
+        </AppIcon>
+      </div>
+
+      <p className='my-2 mx-4 text-overline2'>Resource Name</p>
+
+      <Formik
+        initialValues={{
+          name: name ?? "",
+        }}
+        validationSchema={apiNameSchema("Resource name is required")}
+        onSubmit={handleSubmit}
+      >
+        {({ errors, touched }) => (
+          <>
+            <Form>
+              <div className='mb-4 px-4'>
+                <Field
+                  id='name'
+                  name='name'
+                  fullWidth
+                  color='primary'
+                  error={touched.name && Boolean(errors.name)}
+                  helperText={<ErrorMessage name='name' />}
+                  variant='outlined'
+                  as={TextField}
+                  disabled={isUpdatingProject}
+                  inputProps={{ maxLength: 24 }}
+                />
+              </div>
+
+              <p className='ml-4 mb-3 text-accent-red text-overline2'>
+                {updateProjectError?.message}
+              </p>
+
+              <div className='border-t-2 border-neutral-gray7 flex flex-row items-center justify-end p-4'>
+                {!isUpdatingProject ? (
+                  <>
+                    <TextButton
+                      onClick={() => {
+                        onClose();
+                      }}
+                      classes='mr-3'
+                    >
+                      Cancel
+                    </TextButton>
+                    <PrimaryButton type='submit'>Done</PrimaryButton>
+                  </>
+                ) : (
+                  <CircularProgress size='24px' />
+                )}
+              </div>
+            </Form>
+          </>
+        )}
+      </Formik>
+    </div>
+  );
+};
+
+export default AddOrEditResource;

@@ -14,6 +14,7 @@ import Login from "./Login";
 import Projects from "./Projects";
 import Landing from "./Landing";
 import { isUserLoggedIn } from "./shared/utils";
+import Project from "./Project";
 
 const theme = createMuiTheme({
   palette: {
@@ -41,6 +42,9 @@ const App = () => {
               </Route>
 
               <PrivateRoute exact path={routes.projects} component={Projects} />
+
+              <PrivateRoute exact path={routes.project} component={Project} />
+
               <Route exact path='/linkedin' component={LinkedInPopUp} />
               {/* Base route */}
               <Route exact path='/' component={Landing} />

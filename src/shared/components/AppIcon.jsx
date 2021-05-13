@@ -5,7 +5,13 @@ const AppIcon = ({ children, style, ...rest }) => {
   return (
     <IconButton
       disableTouchRipple
-      style={{ ...style, border: "none", outline: "none" }}
+      style={{
+        padding: 0,
+        margin: 0,
+        border: "none",
+        outline: "none",
+        ...style,
+      }}
       {...rest}
     >
       {children}
