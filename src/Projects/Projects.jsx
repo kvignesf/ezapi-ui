@@ -23,6 +23,8 @@ import EmptyLogo from "../static/images/empty-state.svg";
 import { PrimaryButton } from "../shared/components/AppButton";
 import LoaderWithMessage from "../shared/components/LoaderWithMessage";
 import { getUserId } from "../shared/storage";
+import routes, { generateRoute } from "../shared/routes";
+import { useHistory } from "react-router";
 
 const MembersImages = ({ project, ...rest }) => {
   const loggedInUserId = getUserId();
@@ -175,6 +177,7 @@ const ProjectRow = ({
 };
 
 const Content = ({ showCreateProjectDialog }) => {
+  const history = useHistory();
   const {
     data: projects,
     isLoading: isFetchingProjects,
@@ -220,7 +223,9 @@ const Content = ({ showCreateProjectDialog }) => {
     });
   };
 
-  const handleOnView = (project) => {};
+  const handleOnView = (project) => {
+    history.push(generateRoute(routes.projects, project?.projectId));
+  };
 
   const handleOnInvite = (project) => {
     showMembersDialog(project);

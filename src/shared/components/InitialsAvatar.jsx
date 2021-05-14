@@ -1,9 +1,9 @@
-import React from 'react';
-import _ from 'lodash';
-import classNames from 'classnames';
+import React from "react";
+import _ from "lodash";
+import classNames from "classnames";
 
 const InitialsAvatar = ({ firstName, lastName, className, ...rest }) => {
-  let name = '-';
+  let name = "-";
   if (firstName && !_.isEmpty(firstName)) {
     name = firstName?.charAt(0)?.toUpperCase();
   }
@@ -15,9 +15,9 @@ const InitialsAvatar = ({ firstName, lastName, className, ...rest }) => {
   return (
     <div
       style={{
-        borderWidth: '1px',
+        borderWidth: "1px",
       }}
-      className={`rounded-full p-2 bg-brand-primarySubtle w-min ${className}`}
+      className={`rounded-full p-2 bg-brand-primarySubtle w-10 ${className}`}
       {...rest}
     >
       <p className='capitalize text-brand-primary text-overline2'>{name}</p>

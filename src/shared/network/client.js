@@ -11,6 +11,8 @@ export const endpoint = Object.freeze({
   project: "/project",
   projects: "/projects",
   resource: "/resource",
+  path: "/path",
+  operation: "/operation",
 });
 
 const client = axios.create({

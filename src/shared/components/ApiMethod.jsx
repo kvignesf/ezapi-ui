@@ -23,7 +23,7 @@ const ApiMethod = ({ type, ...rest }) => {
       name = "patch";
       break;
     case Method.delete:
-      name = "delete";
+      name = "del";
       break;
     case Method.put:
       name = "put";
@@ -37,7 +37,7 @@ const ApiMethod = ({ type, ...rest }) => {
   return (
     <div
       className={classNames(
-        "flex flex-row justify-center rounded-sm border-2 w-16",
+        "flex flex-row justify-center rounded-sm border-2 w-12 h-6",
         {
           "border-brand-green text-brand-green": type === Method.get,
           "border-accent-orange text-accent-orange": type === Method.post,

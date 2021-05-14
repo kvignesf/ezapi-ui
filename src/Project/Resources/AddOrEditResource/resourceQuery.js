@@ -1,7 +1,7 @@
 import { useMutation } from "react-query";
 
-import client, { endpoint } from "../../shared/network/client";
-import { getApiError } from "../../shared/utils";
+import client, { endpoint } from "../../../shared/network/client";
+import { getApiError } from "../../../shared/utils";
 
 const addResource = async ({ name }) => {
   try {

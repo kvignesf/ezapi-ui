@@ -3,29 +3,30 @@ import CloseIcon from "@material-ui/icons/Close";
 import { CircularProgress, TextField } from "@material-ui/core";
 import { ErrorMessage, Field, Form, Formik } from "formik";
 
-import AppIcon from "../../shared/components/AppIcon";
-import { PrimaryButton, TextButton } from "../../shared/components/AppButton";
-import apiNameSchema from "../../shared/schemas/apiNameSchema";
-import { useAddResource, useEditResource } from "./resourceQuery";
+import AppIcon from "../../../shared/components/AppIcon";
+import {
+  PrimaryButton,
+  TextButton,
+} from "../../../shared/components/AppButton";
+import apiNameSchema from "../../../shared/schemas/apiNameSchema";
+import { useAddPath, useEditPath } from "./pathQuery";
 
-const AddOrEditResource = ({ title, name, onClose }) => {
+const AddOrEditPath = ({ title, path: { id, name }, onClose }) => {
   const {
-    isLoading: isAddingResource,
-    isSuccess: isAddingResourceSuccess,
-    error: addResourceError,
-    mutate: addResource,
-  } = useAddResource();
+    isLoading: isAddingPath,
+    isSuccess: isAddingPathSuccess,
+    error: addPathError,
+    mutate: addPath,
+  } = useAddPath();
   const {
-    isLoading: isEditingResource,
-    isSuccess: isEditingResourceSuccess,
-    error: editResourceError,
-    mutate: editResource,
-  } = useEditResource();
-  const isUpdatingProject = false;
-  const updateProjectError = null;
+    isLoading: isEditingPath,
+    isSuccess: isEditingPathSuccess,
+    error: editPathError,
+    mutate: editPath,
+  } = useEditPath();
 
   const handleSubmit = (values) => {
-    const resourceName = values?.name;
+    const pathName = values?.name;
   };
 
   return (
@@ -38,13 +39,13 @@ const AddOrEditResource = ({ title, name, onClose }) => {
         </AppIcon>
       </div>
 
-      <p className='my-2 mx-4 text-overline2'>Resource Name</p>
+      <p className='my-2 mx-4 text-overline2'>Path Name</p>
 
       <Formik
         initialValues={{
           name: name ?? "",
         }}
-        validationSchema={apiNameSchema("Resource name is required")}
+        validationSchema={apiNameSchema("Path name is required")}
         onSubmit={handleSubmit}
       >
         {({ errors, touched }) => (
@@ -60,17 +61,25 @@ const AddOrEditResource = ({ title, name, onClose }) => {
                   helperText={<ErrorMessage name='name' />}
                   variant='outlined'
                   as={TextField}
-                  disabled={isUpdatingProject}
+                  disabled={isEditingPath || isAddingPath}
                   inputProps={{ maxLength: 24 }}
                 />
               </div>
 
-              <p className='ml-4 mb-3 text-accent-red text-overline2'>
-                {updateProjectError?.message}
-              </p>
+              {editPathError && (
+                <p className='ml-4 mb-3 text-accent-red text-overline2'>
+                  {editPathError?.message}
+                </p>
+              )}
+
+              {addPathError && (
+                <p className='ml-4 mb-3 text-accent-red text-overline2'>
+                  {addPathError?.message}
+                </p>
+              )}
 
               <div className='border-t-2 border-neutral-gray7 flex flex-row items-center justify-end p-4'>
-                {!isUpdatingProject ? (
+                {!(isEditingPath || isAddingPath) ? (
                   <>
                     <TextButton
                       onClick={() => {
@@ -94,4 +103,4 @@ const AddOrEditResource = ({ title, name, onClose }) => {
   );
 };
 
-export default AddOrEditResource;
+export default AddOrEditPath;

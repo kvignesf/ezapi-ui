@@ -1,0 +1,224 @@
+import React from "react";
+import CloseIcon from "@material-ui/icons/Close";
+import {
+  CircularProgress,
+  makeStyles,
+  MenuItem,
+  Select,
+  TextField,
+} from "@material-ui/core";
+import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
+import { ErrorMessage, Field, Form, Formik } from "formik";
+
+import AppIcon from "../../../shared/components/AppIcon";
+import {
+  PrimaryButton,
+  TextButton,
+} from "../../../shared/components/AppButton";
+import operationSchema from "./operationSchema";
+import { useAddOperation, useEditOperation } from "./operationQuery";
+
+const operationType = [
+  {
+    id: "get",
+    name: "GET",
+  },
+  {
+    id: "post",
+    name: "POST",
+  },
+  {
+    id: "put",
+    name: "PUT",
+  },
+  {
+    id: "del",
+    name: "DELETE",
+  },
+];
+const CustomTextField = (props) => (
+  <TextField
+    InputProps={{
+      style: {
+        background: "white",
+      },
+    }}
+    {...props}
+  />
+);
+const CustomSelect = (props) => (
+  <Select
+    style={{ background: "white" }}
+    inputProps={{
+      style: {
+        background: "white",
+      },
+    }}
+    {...props}
+  />
+);
+
+const AddOrEditOperation = ({
+  title,
+  operation: { name, type, desc, id },
+  onClose,
+}) => {
+  const {
+    isLoading: isAddingOperation,
+    isSuccess: isAddingOperationSuccess,
+    error: addOperationError,
+    mutate: addOperation,
+    reset: resetAddOperation,
+  } = useAddOperation();
+  const {
+    isLoading: isEditingOperation,
+    isSuccess: isEditingOperationSuccess,
+    error: editOperationError,
+    mutate: editOperation,
+    reset: resetEditOperation,
+  } = useEditOperation();
+
+  const resetMutationState = () => {
+    if (name && desc && type) {
+      if (
+        editOperationError ||
+        isEditingOperationSuccess ||
+        isEditingOperation
+      ) {
+        resetEditOperation();
+      }
+    } else if (
+      addOperationError ||
+      isAddingOperationSuccess ||
+      isAddingOperation
+    ) {
+      resetAddOperation();
+    }
+  };
+
+  const handleSubmit = ({ name, type, desc }) => {};
+
+  return (
+    <div>
+      <div className='p-4 flex flex-row justify-between border-b-2'>
+        <h5>{title}</h5>
+
+        <AppIcon onClick={onClose}>
+          <CloseIcon />
+        </AppIcon>
+      </div>
+
+      <Formik
+        initialValues={{
+          name: name ?? "",
+          type: type ?? operationType[0].id,
+          desc: desc ?? "",
+        }}
+        validationSchema={operationSchema}
+        onSubmit={handleSubmit}
+      >
+        {({ errors, touched }) => (
+          <>
+            <Form>
+              <div className='m-4 p-4 rounded-md bg-neutral-gray7'>
+                <div className='flex flex-row mb-3'>
+                  <div className='mr-5'>
+                    <p className='text-overline2 mb-2'>Operation Type</p>
+                    <Field
+                      variant='outlined'
+                      required
+                      fullWidth
+                      id='type'
+                      name='type'
+                      onKeyUp={resetMutationState}
+                      helperText={<ErrorMessage name='role' />}
+                      error={touched.role && Boolean(errors.role)}
+                      as={CustomSelect}
+                      IconComponent={ExpandMoreIcon}
+                      disabled={isEditingOperation || isAddingOperation}
+                      onClick={resetMutationState}
+                    >
+                      {operationType.map((value) => {
+                        return (
+                          <MenuItem value={value.id}>{value.name}</MenuItem>
+                        );
+                      })}
+                    </Field>
+                  </div>
+
+                  <div className='flex-1'>
+                    <p className='text-overline2 mb-2'>Operation Name</p>
+                    <Field
+                      id='name'
+                      name='name'
+                      fullWidth
+                      color='primary'
+                      onKeyUp={resetMutationState}
+                      error={touched.name && Boolean(errors.name)}
+                      helperText={<ErrorMessage name='name' />}
+                      variant='outlined'
+                      as={CustomTextField}
+                      disabled={isEditingOperation || isAddingOperation}
+                      inputProps={{ maxLength: 24 }}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <p className='text-overline2 mb-2'>Description</p>
+                  <Field
+                    id='desc'
+                    name='desc'
+                    fullWidth
+                    color='primary'
+                    error={touched.desc && Boolean(errors.desc)}
+                    helperText={<ErrorMessage name='desc' />}
+                    variant='outlined'
+                    onKeyUp={resetMutationState}
+                    as={CustomTextField}
+                    multiline
+                    rows={4}
+                    disabled={isEditingOperation || isAddingOperation}
+                    inputProps={{ maxLength: 24 }}
+                  />
+                </div>
+              </div>
+
+              {editOperationError && (
+                <p className='ml-4 mb-3 text-accent-red text-overline2'>
+                  {editOperationError?.message}
+                </p>
+              )}
+
+              {addOperationError && (
+                <p className='ml-4 mb-3 text-accent-red text-overline2'>
+                  {addOperationError?.message}
+                </p>
+              )}
+
+              <div className='border-t-2 border-neutral-gray7 flex flex-row items-center justify-end p-4'>
+                {!(isEditingOperation || isAddingOperation) ? (
+                  <>
+                    <TextButton
+                      onClick={() => {
+                        onClose();
+                      }}
+                      classes='mr-3'
+                    >
+                      Cancel
+                    </TextButton>
+                    <PrimaryButton type='submit'>Done</PrimaryButton>
+                  </>
+                ) : (
+                  <CircularProgress size='24px' />
+                )}
+              </div>
+            </Form>
+          </>
+        )}
+      </Formik>
+    </div>
+  );
+};
+
+export default AddOrEditOperation;

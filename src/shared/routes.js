@@ -6,6 +6,9 @@ const routes = Object.freeze({
 });
 
 export const generateRoute = (route, data) => {
+  if (route === routes.projects) {
+    return `${routes.projects}/${data}`;
+  }
   return "/";
 };
 
