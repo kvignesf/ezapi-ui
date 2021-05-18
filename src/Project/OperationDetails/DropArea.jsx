@@ -1,12 +1,12 @@
 import React from "react";
 import { useDrop } from "react-dnd";
 
-const DropArea = ({ children }) => {
-  const [collectedProps, drop] = useDrop(() => ({
+const DropArea = ({ children, onItemDropped }) => {
+  const [{ canDrop, isOver }, drop] = useDrop(() => ({
     // The type (or types) to accept - strings or symbols
     accept: "BOX",
     drop: (item, monitor) => {
-      console.log("item", item);
+      onItemDropped(item);
     },
     // Props to collect
     collect: (monitor) => ({
@@ -17,7 +17,7 @@ const DropArea = ({ children }) => {
 
   return (
     <div ref={drop} role={"Dustbin"}>
-      Drag a box here
+      {children}
     </div>
   );
 };

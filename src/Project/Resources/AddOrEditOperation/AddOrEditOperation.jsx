@@ -17,6 +17,7 @@ import {
 } from "../../../shared/components/AppButton";
 import operationSchema from "./operationSchema";
 import { useAddOperation, useEditOperation } from "./operationQuery";
+import _ from "lodash";
 
 const operationType = [
   {
@@ -60,7 +61,13 @@ const CustomSelect = (props) => (
 
 const AddOrEditOperation = ({
   title,
-  operation: { name, type, desc, id },
+  pathId,
+  operation: {
+    operationName,
+    operationType,
+    operationDescription,
+    operationId,
+  },
   onClose,
 }) => {
   const {
@@ -79,7 +86,7 @@ const AddOrEditOperation = ({
   } = useEditOperation();
 
   const resetMutationState = () => {
-    if (name && desc && type) {
+    if (operationName && operationDescription && operationType) {
       if (
         editOperationError ||
         isEditingOperationSuccess ||
@@ -96,7 +103,35 @@ const AddOrEditOperation = ({
     }
   };
 
-  const handleSubmit = ({ name, type, desc }) => {};
+  const handleSubmit = ({ name, type, desc }) => {
+    if (operationId && !_.isEmpty(operationId)) {
+      if (
+        name !== operationName ||
+        type !== operationType ||
+        desc !== operationDescription
+      ) {
+        editOperation({
+          id: operationId,
+          name: operationName,
+          type: operationType,
+          desc: operationDescription,
+        });
+      }
+      return;
+    }
+
+    addOperation({
+      id: pathId,
+      name: name,
+      type: type,
+      desc: desc,
+    });
+  };
+
+  if (isEditingOperationSuccess || isAddingOperationSuccess) {
+    onClose();
+    return null;
+  }
 
   return (
     <div>
@@ -110,9 +145,9 @@ const AddOrEditOperation = ({
 
       <Formik
         initialValues={{
-          name: name ?? "",
-          type: type ?? operationType[0].id,
-          desc: desc ?? "",
+          name: operationName ?? "",
+          type: operationType ?? operationType[0].id,
+          desc: operationDescription ?? "",
         }}
         validationSchema={operationSchema}
         onSubmit={handleSubmit}

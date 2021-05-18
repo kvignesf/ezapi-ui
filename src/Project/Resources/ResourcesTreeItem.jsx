@@ -13,6 +13,7 @@ import StyledTreeItem from "./StyledTreeItem";
 import Colors from "../../shared/colors";
 import AddOrEditPath from "./AddOrEditPath";
 import AddOrEditResource from "./AddOrEditResource";
+import DeleteResource from "./DeleteResource";
 
 const ResourceTreeItem = ({ nodeId, resource, children, ...rest }) => {
   const [menuAnchor, setMenuAnchor] = useState(null);
@@ -42,7 +43,12 @@ const ResourceTreeItem = ({ nodeId, resource, children, ...rest }) => {
     });
   };
 
-  const handleDeleteClick = () => {};
+  const handleDeleteClick = () => {
+    setDialog({
+      show: true,
+      type: "delete-resource",
+    });
+  };
 
   const handleCloseDialog = () => {
     setDialog({
@@ -67,6 +73,7 @@ const ResourceTreeItem = ({ nodeId, resource, children, ...rest }) => {
           <AddOrEditPath
             onClose={handleCloseDialog}
             title='Add Path'
+            resourceId={resource?.resourceId}
             path={{}}
           />
         )}
@@ -75,8 +82,12 @@ const ResourceTreeItem = ({ nodeId, resource, children, ...rest }) => {
           <AddOrEditResource
             onClose={handleCloseDialog}
             title='Edit Resource'
-            resource={{}}
+            resource={resource}
           />
+        )}
+
+        {dialog?.type === "delete-resource" && (
+          <DeleteResource onClose={handleCloseDialog} resource={resource} />
         )}
       </Dialog>
 
@@ -93,7 +104,7 @@ const ResourceTreeItem = ({ nodeId, resource, children, ...rest }) => {
                     />
                   </AppIcon>
                   <p className='text-overline2'>
-                    {resource?.name ?? "something"}
+                    {resource?.resourceName ?? "something"}
                   </p>
                 </div>
 

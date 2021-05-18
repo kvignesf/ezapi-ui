@@ -75,7 +75,10 @@ const Project = () => {
               className='w-1/5 border-r-2 h-full'
               style={{ minWidth: "220px", maxWidth: "300px" }}
             >
-              <Resources className='h-full flex flex-col' />
+              <Resources
+                className='h-full flex flex-col'
+                projectId={projectId}
+              />
             </section>
 
             <section className='w-full flex flex-col'>

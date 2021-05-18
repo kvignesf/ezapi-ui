@@ -15,7 +15,10 @@ import ResourceTreeItem from "./ResourcesTreeItem";
 import PathTreeItem from "./PathTreeItem";
 import OperationTreeItem from "./OperationTreeItem";
 import { PrimaryButton } from "../../shared/components/AppButton";
+import LoaderWithMessage from "../../shared/components/LoaderWithMessage";
+import ErrorWithMessage from "../../shared/components/ErrorWithMessage";
 import Colors from "../../shared/colors";
+import { useGetResources } from "./resourcesQuery";
 
 const useStyles = makeStyles({
   root: {
@@ -25,8 +28,15 @@ const useStyles = makeStyles({
   },
 });
 
-const Resources = ({ resources, ...props }) => {
+const Resources = ({ projectId, ...props }) => {
   const classes = useStyles();
+  const {
+    isLoading: isLoadingResources,
+    data: resources,
+    error: getResourcesError,
+  } = useGetResources(projectId, {
+    refetchOnWindowFocus: false,
+  });
   const [dialog, setDialog] = useState({
     show: false,
     type: null,
@@ -48,6 +58,26 @@ const Resources = ({ resources, ...props }) => {
     });
   };
 
+  if (isLoadingResources) {
+    return (
+      <LoaderWithMessage
+        message='Fetching resources'
+        contained
+        className='h-full'
+      />
+    );
+  }
+
+  if (getResourcesError) {
+    return (
+      <ErrorWithMessage
+        message='Failed to load the resources'
+        contained
+        className='h-full'
+      />
+    );
+  }
+
   return (
     <div {...props}>
       <Dialog
@@ -64,6 +94,8 @@ const Resources = ({ resources, ...props }) => {
           <AddOrEditResource
             title='Create Resource'
             onClose={handleCloseDialog}
+            projectId={projectId}
+            resource={{}}
           />
         )}
       </Dialog>
@@ -79,8 +111,8 @@ const Resources = ({ resources, ...props }) => {
         </AppIcon>
       </div>
 
-      {/* {!_.isEmpty(resources) ? ( */}
-      {true ? (
+      {!_.isEmpty(resources) ? (
+        // {true ? (
         <TreeView
           className={classes.root}
           defaultCollapseIcon={
@@ -91,22 +123,14 @@ const Resources = ({ resources, ...props }) => {
           }
           style={{ pointerEvents: "auto" }}
         >
-          <ResourceTreeItem nodeId='1'>
-            <PathTreeItem nodeId='2'>
-              <OperationTreeItem nodeId='3' type={Method.get} />
-              <OperationTreeItem nodeId='4' type={Method.post} />
-              <OperationTreeItem nodeId='5' type={Method.put} />
-              <OperationTreeItem nodeId='6' type={Method.delete} />
-            </PathTreeItem>
-          </ResourceTreeItem>
-
-          <ResourceTreeItem nodeId='7'>
-            <PathTreeItem nodeId='8'>
-              <OperationTreeItem nodeId='9' type={Method.get} />
-              <OperationTreeItem nodeId='10' type={Method.get} />
-              <OperationTreeItem nodeId='11' type={Method.get} />
-            </PathTreeItem>
-          </ResourceTreeItem>
+          {resources?.map((resource, index) => {
+            return (
+              <ResourceTreeItem
+                nodeId={index}
+                resource={resource}
+              ></ResourceTreeItem>
+            );
+          })}
         </TreeView>
       ) : (
         <div className='flex-1 justify-center flex flex-col items-center'>

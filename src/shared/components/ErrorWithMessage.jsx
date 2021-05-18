@@ -1,18 +1,20 @@
 import React from "react";
 import { CircularProgress } from "@material-ui/core";
 
-import Colors from "../colors";
-import Text, { TextStyle } from "./Text";
 import classNames from "classnames";
 
-const ErrorWithMessage = ({ message, contained = false }) => {
+const ErrorWithMessage = ({ message, className, contained = false }) => {
   return (
     <div
-      className={classNames("flex flex-col justify-center items-center", {
-        "w-screen h-screen": !contained,
-      })}
+      className={classNames(
+        "flex flex-col justify-center items-center",
+        {
+          "w-screen h-screen": !contained,
+        },
+        `${className}`
+      )}
     >
-      <Text variant={TextStyle.largeLabel}>{message}</Text>
+      <p className='text-overline2'>{message}</p>
     </div>
   );
 };

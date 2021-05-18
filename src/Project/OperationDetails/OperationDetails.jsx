@@ -8,7 +8,7 @@ import {
   makeStyles,
 } from "@material-ui/core";
 import Colors from "../../shared/colors";
-import Headers from "./Headers";
+import Headers from "./Headers/Headers";
 
 const tabsStyles = makeStyles({
   indicator: {

@@ -12,12 +12,9 @@ const Match = (props) => {
 
   return (
     <div {...props}>
-      <SortableList
-        className='list'
-        itemComponent={(item) => <DraggableItem item={item.children} />}
-        value={items}
-        onChange={setItems}
-      />
+      {items.map((item) => {
+        return <DraggableItem item={item} />;
+      })}
     </div>
   );
 };

@@ -3,9 +3,10 @@ import { useMutation } from "react-query";
 import client, { endpoint } from "../../../shared/network/client";
 import { getApiError } from "../../../shared/utils";
 
-const addPath = async ({ name }) => {
+const addPath = async ({ id, name }) => {
   try {
-    const { data } = await client.post(endpoint.path, {
+    const { data } = await client.post(endpoint.paths, {
+      resourceId: id,
       pathName: name,
     });
     return data;
@@ -19,9 +20,9 @@ export const useAddPath = () => {
   return mutation;
 };
 
-const editPath = async ({ name }) => {
+const editPath = async ({ id, name }) => {
   try {
-    const { data } = await client.patch(endpoint.path, {
+    const { data } = await client.patch(`${endpoint.paths}/${id}/rename`, {
       pathName: name,
     });
     return data;

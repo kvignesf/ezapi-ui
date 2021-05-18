@@ -2,6 +2,7 @@ import React from "react";
 import CloseIcon from "@material-ui/icons/Close";
 import { CircularProgress, TextField } from "@material-ui/core";
 import { ErrorMessage, Field, Form, Formik } from "formik";
+import _ from "lodash";
 
 import AppIcon from "../../../shared/components/AppIcon";
 import {
@@ -11,7 +12,12 @@ import {
 import apiNameSchema from "../../../shared/schemas/apiNameSchema";
 import { useAddPath, useEditPath } from "./pathQuery";
 
-const AddOrEditPath = ({ title, path: { id, name }, onClose }) => {
+const AddOrEditPath = ({
+  title,
+  resourceId,
+  path: { pathId, pathName },
+  onClose,
+}) => {
   const {
     isLoading: isAddingPath,
     isSuccess: isAddingPathSuccess,
@@ -25,9 +31,24 @@ const AddOrEditPath = ({ title, path: { id, name }, onClose }) => {
     mutate: editPath,
   } = useEditPath();
 
-  const handleSubmit = (values) => {
-    const pathName = values?.name;
+  const handleSubmit = ({ name: updatedPathName }) => {
+    if (pathId && !_.isEmpty(pathId)) {
+      if (pathName !== updatedPathName) {
+        editPath({ id: pathId, name: updatedPathName });
+      }
+      return;
+    }
+
+    addPath({
+      id: resourceId,
+      name: updatedPathName,
+    });
   };
+
+  if (isEditingPathSuccess || isAddingPathSuccess) {
+    onClose();
+    return null;
+  }
 
   return (
     <div>
@@ -43,7 +64,7 @@ const AddOrEditPath = ({ title, path: { id, name }, onClose }) => {
 
       <Formik
         initialValues={{
-          name: name ?? "",
+          name: pathName ?? "",
         }}
         validationSchema={apiNameSchema("Path name is required")}
         onSubmit={handleSubmit}

@@ -2,6 +2,7 @@ import React from "react";
 import CloseIcon from "@material-ui/icons/Close";
 import { CircularProgress, TextField } from "@material-ui/core";
 import { ErrorMessage, Field, Form, Formik } from "formik";
+import _ from "lodash";
 
 import AppIcon from "../../../shared/components/AppIcon";
 import {
@@ -11,7 +12,12 @@ import {
 import apiNameSchema from "../../../shared/schemas/apiNameSchema";
 import { useAddResource, useEditResource } from "./resourceQuery";
 
-const AddOrEditResource = ({ title, resource: { id, name }, onClose }) => {
+const AddOrEditResource = ({
+  projectId,
+  title,
+  resource: { resourceId, resourceName },
+  onClose,
+}) => {
   const {
     isLoading: isAddingResource,
     isSuccess: isAddingResourceSuccess,
@@ -26,8 +32,24 @@ const AddOrEditResource = ({ title, resource: { id, name }, onClose }) => {
   } = useEditResource();
 
   const handleSubmit = (values) => {
-    const resourceName = values?.name;
+    const updatedResourceName = values?.name;
+
+    if (resourceId && !_.isEmpty(resourceId)) {
+      if (resourceName !== updatedResourceName) {
+        editResource({ id: resourceId, name: updatedResourceName });
+      }
+      return;
+    }
+
+    addResource({
+      projectId: projectId,
+      name: updatedResourceName,
+    });
   };
+
+  if (isAddingResourceSuccess || isEditingResourceSuccess) {
+    onClose();
+  }
 
   return (
     <div>
@@ -43,7 +65,7 @@ const AddOrEditResource = ({ title, resource: { id, name }, onClose }) => {
 
       <Formik
         initialValues={{
-          name: name ?? "",
+          name: resourceName ?? "",
         }}
         validationSchema={apiNameSchema("Resource name is required")}
         onSubmit={handleSubmit}

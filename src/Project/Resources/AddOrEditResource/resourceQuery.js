@@ -1,11 +1,13 @@
-import { useMutation } from "react-query";
+import { useMutation, useQueryClient } from "react-query";
 
 import client, { endpoint } from "../../../shared/network/client";
+import { queries } from "../../../shared/network/queryClient";
 import { getApiError } from "../../../shared/utils";
 
-const addResource = async ({ name }) => {
+const addResource = async ({ projectId, name }) => {
   try {
-    const { data } = await client.post(endpoint.resource, {
+    const { data } = await client.post(endpoint.resources, {
+      projectId: projectId,
       resourceName: name,
     });
     return data;
@@ -15,13 +17,19 @@ const addResource = async ({ name }) => {
 };
 
 export const useAddResource = () => {
-  const mutation = useMutation(addResource);
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation(addResource, {
+    onSuccess: (data) => {
+      queryClient.invalidateQueries(queries.resources);
+    },
+  });
   return mutation;
 };
 
-const editResource = async ({ name }) => {
+const editResource = async ({ id, name }) => {
   try {
-    const { data } = await client.patch(endpoint.resource, {
+    const { data } = await client.patch(`${endpoint.resources}/${id}/rename`, {
       resourceName: name,
     });
     return data;
@@ -31,6 +39,12 @@ const editResource = async ({ name }) => {
 };
 
 export const useEditResource = () => {
-  const mutation = useMutation(editResource);
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation(editResource, {
+    onSuccess: (data) => {
+      queryClient.invalidateQueries(queries.resources);
+    },
+  });
   return mutation;
 };

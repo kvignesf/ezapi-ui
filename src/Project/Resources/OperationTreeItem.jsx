@@ -10,8 +10,9 @@ import StyledTreeItem from "./StyledTreeItem";
 import Colors from "../../shared/colors";
 import AddOrEditOperation from "./AddOrEditOperation";
 import AddOrEditPath from "./AddOrEditPath";
+import DeleteOperation from "./DeleteOperation";
 
-const OperationTreeItem = ({ nodeId, type, operation, ...rest }) => {
+const OperationTreeItem = ({ nodeId, pathId, type, operation, ...rest }) => {
   const [menuAnchor, setMenuAnchor] = useState(null);
   const [dialog, setDialog] = useState({
     show: false,
@@ -35,7 +36,12 @@ const OperationTreeItem = ({ nodeId, type, operation, ...rest }) => {
     });
   };
 
-  const handleDeleteClick = () => {};
+  const handleDeleteClick = () => {
+    setDialog({
+      show: true,
+      type: "delete-operation",
+    });
+  };
 
   const handleCloseDialog = () => {
     setDialog({
@@ -60,8 +66,12 @@ const OperationTreeItem = ({ nodeId, type, operation, ...rest }) => {
           <AddOrEditOperation
             onClose={handleCloseDialog}
             title='Edit Operation'
-            operation={{}}
+            operation={operation}
           />
+        )}
+
+        {dialog?.type === "delete-operation" && (
+          <DeleteOperation onClose={handleCloseDialog} operation={operation} />
         )}
       </Dialog>
 

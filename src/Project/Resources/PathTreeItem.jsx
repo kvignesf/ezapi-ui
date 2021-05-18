@@ -12,8 +12,9 @@ import StyledTreeItem from "./StyledTreeItem";
 import Colors from "../../shared/colors";
 import AddOrEditPath from "./AddOrEditPath";
 import AddOrEditOperation from "./AddOrEditOperation";
+import DeletePath from "./DeletePath";
 
-const PathTreeItem = ({ nodeId, path, children, ...rest }) => {
+const PathTreeItem = ({ nodeId, resourceId, path, children, ...rest }) => {
   const [menuAnchor, setMenuAnchor] = useState(null);
   const [dialog, setDialog] = useState({
     show: false,
@@ -41,7 +42,12 @@ const PathTreeItem = ({ nodeId, path, children, ...rest }) => {
     });
   };
 
-  const handleDeleteClick = () => {};
+  const handleDeleteClick = () => {
+    setDialog({
+      show: true,
+      type: "delete-path",
+    });
+  };
 
   const handleCloseDialog = () => {
     setDialog({
@@ -66,6 +72,7 @@ const PathTreeItem = ({ nodeId, path, children, ...rest }) => {
           <AddOrEditOperation
             onClose={handleCloseDialog}
             title='Add Operation'
+            pathId={path?.pathId}
             operation={{}}
           />
         )}
@@ -73,9 +80,13 @@ const PathTreeItem = ({ nodeId, path, children, ...rest }) => {
         {dialog?.type === "edit-path" && (
           <AddOrEditPath
             onClose={handleCloseDialog}
-            title='Edit Path'
-            path={{}}
+            resourceId={resourceId}
+            path={path}
           />
+        )}
+
+        {dialog?.type === "delete-path" && (
+          <DeletePath onClose={handleCloseDialog} path={path} />
         )}
       </Dialog>
 
