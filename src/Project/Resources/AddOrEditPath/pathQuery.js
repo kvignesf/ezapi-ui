@@ -1,6 +1,7 @@
-import { useMutation } from "react-query";
+import { useMutation, useQueryClient } from "react-query";
 
 import client, { endpoint } from "../../../shared/network/client";
+import { queries } from "../../../shared/network/queryClient";
 import { getApiError } from "../../../shared/utils";
 
 const addPath = async ({ id, name }) => {
@@ -16,7 +17,13 @@ const addPath = async ({ id, name }) => {
 };
 
 export const useAddPath = () => {
-  const mutation = useMutation(addPath);
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation(addPath, {
+    onSuccess: (data) => {
+      queryClient.invalidateQueries(queries.resources);
+    },
+  });
   return mutation;
 };
 
@@ -32,6 +39,12 @@ const editPath = async ({ id, name }) => {
 };
 
 export const useEditPath = () => {
-  const mutation = useMutation(editPath);
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation(editPath, {
+    onSuccess: (data) => {
+      queryClient.invalidateQueries(queries.resources);
+    },
+  });
   return mutation;
 };

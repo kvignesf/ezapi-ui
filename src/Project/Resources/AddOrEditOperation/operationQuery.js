@@ -1,12 +1,16 @@
-import { useMutation } from "react-query";
+import { useMutation, useQueryClient } from "react-query";
 
 import client, { endpoint } from "../../../shared/network/client";
+import { queries } from "../../../shared/network/queryClient";
 import { getApiError } from "../../../shared/utils";
 
-const addOperation = async ({ name }) => {
+const addOperation = async ({ id, name, type, desc }) => {
   try {
-    const { data } = await client.post(endpoint.operation, {
+    const { data } = await client.post(endpoint.operations, {
+      pathId: id,
       operationName: name,
+      operationType: type,
+      operationDescription: desc,
     });
     return data;
   } catch (error) {
@@ -15,14 +19,22 @@ const addOperation = async ({ name }) => {
 };
 
 export const useAddOperation = () => {
-  const mutation = useMutation(addOperation);
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation(addOperation, {
+    onSuccess: (data) => {
+      queryClient.invalidateQueries(queries.resources);
+    },
+  });
   return mutation;
 };
 
-const editOperation = async ({ name }) => {
+const editOperation = async ({ id, name, type, desc }) => {
   try {
-    const { data } = await client.patch(endpoint.operation, {
+    const { data } = await client.patch(`${endpoint.operation}/${id}`, {
       operationName: name,
+      operationType: type,
+      operationDescription: desc,
     });
     return data;
   } catch (error) {
@@ -31,6 +43,12 @@ const editOperation = async ({ name }) => {
 };
 
 export const useEditOperation = () => {
-  const mutation = useMutation(editOperation);
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation(editOperation, {
+    onSuccess: (data) => {
+      queryClient.invalidateQueries(queries.resources);
+    },
+  });
   return mutation;
 };
