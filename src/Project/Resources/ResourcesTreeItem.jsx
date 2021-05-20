@@ -39,6 +39,7 @@ const ResourceTreeItem = ({
     event?.preventDefault();
     event?.stopPropagation();
     resetSelectedOperation();
+
     setDialog({
       show: true,
       type: "add-path",
