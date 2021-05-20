@@ -9,8 +9,8 @@ const fetchProjectDetails = async ({ queryKey }) => {
 
   if (projectId) {
     try {
-      // const { data } = await client.get(endpoint.project);
-      // return data;
+      const { data } = await client.get(`${endpoint.project}/${projectId}`);
+      return data;
     } catch (error) {
       throw getApiError(error);
     }

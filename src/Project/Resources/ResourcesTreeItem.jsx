@@ -15,7 +15,13 @@ import AddOrEditPath from "./AddOrEditPath";
 import AddOrEditResource from "./AddOrEditResource";
 import DeleteResource from "./DeleteResource";
 
-const ResourceTreeItem = ({ nodeId, resource, children, ...rest }) => {
+const ResourceTreeItem = ({
+  nodeId,
+  resource,
+  children,
+  resetSelectedOperation,
+  ...rest
+}) => {
   const [menuAnchor, setMenuAnchor] = useState(null);
   const [dialog, setDialog] = useState({
     show: false,
@@ -25,11 +31,14 @@ const ResourceTreeItem = ({ nodeId, resource, children, ...rest }) => {
 
   const handleMenuClick = (event) => {
     event?.preventDefault();
+    event?.stopPropagation();
     setMenuAnchor(event?.currentTarget);
   };
 
   const handleAddPathClick = (event) => {
     event?.preventDefault();
+    event?.stopPropagation();
+    resetSelectedOperation();
     setDialog({
       show: true,
       type: "add-path",
@@ -37,6 +46,7 @@ const ResourceTreeItem = ({ nodeId, resource, children, ...rest }) => {
   };
 
   const handleEditClick = () => {
+    resetSelectedOperation();
     setDialog({
       show: true,
       type: "edit-resource",
@@ -44,6 +54,7 @@ const ResourceTreeItem = ({ nodeId, resource, children, ...rest }) => {
   };
 
   const handleDeleteClick = () => {
+    resetSelectedOperation();
     setDialog({
       show: true,
       type: "delete-resource",
@@ -59,7 +70,7 @@ const ResourceTreeItem = ({ nodeId, resource, children, ...rest }) => {
   };
 
   return (
-    <div>
+    <div {...rest}>
       <Dialog
         onClose={handleCloseDialog}
         aria-labelledby='dashboard-dialog'
@@ -103,8 +114,8 @@ const ResourceTreeItem = ({ nodeId, resource, children, ...rest }) => {
                       style={{ fontSize: "18px", color: Colors.neutral.gray1 }}
                     />
                   </AppIcon>
-                  <p className='text-overline2'>
-                    {resource?.resourceName ?? "something"}
+                  <p className='text-overline2 overflow-hidden whitespace-nowrap overflow-ellipsis w-30'>
+                    {resource?.resourceName}
                   </p>
                 </div>
 

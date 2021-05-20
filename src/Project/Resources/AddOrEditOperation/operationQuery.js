@@ -4,10 +4,11 @@ import client, { endpoint } from "../../../shared/network/client";
 import { queries } from "../../../shared/network/queryClient";
 import { getApiError } from "../../../shared/utils";
 
-const addOperation = async ({ id, name, type, desc }) => {
+const addOperation = async ({ pathId, resourceId, name, type, desc }) => {
   try {
-    const { data } = await client.post(endpoint.operations, {
-      pathId: id,
+    const { data } = await client.patch(`${endpoint.operation}/add`, {
+      pathId: pathId,
+      resourceId: resourceId,
       operationName: name,
       operationType: type,
       operationDescription: desc,
@@ -29,13 +30,25 @@ export const useAddOperation = () => {
   return mutation;
 };
 
-const editOperation = async ({ id, name, type, desc }) => {
+const editOperation = async ({
+  pathId,
+  resourceId,
+  operationId,
+  name,
+  type,
+  desc,
+}) => {
   try {
-    const { data } = await client.patch(`${endpoint.operation}/${id}`, {
-      operationName: name,
-      operationType: type,
-      operationDescription: desc,
-    });
+    const { data } = await client.patch(
+      `${endpoint.operation}/edit/${operationId}`,
+      {
+        pathId: pathId,
+        resourceId,
+        operationName: name,
+        operationType: type,
+        operationDescription: desc,
+      }
+    );
     return data;
   } catch (error) {
     throw getApiError(error);

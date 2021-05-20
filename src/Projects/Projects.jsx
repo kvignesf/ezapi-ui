@@ -98,7 +98,16 @@ const ProjectRow = ({
 
   return (
     <tr className='text-overline2'>
-      <td className='p-3'>{project?.projectName}</td>
+      <td
+        className='p-3 text-brand-secondary cursor-pointer'
+        onClick={(event) => {
+          event?.preventDefault();
+          event?.stopPropagation();
+          handleOnView(project);
+        }}
+      >
+        {project?.projectName}
+      </td>
       <td>
         <MembersImages
           project={project}

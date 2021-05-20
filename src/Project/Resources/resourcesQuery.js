@@ -8,8 +8,7 @@ import { getApiError } from "../../shared/utils";
 const getResources = async ({ queryKey }) => {
   try {
     const { projectId } = queryKey[1];
-    // const { data } = await client.get(`${endpoint.resources}/${projectId}`);
-    const { data } = await client.get(`${endpoint.resources}`);
+    const { data } = await client.get(`${endpoint.resources}/${projectId}`);
     return data;
   } catch (error) {
     throw getApiError(error);

@@ -30,7 +30,12 @@ const DeleteResource = ({
   }
 
   return (
-    <>
+    <div
+      onClick={(event) => {
+        event?.preventDefault();
+        event?.stopPropagation();
+      }}
+    >
       <div className='flex flex-row justify-between items-center px-4 py-4 mb-2'>
         <h5>Delete Resource</h5>
 
@@ -75,7 +80,7 @@ const DeleteResource = ({
           )}
         </div>
       </>
-    </>
+    </div>
   );
 };
 

@@ -12,7 +12,15 @@ import AddOrEditOperation from "./AddOrEditOperation";
 import AddOrEditPath from "./AddOrEditPath";
 import DeleteOperation from "./DeleteOperation";
 
-const OperationTreeItem = ({ nodeId, pathId, type, operation, ...rest }) => {
+const OperationTreeItem = ({
+  nodeId,
+  resourceId,
+  pathId,
+  type,
+  operation,
+  resetSelectedOperation,
+  ...rest
+}) => {
   const [menuAnchor, setMenuAnchor] = useState(null);
   const [dialog, setDialog] = useState({
     show: false,
@@ -22,14 +30,12 @@ const OperationTreeItem = ({ nodeId, pathId, type, operation, ...rest }) => {
 
   const handleMenuClick = (event) => {
     event?.preventDefault();
+    event?.stopPropagation();
     setMenuAnchor(event?.currentTarget);
   };
 
-  const handleAddOperationClick = (event) => {
-    event?.preventDefault();
-  };
-
   const handleEditClick = () => {
+    resetSelectedOperation();
     setDialog({
       show: true,
       type: "edit-operation",
@@ -37,13 +43,16 @@ const OperationTreeItem = ({ nodeId, pathId, type, operation, ...rest }) => {
   };
 
   const handleDeleteClick = () => {
+    resetSelectedOperation();
     setDialog({
       show: true,
       type: "delete-operation",
     });
   };
 
-  const handleCloseDialog = () => {
+  const handleCloseDialog = (event) => {
+    event?.preventDefault();
+    event?.stopPropagation();
     setDialog({
       show: false,
       data: null,
@@ -52,7 +61,7 @@ const OperationTreeItem = ({ nodeId, pathId, type, operation, ...rest }) => {
   };
 
   return (
-    <div>
+    <div {...rest}>
       <Dialog
         onClose={handleCloseDialog}
         aria-labelledby='dashboard-dialog'
@@ -66,12 +75,19 @@ const OperationTreeItem = ({ nodeId, pathId, type, operation, ...rest }) => {
           <AddOrEditOperation
             onClose={handleCloseDialog}
             title='Edit Operation'
+            pathId={pathId}
+            resourceId={resourceId}
             operation={operation}
           />
         )}
 
         {dialog?.type === "delete-operation" && (
-          <DeleteOperation onClose={handleCloseDialog} operation={operation} />
+          <DeleteOperation
+            onClose={handleCloseDialog}
+            pathId={pathId}
+            resourceId={resourceId}
+            operation={operation}
+          />
         )}
       </Dialog>
 
@@ -84,7 +100,9 @@ const OperationTreeItem = ({ nodeId, pathId, type, operation, ...rest }) => {
                 <div className='flex flex-row flex-1 items-center'>
                   <ApiMethod type={type} style={{ marginRight: "0.5rem" }} />
 
-                  <p className='text-overline2'>pet</p>
+                  <p className='text-overline2 overflow-hidden whitespace-nowrap overflow-ellipsis w-16'>
+                    {operation?.operationName}
+                  </p>
                 </div>
 
                 {isHovering && (
@@ -110,6 +128,7 @@ const OperationTreeItem = ({ nodeId, pathId, type, operation, ...rest }) => {
                   open={Boolean(menuAnchor)}
                   onClose={(event) => {
                     event?.preventDefault();
+                    event?.stopPropagation();
                     setMenuAnchor(null);
                   }}
                   TransitionComponent={Fade}
@@ -118,6 +137,7 @@ const OperationTreeItem = ({ nodeId, pathId, type, operation, ...rest }) => {
                   <MenuItem
                     onClick={(event) => {
                       event?.preventDefault();
+                      event?.stopPropagation();
                       setMenuAnchor(null);
                       handleEditClick();
                     }}
@@ -128,6 +148,7 @@ const OperationTreeItem = ({ nodeId, pathId, type, operation, ...rest }) => {
                   <MenuItem
                     onClick={(event) => {
                       event?.preventDefault();
+                      event?.stopPropagation();
                       setMenuAnchor(null);
                       handleDeleteClick();
                     }}

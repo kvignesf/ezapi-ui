@@ -19,7 +19,7 @@ import operationSchema from "./operationSchema";
 import { useAddOperation, useEditOperation } from "./operationQuery";
 import _ from "lodash";
 
-const operationType = [
+const OperationType = [
   {
     id: "get",
     name: "GET",
@@ -35,6 +35,18 @@ const operationType = [
   {
     id: "del",
     name: "DELETE",
+  },
+  {
+    id: "patch",
+    name: "PATCH",
+  },
+  {
+    id: "trace",
+    name: "TRACE",
+  },
+  {
+    id: "head",
+    name: "HEAD",
   },
 ];
 const CustomTextField = (props) => (
@@ -61,6 +73,7 @@ const CustomSelect = (props) => (
 
 const AddOrEditOperation = ({
   title,
+  resourceId,
   pathId,
   operation: {
     operationName,
@@ -111,20 +124,23 @@ const AddOrEditOperation = ({
         desc !== operationDescription
       ) {
         editOperation({
-          id: operationId,
-          name: operationName,
-          type: operationType,
-          desc: operationDescription,
+          pathId,
+          resourceId,
+          operationId,
+          name,
+          type,
+          desc,
         });
       }
       return;
     }
 
     addOperation({
-      id: pathId,
-      name: name,
-      type: type,
-      desc: desc,
+      pathId,
+      resourceId,
+      name,
+      type,
+      desc,
     });
   };
 
@@ -134,7 +150,11 @@ const AddOrEditOperation = ({
   }
 
   return (
-    <div>
+    <div
+      onClick={(event) => {
+        event?.stopPropagation();
+      }}
+    >
       <div className='p-4 flex flex-row justify-between border-b-2'>
         <h5>{title}</h5>
 
@@ -146,7 +166,7 @@ const AddOrEditOperation = ({
       <Formik
         initialValues={{
           name: operationName ?? "",
-          type: operationType ?? operationType[0].id,
+          type: operationType ?? OperationType[0].name,
           desc: operationDescription ?? "",
         }}
         validationSchema={operationSchema}
@@ -173,9 +193,9 @@ const AddOrEditOperation = ({
                       disabled={isEditingOperation || isAddingOperation}
                       onClick={resetMutationState}
                     >
-                      {operationType.map((value) => {
+                      {OperationType.map((value) => {
                         return (
-                          <MenuItem value={value.id}>{value.name}</MenuItem>
+                          <MenuItem value={value.name}>{value.name}</MenuItem>
                         );
                       })}
                     </Field>
@@ -235,7 +255,9 @@ const AddOrEditOperation = ({
                 {!(isEditingOperation || isAddingOperation) ? (
                   <>
                     <TextButton
-                      onClick={() => {
+                      onClick={(event) => {
+                        event?.preventDefault();
+                        event?.stopPropagation();
                         onClose();
                       }}
                       classes='mr-3'

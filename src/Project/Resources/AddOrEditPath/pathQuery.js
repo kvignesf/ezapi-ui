@@ -4,11 +4,11 @@ import client, { endpoint } from "../../../shared/network/client";
 import { queries } from "../../../shared/network/queryClient";
 import { getApiError } from "../../../shared/utils";
 
-const addPath = async ({ id, name }) => {
+const addPath = async ({ resourceId, pathName }) => {
   try {
-    const { data } = await client.post(endpoint.paths, {
-      resourceId: id,
-      pathName: name,
+    const { data } = await client.patch(`${endpoint.path}/add`, {
+      resourceId: resourceId,
+      pathName: pathName,
     });
     return data;
   } catch (error) {
@@ -27,10 +27,12 @@ export const useAddPath = () => {
   return mutation;
 };
 
-const editPath = async ({ id, name }) => {
+const editPath = async ({ pathId, resourceId, pathName }) => {
   try {
-    const { data } = await client.patch(`${endpoint.paths}/${id}/rename`, {
-      pathName: name,
+    const { data } = await client.patch(`${endpoint.path}/rename`, {
+      pathId: pathId,
+      resourceId: resourceId,
+      pathName: pathName,
     });
     return data;
   } catch (error) {

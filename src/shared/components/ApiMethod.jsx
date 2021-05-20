@@ -2,42 +2,20 @@ import classNames from "classnames";
 import React from "react";
 
 export const Method = {
-  get: "get",
-  post: "post",
-  patch: "patch",
-  delete: "delete",
-  put: "put",
+  get: "GET",
+  post: "POST",
+  patch: "PATCH",
+  delete: "DELETE",
+  put: "PUT",
+  trace: "TRACE",
+  head: "HEAD",
 };
 
 const ApiMethod = ({ type, ...rest }) => {
-  let name = "-";
-
-  switch (type) {
-    case Method.get:
-      name = "get";
-      break;
-    case Method.post:
-      name = "post";
-      break;
-    case Method.patch:
-      name = "patch";
-      break;
-    case Method.delete:
-      name = "del";
-      break;
-    case Method.put:
-      name = "put";
-      break;
-
-    default:
-      name = "-";
-      break;
-  }
-
   return (
     <div
       className={classNames(
-        "flex flex-row justify-center rounded-sm border-2 w-12 h-6",
+        "flex flex-row justify-center rounded-sm border-2 w-15 h-6 px-1",
         {
           "border-brand-green text-brand-green": type === Method.get,
           "border-accent-orange text-accent-orange": type === Method.post,
@@ -47,7 +25,7 @@ const ApiMethod = ({ type, ...rest }) => {
       )}
       {...rest}
     >
-      <p className='text-capitalised'>{name.toUpperCase()}</p>
+      <p className='text-capitalised'>{type.toUpperCase()}</p>
     </div>
   );
 };

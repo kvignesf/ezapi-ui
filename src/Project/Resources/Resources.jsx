@@ -4,7 +4,7 @@ import { makeStyles } from "@material-ui/core/styles";
 import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
 import ArrowRightIcon from "@material-ui/icons/ArrowRight";
 import AddIcon from "@material-ui/icons/Add";
-import { Dialog } from "@material-ui/core";
+import { CircularProgress, Dialog } from "@material-ui/core";
 import _ from "lodash";
 
 import AppIcon from "../../shared/components/AppIcon";
@@ -28,15 +28,22 @@ const useStyles = makeStyles({
   },
 });
 
-const Resources = ({ projectId, ...props }) => {
+const Resources = ({
+  projectId,
+  selectedIndex,
+  onOperationSelect,
+  ...props
+}) => {
   const classes = useStyles();
   const {
     isLoading: isLoadingResources,
     data: resources,
+    isFetching: isLoadingResourcesBg,
     error: getResourcesError,
   } = useGetResources(projectId, {
     refetchOnWindowFocus: false,
   });
+  let treeNodeIndex = 1;
   const [dialog, setDialog] = useState({
     show: false,
     type: null,
@@ -67,6 +74,10 @@ const Resources = ({ projectId, ...props }) => {
       />
     );
   }
+
+  const resetSelectedOperation = () => {
+    onOperationSelect(null, null, null, null);
+  };
 
   if (getResourcesError) {
     return (
@@ -101,7 +112,11 @@ const Resources = ({ projectId, ...props }) => {
       </Dialog>
 
       <div className='flex flex-row justify-between items-center my-2 mx-2'>
-        <p className='text-overline2'>Resources</p>
+        <p className='text-overline2 flex-1'>Resources</p>
+
+        {isLoadingResourcesBg && (
+          <CircularProgress size='16px' className='mr-2' />
+        )}
 
         <AppIcon
           style={{ padding: "0", margin: "0" }}
@@ -122,13 +137,87 @@ const Resources = ({ projectId, ...props }) => {
             <ArrowRightIcon style={{ color: Colors.neutral.gray3 }} />
           }
           style={{ pointerEvents: "auto" }}
+          selected={selectedIndex}
         >
-          {resources?.map((resource, index) => {
+          {resources?.map((resource, resourceIndex) => {
+            const resourceNodeIndex = treeNodeIndex++;
+
             return (
               <ResourceTreeItem
-                nodeId={index}
+                key={resourceNodeIndex}
+                nodeId={resourceNodeIndex}
                 resource={resource}
-              ></ResourceTreeItem>
+                resetSelectedOperation={() => {
+                  console.log("ResourceTreeItem resetSelectedOperation");
+                  resetSelectedOperation();
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  console.log("ResourceTreeItem onClick");
+                  resetSelectedOperation();
+                }}
+              >
+                {resource?.path && !_.isEmpty(resource?.path)
+                  ? resource?.path?.map((path, pathIndex) => {
+                      const pathNodeId = treeNodeIndex++;
+
+                      return (
+                        <PathTreeItem
+                          key={pathNodeId}
+                          nodeId={pathNodeId}
+                          resourceId={resource?.resourceId}
+                          path={path}
+                          resetSelectedOperation={() => {
+                            console.log("PathTreeItem resetSelectedOperation");
+                            resetSelectedOperation();
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            console.log("PathTreeItem onClick");
+                            resetSelectedOperation();
+                          }}
+                        >
+                          {path?.operations && !_.isEmpty(path?.operations)
+                            ? path?.operations?.map(
+                                (operation, operationIndex) => {
+                                  const operationNodeId = treeNodeIndex++;
+
+                                  return (
+                                    <OperationTreeItem
+                                      key={operationNodeId}
+                                      nodeId={operationNodeId}
+                                      resourceId={resource?.resourceId}
+                                      pathId={path?.pathId}
+                                      type={operation?.operationType}
+                                      operation={operation}
+                                      resetSelectedOperation={() => {
+                                        console.log(
+                                          "OperationTreeItem resetSelectedOperation"
+                                        );
+                                        resetSelectedOperation();
+                                      }}
+                                      onClick={(e) => {
+                                        console.log(
+                                          "OperationTreeItem onClick"
+                                        );
+                                        e.stopPropagation();
+                                        onOperationSelect(
+                                          operationNodeId,
+                                          resource,
+                                          path,
+                                          operation
+                                        );
+                                      }}
+                                    />
+                                  );
+                                }
+                              )
+                            : null}
+                        </PathTreeItem>
+                      );
+                    })
+                  : null}
+              </ResourceTreeItem>
             );
           })}
         </TreeView>

@@ -4,9 +4,12 @@ import client, { endpoint } from "../../../shared/network/client";
 import { queries } from "../../../shared/network/queryClient";
 import { getApiError } from "../../../shared/utils";
 
-const deletePath = async ({ id }) => {
+const deletePath = async ({ resourceId, pathId }) => {
   try {
-    const { data } = await client.delete(`${endpoint.paths}/${id}`);
+    const { data } = await client.patch(`${endpoint.path}/delete`, {
+      resourceId: resourceId,
+      pathId: pathId,
+    });
     return data;
   } catch (error) {
     throw getApiError(error);

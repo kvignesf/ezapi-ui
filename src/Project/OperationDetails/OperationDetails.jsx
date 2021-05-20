@@ -80,7 +80,13 @@ const Request = () => {
   );
 };
 
-const OperationDetails = ({ operation: { id }, className, ...props }) => {
+const OperationDetails = ({
+  resource,
+  path,
+  operation,
+  className,
+  ...props
+}) => {
   const tabsClasses = tabsStyles();
   const tabClasses = tabStyles();
   const [currentTab, setTab] = useState(0);
@@ -90,47 +96,51 @@ const OperationDetails = ({ operation: { id }, className, ...props }) => {
 
   return (
     <div className={`border-t-2 ${className}`} {...props}>
-      <div className='flex flex-row'>
-        <Tabs
-          classes={{
-            indicator: tabsClasses.indicator,
-          }}
-          value={currentTab}
-          onChange={(_, index) => {
-            setTab(index);
-          }}
-          aria-label='add project tabs'
-          indicatorColor='primary'
-          textColor='primary'
-          style={{ width: "min-content" }}
-        >
-          <Tab
-            label='Request'
-            classes={{ root: tabClasses.tab }}
-            style={{
-              borderRight: `2px solid ${Colors.neutral.gray6}`,
-              outline: "none",
-            }}
-          />
+      {resource && path && operation && (
+        <>
+          <div className='flex flex-row'>
+            <Tabs
+              classes={{
+                indicator: tabsClasses.indicator,
+              }}
+              value={currentTab}
+              onChange={(_, index) => {
+                setTab(index);
+              }}
+              aria-label='add project tabs'
+              indicatorColor='primary'
+              textColor='primary'
+              style={{ width: "min-content" }}
+            >
+              <Tab
+                label='Request'
+                classes={{ root: tabClasses.tab }}
+                style={{
+                  borderRight: `2px solid ${Colors.neutral.gray6}`,
+                  outline: "none",
+                }}
+              />
 
-          <Tab
-            label='Response'
-            classes={{ root: tabClasses.tab }}
-            style={{
-              outline: "none",
-              borderRight: `2px solid ${Colors.neutral.gray6}`,
-            }}
-          />
-        </Tabs>
+              <Tab
+                label='Response'
+                classes={{ root: tabClasses.tab }}
+                style={{
+                  outline: "none",
+                  borderRight: `2px solid ${Colors.neutral.gray6}`,
+                }}
+              />
+            </Tabs>
 
-        <div className='flex-1 flex flex-row pr-2 bg-neutral-gray7 items-center justify-end'>
-          <p className='text-overline2 text-neutral-gray4'>
-            pet-list/ pet / getPet
-          </p>
-        </div>
-      </div>
+            <div className='flex-1 flex flex-row pr-2 bg-neutral-gray7 items-center justify-end'>
+              <p className='text-overline2 text-neutral-gray4'>
+                {`${resource?.resourceName} / ${path?.pathName} / ${operation?.operationName}`}
+              </p>
+            </div>
+          </div>
 
-      {currentTab === 0 ? <Request /> : <div>Response</div>}
+          {currentTab === 0 ? <div>Request</div> : <div>Response</div>}
+        </>
+      )}
     </div>
   );
 };

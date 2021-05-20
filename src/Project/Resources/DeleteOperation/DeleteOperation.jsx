@@ -10,6 +10,8 @@ import {
 } from "../../../shared/components/AppButton";
 
 const DeleteOperation = ({
+  pathId,
+  resourceId,
   operation: { operationId, operationName },
   onClose,
 }) => {
@@ -21,7 +23,11 @@ const DeleteOperation = ({
   } = useDeleteOperation();
 
   const handleOnDelete = () => {
-    deleteItem({ id: operationId });
+    deleteItem({
+      pathId,
+      resourceId,
+      operationId,
+    });
   };
 
   if (isDeleteSuccess) {
@@ -30,7 +36,12 @@ const DeleteOperation = ({
   }
 
   return (
-    <>
+    <div
+      onClick={(event) => {
+        event?.preventDefault();
+        event?.stopPropagation();
+      }}
+    >
       <div className='flex flex-row justify-between items-center px-4 py-4 mb-2'>
         <h5>Delete Operation</h5>
 
@@ -75,7 +86,7 @@ const DeleteOperation = ({
           )}
         </div>
       </>
-    </>
+    </div>
   );
 };
 

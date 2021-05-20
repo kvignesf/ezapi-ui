@@ -3,7 +3,7 @@ import SortableList from "react-sortable-dnd-list";
 
 import DraggableItem from "./DraggableItem";
 
-const Match = (props) => {
+const Schema = (props) => {
   const [items, setItems] = useState([
     { id: 1, name: "name" },
     { id: 2, name: "age" },
@@ -12,11 +12,9 @@ const Match = (props) => {
 
   return (
     <div {...props}>
-      {items.map((item) => {
-        return <DraggableItem item={item} />;
-      })}
+      <p>Schema</p>
     </div>
   );
 };
 
-export default Match;
+export default Schema;

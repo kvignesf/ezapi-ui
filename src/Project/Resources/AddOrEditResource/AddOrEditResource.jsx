@@ -52,7 +52,11 @@ const AddOrEditResource = ({
   }
 
   return (
-    <div>
+    <div
+      onClick={(event) => {
+        event?.stopPropagation();
+      }}
+    >
       <div className='p-3 flex flex-row justify-between border-b-2'>
         <h5>{title}</h5>
 
@@ -104,7 +108,9 @@ const AddOrEditResource = ({
                 {!(isAddingResource || isEditingResource) ? (
                   <>
                     <TextButton
-                      onClick={() => {
+                      onClick={(event) => {
+                        event?.preventDefault();
+                        event?.stopPropagation();
                         onClose();
                       }}
                       classes='mr-3'

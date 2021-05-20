@@ -9,7 +9,7 @@ import {
   TextButton,
 } from "../../../shared/components/AppButton";
 
-const DeletePath = ({ path: { pathId, pathName }, onClose }) => {
+const DeletePath = ({ resourceId, path: { pathId, pathName }, onClose }) => {
   const {
     isLoading: isDeleting,
     isSuccess: isDeleteSuccess,
@@ -18,7 +18,7 @@ const DeletePath = ({ path: { pathId, pathName }, onClose }) => {
   } = useDeletePath();
 
   const handleOnDelete = () => {
-    deleteItem({ id: pathId });
+    deleteItem({ resourceId: resourceId, pathId: pathId });
   };
 
   if (isDeleteSuccess) {
@@ -27,7 +27,12 @@ const DeletePath = ({ path: { pathId, pathName }, onClose }) => {
   }
 
   return (
-    <>
+    <div
+      onClick={(event) => {
+        event?.preventDefault();
+        event?.stopPropagation();
+      }}
+    >
       <div className='flex flex-row justify-between items-center px-4 py-4 mb-2'>
         <h5>Delete Path</h5>
 
@@ -72,7 +77,7 @@ const DeletePath = ({ path: { pathId, pathName }, onClose }) => {
           )}
         </div>
       </>
-    </>
+    </div>
   );
 };
 

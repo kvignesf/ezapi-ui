@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useParams } from "react-router";
+import { useHistory, useParams } from "react-router";
 import ArrowBackIcon from "@material-ui/icons/ArrowBack";
 import { Tab, Tabs } from "@material-ui/core";
 import { DndProvider } from "react-dnd";
@@ -12,11 +12,12 @@ import InitialsAvatar from "../shared/components/InitialsAvatar";
 import { getFirstName, getLastName } from "../shared/storage";
 import AddOrEditResource from "./Resources/AddOrEditResource";
 import Resources from "./Resources/Resources";
-import Match from "./Match";
+import Match from "./Schema";
 import OperationDetails from "./OperationDetails";
 
 const Project = () => {
   const { id: projectId } = useParams();
+  const history = useHistory();
   const firstName = getFirstName();
   const lastName = getLastName();
   const {
@@ -26,17 +27,29 @@ const Project = () => {
     data: projectDetails,
   } = useFetchProjectDetails(projectId);
   const [currentTab, setCurrentTab] = useState(0);
+  const [operationIndex, setOperationIndex] = useState(null);
+  const [selectedResource, setResource] = useState(null);
+  const [selectedPath, setPath] = useState(null);
+  const [selectedOperation, setOperation] = useState(null);
 
   return (
     <>
       <DndProvider backend={HTML5Backend}>
         <header className='px-2 border-b-2 flex flex-row items-center'>
-          <div className='flex flex-row py-2'>
-            <AppIcon style={{ marginRight: "1rem" }}>
+          <div className='flex flex-row py-2 items-center'>
+            <AppIcon
+              style={{ marginRight: "1rem" }}
+              onClick={(event) => {
+                event?.preventDefault();
+                event?.stopPropagation();
+
+                history.goBack();
+              }}
+            >
               <ArrowBackIcon />
             </AppIcon>
 
-            <p>{"projectDetails?.name"}</p>
+            <p className='text-overline1'>{projectDetails?.projectName}</p>
           </div>
 
           <div className='flex justify-center flex-1'>
@@ -78,12 +91,26 @@ const Project = () => {
               <Resources
                 className='h-full flex flex-col'
                 projectId={projectId}
+                selectedIndex={operationIndex}
+                onOperationSelect={(index, resource, path, operation) => {
+                  if (index !== operationIndex) {
+                    setOperationIndex(index);
+                    setResource(resource);
+                    setPath(path);
+                    setOperation(operation);
+                  }
+                }}
               />
             </section>
 
             <section className='w-full flex flex-col'>
               <Match className='flex-1' />
-              <OperationDetails className='flex-1' operation={{}} />
+              <OperationDetails
+                className='flex-1'
+                resource={selectedResource}
+                path={selectedPath}
+                operation={selectedOperation}
+              />
             </section>
           </div>
         )}

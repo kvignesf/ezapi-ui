@@ -14,7 +14,14 @@ import AddOrEditPath from "./AddOrEditPath";
 import AddOrEditOperation from "./AddOrEditOperation";
 import DeletePath from "./DeletePath";
 
-const PathTreeItem = ({ nodeId, resourceId, path, children, ...rest }) => {
+const PathTreeItem = ({
+  nodeId,
+  resourceId,
+  path,
+  children,
+  resetSelectedOperation,
+  ...rest
+}) => {
   const [menuAnchor, setMenuAnchor] = useState(null);
   const [dialog, setDialog] = useState({
     show: false,
@@ -24,11 +31,14 @@ const PathTreeItem = ({ nodeId, resourceId, path, children, ...rest }) => {
 
   const handleMenuClick = (event) => {
     event?.preventDefault();
+    event?.stopPropagation();
     setMenuAnchor(event?.currentTarget);
   };
 
   const handleAddOperationClick = (event) => {
     event?.preventDefault();
+    event?.stopPropagation();
+    resetSelectedOperation();
     setDialog({
       show: true,
       type: "add-operation",
@@ -58,7 +68,7 @@ const PathTreeItem = ({ nodeId, resourceId, path, children, ...rest }) => {
   };
 
   return (
-    <div>
+    <div {...rest}>
       <Dialog
         onClose={handleCloseDialog}
         aria-labelledby='dashboard-dialog'
@@ -73,6 +83,7 @@ const PathTreeItem = ({ nodeId, resourceId, path, children, ...rest }) => {
             onClose={handleCloseDialog}
             title='Add Operation'
             pathId={path?.pathId}
+            resourceId={resourceId}
             operation={{}}
           />
         )}
@@ -80,13 +91,18 @@ const PathTreeItem = ({ nodeId, resourceId, path, children, ...rest }) => {
         {dialog?.type === "edit-path" && (
           <AddOrEditPath
             onClose={handleCloseDialog}
+            title='Edit Path'
             resourceId={resourceId}
             path={path}
           />
         )}
 
         {dialog?.type === "delete-path" && (
-          <DeletePath onClose={handleCloseDialog} path={path} />
+          <DeletePath
+            resourceId={resourceId}
+            onClose={handleCloseDialog}
+            path={path}
+          />
         )}
       </Dialog>
 
@@ -100,7 +116,9 @@ const PathTreeItem = ({ nodeId, resourceId, path, children, ...rest }) => {
                   <p className='rounded-sm border-2 border-neutral-gray1 px-1 mr-1 h-5 text-xs'>
                     /
                   </p>
-                  <p className='text-overline2'>{path?.name ?? "something"}</p>
+                  <p className='text-overline2 overflow-hidden whitespace-nowrap overflow-ellipsis w-30'>
+                    {path?.pathName}
+                  </p>
                 </div>
 
                 {isHovering && (

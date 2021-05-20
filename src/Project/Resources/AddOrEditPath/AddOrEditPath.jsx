@@ -34,14 +34,18 @@ const AddOrEditPath = ({
   const handleSubmit = ({ name: updatedPathName }) => {
     if (pathId && !_.isEmpty(pathId)) {
       if (pathName !== updatedPathName) {
-        editPath({ id: pathId, name: updatedPathName });
+        editPath({
+          pathId: pathId,
+          resourceId: resourceId,
+          pathName: updatedPathName,
+        });
       }
       return;
     }
 
     addPath({
-      id: resourceId,
-      name: updatedPathName,
+      resourceId: resourceId,
+      pathName: updatedPathName,
     });
   };
 
@@ -51,7 +55,11 @@ const AddOrEditPath = ({
   }
 
   return (
-    <div>
+    <div
+      onClick={(event) => {
+        event?.stopPropagation();
+      }}
+    >
       <div className='p-3 flex flex-row justify-between border-b-2'>
         <h5>{title}</h5>
 
