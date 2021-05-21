@@ -4,6 +4,7 @@ import ArrowBackIcon from "@material-ui/icons/ArrowBack";
 import { Tab, Tabs } from "@material-ui/core";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
+import { useRecoilState } from "recoil";
 
 import AppIcon from "../shared/components/AppIcon";
 import { useFetchProjectDetails } from "./projectQueries";
@@ -12,8 +13,11 @@ import InitialsAvatar from "../shared/components/InitialsAvatar";
 import { getFirstName, getLastName } from "../shared/storage";
 import AddOrEditResource from "./Resources/AddOrEditResource";
 import Resources from "./Resources/Resources";
-import Match from "./Schema";
+import Match from "./Match";
 import OperationDetails from "./OperationDetails";
+import operationAtom from "./operationAtom";
+import { ClassNames } from "@emotion/react";
+import classNames from "classnames";
 
 const Project = () => {
   const { id: projectId } = useParams();
@@ -27,10 +31,7 @@ const Project = () => {
     data: projectDetails,
   } = useFetchProjectDetails(projectId);
   const [currentTab, setCurrentTab] = useState(0);
-  const [operationIndex, setOperationIndex] = useState(null);
-  const [selectedResource, setResource] = useState(null);
-  const [selectedPath, setPath] = useState(null);
-  const [selectedOperation, setOperation] = useState(null);
+  const [operationState, setOperationState] = useRecoilState(operationAtom);
 
   return (
     <>
@@ -60,10 +61,17 @@ const Project = () => {
               indicatorColor='primary'
               textColor='primary'
             >
-              <Tab label='Design' style={{ outline: "none", border: "none" }} />
+              <Tab
+                label={
+                  <span className='text-overline2 capitalize'>Design</span>
+                }
+                style={{ outline: "none", border: "none" }}
+              />
 
               <Tab
-                label='Visualise'
+                label={
+                  <span className='text-overline2 capitalize'>Visualize</span>
+                }
                 style={{ outline: "none", border: "none" }}
                 disabled
               />
@@ -91,26 +99,41 @@ const Project = () => {
               <Resources
                 className='h-full flex flex-col'
                 projectId={projectId}
-                selectedIndex={operationIndex}
+                selectedIndex={operationState.index}
                 onOperationSelect={(index, resource, path, operation) => {
-                  if (index !== operationIndex) {
-                    setOperationIndex(index);
-                    setResource(resource);
-                    setPath(path);
-                    setOperation(operation);
+                  if (index !== operationState.operationIndex) {
+                    setOperationState({
+                      operation,
+                      resource,
+                      path,
+                      index,
+                    });
                   }
                 }}
               />
             </section>
 
             <section className='w-full flex flex-col'>
-              <Match className='flex-1' />
-              <OperationDetails
-                className='flex-1'
-                resource={selectedResource}
-                path={selectedPath}
-                operation={selectedOperation}
-              />
+              <div
+                className={classNames(`overflow-hidden`, {
+                  "h-1/2": operationState.index,
+                  "h-full": !operationState.index,
+                })}
+              >
+                <Match />
+              </div>
+
+              {operationState.resource &&
+                operationState.path &&
+                operationState.operation && (
+                  <div
+                    className={classNames({
+                      "h-1/2": operationState.index !== null,
+                    })}
+                  >
+                    <OperationDetails />
+                  </div>
+                )}
             </section>
           </div>
         )}

@@ -146,11 +146,17 @@ const AddProject = ({ onClose }) => {
             textColor='primary'
           >
             <Tab
-              label='1. Create API'
+              label={
+                <span className='text-overline2 capitalize'>1. Create API</span>
+              }
               style={{ outline: "none", border: "none" }}
             />
             <Tab
-              label='2. Invite Collaborator'
+              label={
+                <span className='text-overline2 capitalize'>
+                  2. Invite Collaborators
+                </span>
+              }
               style={{ outline: "none", border: "none" }}
             />
           </Tabs>
