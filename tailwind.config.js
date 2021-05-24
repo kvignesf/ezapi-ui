@@ -7,6 +7,9 @@ module.exports = {
         22: "5rem",
         30: "7rem",
       },
+      borderWidth: {
+        1: "1px",
+      },
       height: {
         fit: "fit-content",
       },
@@ -35,6 +38,10 @@ module.exports = {
         accent: {
           red: "#E53535",
           orange: "#FF8800",
+        },
+        score: {
+          yellow: "#F1C232",
+          red: "#A61C00",
         },
       },
       fontFamily: {

@@ -1,9 +1,49 @@
 import React from "react";
+import Scrollbar from "react-smooth-scrollbar";
+import { useRecoilValue } from "recoil";
+import DragIndicatorIcon from "@material-ui/icons/DragIndicator";
 
-const PartialMatch = () => {
+import operationAtom from "../../operationAtom";
+import AppIcon from "../../../shared/components/AppIcon";
+import DraggableMatchItem from "../DraggableMatchItem";
+
+const PartialMatch = ({ items, onItemClick }) => {
+  const operationState = useRecoilValue(operationAtom);
+
   return (
     <div className='flex flex-col'>
-      <p className='text-overline2'>Partial Match</p>
+      <div className='flex flex-row justify-between'>
+        <p className='text-overline2 mb-2'>Partial Match</p>
+        <p className='text-overline2'>{items?.length}</p>
+      </div>
+
+      {items && (
+        <Scrollbar>
+          <div
+            style={{
+              height: !operationState?.index ? "h-full" : null,
+              maxHeight: operationState?.index ? `calc(50vh - 150px)` : null,
+            }}
+          >
+            {items?.map((item, index) => {
+              return (
+                <DraggableMatchItem
+                  index={index}
+                  item={item}
+                  type={item?.type ?? "ref"}
+                  matchType='partial_match'
+                  onClick={(e) => {
+                    e?.preventDefault();
+                    e?.stopPropagation();
+
+                    onItemClick(item);
+                  }}
+                />
+              );
+            })}
+          </div>
+        </Scrollbar>
+      )}
     </div>
   );
 };

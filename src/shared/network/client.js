@@ -14,6 +14,8 @@ export const endpoint = Object.freeze({
   path: "/path",
   paths: "/paths",
   operation: "/operation",
+  schemasList: "/schemasList",
+  subSchemaData: "/subSchemaData",
 });
 
 const client = axios.create({

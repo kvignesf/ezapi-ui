@@ -96,7 +96,7 @@ const OperationTreeItem = ({
           <StyledTreeItem
             nodeId={nodeId}
             label={
-              <div className='flex flex-row items-center pr-1'>
+              <div className='flex flex-row items-center pr-1 h-6'>
                 <div className='flex flex-row flex-1 items-center'>
                   <ApiMethod type={type} style={{ marginRight: "0.5rem" }} />
 

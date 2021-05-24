@@ -4,6 +4,7 @@ export const queries = {
   projects: "projects",
   resources: "resources",
   project: "project",
+  schemas: "schemas",
 };
 
 const queryClient = new QueryClient({

@@ -1,23 +1,167 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router";
+import _ from "lodash";
+import { useRecoilState } from "recoil";
 
 import FullMatch from "./FullMatch";
 import PartialMatch from "./PartialMatch";
 import NoMatch from "./NoMatch";
+import { useGetAllSchemas, useGetSubSchema } from "./schemaQueries";
+import LoaderWithMessage from "../../../shared/components/LoaderWithMessage";
+import schemaAtom from "./schemaAtom";
 
 const Schema = () => {
+  const { id: projectId } = useParams();
+  const [schemaState, setSchemaState] = useRecoilState(schemaAtom);
+  const [schemaData, setSchemaData] = useState(null);
+  const {
+    isLoading,
+    error: getAllSchemasError,
+    data: allSchemaData,
+    mutate: getAllSchemas,
+  } = useGetAllSchemas();
+  const {
+    isLoading: isLoadingSubSchema,
+    error: getSubSchemasError,
+    data: subSchemaData,
+    mutate: getSubSchema,
+    reset: resetSubSchemaData,
+  } = useGetSubSchema();
+
+  useEffect(() => {
+    if (!schemaState.selected || _.isEmpty(schemaState.selected)) {
+      resetSubSchemaData();
+      getAllSchemas({ projectId });
+    } else {
+      const selectedSchema = _.last(schemaState?.selected);
+
+      if (
+        !_.isEmpty(selectedSchema?.attributes) ||
+        !_.isEmpty(selectedSchema?.refs)
+      ) {
+        let clonedAttributes = [];
+        if (!_.isEmpty(selectedSchema?.attributes)) {
+          clonedAttributes = _.cloneDeep(selectedSchema?.attributes);
+        }
+
+        let clonedRefs = [];
+        if (!_.isEmpty(selectedSchema?.refs)) {
+          clonedRefs = _.cloneDeep(selectedSchema?.refs);
+        }
+
+        setSchemaData([...clonedAttributes, ...clonedRefs]);
+      } else {
+        getSubSchema({
+          projectId,
+          name: selectedSchema?.name,
+          type: selectedSchema?.type,
+          ref: selectedSchema?.ref,
+        });
+      }
+    }
+  }, [schemaState]);
+
+  useEffect(() => {
+    if (subSchemaData) {
+      setSchemaData(subSchemaData?.nSchemaArray);
+      return;
+    }
+    setSchemaData(allSchemaData?.nSchemaArray);
+  }, [allSchemaData, subSchemaData]);
+
+  const getFullMatchItems = () => {
+    return _.filter(schemaData, (schema) => schema?.match_score >= 9);
+  };
+
+  const getPartialMatchItems = () => {
+    return _.filter(
+      schemaData,
+      (schema) => schema?.match_score >= 5 && schema?.match_score < 9
+    );
+  };
+
+  const getNoMatchItems = () => {
+    return _.filter(
+      schemaData,
+      (schema) =>
+        !schema.match_score ||
+        (schema?.match_score >= 0 && schema?.match_score < 5)
+    );
+  };
+
+  const onItemClick = (ref) => {
+    if (ref?.attributes && ref?.refs) {
+      // Its a schema
+      const updatedSchemaState = _.cloneDeep(schemaState);
+
+      if (
+        !updatedSchemaState?.selected ||
+        _.isEmpty(updatedSchemaState?.selected)
+      ) {
+        updatedSchemaState.selected = [];
+      }
+
+      updatedSchemaState?.selected?.push(ref);
+
+      setSchemaState(updatedSchemaState);
+    } else if (ref?.type && !_.isEmpty(ref?.type)) {
+      if (
+        ref?.type?.toLowerCase() === "array" ||
+        ref?.type?.toLowerCase() === "ref"
+      ) {
+        // Its an array/ref
+
+        const updatedSchemaState = _.cloneDeep(schemaState);
+
+        if (
+          !updatedSchemaState?.selected ||
+          _.isEmpty(updatedSchemaState?.selected)
+        ) {
+          updatedSchemaState.selected = [];
+        }
+
+        updatedSchemaState?.selected?.push(ref);
+
+        setSchemaState(updatedSchemaState);
+        getSubSchema({
+          projectId,
+          name: ref?.name,
+          type: ref?.type,
+          ref: ref?.ref,
+        });
+      } else {
+        // Its an attribute
+        console.log("Its an attribute", ref);
+      }
+    }
+  };
+
+  if (isLoading || isLoadingSubSchema) {
+    return (
+      <LoaderWithMessage
+        message='Loading schemas'
+        className='h-full'
+        contained
+      />
+    );
+  }
+
   return (
     <div className='mx-4 py-4'>
       <div className='flex flex-row gap-x-5 justify-center'>
-        <div className='flex-1 bg-neutral-gray7 rounded-md p-2'>
-          <FullMatch />
+        <div className='flex-1 h-fit bg-neutral-gray7 rounded-md p-2'>
+          <FullMatch items={getFullMatchItems()} onItemClick={onItemClick} />
         </div>
 
         <div className='flex-1 h-fit bg-neutral-gray7 rounded-md p-2 '>
-          <PartialMatch />
+          <PartialMatch
+            items={getPartialMatchItems()}
+            onItemClick={onItemClick}
+          />
         </div>
 
         <div className='flex-1 h-fit  bg-neutral-gray7 rounded-md p-2'>
-          <NoMatch />
+          <NoMatch items={getNoMatchItems()} onItemClick={onItemClick} />
         </div>
       </div>
     </div>

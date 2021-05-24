@@ -15,7 +15,7 @@ const ApiMethod = ({ type, ...rest }) => {
   return (
     <div
       className={classNames(
-        "flex flex-row justify-center rounded-sm border-2 w-15 h-6 px-1",
+        "flex flex-row justify-center item-center rounded-sm border-1 w-15 px-1",
         {
           "border-brand-green text-brand-green": type === Method.get,
           "border-accent-orange text-accent-orange": type === Method.post,
