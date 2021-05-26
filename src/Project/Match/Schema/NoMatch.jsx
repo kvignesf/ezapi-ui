@@ -21,13 +21,16 @@ const NoMatch = ({ items, onItemClick }) => {
         <Scrollbar>
           <div
             style={{
-              height: !operationState?.index ? "h-full" : null,
-              maxHeight: operationState?.index ? `calc(50vh - 150px)` : null,
+              height: !operationState?.operationIndex ? "h-full" : null,
+              maxHeight: operationState?.operationIndex
+                ? `calc(50vh - 150px)`
+                : null,
             }}
           >
             {items?.map((item, index) => {
               return (
                 <DraggableMatchItem
+                  key={index}
                   index={index}
                   item={item}
                   type={item?.type ?? "ref"}

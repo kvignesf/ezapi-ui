@@ -18,6 +18,7 @@ import OperationDetails from "./OperationDetails";
 import operationAtom from "./operationAtom";
 import { ClassNames } from "@emotion/react";
 import classNames from "classnames";
+import _ from "lodash";
 
 const Project = () => {
   const { id: projectId } = useParams();
@@ -102,12 +103,13 @@ const Project = () => {
                 selectedIndex={operationState.index}
                 onOperationSelect={(index, resource, path, operation) => {
                   if (index !== operationState.operationIndex) {
-                    setOperationState({
-                      operation,
-                      resource,
-                      path,
-                      index,
-                    });
+                    const cloned = _.cloneDeep(operationState);
+                    cloned.operation = operation;
+                    cloned.resource = resource;
+                    cloned.path = path;
+                    cloned.operationIndex = index;
+
+                    setOperationState(cloned);
                   }
                 }}
               />
@@ -116,8 +118,8 @@ const Project = () => {
             <section className='w-full flex flex-col'>
               <div
                 className={classNames(`overflow-hidden`, {
-                  "h-1/2": operationState.index,
-                  "h-full": !operationState.index,
+                  "h-1/2": operationState.operationIndex,
+                  "h-full": !operationState.operationIndex,
                 })}
               >
                 <Match />
@@ -128,7 +130,7 @@ const Project = () => {
                 operationState.operation && (
                   <div
                     className={classNames({
-                      "h-1/2": operationState.index !== null,
+                      "h-1/2": operationState.operationIndex !== null,
                     })}
                   >
                     <OperationDetails />

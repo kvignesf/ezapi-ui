@@ -5,6 +5,14 @@ export const defaultState = {
   resource: null,
   path: null,
   operationIndex: null,
+
+  operationRequest: {
+    headers: [],
+    formData: [],
+    pathParams: [],
+    queryParams: [],
+    body: [],
+  },
 };
 
 const operationAtom = atom({

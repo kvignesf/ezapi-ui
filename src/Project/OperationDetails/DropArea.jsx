@@ -3,8 +3,7 @@ import { useDrop } from "react-dnd";
 
 const DropArea = ({ children, onItemDropped }) => {
   const [{ canDrop, isOver }, drop] = useDrop(() => ({
-    // The type (or types) to accept - strings or symbols
-    accept: "BOX",
+    accept: "drag_item",
     drop: (item, monitor) => {
       onItemDropped(item);
     },
@@ -16,7 +15,7 @@ const DropArea = ({ children, onItemDropped }) => {
   }));
 
   return (
-    <div ref={drop} role={"Dustbin"}>
+    <div ref={drop} role={"Handle"}>
       {children}
     </div>
   );

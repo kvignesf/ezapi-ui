@@ -131,7 +131,6 @@ const Schema = () => {
         });
       } else {
         // Its an attribute
-        console.log("Its an attribute", ref);
       }
     }
   };

@@ -148,12 +148,10 @@ const Resources = ({
                 nodeId={resourceNodeIndex}
                 resource={resource}
                 resetSelectedOperation={() => {
-                  console.log("ResourceTreeItem resetSelectedOperation");
                   resetSelectedOperation();
                 }}
                 onClick={(e) => {
                   e.stopPropagation();
-                  console.log("ResourceTreeItem onClick");
                   resetSelectedOperation();
                 }}
               >
@@ -168,12 +166,10 @@ const Resources = ({
                           resourceId={resource?.resourceId}
                           path={path}
                           resetSelectedOperation={() => {
-                            console.log("PathTreeItem resetSelectedOperation");
                             resetSelectedOperation();
                           }}
                           onClick={(e) => {
                             e.stopPropagation();
-                            console.log("PathTreeItem onClick");
                             resetSelectedOperation();
                           }}
                         >
@@ -191,15 +187,9 @@ const Resources = ({
                                       type={operation?.operationType}
                                       operation={operation}
                                       resetSelectedOperation={() => {
-                                        console.log(
-                                          "OperationTreeItem resetSelectedOperation"
-                                        );
                                         resetSelectedOperation();
                                       }}
                                       onClick={(e) => {
-                                        console.log(
-                                          "OperationTreeItem onClick"
-                                        );
                                         e.stopPropagation();
                                         onOperationSelect(
                                           operationNodeId,

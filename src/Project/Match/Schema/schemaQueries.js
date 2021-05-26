@@ -7,7 +7,7 @@ const getAllSchemas = async ({ projectId }) => {
   try {
     const { data } = await client.post(`${endpoint.schemasList}`, {
       // projectId,
-      projectId: "1002",
+      projectId: "30001",
     });
     return data;
   } catch (error) {
@@ -24,8 +24,7 @@ export const useGetAllSchemas = () => {
 const getSubSchema = async ({ projectId, name, type, ref }) => {
   try {
     const { data } = await client.post(`${endpoint.subSchemaData}`, {
-      projectId: "1002",
-      // projectId,
+      projectId: "30001",
       name,
       type,
       ref,

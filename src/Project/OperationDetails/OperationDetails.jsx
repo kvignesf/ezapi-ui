@@ -8,7 +8,7 @@ import {
   makeStyles,
 } from "@material-ui/core";
 import Colors from "../../shared/colors";
-import Headers from "./Headers/Headers";
+import Request from "./Request/Request";
 import { useRecoilValue } from "recoil";
 import operationAtom from "../operationAtom";
 
@@ -26,61 +26,6 @@ const tabStyles = makeStyles({
     },
   },
 });
-
-const Request = () => {
-  const [currentTab, setTab] = useState(0);
-
-  return (
-    <div>
-      <div className='border-b-2 m-3'>
-        <Tabs
-          value={currentTab}
-          onChange={(_, index) => {
-            setTab(index);
-          }}
-          aria-label='add project tabs'
-          indicatorColor='primary'
-          textColor='primary'
-          style={{ width: "min-content" }}
-        >
-          <Tab
-            label='Headers'
-            style={{
-              outline: "none",
-            }}
-          />
-
-          <Tab
-            label='FormData'
-            style={{
-              outline: "none",
-            }}
-          />
-          <Tab
-            label='Path Params'
-            style={{
-              outline: "none",
-            }}
-          />
-          <Tab
-            label='Query Params'
-            style={{
-              outline: "none",
-            }}
-          />
-          <Tab
-            label='Request Body'
-            style={{
-              outline: "none",
-            }}
-          />
-        </Tabs>
-      </div>
-
-      {currentTab === 0 ? <Headers /> : null}
-    </div>
-  );
-};
 
 const OperationDetails = ({
   resource,
@@ -145,7 +90,13 @@ const OperationDetails = ({
               </div>
             </div>
 
-            {currentTab === 0 ? <div>Request</div> : <div>Response</div>}
+            {currentTab === 0 ? (
+              <div>
+                <Request />
+              </div>
+            ) : (
+              <div>Response</div>
+            )}
           </>
         )}
     </div>
