@@ -26,6 +26,7 @@ const Schema = () => {
     data: subSchemaData,
     mutate: getSubSchema,
     reset: resetSubSchemaData,
+    isIdle: isGetSubSchemaIdle,
   } = useGetSubSchema();
 
   useEffect(() => {
@@ -51,15 +52,17 @@ const Schema = () => {
 
         setSchemaData([...clonedAttributes, ...clonedRefs]);
       } else {
-        getSubSchema({
-          projectId,
-          name: selectedSchema?.name,
-          type: selectedSchema?.type,
-          ref: selectedSchema?.ref,
-        });
+        if (!isLoadingSubSchema) {
+          getSubSchema({
+            projectId,
+            name: selectedSchema?.name,
+            type: selectedSchema?.type,
+            ref: selectedSchema?.ref,
+          });
+        }
       }
     }
-  }, [schemaState]);
+  }, [schemaState.selected]);
 
   useEffect(() => {
     if (subSchemaData) {
@@ -70,13 +73,16 @@ const Schema = () => {
   }, [allSchemaData, subSchemaData]);
 
   const getFullMatchItems = () => {
-    return _.filter(schemaData, (schema) => schema?.match_score >= 9);
+    return _.filter(
+      schemaData,
+      (schema) => schema?.match_type?.toLowerCase() === "full"
+    );
   };
 
   const getPartialMatchItems = () => {
     return _.filter(
       schemaData,
-      (schema) => schema?.match_score >= 5 && schema?.match_score < 9
+      (schema) => schema?.match_type?.toLowerCase() === "partial"
     );
   };
 
@@ -84,8 +90,7 @@ const Schema = () => {
     return _.filter(
       schemaData,
       (schema) =>
-        !schema.match_score ||
-        (schema?.match_score >= 0 && schema?.match_score < 5)
+        !schema.match_type || schema?.match_type?.toLowerCase() === "no match"
     );
   };
 
@@ -123,12 +128,6 @@ const Schema = () => {
         updatedSchemaState?.selected?.push(ref);
 
         setSchemaState(updatedSchemaState);
-        getSubSchema({
-          projectId,
-          name: ref?.name,
-          type: ref?.type,
-          ref: ref?.ref,
-        });
       } else {
         // Its an attribute
         console.log("Its an attribute", ref);

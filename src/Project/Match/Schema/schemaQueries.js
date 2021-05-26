@@ -1,13 +1,16 @@
+import _ from "lodash";
 import { useMutation } from "react-query";
+import { useRecoilState } from "recoil";
 
 import client, { endpoint } from "../../../shared/network/client";
 import { getApiError } from "../../../shared/utils";
+import schemaAtom from "./schemaAtom";
 
 const getAllSchemas = async ({ projectId }) => {
   try {
     const { data } = await client.post(`${endpoint.schemasList}`, {
       // projectId,
-      projectId: "1002",
+      projectId: "30001",
     });
     return data;
   } catch (error) {
@@ -24,7 +27,7 @@ export const useGetAllSchemas = () => {
 const getSubSchema = async ({ projectId, name, type, ref }) => {
   try {
     const { data } = await client.post(`${endpoint.subSchemaData}`, {
-      projectId: "1002",
+      projectId: "30001",
       // projectId,
       name,
       type,
@@ -37,7 +40,15 @@ const getSubSchema = async ({ projectId, name, type, ref }) => {
 };
 
 export const useGetSubSchema = () => {
-  const query = useMutation(getSubSchema);
+  const [schemaState, setSchemaState] = useRecoilState(schemaAtom);
+
+  const query = useMutation(getSubSchema, {
+    onError: (err) => {
+      let updatedSchemaState = _.cloneDeep(schemaState);
+      updatedSchemaState?.selected?.pop();
+      setSchemaState(updatedSchemaState);
+    },
+  });
 
   return query;
 };
