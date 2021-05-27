@@ -32,8 +32,6 @@ const PartialMatch = ({ items, onItemClick }) => {
                 <DraggableMatchItem
                   index={index}
                   item={item}
-                  type={item?.type ?? "ref"}
-                  matchType='partial_match'
                   onClick={(e) => {
                     e?.preventDefault();
                     e?.stopPropagation();

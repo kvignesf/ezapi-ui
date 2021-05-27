@@ -32,8 +32,6 @@ const FullMatch = ({ items, onItemClick }) => {
                 <DraggableMatchItem
                   index={index}
                   item={item}
-                  type={item?.type ?? "ref"}
-                  matchType='full_match'
                   onClick={(e) => {
                     e?.preventDefault();
                     e?.stopPropagation();

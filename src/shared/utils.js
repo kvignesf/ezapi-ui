@@ -38,3 +38,33 @@ export const getApiError = (error) => {
 
   return new Error("Something went wrong, please try again");
 };
+
+export const isArray = (object) => {
+  return object?.type === "array";
+};
+
+export const isAttribute = (object) => {
+  return object?.type && !_.isEmpty(object?.type);
+};
+
+export const isSchema = (object) => {
+  return (
+    object?.type === "ref" ||
+    object?.type === "ezapi_ref" ||
+    (object?.attributes && object?.refs)
+  );
+};
+
+export const isFullMatch = (object) => {
+  return object?.match_type?.toLowerCase() === "full";
+};
+
+export const isPartialMatch = (object) => {
+  return object?.match_type?.toLowerCase() === "partial";
+};
+
+export const isNoMatch = (object) => {
+  return (
+    !object?.match_type || object?.match_type?.toLowerCase() === "no match"
+  );
+};

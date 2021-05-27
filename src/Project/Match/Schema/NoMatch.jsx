@@ -33,8 +33,6 @@ const NoMatch = ({ items, onItemClick }) => {
                   key={index}
                   index={index}
                   item={item}
-                  type={item?.type ?? "ref"}
-                  matchType='no_match'
                   onClick={(e) => {
                     e?.preventDefault();
                     e?.stopPropagation();

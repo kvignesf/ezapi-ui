@@ -9,6 +9,13 @@ import NoMatch from "./NoMatch";
 import { useGetAllSchemas, useGetSubSchema } from "./schemaQueries";
 import LoaderWithMessage from "../../../shared/components/LoaderWithMessage";
 import schemaAtom from "./schemaAtom";
+import {
+  isArray,
+  isFullMatch,
+  isNoMatch,
+  isPartialMatch,
+  isSchema,
+} from "../../../shared/utils";
 
 const Schema = () => {
   const { id: projectId } = useParams();
@@ -73,30 +80,19 @@ const Schema = () => {
   }, [allSchemaData, subSchemaData]);
 
   const getFullMatchItems = () => {
-    return _.filter(
-      schemaData,
-      (schema) => schema?.match_type?.toLowerCase() === "full"
-    );
+    return _.filter(schemaData, (schema) => isFullMatch(schema));
   };
 
   const getPartialMatchItems = () => {
-    return _.filter(
-      schemaData,
-      (schema) => schema?.match_type?.toLowerCase() === "partial"
-    );
+    return _.filter(schemaData, (schema) => isPartialMatch(schema));
   };
 
   const getNoMatchItems = () => {
-    return _.filter(
-      schemaData,
-      (schema) =>
-        !schema.match_type || schema?.match_type?.toLowerCase() === "no match"
-    );
+    return _.filter(schemaData, (schema) => isNoMatch(schema));
   };
 
   const onItemClick = (ref) => {
-    if (ref?.attributes && ref?.refs) {
-      // Its a schema
+    if (isSchema(ref) || isArray(ref)) {
       const updatedSchemaState = _.cloneDeep(schemaState);
 
       if (
@@ -109,28 +105,6 @@ const Schema = () => {
       updatedSchemaState?.selected?.push(ref);
 
       setSchemaState(updatedSchemaState);
-    } else if (ref?.type && !_.isEmpty(ref?.type)) {
-      if (
-        ref?.type?.toLowerCase() === "array" ||
-        ref?.type?.toLowerCase() === "ref"
-      ) {
-        // Its an array/ref
-
-        const updatedSchemaState = _.cloneDeep(schemaState);
-
-        if (
-          !updatedSchemaState?.selected ||
-          _.isEmpty(updatedSchemaState?.selected)
-        ) {
-          updatedSchemaState.selected = [];
-        }
-
-        updatedSchemaState?.selected?.push(ref);
-
-        setSchemaState(updatedSchemaState);
-      } else {
-        // Its an attribute
-      }
     }
   };
 

@@ -8,8 +8,15 @@ import AppIcon from "../../shared/components/AppIcon";
 import Colors from "../../shared/colors";
 import AttributeIcon from "../../static/images/attribute.svg";
 import SchemaIcon from "../../static/images/schema-icon.svg";
+import {
+  isArray,
+  isFullMatch,
+  isNoMatch,
+  isPartialMatch,
+  isSchema,
+} from "../../shared/utils";
 
-const DraggableMatchItem = ({ index, type, matchType, item, ...rest }) => {
+const DraggableMatchItem = ({ index, item, ...rest }) => {
   const [{ isDragging }, drag, dragPreview] = useDrag(
     () => ({
       type: "drag_item",
@@ -26,7 +33,7 @@ const DraggableMatchItem = ({ index, type, matchType, item, ...rest }) => {
       ref={drag}
       style={{
         opacity: isDragging ? 0.5 : 1,
-        cursor: type === "ref" || type === "array" ? "pointer" : null,
+        cursor: isArray(item) || isSchema(item) ? "pointer" : null,
       }}
       className='p-2 mb-2 rounded-md bg-white flex flex-row items-center'
       {...rest}
@@ -40,19 +47,19 @@ const DraggableMatchItem = ({ index, type, matchType, item, ...rest }) => {
 
       <img
         className='mr-2'
-        src={type === "ref" || type === "array" ? SchemaIcon : AttributeIcon}
+        src={isArray(item) || isSchema(item) ? SchemaIcon : AttributeIcon}
         style={{ width: "24px", height: "24px" }}
       />
 
       <p className='flex-1 text-overline3 mr-2 overflow-ellipsis'>
-        {item?.name} {type === "array" ? " [ ]" : ""}
+        {item?.name} {isArray(item) ? " [ ]" : ""}
       </p>
 
       <div
         className={classNames(" w-12 max-w-3 h-6 rounded-sm", {
-          "bg-brand-green": matchType === "full_match",
-          "bg-score-yellow": matchType === "partial_match",
-          "bg-score-red": matchType === "no_match",
+          "bg-brand-green": isFullMatch(item),
+          "bg-score-yellow": isPartialMatch(item),
+          "bg-score-red": isNoMatch(item),
         })}
       />
     </div>

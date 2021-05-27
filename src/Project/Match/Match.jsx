@@ -8,6 +8,7 @@ import Schema from "./Schema";
 import schemaAtom from "./Schema/schemaAtom";
 import AppIcon from "../../shared/components/AppIcon";
 import classNames from "classnames";
+import { isArray } from "../../shared/utils";
 
 const Match = (props) => {
   const [currentTab, setTab] = useState(0);
@@ -89,7 +90,7 @@ const Match = (props) => {
                         }
                       }}
                     >
-                      {schema?.name} {schema?.type === "array" ? " [ ] " : null}
+                      {schema?.name} {isArray(schema) ? " [ ] " : null}
                     </p>
                   </div>
                 );
