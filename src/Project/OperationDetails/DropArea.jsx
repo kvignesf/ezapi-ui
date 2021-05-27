@@ -15,7 +15,7 @@ const DropArea = ({ children, onItemDropped }) => {
   }));
 
   return (
-    <div ref={drop} role={"Handle"}>
+    <div ref={drop} style={{ opacity: isOver ? 0.6 : 1 }}>
       {children}
     </div>
   );

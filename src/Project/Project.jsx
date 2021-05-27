@@ -109,7 +109,7 @@ const Project = () => {
               <Resources
                 className='h-full flex flex-col'
                 projectId={projectId}
-                selectedIndex={operationState.index}
+                selectedIndex={operationState.operationIndex}
                 onOperationSelect={(index, resource, path, operation) => {
                   if (index !== operationState.operationIndex) {
                     const cloned = _.cloneDeep(operationState);

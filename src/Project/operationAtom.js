@@ -6,6 +6,7 @@ export const defaultState = {
   path: null,
   operationIndex: null,
 
+  headers: [],
   operationRequest: {
     headers: [],
     formData: [],
