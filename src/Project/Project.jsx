@@ -15,7 +15,12 @@ import AddOrEditResource from "./Resources/AddOrEditResource";
 import Resources from "./Resources/Resources";
 import Match from "./Match";
 import OperationDetails from "./OperationDetails";
-import operationAtom from "./operationAtom";
+import operationAtom, {
+  defaultState as operationAtomDefaultState,
+} from "./operationAtom";
+import schemaAtom, {
+  defaultState as schemaAtomDefaultState,
+} from "./Match/Schema/schemaAtom";
 import { ClassNames } from "@emotion/react";
 import classNames from "classnames";
 import _ from "lodash";
@@ -33,6 +38,7 @@ const Project = () => {
   } = useFetchProjectDetails(projectId);
   const [currentTab, setCurrentTab] = useState(0);
   const [operationState, setOperationState] = useRecoilState(operationAtom);
+  const [schemaState, setSchemaState] = useRecoilState(schemaAtom);
 
   return (
     <>
@@ -44,6 +50,9 @@ const Project = () => {
               onClick={(event) => {
                 event?.preventDefault();
                 event?.stopPropagation();
+
+                setOperationState(operationAtomDefaultState);
+                setSchemaState(schemaAtomDefaultState);
 
                 history.goBack();
               }}
