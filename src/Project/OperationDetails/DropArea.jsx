@@ -1,7 +1,7 @@
 import React from "react";
 import { useDrop } from "react-dnd";
 
-const DropArea = ({ children, onItemDropped }) => {
+const DropArea = ({ children, onItemDropped, ...rest }) => {
   const [{ canDrop, isOver }, drop] = useDrop(() => ({
     accept: "drag_item",
     drop: (item, monitor) => {
@@ -15,7 +15,7 @@ const DropArea = ({ children, onItemDropped }) => {
   }));
 
   return (
-    <div ref={drop} style={{ opacity: isOver ? 0.6 : 1 }}>
+    <div ref={drop} style={{ opacity: isOver ? 0.6 : 1 }} {...rest}>
       {children}
     </div>
   );

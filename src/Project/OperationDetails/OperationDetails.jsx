@@ -40,12 +40,12 @@ const OperationDetails = ({
   const operationState = useRecoilValue(operationAtom);
 
   return (
-    <div className={`border-t-2 ${className}`} {...props}>
+    <div className={`border-t-2 h-full ${className}`} {...props}>
       {operationState?.resource &&
         operationState?.path &&
         operationState?.operation && (
-          <>
-            <div className='flex flex-row'>
+          <div>
+            <div className='h-full flex flex-row'>
               <Tabs
                 classes={{
                   indicator: tabsClasses.indicator,
@@ -91,13 +91,13 @@ const OperationDetails = ({
             </div>
 
             {currentTab === 0 ? (
-              <div>
+              <div className='h-full'>
                 <Request />
               </div>
             ) : (
               <div>Response</div>
             )}
-          </>
+          </div>
         )}
     </div>
   );

@@ -43,7 +43,7 @@ const Project = () => {
   return (
     <>
       <DndProvider backend={HTML5Backend}>
-        <header className='px-2 border-b-2 flex flex-row items-center'>
+        <header className='px-2 border-b-2 flex flex-row items-center bg-white'>
           <div className='flex flex-row py-2 items-center'>
             <AppIcon
               style={{ marginRight: "1rem" }}

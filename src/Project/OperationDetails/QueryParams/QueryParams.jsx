@@ -22,7 +22,7 @@ import {
 } from "../../../shared/utils";
 import AppIcon from "../../../shared/components/AppIcon";
 
-const Headers = () => {
+const QueryParams = () => {
   let [operationDetails, setOperationDetails] = useRecoilState(operationAtom);
   const { height, width } = useWindowSize();
 
@@ -30,18 +30,17 @@ const Headers = () => {
     if (isAttribute(item) && !isArray(item) && !isSchema(item)) {
       setOperationDetails((operationDetails) => {
         if (
-          !operationDetails.operationRequest.headers.find(
+          !operationDetails.operationRequest.queryParams.find(
             (x) => x.name === item.name
           )
         ) {
           const newOperationDetails = _.cloneDeep(operationDetails);
 
-          newOperationDetails.operationRequest.headers.push({
+          newOperationDetails.operationRequest.queryParams.push({
             name: item?.name,
             type: item?.type,
             required: item?.required,
             description: item?.description,
-            possibleValues: item?.possibleValues,
           });
 
           return newOperationDetails;
@@ -54,14 +53,14 @@ const Headers = () => {
   const itemDeleted = (item) => {
     if (isAttribute(item) && !isArray(item) && !isSchema(item)) {
       setOperationDetails((operationDetails) => {
-        const index = operationDetails.operationRequest.headers.findIndex(
+        const index = operationDetails.operationRequest.queryParams.findIndex(
           (x) => x.name === item.name
         );
 
         if (index !== -1) {
           const newOperationDetails = _.cloneDeep(operationDetails);
 
-          newOperationDetails.operationRequest.headers.splice(index, 1);
+          newOperationDetails.operationRequest.queryParams.splice(index, 1);
 
           return newOperationDetails;
         }
@@ -74,11 +73,11 @@ const Headers = () => {
   const onDescriptionUpdate = useCallback(
     debounce((item, value) => {
       setOperationDetails((operationDetails) => {
-        let foundItem = operationDetails.operationRequest.headers.find(
+        let foundItem = operationDetails.operationRequest.queryParams.find(
           (x) => x.name === item.name
         );
         let foundItemIndex =
-          operationDetails.operationRequest.headers.findIndex(
+          operationDetails.operationRequest.queryParams.findIndex(
             (x) => x.name === item.name
           );
 
@@ -87,35 +86,7 @@ const Headers = () => {
           const clonedOperationDetails = _.cloneDeep(operationDetails);
 
           clonedFoundItem.description = value;
-          clonedOperationDetails.operationRequest.headers[foundItemIndex] =
-            clonedFoundItem;
-
-          return clonedOperationDetails;
-        }
-
-        return operationDetails;
-      });
-    }, 300),
-    [] // will be created only once initially
-  );
-
-  const onPossibleValuesUpdate = useCallback(
-    debounce((item, value) => {
-      setOperationDetails((operationDetails) => {
-        let foundItem = operationDetails.operationRequest.headers.find(
-          (x) => x.name === item.name
-        );
-        let foundItemIndex =
-          operationDetails.operationRequest.headers.findIndex(
-            (x) => x.name === item.name
-          );
-
-        if (foundItem) {
-          const clonedFoundItem = _.cloneDeep(foundItem);
-          const clonedOperationDetails = _.cloneDeep(operationDetails);
-
-          clonedFoundItem.possibleValues = value;
-          clonedOperationDetails.operationRequest.headers[foundItemIndex] =
+          clonedOperationDetails.operationRequest.queryParams[foundItemIndex] =
             clonedFoundItem;
 
           return clonedOperationDetails;
@@ -153,27 +124,19 @@ const Headers = () => {
               <TableCell align='left' style={{ padding: "0" }}>
                 <p className='text-overline2 text-neutral-gray4'>REQUIRED</p>
               </TableCell>
-              <TableCell align='left' style={{ padding: "0" }}>
-                <p className='text-overline2 text-neutral-gray4'>
-                  POSSIBLE VALUES
-                </p>
-              </TableCell>
               <TableCell align='left' style={{ padding: "0" }}></TableCell>
             </TableRow>
           </TableHead>
 
-          {!_.isEmpty(operationDetails?.operationRequest?.headers) && (
+          {!_.isEmpty(operationDetails?.operationRequest?.queryParams) && (
             <TableBody className='w-full max-h-6'>
-              {operationDetails?.operationRequest?.headers?.map((row) => {
+              {operationDetails?.operationRequest?.queryParams?.map((row) => {
                 return (
                   <Row
                     row={row}
                     onItemDelete={itemDeleted}
                     onDescriptionUpdate={(item, value) => {
                       onDescriptionUpdate(item, value);
-                    }}
-                    onPossibleValuesUpdate={(item, value) => {
-                      onPossibleValuesUpdate(item, value);
                     }}
                   />
                 );
@@ -183,7 +146,7 @@ const Headers = () => {
         </Table>
       </TableContainer>
 
-      {_.isEmpty(operationDetails?.operationRequest?.headers) && (
+      {_.isEmpty(operationDetails?.operationRequest?.queryParams) && (
         <div className='border-dashed p-3 bg-neutral-gray7 rounded-md border-2 m-2 flex flex-row justify-center'>
           <p className='text-overline3'>
             Drag and Drop
@@ -271,47 +234,6 @@ const Row = ({
       ></TableCell>
 
       <TableCell
-        align='left'
-        style={{
-          width: "150px",
-          padding: "0px",
-          paddingTop: "4px",
-          paddingBottom: "4px",
-          paddingRight: "16px",
-        }}
-      >
-        <Formik
-          initialValues={{
-            possibleValues: row.possibleValues ?? "",
-          }}
-        >
-          {({ errors, touched }) => (
-            <Form>
-              <Field
-                id='possibleValues'
-                name='possibleValues'
-                fullWidth
-                color='primary'
-                variant='outlined'
-                error={touched.possibleValues && Boolean(errors.possibleValues)}
-                helperText={<ErrorMessage name='possibleValues' />}
-                onKeyUp={(e) => {
-                  const { value } = e.target;
-                  onPossibleValuesUpdate(row, value);
-                }}
-                inputProps={{
-                  style: {
-                    height: "6px",
-                  },
-                }}
-                as={TextField}
-              />
-            </Form>
-          )}
-        </Formik>
-      </TableCell>
-
-      <TableCell
         align='right'
         style={{ width: "20px", padding: "0px", paddingRight: "16px" }}
       >
@@ -334,4 +256,4 @@ const Row = ({
   );
 };
 
-export default Headers;
+export default QueryParams;
