@@ -7,12 +7,12 @@ import PathParams from "../PathParams/PathParams";
 import QueryParams from "../QueryParams/QueryParams";
 import FormData from "../FormData/FormData";
 import operationAtom from "../../operationAtom";
+import RequestBody from "../RequestBody/RequestBody";
 
 const Request = () => {
   const [currentTab, setTab] = useState(0);
   const operationState = useRecoilValue(operationAtom);
 
-  console.log("operationState.operation", operationState.operation);
   return (
     <div>
       <div className='border-b-2 m-3 h-full'>
@@ -73,6 +73,7 @@ const Request = () => {
       {currentTab === 1 && <FormData />}
       {currentTab === 2 && <QueryParams />}
       {currentTab === 3 && <PathParams />}
+      {currentTab === 4 && <RequestBody />}
     </div>
   );
 };

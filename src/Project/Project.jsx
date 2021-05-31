@@ -4,7 +4,7 @@ import ArrowBackIcon from "@material-ui/icons/ArrowBack";
 import { Tab, Tabs } from "@material-ui/core";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import { useRecoilState } from "recoil";
+import { useResetRecoilState, useRecoilState } from "recoil";
 
 import AppIcon from "../shared/components/AppIcon";
 import { useFetchProjectDetails } from "./projectQueries";
@@ -26,6 +26,7 @@ import classNames from "classnames";
 import _ from "lodash";
 
 const Project = () => {
+  const resetOperationState = useResetRecoilState(operationAtom);
   const { id: projectId } = useParams();
   const history = useHistory();
   const firstName = getFirstName();
@@ -112,6 +113,8 @@ const Project = () => {
                 selectedIndex={operationState.operationIndex}
                 onOperationSelect={(index, resource, path, operation) => {
                   if (index !== operationState.operationIndex) {
+                    resetOperationState();
+
                     const cloned = _.cloneDeep(operationState);
                     cloned.operation = operation;
                     cloned.resource = resource;

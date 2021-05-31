@@ -167,6 +167,7 @@ const Headers = () => {
               {operationDetails?.operationRequest?.headers?.map((row) => {
                 return (
                   <Row
+                    key={row?.name}
                     row={row}
                     onItemDelete={itemDeleted}
                     onDescriptionUpdate={(item, value) => {
@@ -265,10 +266,9 @@ const Row = ({
         </Formik>
       </TableCell>
 
-      <TableCell
-        align='left'
-        style={{ width: "150px", padding: "0px" }}
-      ></TableCell>
+      <TableCell align='left' style={{ width: "150px", padding: "0px" }}>
+        {row?.required}
+      </TableCell>
 
       <TableCell
         align='left'
