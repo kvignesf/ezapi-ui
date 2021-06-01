@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { useRecoilState } from "recoil";
 import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
@@ -6,7 +6,7 @@ import TableCell from "@material-ui/core/TableCell";
 import TableContainer from "@material-ui/core/TableContainer";
 import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
-import { TextField } from "@material-ui/core";
+import { CircularProgress, TextField } from "@material-ui/core";
 import _ from "lodash";
 import DeleteIcon from "@material-ui/icons/Delete";
 import { Field, ErrorMessage, Form, Formik } from "formik";
@@ -29,19 +29,13 @@ import {
 import AppIcon from "../../../shared/components/AppIcon";
 import AttributeIcon from "../../../static/images/attribute.svg";
 import SchemaIcon from "../../../static/images/schema-icon.svg";
-import { useGetSubSchema } from "../../Match/Schema/schemaQueries";
+import { useGetSubSchema } from "./requestBodyQueries";
+import { useParams } from "react-router";
+import { current } from "immer";
 
 const RequestBody = () => {
   let [operationDetails, setOperationDetails] = useRecoilState(operationAtom);
   const { height, width } = useWindowSize();
-  const {
-    isLoading: isLoadingSubSchema,
-    error: getSubSchemasError,
-    data: subSchemaData,
-    mutate: getSubSchema,
-    reset: resetSubSchemaData,
-    isIdle: isGetSubSchemaIdle,
-  } = useGetSubSchema();
 
   const itemDropped = (item) => {
     if (isSchema(item) && !isArray(item) && !isAttribute(item)) {
@@ -62,33 +56,10 @@ const RequestBody = () => {
     }
   };
 
-  const itemDeleted = (item) => {
-    if (isSchema(item) && !isArray(item) && !isAttribute(item)) {
-      setOperationDetails((operationDetails) => {
-        const index = operationDetails.operationRequest.body.findIndex(
-          (x) => x.name === item.name
-        );
-        if (index !== -1) {
-          const newOperationDetails = _.cloneDeep(operationDetails);
-
-          newOperationDetails.operationRequest.body.splice(index, 1);
-
-          return newOperationDetails;
-        }
-
-        return operationDetails;
-      });
-    }
-  };
-
-  const onSubSchemaClick = (item) => {
-    console.log("item", item);
-  };
-
   return (
     <DropArea onItemDropped={itemDropped}>
       <div className='h-full flex flex-col'>
-        <div className='flex flex-row p-2 border-t-2 border-b-2 bg-neutral-gray8 mb-2'>
+        <div className='flex flex-row p-2 border-t-2 border-b-2 bg-neutral-gray8 mb-1/2'>
           <p className='w-1/3 ml-3 text-overline2 text-neutral-gray4 uppercase font-bold'>
             Schema
           </p>
@@ -123,13 +94,7 @@ const RequestBody = () => {
                 defaultExpandIcon={<ChevronRightIcon />}
               >
                 {operationDetails?.operationRequest?.body.map((item) => {
-                  return (
-                    <SchemaItem
-                      schema={item}
-                      deleteSchema={itemDeleted}
-                      onSubSchemaClick={onSubSchemaClick}
-                    />
-                  );
+                  return <SchemaItem schema={item} />;
                 })}
               </TreeView>
             </Scrollbar>
@@ -151,34 +116,105 @@ const RequestBody = () => {
 
 let treeIndex = 1;
 
-const SchemaItem = ({ schema, deleteSchema, onSubSchemaClick }) => {
-  const getTreeItems = (currentRef) => {
-    return (
-      <TreeItem
-        key={treeIndex++}
-        nodeId={treeIndex++}
-        label={
-          <div className='flex flex-row p-1 justify-between border-b-2'>
-            <div className='flex flex-row items-center justify-center'>
-              <img
-                src={SchemaIcon}
-                alt='ezapi logo'
-                className='bg-white mr-2'
-                style={{
-                  height: "24px",
-                  width: "24px",
-                }}
-              />
+const SubSchemaTreeItems = ({ currentRef: some }) => {
+  const [currentRef, setCurrentRef] = useState(some);
+  const [operationDetails, setOperationDetails] = useRecoilState(operationAtom);
+  const { id: projectId } = useParams();
+  const {
+    isLoading: isLoadingSubSchema,
+    error: getSubSchemasError,
+    data: subSchemaData,
+    mutate: getSubSchema,
+    reset: resetSubSchemaData,
+    variables: subSchemaRequest,
+  } = useGetSubSchema();
 
-              <p className='text-overline2'>
+  useEffect(() => {
+    if (
+      subSchemaData &&
+      subSchemaData.nSchemaArray &&
+      !_.isEmpty(subSchemaData.nSchemaArray)
+    ) {
+      if (isSchema(currentRef) || isArray(currentRef)) {
+        currentRef.isLoaded = true;
+
+        for (
+          let index = 0;
+          index < subSchemaData.nSchemaArray.length;
+          index++
+        ) {
+          const element = subSchemaData.nSchemaArray[index];
+
+          if (isSchema(element) || isArray(element)) {
+            currentRef.refs.push(element);
+          } else if (isAttribute(element)) {
+            currentRef.attributes.push(element);
+          }
+        }
+
+        setCurrentRef(currentRef);
+      }
+    }
+  }, [subSchemaData]);
+
+  const getSubschemaData = (subSchemaRef) => {
+    if (!isLoadingSubSchema && !subSchemaRef.isLoaded) {
+      getSubSchema({
+        projectId,
+        name: subSchemaRef?.name,
+        type: subSchemaRef?.type,
+        ref: subSchemaRef?.ref,
+      });
+    }
+  };
+
+  return (
+    <TreeItem
+      key={treeIndex++}
+      nodeId={treeIndex++}
+      label={
+        <div className='flex flex-row p-1 justify-between border-b-2'>
+          <div className='flex flex-row items-center justify-center'>
+            <img
+              src={SchemaIcon}
+              alt='ezapi logo'
+              className='bg-white mr-2'
+              style={{
+                height: "24px",
+                width: "24px",
+              }}
+            />
+
+            <div className='flex flex-row justify-between w-full items-center'>
+              <p className='text-overline2 mr-4'>
                 {currentRef?.name}
                 {isArray(currentRef) && " [ ]"}
               </p>
+
+              {isLoadingSubSchema && subSchemaRequest.ref === currentRef?.ref && (
+                <CircularProgress
+                  style={{
+                    width: "1.25rem",
+                    height: "1.25rem",
+                  }}
+                />
+              )}
             </div>
           </div>
-        }
-      >
-        {currentRef?.attributes?.map((attribute) => {
+        </div>
+      }
+      onLabelClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        getSubschemaData(currentRef);
+      }}
+      onIconClick={(e) => {
+        getSubschemaData(currentRef);
+      }}
+    >
+      {!_.isEmpty(currentRef?.attributes) &&
+        new Array(currentRef.attributes).map((attribute) => {
           return (
             <TreeItem
               key={treeIndex++}
@@ -212,52 +248,87 @@ const SchemaItem = ({ schema, deleteSchema, onSubSchemaClick }) => {
           );
         })}
 
-        {currentRef?.refs?.map((ref) => {
-          return (
-            <TreeItem
-              key={treeIndex++}
-              nodeId={treeIndex++}
-              label={
-                <div className='flex flex-row p-1 justify-between border-b-2'>
-                  <div className='flex flex-row items-center justify-center'>
-                    <img
-                      src={SchemaIcon}
-                      alt='ezapi logo'
-                      className='bg-white mr-2'
-                      style={{
-                        height: "24px",
-                        width: "24px",
-                      }}
-                    />
+      {/* {currentRef.refs.map((ref) => { */}
 
-                    <p className='text-overline2'>
-                      {ref?.name}
-                      {isArray(ref) && " [ ]"}
-                    </p>
-                  </div>
-                </div>
-              }
-              onClick={(e) => {
-                e?.preventDefault();
-                e?.stopPropagation();
+      {[{ name: "asd" }].map((ref) => {
+        console.log("ref", ref);
+        // const clonedRef = _.cloneDeep(ref);
+        // console.log("clonedRef", clonedRef);
 
-                onSubSchemaClick(ref);
-              }}
-            >
-              {getTreeItems(ref)}
-            </TreeItem>
-          );
-        })}
-      </TreeItem>
-    );
+        return <TreeItem nodeId={treeIndex++} label={ref.name} />;
+
+        // if (!clonedRef.hasOwnProperty("attributes")) {
+        //   clonedRef["attributes"] = [];
+        // }
+
+        // if (!clonedRef.hasOwnProperty("refs")) {
+        //   clonedRef["refs"] = [];
+        // }
+
+        // if (!clonedRef.hasOwnProperty("isLoaded")) {
+        //   clonedRef["isLoaded"] = false;
+        // }
+
+        // return (
+        //   <TreeItem
+        //     key={treeIndex++}
+        //     nodeId={treeIndex++}
+        //     label={
+        //       <div className='flex flex-row p-1 justify-between border-b-2'>
+        //         <div className='flex flex-row items-center justify-center'>
+        //           <img
+        //             src={SchemaIcon}
+        //             alt='ezapi logo'
+        //             className='bg-white mr-2'
+        //             style={{
+        //               height: "24px",
+        //               width: "24px",
+        //             }}
+        //           />
+
+        //           <p className='text-overline2'>
+        //             {clonedRef?.name}
+        //             {isArray(clonedRef) && " [ ]"}
+        //           </p>
+        //         </div>
+        //       </div>
+        //     }
+        //   >
+        //     <SubSchemaTreeItems currentRef={clonedRef} />
+        //   </TreeItem>
+        // );
+      })}
+    </TreeItem>
+  );
+};
+
+const SchemaItem = ({ schema }) => {
+  const [operationDetails, setOperationDetails] = useRecoilState(operationAtom);
+
+  const deleteSchema = (item) => {
+    if (isSchema(item) && !isArray(item) && !isAttribute(item)) {
+      setOperationDetails((operationDetails) => {
+        const index = operationDetails.operationRequest.body.findIndex(
+          (x) => x.name === item.name
+        );
+        if (index !== -1) {
+          const newOperationDetails = _.cloneDeep(operationDetails);
+
+          newOperationDetails.operationRequest.body.splice(index, 1);
+
+          return newOperationDetails;
+        }
+
+        return operationDetails;
+      });
+    }
   };
 
   return (
     <TreeItem
       key={treeIndex++}
       nodeId={treeIndex++}
-      label={<Label schema={schema} />}
-      selected={2}
+      label={<Label schema={schema} deleteSchema={deleteSchema} />}
     >
       {schema?.attributes?.map((attribute) => {
         return (
@@ -293,7 +364,23 @@ const SchemaItem = ({ schema, deleteSchema, onSubSchemaClick }) => {
         );
       })}
 
-      {schema?.refs?.map((ref) => getTreeItems(ref))}
+      {schema?.refs?.map((ref) => {
+        const clonedRef = _.cloneDeep(ref);
+
+        if (!clonedRef.hasOwnProperty("attributes")) {
+          clonedRef["attributes"] = [];
+        }
+
+        if (!clonedRef.hasOwnProperty("refs")) {
+          clonedRef["refs"] = [];
+        }
+
+        if (!clonedRef.hasOwnProperty("isLoaded")) {
+          clonedRef["isLoaded"] = false;
+        }
+
+        return <SubSchemaTreeItems currentRef={clonedRef} />;
+      })}
     </TreeItem>
   );
 };
@@ -308,7 +395,7 @@ const Label = ({ schema, deleteSchema }) => {
               <img
                 src={SchemaIcon}
                 alt='ezapi logo'
-                className='bg-white mr-2'
+                className='bg-white mr-4'
                 style={{ height: "24px", width: "24px" }}
               />
 

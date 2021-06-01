@@ -43,6 +43,7 @@ const Project = () => {
 
   return (
     <>
+      {/* <RecursiveComponent {...data} /> */}
       <DndProvider backend={HTML5Backend}>
         <header className='px-2 border-b-2 flex flex-row items-center bg-white'>
           <div className='flex flex-row py-2 items-center'>
@@ -152,6 +153,32 @@ const Project = () => {
           </div>
         )}
       </DndProvider>
+    </>
+  );
+};
+
+const data = {
+  name: "Level 1",
+  items: [
+    {
+      name: "Level 2",
+      items: [
+        {
+          name: "Level 3",
+        },
+      ],
+    },
+  ],
+};
+
+const RecursiveComponent = ({ name, items }) => {
+  const hasChildren = items && items.length;
+
+  return (
+    <>
+      {name}
+      {hasChildren &&
+        items.map((item) => <RecursiveComponent key={item.name} {...item} />)}
     </>
   );
 };
