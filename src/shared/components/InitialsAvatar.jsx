@@ -17,10 +17,12 @@ const InitialsAvatar = ({ firstName, lastName, className, ...rest }) => {
       style={{
         borderWidth: "1px",
       }}
-      className={`rounded-full p-2 bg-brand-primarySubtle w-10 ${className}`}
+      className={`rounded-full p-2 bg-brand-primarySubtle flex flex-row max-w-10 ${className}`}
       {...rest}
     >
-      <p className='capitalize text-brand-primary text-overline2'>{name}</p>
+      <p className='capitalize text-center text-brand-primary text-overline2'>
+        {name}
+      </p>
     </div>
   );
 };

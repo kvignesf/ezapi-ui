@@ -29,7 +29,8 @@ export const useAddProject = () => {
     2. /project/{project_id}/upload (POST) - uploads the spec files
     3. /project/{project_id}/upload (POST) - uploads the db files
   */
-  const dbMutation = useUploadProjectDbs();
+  const aiMutation = useAiMatcher();
+  const dbMutation = useUploadProjectDbs(aiMutation);
   const specsMutation = useUploadProjectSpecs(dbMutation);
   const projectDetails = useRecoilValue(projectAtom);
 
@@ -47,6 +48,7 @@ export const useAddProject = () => {
     addProjectMutation: mutation,
     uploadDbMutation: dbMutation,
     uploadSpecsMutation: specsMutation,
+    aiMatcherMutation: aiMutation,
   };
 };
 
@@ -97,6 +99,7 @@ const uploadProjectDbs = async ({ id, files }) => {
   files.forEach((file) => {
     bodyFormData.append("upload", file);
   });
+
   bodyFormData.append("type", "db");
 
   try {
@@ -115,10 +118,35 @@ const uploadProjectDbs = async ({ id, files }) => {
   }
 };
 
-const useUploadProjectDbs = () => {
+const useUploadProjectDbs = (aiMutation) => {
+  const mutation = useMutation(uploadProjectDbs, {
+    onSuccess: (data) => {
+      if (data?.projectId) {
+        aiMutation.mutate({
+          id: data?.projectId,
+        });
+      }
+    },
+  });
+
+  return mutation;
+};
+
+const aiMatcher = async ({ projectId }) => {
+  try {
+    const { data } = await client.post(endpoint.aiMatcher, {
+      projectId,
+    });
+    return data;
+  } catch (error) {
+    throw getApiError(error);
+  }
+};
+
+const useAiMatcher = () => {
   const queryClient = useQueryClient();
 
-  const mutation = useMutation(uploadProjectDbs, {
+  const mutation = useMutation(aiMatcher, {
     onSuccess: (data) => {
       queryClient.invalidateQueries(queries.projects);
     },

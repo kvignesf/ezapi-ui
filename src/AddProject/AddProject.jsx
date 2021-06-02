@@ -47,6 +47,11 @@ const AddProject = ({ onClose }) => {
       error: uploadDbsError,
       isSuccess: uploadDbsSuccess,
     },
+    aiMatcherMutation: {
+      isLoading: isMatchingAi,
+      error: matchAiError,
+      isSuccess: matchAiSuccess,
+    },
   } = useAddProject();
 
   const formRef = useRef();
@@ -117,7 +122,7 @@ const AddProject = ({ onClose }) => {
     });
   };
 
-  if (uploadDbsSuccess) {
+  if (matchAiSuccess) {
     onClose();
     return null;
   }
@@ -127,118 +132,132 @@ const AddProject = ({ onClose }) => {
       <div className='flex flex-row items-center justify-between mb-3'>
         <h5>Create New API Project</h5>
 
-        {!isUploadingProjectDetails && !isUploadingDbs && !isUploadingSpecs && (
-          <AppIcon aria-label='close' onClick={onClose}>
-            <CloseIcon />
-          </AppIcon>
-        )}
+        {!isUploadingProjectDetails &&
+          !isUploadingDbs &&
+          !isUploadingSpecs &&
+          !isMatchingAi && (
+            <AppIcon aria-label='close' onClick={onClose}>
+              <CloseIcon />
+            </AppIcon>
+          )}
       </div>
 
-      {!isUploadingProjectDetails && !isUploadingDbs && !isUploadingSpecs && (
-        <>
-          <Tabs
-            value={currentTab}
-            onChange={(_, index) => {
-              setTab(index);
-            }}
-            aria-label='add project tabs'
-            indicatorColor='primary'
-            textColor='primary'
-          >
-            <Tab
-              label={
-                <span className='text-overline2 capitalize'>1. Create API</span>
-              }
-              style={{ outline: "none", border: "none" }}
-            />
-            <Tab
-              label={
-                <span className='text-overline2 capitalize'>
-                  2. Invite Collaborators
-                </span>
-              }
-              style={{ outline: "none", border: "none" }}
-            />
-          </Tabs>
+      {!isUploadingProjectDetails &&
+        !isUploadingDbs &&
+        !isUploadingSpecs &&
+        !isMatchingAi && (
+          <>
+            <Tabs
+              value={currentTab}
+              onChange={(_, index) => {
+                setTab(index);
+              }}
+              aria-label='add project tabs'
+              indicatorColor='primary'
+              textColor='primary'
+            >
+              <Tab
+                label={
+                  <span className='text-overline2 capitalize'>
+                    1. Create API
+                  </span>
+                }
+                style={{ outline: "none", border: "none" }}
+              />
+              <Tab
+                label={
+                  <span className='text-overline2 capitalize'>
+                    2. Invite Collaborators
+                  </span>
+                }
+                style={{ outline: "none", border: "none" }}
+              />
+            </Tabs>
 
-          {/* Content */}
-          <div className='h-full'>
-            {currentTab === 0 ? (
-              <div>
-                <ProjectDetails
-                  formRef={formRef}
-                  specsError={specsError}
-                  dbsError={dbsError}
-                />
-              </div>
-            ) : (
-              <div className='h-80 pt-4 mb-4'>
-                <InviteCollaborators
-                  handleChange={handleCollaboratorsChange}
-                  collaborators={projectDetails?.collaborators}
-                />
-              </div>
+            {/* Content */}
+            <div className='h-full'>
+              {currentTab === 0 ? (
+                <div>
+                  <ProjectDetails
+                    formRef={formRef}
+                    specsError={specsError}
+                    dbsError={dbsError}
+                  />
+                </div>
+              ) : (
+                <div className='h-80 pt-4 mb-4'>
+                  <InviteCollaborators
+                    handleChange={handleCollaboratorsChange}
+                    collaborators={projectDetails?.collaborators}
+                  />
+                </div>
+              )}
+            </div>
+
+            {projectDetailsError && (
+              <p className='text-overline2 text-accent-red my-2'>
+                {projectDetailsError?.message}
+              </p>
             )}
-          </div>
 
-          {projectDetailsError && (
-            <p className='text-overline2 text-accent-red my-2'>
-              {projectDetailsError?.message}
-            </p>
-          )}
+            {uploadSpecsError && (
+              <p className='text-overline2 text-accent-red my-2'>
+                {`Failed to upload specs - ${uploadSpecsError?.message}`}
+              </p>
+            )}
 
-          {uploadSpecsError && (
-            <p className='text-overline2 text-accent-red my-2'>
-              {uploadSpecsError?.message}
-            </p>
-          )}
+            {uploadDbsError && (
+              <p className='text-overline2 text-accent-red my-2'>
+                {`Failed to upload dbs - ${uploadDbsError?.message}`}
+              </p>
+            )}
 
-          {uploadDbsError && (
-            <p className='text-overline2 text-accent-red my-2'>
-              {uploadDbsError?.message}
-            </p>
-          )}
+            {matchAiError && (
+              <p className='text-overline2 text-accent-red my-2'>
+                {matchAiError?.message}
+              </p>
+            )}
 
-          {/* Bottom section */}
-          <div className='border-t-2 border-neutral-gray7 flex flex-row items-center justify-end pt-4'>
-            {currentTab === 1 ? (
+            {/* Bottom section */}
+            <div className='border-t-2 border-neutral-gray7 flex flex-row items-center justify-end pt-4'>
+              {currentTab === 1 ? (
+                <TextButton
+                  onClick={() => {
+                    handleDone();
+                  }}
+                  classes='flex-1 -ml-4 text-brand-secondary'
+                >
+                  Skip for now
+                </TextButton>
+              ) : null}
+
               <TextButton
                 onClick={() => {
-                  handleDone();
+                  if (currentTab === 0) {
+                    onClose();
+                  } else {
+                    setTab(0);
+                  }
                 }}
-                classes='flex-1 -ml-4 text-brand-secondary'
+                classes='mr-3'
               >
-                Skip for now
+                {currentTab === 0 ? "Cancel" : "Back"}
               </TextButton>
-            ) : null}
 
-            <TextButton
-              onClick={() => {
-                if (currentTab === 0) {
-                  onClose();
-                } else {
-                  setTab(0);
-                }
-              }}
-              classes='mr-3'
-            >
-              {currentTab === 0 ? "Cancel" : "Back"}
-            </TextButton>
-
-            <PrimaryButton
-              onClick={() => {
-                if (currentTab === 0) {
-                  handleNext();
-                } else {
-                  handleDone();
-                }
-              }}
-            >
-              {currentTab === 0 ? "Next" : "Done"}
-            </PrimaryButton>
-          </div>
-        </>
-      )}
+              <PrimaryButton
+                onClick={() => {
+                  if (currentTab === 0) {
+                    handleNext();
+                  } else {
+                    handleDone();
+                  }
+                }}
+              >
+                {currentTab === 0 ? "Next" : "Done"}
+              </PrimaryButton>
+            </div>
+          </>
+        )}
 
       {isUploadingProjectDetails && (
         <div className='my-7'>
@@ -255,6 +274,15 @@ const AddProject = ({ onClose }) => {
       {isUploadingDbs && (
         <div className='my-7'>
           <LoaderWithMessage message='Uploading database files' contained />
+        </div>
+      )}
+
+      {isMatchingAi && (
+        <div className='my-7'>
+          <LoaderWithMessage
+            message='Running AI Matcher for the uploaded files'
+            contained
+          />
         </div>
       )}
     </div>

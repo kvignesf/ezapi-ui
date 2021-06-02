@@ -19,22 +19,16 @@ export const getApiError = (error) => {
   console.log("Error", error);
   console.log("Error Response", error?.response);
 
+  const url = error?.config?.url;
+
   if (error?.response?.status === 400) {
-    const url = error?.config?.url;
-
-    if (url) {
-      if (url === endpoint.login) {
-        return new Error("Failed to get the user details, please try again.");
-      } else if (url === endpoint.addUser) {
-        const message = error?.response?.data?.error?.message;
-
-        if (message === "Email or UserId already exists") {
-          return new Error("Employee ID or email address already exists.");
-        }
-        return new Error("Something went wrong, please try again");
-      }
+    if (url && url === endpoint.login) {
+      return new Error("Failed to get the user details, please try again.");
     }
+
     return new Error("Invalid data provided, please check and retry");
+  } else if (url && !_.isEmpty(url) && url.includes("/uploads")) {
+    return new Error(error?.response?.data?.aiResponse?.error);
   }
 
   return new Error("Something went wrong, please try again");
