@@ -151,14 +151,20 @@ const SubSchemaTreeItems = ({ currentRef: some }) => {
             currentRef.attributes.push(element);
           }
         }
+        const clonedClonedRef = _.cloneDeep(currentRef);
 
-        setCurrentRef(currentRef);
+        setCurrentRef(clonedClonedRef);
       }
     }
   }, [subSchemaData]);
 
   const getSubschemaData = (subSchemaRef) => {
-    if (!isLoadingSubSchema && !subSchemaRef.isLoaded) {
+    if (
+      !isLoadingSubSchema &&
+      !subSchemaRef.isLoaded &&
+      _.isEmpty(subSchemaRef.attributes) &&
+      _.isEmpty(subSchemaRef.refs)
+    ) {
       getSubSchema({
         projectId,
         name: subSchemaRef?.name,
@@ -213,90 +219,56 @@ const SubSchemaTreeItems = ({ currentRef: some }) => {
         getSubschemaData(currentRef);
       }}
     >
-      {!_.isEmpty(currentRef?.attributes) &&
-        new Array(currentRef.attributes).map((attribute) => {
-          return (
-            <TreeItem
-              key={treeIndex++}
-              nodeId={treeIndex++}
-              label={
-                <div className='flex flex-row p-1 justify-between border-b-2'>
-                  <div className='flex flex-row items-center justify-start w-1/3'>
-                    <img
-                      src={AttributeIcon}
-                      alt='ezapi logo'
-                      className='bg-white mr-2'
-                      style={{
-                        height: "24px",
-                        width: "24px",
-                      }}
-                    />
+      {currentRef.attributes.map((attribute) => {
+        return (
+          <TreeItem
+            key={treeIndex++}
+            nodeId={treeIndex++}
+            label={
+              <div className='flex flex-row p-1 justify-between border-b-2'>
+                <div className='flex flex-row items-center justify-start w-1/3'>
+                  <img
+                    src={AttributeIcon}
+                    alt='ezapi logo'
+                    className='bg-white mr-2'
+                    style={{
+                      height: "24px",
+                      width: "24px",
+                    }}
+                  />
 
-                    <p className='text-overline2'>{attribute?.name}</p>
-                  </div>
-
-                  <div className='w-1/3'>
-                    <p>{attribute?.type}</p>
-                  </div>
-
-                  <div className='w-1/3'>
-                    <p>{attribute?.required}</p>
-                  </div>
+                  <p className='text-overline2'>{attribute?.name}</p>
                 </div>
-              }
-            />
-          );
-        })}
 
-      {/* {currentRef.refs.map((ref) => { */}
+                <div className='w-1/3'>
+                  <p>{attribute?.type}</p>
+                </div>
 
-      {[{ name: "asd" }].map((ref) => {
-        console.log("ref", ref);
-        // const clonedRef = _.cloneDeep(ref);
-        // console.log("clonedRef", clonedRef);
+                <div className='w-1/3'>
+                  <p>{attribute?.required}</p>
+                </div>
+              </div>
+            }
+          />
+        );
+      })}
 
-        return <TreeItem nodeId={treeIndex++} label={ref.name} />;
+      {currentRef.refs.map((ref) => {
+        const clonedRef = _.cloneDeep(ref);
 
-        // if (!clonedRef.hasOwnProperty("attributes")) {
-        //   clonedRef["attributes"] = [];
-        // }
+        if (!clonedRef.hasOwnProperty("attributes")) {
+          clonedRef["attributes"] = [];
+        }
 
-        // if (!clonedRef.hasOwnProperty("refs")) {
-        //   clonedRef["refs"] = [];
-        // }
+        if (!clonedRef.hasOwnProperty("refs")) {
+          clonedRef["refs"] = [];
+        }
 
-        // if (!clonedRef.hasOwnProperty("isLoaded")) {
-        //   clonedRef["isLoaded"] = false;
-        // }
+        if (!clonedRef.hasOwnProperty("isLoaded")) {
+          clonedRef["isLoaded"] = false;
+        }
 
-        // return (
-        //   <TreeItem
-        //     key={treeIndex++}
-        //     nodeId={treeIndex++}
-        //     label={
-        //       <div className='flex flex-row p-1 justify-between border-b-2'>
-        //         <div className='flex flex-row items-center justify-center'>
-        //           <img
-        //             src={SchemaIcon}
-        //             alt='ezapi logo'
-        //             className='bg-white mr-2'
-        //             style={{
-        //               height: "24px",
-        //               width: "24px",
-        //             }}
-        //           />
-
-        //           <p className='text-overline2'>
-        //             {clonedRef?.name}
-        //             {isArray(clonedRef) && " [ ]"}
-        //           </p>
-        //         </div>
-        //       </div>
-        //     }
-        //   >
-        //     <SubSchemaTreeItems currentRef={clonedRef} />
-        //   </TreeItem>
-        // );
+        return <SubSchemaTreeItems currentRef={clonedRef} />;
       })}
     </TreeItem>
   );
