@@ -9,8 +9,7 @@ import schemaAtom from "./schemaAtom";
 const getAllSchemas = async ({ projectId }) => {
   try {
     const { data } = await client.post(`${endpoint.schemasList}`, {
-      // projectId,
-      projectId: "30001",
+      projectId,
     });
     return data;
   } catch (error) {
@@ -27,8 +26,7 @@ export const useGetAllSchemas = () => {
 const getSubSchema = async ({ projectId, name, type, ref }) => {
   try {
     const { data } = await client.post(`${endpoint.subSchemaData}`, {
-      projectId: "30001",
-      // projectId,
+      projectId,
       name,
       type,
       ref,

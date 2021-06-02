@@ -28,7 +28,7 @@ export const getApiError = (error) => {
 
     return new Error("Invalid data provided, please check and retry");
   } else if (url && !_.isEmpty(url) && url.includes("/uploads")) {
-    return new Error(error?.response?.data?.aiResponse?.error);
+    return new Error(error?.response?.data?.aiResponse?.message);
   }
 
   return new Error("Something went wrong, please try again");
