@@ -121,7 +121,9 @@ const ProjectRow = ({
       <td>
         <TimeAgo date={datetime} />
       </td>
-
+      <td>
+        <p className='text-overline2'>{project?.status}</p>
+      </td>
       <td></td>
 
       <td align='right'>
@@ -285,13 +287,12 @@ const Content = ({ showCreateProjectDialog }) => {
         <table className='w-full'>
           <tr className='p-4 bg-neutral-gray6 w-full text-left text-neutral-gray4 text-mediumLabel'>
             <th className='w-1/4 p-2 rounded-tl-md rounded-bl-md'>NAME</th>
-            <th className='w-1/3'>MEMBERS</th>
-            <th className='w-1/3'>LAST ACTIVITY</th>
-            <th></th>
-            <th className='rounded-tr-md rounded-br-md'>
-              {isFetchingProjectsBg && (
-                <CircularProgress size='20px' className='ml-6' />
-              )}
+            <th className='w-1/4'>MEMBERS</th>
+            <th className='w-1/4'>LAST ACTIVITY</th>
+            <th className='w-1/4'>STATUS</th>
+            <th className='w-1/4 mr-4'></th>
+            <th className='w-1/4 rounded-tr-md rounded-br-md'>
+              {isFetchingProjectsBg && <CircularProgress size='20px' />}
             </th>
           </tr>
 
