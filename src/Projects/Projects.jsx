@@ -287,8 +287,8 @@ const Content = ({ showCreateProjectDialog }) => {
 
       {projects && !_.isEmpty(projects) && (
         <table className='w-full'>
-          <tr className='p-4 bg-neutral-gray6 w-full text-left text-neutral-gray4 text-mediumLabel'>
-            <th className='w-1/4 p-2 rounded-tl-md rounded-bl-md'>NAME</th>
+          <tr className='mr-16 bg-neutral-gray6 w-full text-left text-neutral-gray4 text-mediumLabel'>
+            <th className='p-2 w-1/4 rounded-tl-md rounded-bl-md'>NAME</th>
             <th className='w-1/4'>MEMBERS</th>
             <th className='w-1/4'>LAST ACTIVITY</th>
             <th className='w-1/4'>STATUS</th>

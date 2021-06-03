@@ -43,7 +43,7 @@ const Project = () => {
   const [schemaState, setSchemaState] = useRecoilState(schemaAtom);
 
   useEffect(() => {
-    if (projectDetails?.status !== "IN_PROGRESS") {
+    if (projectDetails && projectDetails?.status !== "IN_PROGRESS") {
       history.replace(endpoint.projects);
     }
   }, [projectDetails]);

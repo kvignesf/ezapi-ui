@@ -67,6 +67,7 @@ const uploadProjectSpecs = async ({ projectId, files }) => {
         headers: {
           "Content-Type": "multipart/form-data",
         },
+        timeout: 120000,
       }
     );
     return data;
@@ -109,6 +110,7 @@ const uploadProjectDbs = async ({ projectId, files }) => {
         headers: {
           "Content-Type": "multipart/form-data",
         },
+        timeout: 120000,
       }
     );
     return data;
@@ -133,9 +135,15 @@ const useUploadProjectDbs = (aiMutation) => {
 
 const aiMatcher = async ({ projectId }) => {
   try {
-    const { data } = await client.post(endpoint.aiMatcher, {
-      projectId,
-    });
+    const { data } = await client.post(
+      endpoint.aiMatcher,
+      {
+        projectId,
+      },
+      {
+        timeout: 120000,
+      }
+    );
     return data;
   } catch (error) {
     throw getApiError(error);
