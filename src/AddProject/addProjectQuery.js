@@ -123,7 +123,7 @@ const useUploadProjectDbs = (aiMutation) => {
     onSuccess: (data) => {
       if (data?.projectId) {
         aiMutation.mutate({
-          id: data?.projectId,
+          projectId: data?.projectId,
         });
       }
     },
