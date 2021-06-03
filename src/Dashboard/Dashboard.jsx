@@ -136,7 +136,7 @@ const Dashboard = ({ selectedIndex, children }) => {
         />
 
         {/* Name */}
-        <p className='text-overline2 text-white mr-0 whitespace-nowrap mr-2'>
+        <p className='text-overline2 text-white whitespace-nowrap mr-2'>
           {firstName} {lastName}
         </p>
 

@@ -9,7 +9,7 @@ import TableRow from "@material-ui/core/TableRow";
 import { TextField } from "@material-ui/core";
 import _ from "lodash";
 import DeleteIcon from "@material-ui/icons/Delete";
-import { Field, ErrorMessage, Form, Formik } from "formik";
+import { Field, ErrorMessage, Form, Formik, isObject } from "formik";
 import debounce from "lodash.debounce";
 
 import DropArea from "../DropArea";
@@ -21,13 +21,19 @@ import {
   useWindowSize,
 } from "../../../shared/utils";
 import AppIcon from "../../../shared/components/AppIcon";
+import DragAndDropMessage from "../../../shared/components/DragAndDropMessage";
 
 const PathParams = () => {
   let [operationDetails, setOperationDetails] = useRecoilState(operationAtom);
   const { height, width } = useWindowSize();
 
   const itemDropped = (item) => {
-    if (isAttribute(item) && !isArray(item) && !isSchema(item)) {
+    if (
+      isAttribute(item) &&
+      !isArray(item) &&
+      !isSchema(item) &&
+      !isObject(item)
+    ) {
       setOperationDetails((operationDetails) => {
         if (
           !operationDetails.operationRequest.pathParams.find(
@@ -51,7 +57,12 @@ const PathParams = () => {
   };
 
   const itemDeleted = (item) => {
-    if (isAttribute(item) && !isArray(item) && !isSchema(item)) {
+    if (
+      isAttribute(item) &&
+      !isArray(item) &&
+      !isSchema(item) &&
+      !isObject(item)
+    ) {
       setOperationDetails((operationDetails) => {
         const index = operationDetails.operationRequest.pathParams.findIndex(
           (x) => x.name === item.name
@@ -148,10 +159,7 @@ const PathParams = () => {
 
       {_.isEmpty(operationDetails?.operationRequest?.pathParams) && (
         <div className='border-dashed p-3 bg-neutral-gray7 rounded-md border-2 m-2 flex flex-row justify-center'>
-          <p className='text-overline3'>
-            Drag and Drop
-            <span className='text-brand-secondary ml-2'>Attribute</span> here
-          </p>
+          <DragAndDropMessage isAttributeAllowed />
         </div>
       )}
     </DropArea>
