@@ -37,9 +37,8 @@ export const useAddProject = () => {
   const mutation = useMutation(addProject, {
     onSuccess: (data) => {
       specsMutation.mutate({
-        id: data?.projectId,
+        projectId: data?.projectId,
         files: projectDetails?.specs,
-        type: "apiSpec",
       });
     },
   });
@@ -52,7 +51,7 @@ export const useAddProject = () => {
   };
 };
 
-const uploadProjectSpecs = async ({ id, files }) => {
+const uploadProjectSpecs = async ({ projectId, files }) => {
   const bodyFormData = new FormData();
 
   files.forEach((file) => {
@@ -62,7 +61,7 @@ const uploadProjectSpecs = async ({ id, files }) => {
 
   try {
     const { data } = await client.post(
-      endpoint.projects + `/${id}/uploads`,
+      endpoint.projects + `/${projectId}/uploads`,
       bodyFormData,
       {
         headers: {
@@ -83,7 +82,7 @@ const useUploadProjectSpecs = (dbMutation) => {
     onSuccess: (data) => {
       if (data?.projectId) {
         dbMutation.mutate({
-          id: data?.projectId,
+          projectId: data?.projectId,
           files: projectDetails?.dbs,
         });
       }
@@ -93,7 +92,7 @@ const useUploadProjectSpecs = (dbMutation) => {
   return mutation;
 };
 
-const uploadProjectDbs = async ({ id, files }) => {
+const uploadProjectDbs = async ({ projectId, files }) => {
   const bodyFormData = new FormData();
 
   files.forEach((file) => {
@@ -104,7 +103,7 @@ const uploadProjectDbs = async ({ id, files }) => {
 
   try {
     const { data } = await client.post(
-      endpoint.projects + `/${id}/uploads`,
+      endpoint.projects + `/${projectId}/uploads`,
       bodyFormData,
       {
         headers: {

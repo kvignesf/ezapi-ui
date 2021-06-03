@@ -30,31 +30,43 @@ const AddProject = ({ onClose }) => {
   const [dbsError, setDbsError] = useState(null);
   const [projectDetails, setProjectDetails] = useRecoilState(projectAtom);
   const {
-    addProjectMutation: {
-      isLoading: isUploadingProjectDetails,
-      error: projectDetailsError,
-      isSuccess: isProjectDetailsUploadSuccess,
-      data: createdProjectDetails,
-      mutate: uploadProjectData,
-    },
-    uploadSpecsMutation: {
-      isLoading: isUploadingSpecs,
-      error: uploadSpecsError,
-      isSuccess: uploadSpecsSuccess,
-    },
-    uploadDbMutation: {
-      isLoading: isUploadingDbs,
-      error: uploadDbsError,
-      isSuccess: uploadDbsSuccess,
-    },
+    addProjectMutation,
+    uploadSpecsMutation,
+    uploadDbMutation,
     aiMatcherMutation: {
       isLoading: isMatchingAi,
       error: matchAiError,
       isSuccess: matchAiSuccess,
+      mutate: callAiMatcher,
     },
   } = useAddProject();
 
   const formRef = useRef();
+
+  const {
+    isLoading: isUploadingProjectDetails,
+    error: projectDetailsError,
+    isSuccess: isProjectDetailsUploadSuccess,
+    data: createdProjectDetails,
+    mutate: uploadProjectData,
+    reset: resetCreateProjectApi,
+  } = addProjectMutation;
+
+  const {
+    isLoading: isUploadingSpecs,
+    error: uploadSpecsError,
+    isSuccess: uploadSpecsSuccess,
+    mutate: uploadSpecs,
+    reset: resetUploadSpecsApi,
+  } = uploadSpecsMutation;
+
+  const {
+    isLoading: isUploadingDbs,
+    error: uploadDbsError,
+    isSuccess: uploadDbsSuccess,
+    mutate: uploadDbs,
+    reset: resetUploadDbsApi,
+  } = uploadDbMutation;
 
   const handleNext = () => {
     if (formRef.current) {
@@ -93,15 +105,30 @@ const AddProject = ({ onClose }) => {
       return;
     }
 
-    // API call to upload project details
-    uploadProjectData({
-      name: projectDetails?.name,
-      invitees: projectDetails?.collaborators?.map((collaborator) => {
-        return {
-          email: collaborator,
-        };
-      }),
-    });
+    if (!isProjectDetailsUploadSuccess) {
+      uploadProjectData({
+        name: projectDetails?.name,
+        invitees: projectDetails?.collaborators?.map((collaborator) => {
+          return {
+            email: collaborator,
+          };
+        }),
+      });
+    } else if (!uploadSpecsSuccess) {
+      uploadSpecs({
+        projectId: createdProjectDetails?.projectId,
+        files: projectDetails?.specs,
+      });
+    } else if (!uploadDbsSuccess) {
+      uploadDbs({
+        projectId: createdProjectDetails?.projectId,
+        files: projectDetails?.dbs,
+      });
+    } else if (!matchAiSuccess) {
+      callAiMatcher({
+        projectId: createdProjectDetails?.projectId,
+      });
+    }
   };
 
   const handleCollaboratorsChange = (collaborators) => {
@@ -182,6 +209,9 @@ const AddProject = ({ onClose }) => {
                     formRef={formRef}
                     specsError={specsError}
                     dbsError={dbsError}
+                    addProjectMutation={addProjectMutation}
+                    uploadSpecsMutation={uploadSpecsMutation}
+                    uploadDbMutation={uploadDbMutation}
                   />
                 </div>
               ) : (
@@ -189,6 +219,7 @@ const AddProject = ({ onClose }) => {
                   <InviteCollaborators
                     handleChange={handleCollaboratorsChange}
                     collaborators={projectDetails?.collaborators}
+                    addProjectMutation={addProjectMutation}
                   />
                 </div>
               )}

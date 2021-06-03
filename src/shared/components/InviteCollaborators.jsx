@@ -5,7 +5,12 @@ import _ from "lodash";
 import { isEmailValid } from "../utils";
 import Colors from "../colors";
 
-const InviteCollaborators = ({ collaborators, handleChange, ...rest }) => {
+const InviteCollaborators = ({
+  collaborators,
+  addProjectMutation,
+  handleChange,
+  ...rest
+}) => {
   const [error, setError] = useState(null);
 
   return (
@@ -42,6 +47,7 @@ const InviteCollaborators = ({ collaborators, handleChange, ...rest }) => {
           borderRadius: "4px",
           padding: "0.25rem 0.75rem",
         }}
+        disabled={addProjectMutation?.isSuccess}
       />
 
       {error && <p className='text-overline2 text-accent-red mt-3'>{error}</p>}

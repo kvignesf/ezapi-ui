@@ -13,7 +13,14 @@ import { PrimaryButton } from "../shared/components/AppButton";
 import AppIcon from "../shared/components/AppIcon";
 import apiNameSchema from "../shared/schemas/apiNameSchema";
 
-const ProjectDetails = ({ formRef, specsError, dbsError }) => {
+const ProjectDetails = ({
+  formRef,
+  specsError,
+  dbsError,
+  addProjectMutation,
+  uploadSpecsMutation,
+  uploadDbMutation,
+}) => {
   const [projectDetails, setProjectDetails] = useRecoilState(projectAtom);
 
   const debouncedSetName = useCallback(
@@ -29,6 +36,14 @@ const ProjectDetails = ({ formRef, specsError, dbsError }) => {
   );
 
   const handleOnSpecsPick = (pickedSpecs) => {
+    if (
+      uploadSpecsMutation?.isError ||
+      uploadSpecsMutation?.isLoading ||
+      uploadSpecsMutation?.isSuccess
+    ) {
+      uploadSpecsMutation?.reset();
+    }
+
     setProjectDetails((currProjectDetails) => {
       const updatedProjectDetails = _.cloneDeep(currProjectDetails);
 
@@ -52,6 +67,14 @@ const ProjectDetails = ({ formRef, specsError, dbsError }) => {
   };
 
   const handleOnDbsPick = (pickedDbs) => {
+    if (
+      uploadDbMutation?.isError ||
+      uploadDbMutation?.isLoading ||
+      uploadDbMutation?.isSuccess
+    ) {
+      uploadDbMutation?.reset();
+    }
+
     setProjectDetails((currProjectDetails) => {
       const updatedProjectDetails = _.cloneDeep(currProjectDetails);
 
@@ -75,6 +98,14 @@ const ProjectDetails = ({ formRef, specsError, dbsError }) => {
   };
 
   const removeSelectedSpec = (filename) => {
+    if (
+      uploadSpecsMutation?.isError ||
+      uploadSpecsMutation?.isLoading ||
+      uploadSpecsMutation?.isSuccess
+    ) {
+      uploadSpecsMutation?.reset();
+    }
+
     setProjectDetails((currProjectDetails) => {
       const updatedProjectDetails = _.cloneDeep(currProjectDetails);
 
@@ -89,6 +120,14 @@ const ProjectDetails = ({ formRef, specsError, dbsError }) => {
   };
 
   const removeSelectedDb = (filename) => {
+    if (
+      uploadDbMutation?.isError ||
+      uploadDbMutation?.isLoading ||
+      uploadDbMutation?.isSuccess
+    ) {
+      uploadDbMutation?.reset();
+    }
+
     setProjectDetails((currProjectDetails) => {
       const updatedProjectDetails = _.cloneDeep(currProjectDetails);
 
@@ -126,6 +165,7 @@ const ProjectDetails = ({ formRef, specsError, dbsError }) => {
                 }}
                 variant='outlined'
                 inputProps={{ maxLength: 24 }}
+                disabled={addProjectMutation?.isSuccess}
                 as={TextField}
               />
             </Form>
