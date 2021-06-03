@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useHistory, useParams } from "react-router";
 import ArrowBackIcon from "@material-ui/icons/ArrowBack";
 import { Tab, Tabs } from "@material-ui/core";
@@ -24,6 +24,7 @@ import schemaAtom, {
 import { ClassNames } from "@emotion/react";
 import classNames from "classnames";
 import _ from "lodash";
+import { endpoint } from "../shared/network/client";
 
 const Project = () => {
   const resetOperationState = useResetRecoilState(operationAtom);
@@ -40,6 +41,12 @@ const Project = () => {
   const [currentTab, setCurrentTab] = useState(0);
   const [operationState, setOperationState] = useRecoilState(operationAtom);
   const [schemaState, setSchemaState] = useRecoilState(schemaAtom);
+
+  useEffect(() => {
+    if (projectDetails?.status !== "IN_PROGRESS") {
+      history.replace(endpoint.projects);
+    }
+  }, [projectDetails]);
 
   return (
     <>
@@ -153,32 +160,6 @@ const Project = () => {
           </div>
         )}
       </DndProvider>
-    </>
-  );
-};
-
-const data = {
-  name: "Level 1",
-  items: [
-    {
-      name: "Level 2",
-      items: [
-        {
-          name: "Level 3",
-        },
-      ],
-    },
-  ],
-};
-
-const RecursiveComponent = ({ name, items }) => {
-  const hasChildren = items && items.length;
-
-  return (
-    <>
-      {name}
-      {hasChildren &&
-        items.map((item) => <RecursiveComponent key={item.name} {...item} />)}
     </>
   );
 };

@@ -235,7 +235,9 @@ const Content = ({ showCreateProjectDialog }) => {
   };
 
   const handleOnView = (project) => {
-    history.push(generateRoute(routes.projects, project?.projectId));
+    if (project?.status === "IN_PROGRESS") {
+      history.push(generateRoute(routes.projects, project?.projectId));
+    }
   };
 
   const handleOnInvite = (project) => {
