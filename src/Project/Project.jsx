@@ -4,7 +4,7 @@ import ArrowBackIcon from "@material-ui/icons/ArrowBack";
 import { Tab, Tabs } from "@material-ui/core";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import { useResetRecoilState, useRecoilState } from "recoil";
+import { useResetRecoilState, useRecoilState, useSetRecoilState } from "recoil";
 
 import AppIcon from "../shared/components/AppIcon";
 import { useFetchProjectDetails } from "./projectQueries";
@@ -40,7 +40,7 @@ const Project = () => {
   } = useFetchProjectDetails(projectId);
   const [currentTab, setCurrentTab] = useState(0);
   const [operationState, setOperationState] = useRecoilState(operationAtom);
-  const [schemaState, setSchemaState] = useRecoilState(schemaAtom);
+  const setSchemaState = useSetRecoilState(schemaAtom);
 
   useEffect(() => {
     if (projectDetails && projectDetails?.status !== "IN_PROGRESS") {
@@ -50,7 +50,6 @@ const Project = () => {
 
   return (
     <>
-      {/* <RecursiveComponent {...data} /> */}
       <DndProvider backend={HTML5Backend}>
         <header className='px-2 border-b-2 flex flex-row items-center bg-white'>
           <div className='flex flex-row py-2 items-center'>
