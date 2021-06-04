@@ -10,6 +10,7 @@ import AttributeIcon from "../../static/images/attribute.svg";
 import SchemaIcon from "../../static/images/schema-icon.svg";
 import {
   isArray,
+  isAttribute,
   isFullMatch,
   isNoMatch,
   isObject,
@@ -42,7 +43,12 @@ const DraggableMatchItem = ({ index, item, ...rest }) => {
     >
       <AppIcon className='mr-1 opacity-50'>
         <DragIndicatorIcon
-          className='cursor-move'
+          className={classNames({
+            "cursor-move":
+              (isSchema(item) || isAttribute(item)) &&
+              !isArray(item) &&
+              !isObject(item),
+          })}
           style={{ height: "1.25rem" }}
         />
       </AppIcon>
