@@ -67,7 +67,7 @@ const uploadProjectSpecs = async ({ projectId, files }) => {
         headers: {
           "Content-Type": "multipart/form-data",
         },
-        timeout: 120000,
+        timeout: 480000,
       }
     );
     return data;
@@ -110,7 +110,7 @@ const uploadProjectDbs = async ({ projectId, files }) => {
         headers: {
           "Content-Type": "multipart/form-data",
         },
-        timeout: 120000,
+        timeout: 480000,
       }
     );
     return data;
@@ -141,7 +141,7 @@ const aiMatcher = async ({ projectId }) => {
         projectId,
       },
       {
-        timeout: 120000,
+        timeout: 480000,
       }
     );
     return data;

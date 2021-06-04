@@ -122,7 +122,6 @@ let treeIndex = 1;
 
 const SubSchemaTreeItems = ({ currentRef: some }) => {
   const [currentRef, setCurrentRef] = useState(some);
-  const [operationDetails, setOperationDetails] = useRecoilState(operationAtom);
   const { id: projectId } = useParams();
   const {
     isLoading: isLoadingSubSchema,
@@ -132,6 +131,7 @@ const SubSchemaTreeItems = ({ currentRef: some }) => {
     reset: resetSubSchemaData,
     variables: subSchemaRequest,
   } = useGetSubSchema();
+  const { height, width } = useWindowSize();
 
   useEffect(() => {
     if (subSchemaData) {
@@ -240,7 +240,7 @@ const SubSchemaTreeItems = ({ currentRef: some }) => {
               nodeId={treeIndex++}
               label={
                 <div className='flex flex-row p-1 justify-between border-b-2'>
-                  <div className='flex flex-row items-center justify-start w-1/3'>
+                  <div className='flex flex-row items-center justify-start w-1/3 max-w-1/3'>
                     <img
                       src={AttributeIcon}
                       alt='ezapi logo'
@@ -251,14 +251,14 @@ const SubSchemaTreeItems = ({ currentRef: some }) => {
                       }}
                     />
 
-                    <p className='text-overline2'>{ref?.name}</p>
+                    <p className='text-overline2 '>{ref?.name}</p>
                   </div>
 
-                  <div className='w-1/3'>
+                  <div className='w-1/3 max-w-1/3'>
                     <p>{ref?.type}</p>
                   </div>
 
-                  <div className='w-1/3'>
+                  <div className=' w-1/3 max-w-1/3'>
                     <p>{ref?.required}</p>
                   </div>
                 </div>
@@ -319,7 +319,7 @@ const SchemaItem = ({ schema }) => {
               nodeId={treeIndex++}
               label={
                 <div className='flex flex-row p-1 justify-between border-b-2'>
-                  <div className='flex flex-row items-center justify-start w-1/3'>
+                  <div className='flex flex-row items-center justify-start bg-red-600 w-1/3 max-w-1/3'>
                     <img
                       src={AttributeIcon}
                       alt='ezapi logo'
