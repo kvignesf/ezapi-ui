@@ -1,16 +1,8 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useRecoilState, useSetRecoilState } from "recoil";
-import Table from "@material-ui/core/Table";
-import TableBody from "@material-ui/core/TableBody";
-import TableCell from "@material-ui/core/TableCell";
-import TableContainer from "@material-ui/core/TableContainer";
-import TableHead from "@material-ui/core/TableHead";
-import TableRow from "@material-ui/core/TableRow";
-import { CircularProgress, TextField } from "@material-ui/core";
+import { CircularProgress } from "@material-ui/core";
 import _ from "lodash";
 import DeleteIcon from "@material-ui/icons/Delete";
-import { Field, ErrorMessage, Form, Formik } from "formik";
-import debounce from "lodash.debounce";
 import TreeView from "@material-ui/lab/TreeView";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import ChevronRightIcon from "@material-ui/icons/ChevronRight";
@@ -32,10 +24,9 @@ import AttributeIcon from "../../../static/images/attribute.svg";
 import SchemaIcon from "../../../static/images/schema-icon.svg";
 import { useGetSubSchema } from "./requestBodyQueries";
 import { useParams } from "react-router";
-import { current } from "immer";
 import DragAndDropMessage from "../../../shared/components/DragAndDropMessage";
 
-const RequestBody = () => {
+const Body = ({ request = true }) => {
   let [operationDetails, setOperationDetails] = useRecoilState(operationAtom);
   const { height, width } = useWindowSize();
 
@@ -47,16 +38,30 @@ const RequestBody = () => {
       !isAttribute(item)
     ) {
       setOperationDetails((operationDetails) => {
-        if (
-          !operationDetails.operationRequest.body.find(
-            (x) => x.name === item.name
-          )
-        ) {
-          const newOperationDetails = _.cloneDeep(operationDetails);
+        if (request) {
+          if (
+            !operationDetails.operationRequest.body.find(
+              (x) => x.name === item.name
+            )
+          ) {
+            const newOperationDetails = _.cloneDeep(operationDetails);
 
-          newOperationDetails.operationRequest.body.push(item);
+            newOperationDetails.operationRequest.body.push(item);
 
-          return newOperationDetails;
+            return newOperationDetails;
+          }
+        } else {
+          if (
+            !operationDetails.operationResponse.body.find(
+              (x) => x.name === item.name
+            )
+          ) {
+            const newOperationDetails = _.cloneDeep(operationDetails);
+
+            newOperationDetails.operationResponse.body.push(item);
+
+            return newOperationDetails;
+          }
         }
         return operationDetails;
       });
@@ -81,7 +86,7 @@ const RequestBody = () => {
           </p>
         </div>
 
-        {!_.isEmpty(operationDetails?.operationRequest?.body) && (
+        {request && !_.isEmpty(operationDetails?.operationRequest?.body) && (
           <div className='h-full flex-1'>
             <Scrollbar
               alwaysShowTracks={true}
@@ -101,14 +106,47 @@ const RequestBody = () => {
                 defaultExpandIcon={<ChevronRightIcon />}
               >
                 {operationDetails?.operationRequest?.body.map((item) => {
-                  return <SchemaItem schema={item} />;
+                  return <SchemaItem schema={item} request={request} />;
                 })}
               </TreeView>
             </Scrollbar>
           </div>
         )}
 
-        {_.isEmpty(operationDetails?.operationRequest?.body) && (
+        {!request && !_.isEmpty(operationDetails?.operationResponse?.body) && (
+          <div className='h-full flex-1'>
+            <Scrollbar
+              alwaysShowTracks={true}
+              style={{
+                maxHeight:
+                  height > 790
+                    ? "26vh"
+                    : height > 770
+                    ? "22vh"
+                    : height > 600
+                    ? "18vh"
+                    : "13vh",
+              }}
+            >
+              <TreeView
+                defaultCollapseIcon={<ExpandMoreIcon />}
+                defaultExpandIcon={<ChevronRightIcon />}
+              >
+                {operationDetails?.operationResponse?.body.map((item) => {
+                  return <SchemaItem schema={item} request={request} />;
+                })}
+              </TreeView>
+            </Scrollbar>
+          </div>
+        )}
+
+        {request && _.isEmpty(operationDetails?.operationRequest?.body) && (
+          <div className='border-dashed p-3 bg-neutral-gray7 rounded-md border-2 m-2 flex flex-row justify-center'>
+            <DragAndDropMessage isSchemaAllowed />
+          </div>
+        )}
+
+        {!request && _.isEmpty(operationDetails?.operationResponse?.body) && (
           <div className='border-dashed p-3 bg-neutral-gray7 rounded-md border-2 m-2 flex flex-row justify-center'>
             <DragAndDropMessage isSchemaAllowed />
           </div>
@@ -271,23 +309,35 @@ const SubSchemaTreeItems = ({ currentRef: some }) => {
   );
 };
 
-const SchemaItem = ({ schema }) => {
+const SchemaItem = ({ request = true, schema }) => {
   const setOperationDetails = useSetRecoilState(operationAtom);
 
   const deleteSchema = (item) => {
     if (isSchema(item) && !isArray(item) && !isAttribute(item)) {
       setOperationDetails((operationDetails) => {
-        const index = operationDetails.operationRequest.body.findIndex(
-          (x) => x.name === item.name
-        );
-        if (index !== -1) {
-          const newOperationDetails = _.cloneDeep(operationDetails);
+        if (request) {
+          const index = operationDetails.operationRequest.body.findIndex(
+            (x) => x.name === item.name
+          );
+          if (index !== -1) {
+            const newOperationDetails = _.cloneDeep(operationDetails);
 
-          newOperationDetails.operationRequest.body.splice(index, 1);
+            newOperationDetails.operationRequest.body.splice(index, 1);
 
-          return newOperationDetails;
+            return newOperationDetails;
+          }
+        } else {
+          const index = operationDetails.operationResponse.body.findIndex(
+            (x) => x.name === item.name
+          );
+          if (index !== -1) {
+            const newOperationDetails = _.cloneDeep(operationDetails);
+
+            newOperationDetails.operationResponse.body.splice(index, 1);
+
+            return newOperationDetails;
+          }
         }
-
         return operationDetails;
       });
     }
@@ -386,4 +436,4 @@ const Label = ({ schema, deleteSchema }) => {
   );
 };
 
-export default RequestBody;
+export default Body;

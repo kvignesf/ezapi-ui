@@ -23,6 +23,7 @@ import {
   useUploadProjectFile,
   useUploadProjectSpecs,
 } from "./addProjectQuery";
+import TabLabel from "../shared/components/TabLabel";
 
 const AddProject = ({ onClose }) => {
   const [currentTab, setTab] = useState(0);
@@ -184,19 +185,11 @@ const AddProject = ({ onClose }) => {
               textColor='primary'
             >
               <Tab
-                label={
-                  <span className='text-overline2 capitalize'>
-                    1. Create API
-                  </span>
-                }
+                label={<TabLabel label={"1. Create API"} />}
                 style={{ outline: "none", border: "none" }}
               />
               <Tab
-                label={
-                  <span className='text-overline2 capitalize'>
-                    2. Invite Collaborators
-                  </span>
-                }
+                label={<TabLabel label={"2. Invite Collaborators"} />}
                 style={{ outline: "none", border: "none" }}
               />
             </Tabs>

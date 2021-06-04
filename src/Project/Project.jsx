@@ -27,6 +27,7 @@ import classNames from "classnames";
 import _ from "lodash";
 import { endpoint } from "../shared/network/client";
 import { useSyncOperationRequest } from "./operationRequestQuery";
+import TabLabel from "../shared/components/TabLabel";
 
 const Project = () => {
   const resetOperationState = useResetRecoilState(operationAtom);
@@ -111,16 +112,12 @@ const Project = () => {
               textColor='primary'
             >
               <Tab
-                label={
-                  <span className='text-overline2 capitalize'>Design</span>
-                }
+                label={<TabLabel label={"Design"} />}
                 style={{ outline: "none", border: "none" }}
               />
 
               <Tab
-                label={
-                  <span className='text-overline2 capitalize'>Visualize</span>
-                }
+                label={<TabLabel label={"Visualize"} />}
                 style={{ outline: "none", border: "none" }}
                 disabled
               />

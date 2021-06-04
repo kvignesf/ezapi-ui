@@ -10,7 +10,7 @@ import operationAtom from "../../operationAtom";
 import Body from "../Body/Body";
 import TabLabel from "../../../shared/components/TabLabel";
 
-const Request = () => {
+const Response = () => {
   const [currentTab, setTab] = useState(0);
   const operationState = useRecoilValue(operationAtom);
 
@@ -55,7 +55,7 @@ const Request = () => {
           {operationState?.operation?.operationType?.toLowerCase() !==
             "get" && (
             <Tab
-              label={<TabLabel label={"Request Body"} />}
+              label={<TabLabel label={"Response Body"} />}
               style={{
                 outline: "none",
               }}
@@ -64,13 +64,13 @@ const Request = () => {
         </Tabs>
       </div>
 
-      {currentTab === 0 && <Headers />}
-      {currentTab === 1 && <FormData />}
-      {currentTab === 2 && <QueryParams />}
-      {currentTab === 3 && <PathParams />}
-      {currentTab === 4 && <Body />}
+      {currentTab === 0 && <Headers request={false} />}
+      {currentTab === 1 && <FormData request={false} />}
+      {currentTab === 2 && <QueryParams request={false} />}
+      {currentTab === 3 && <PathParams request={false} />}
+      {currentTab === 4 && <Body request={false} />}
     </div>
   );
 };
 
-export default Request;
+export default Response;

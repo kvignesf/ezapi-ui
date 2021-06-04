@@ -9,9 +9,11 @@ import {
 } from "@material-ui/core";
 import Colors from "../../shared/colors";
 import Request from "./Request/Request";
+import Response from "./Response/Response";
 import { useRecoilValue } from "recoil";
 import operationAtom from "../operationAtom";
 import { useGetOperationRequest } from "../operationRequestQuery";
+import TabLabel from "../../shared/components/TabLabel";
 
 const tabsStyles = makeStyles({
   indicator: {
@@ -64,9 +66,7 @@ const OperationDetails = ({
                 style={{ width: "min-content" }}
               >
                 <Tab
-                  label={
-                    <span className='text-overline2 capitalize'>Request</span>
-                  }
+                  label={<TabLabel label={"Request"} />}
                   classes={{ root: tabClasses.tab }}
                   style={{
                     borderRight: `2px solid ${Colors.neutral.gray6}`,
@@ -75,9 +75,7 @@ const OperationDetails = ({
                 />
 
                 <Tab
-                  label={
-                    <span className='text-overline2 capitalize'>Response</span>
-                  }
+                  label={<TabLabel label={"Response"} />}
                   classes={{ root: tabClasses.tab }}
                   style={{
                     outline: "none",
@@ -99,7 +97,9 @@ const OperationDetails = ({
                 <Request />
               </div>
             ) : (
-              <div>Response</div>
+              <div className='h-full'>
+                <Response />
+              </div>
             )}
           </div>
         )}

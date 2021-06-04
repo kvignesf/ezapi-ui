@@ -9,6 +9,7 @@ import schemaAtom from "./Schema/schemaAtom";
 import AppIcon from "../../shared/components/AppIcon";
 import classNames from "classnames";
 import { isArray } from "../../shared/utils";
+import TabLabel from "../../shared/components/TabLabel";
 
 const Match = (props) => {
   const [currentTab, setTab] = useState(0);
@@ -108,19 +109,15 @@ const Match = (props) => {
             textColor='primary'
           >
             <Tab
-              label={<span className='text-overline2 capitalize'>Schema</span>}
+              label={<TabLabel label={"Schema"} />}
               style={{ outline: "none", border: "none" }}
             />
             <Tab
-              label={
-                <span className='text-overline2 capitalize'>Parameter</span>
-              }
+              label={<TabLabel label={"Parameter"} />}
               style={{ outline: "none", border: "none" }}
             />
             <Tab
-              label={
-                <span className='text-overline2 capitalize'>Database</span>
-              }
+              label={<TabLabel label={"Database"} />}
               style={{ outline: "none", border: "none" }}
             />
           </Tabs>

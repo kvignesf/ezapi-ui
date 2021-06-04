@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useCallback } from "react";
 import { useRecoilState } from "recoil";
 import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
@@ -6,10 +6,7 @@ import TableCell from "@material-ui/core/TableCell";
 import TableContainer from "@material-ui/core/TableContainer";
 import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
-import { TextField } from "@material-ui/core";
 import _ from "lodash";
-import DeleteIcon from "@material-ui/icons/Delete";
-import { Field, ErrorMessage, Form, Formik } from "formik";
 import debounce from "lodash.debounce";
 
 import DropArea from "../DropArea";
@@ -21,10 +18,10 @@ import {
   useWindowSize,
   isObject,
 } from "../../../shared/utils";
-import AppIcon from "../../../shared/components/AppIcon";
 import DragAndDropMessage from "../../../shared/components/DragAndDropMessage";
+import Row from "../Row";
 
-const Headers = () => {
+const Headers = ({ request = true }) => {
   let [operationDetails, setOperationDetails] = useRecoilState(operationAtom);
   const { height, width } = useWindowSize();
 
@@ -36,24 +33,45 @@ const Headers = () => {
       !isObject(item)
     ) {
       setOperationDetails((operationDetails) => {
-        if (
-          !operationDetails.operationRequest.headers.find(
-            (x) => x.name === item.name
-          )
-        ) {
-          const newOperationDetails = _.cloneDeep(operationDetails);
+        if (request) {
+          if (
+            !operationDetails.operationRequest.headers.find(
+              (x) => x.name === item.name
+            )
+          ) {
+            const newOperationDetails = _.cloneDeep(operationDetails);
 
-          newOperationDetails.operationRequest.headers.push({
-            name: item?.name,
-            type: item?.type,
-            required: item?.required,
-            description: item?.description,
-            possibleValues: item?.possibleValues,
-          });
+            newOperationDetails.operationRequest.headers.push({
+              name: item?.name,
+              type: item?.type,
+              required: item?.required,
+              description: item?.description,
+              possibleValues: item?.possibleValues,
+            });
 
-          return newOperationDetails;
+            return newOperationDetails;
+          }
+          return operationDetails;
+        } else {
+          if (
+            !operationDetails.operationResponse.headers.find(
+              (x) => x.name === item.name
+            )
+          ) {
+            const newOperationDetails = _.cloneDeep(operationDetails);
+
+            newOperationDetails.operationResponse.headers.push({
+              name: item?.name,
+              type: item?.type,
+              required: item?.required,
+              description: item?.description,
+              possibleValues: item?.possibleValues,
+            });
+
+            return newOperationDetails;
+          }
+          return operationDetails;
         }
-        return operationDetails;
       });
     }
   };
@@ -66,19 +84,35 @@ const Headers = () => {
       !isObject(item)
     ) {
       setOperationDetails((operationDetails) => {
-        const index = operationDetails.operationRequest.headers.findIndex(
-          (x) => x.name === item.name
-        );
+        if (request) {
+          const index = operationDetails.operationRequest.headers.findIndex(
+            (x) => x.name === item.name
+          );
 
-        if (index !== -1) {
-          const newOperationDetails = _.cloneDeep(operationDetails);
+          if (index !== -1) {
+            const newOperationDetails = _.cloneDeep(operationDetails);
 
-          newOperationDetails.operationRequest.headers.splice(index, 1);
+            newOperationDetails.operationRequest.headers.splice(index, 1);
 
-          return newOperationDetails;
+            return newOperationDetails;
+          }
+
+          return operationDetails;
+        } else {
+          const index = operationDetails.operationResponse.headers.findIndex(
+            (x) => x.name === item.name
+          );
+
+          if (index !== -1) {
+            const newOperationDetails = _.cloneDeep(operationDetails);
+
+            newOperationDetails.operationResponse.headers.splice(index, 1);
+
+            return newOperationDetails;
+          }
+
+          return operationDetails;
         }
-
-        return operationDetails;
       });
     }
   };
@@ -86,25 +120,45 @@ const Headers = () => {
   const onDescriptionUpdate = useCallback(
     debounce((item, value) => {
       setOperationDetails((operationDetails) => {
-        let foundItem = operationDetails.operationRequest.headers.find(
-          (x) => x.name === item.name
-        );
-        let foundItemIndex =
-          operationDetails.operationRequest.headers.findIndex(
+        if (request) {
+          let foundItem = operationDetails.operationRequest.headers.find(
             (x) => x.name === item.name
           );
+          let foundItemIndex =
+            operationDetails.operationRequest.headers.findIndex(
+              (x) => x.name === item.name
+            );
 
-        if (foundItem) {
-          const clonedFoundItem = _.cloneDeep(foundItem);
-          const clonedOperationDetails = _.cloneDeep(operationDetails);
+          if (foundItem) {
+            const clonedFoundItem = _.cloneDeep(foundItem);
+            const clonedOperationDetails = _.cloneDeep(operationDetails);
 
-          clonedFoundItem.description = value;
-          clonedOperationDetails.operationRequest.headers[foundItemIndex] =
-            clonedFoundItem;
+            clonedFoundItem.description = value;
+            clonedOperationDetails.operationRequest.headers[foundItemIndex] =
+              clonedFoundItem;
 
-          return clonedOperationDetails;
+            return clonedOperationDetails;
+          }
+        } else {
+          let foundItem = operationDetails.operationResponse.headers.find(
+            (x) => x.name === item.name
+          );
+          let foundItemIndex =
+            operationDetails.operationResponse.headers.findIndex(
+              (x) => x.name === item.name
+            );
+
+          if (foundItem) {
+            const clonedFoundItem = _.cloneDeep(foundItem);
+            const clonedOperationDetails = _.cloneDeep(operationDetails);
+
+            clonedFoundItem.description = value;
+            clonedOperationDetails.operationResponse.headers[foundItemIndex] =
+              clonedFoundItem;
+
+            return clonedOperationDetails;
+          }
         }
-
         return operationDetails;
       });
     }, 300),
@@ -114,23 +168,44 @@ const Headers = () => {
   const onPossibleValuesUpdate = useCallback(
     debounce((item, value) => {
       setOperationDetails((operationDetails) => {
-        let foundItem = operationDetails.operationRequest.headers.find(
-          (x) => x.name === item.name
-        );
-        let foundItemIndex =
-          operationDetails.operationRequest.headers.findIndex(
+        if (request) {
+          let foundItem = operationDetails.operationRequest.headers.find(
             (x) => x.name === item.name
           );
+          let foundItemIndex =
+            operationDetails.operationRequest.headers.findIndex(
+              (x) => x.name === item.name
+            );
 
-        if (foundItem) {
-          const clonedFoundItem = _.cloneDeep(foundItem);
-          const clonedOperationDetails = _.cloneDeep(operationDetails);
+          if (foundItem) {
+            const clonedFoundItem = _.cloneDeep(foundItem);
+            const clonedOperationDetails = _.cloneDeep(operationDetails);
 
-          clonedFoundItem.possibleValues = value;
-          clonedOperationDetails.operationRequest.headers[foundItemIndex] =
-            clonedFoundItem;
+            clonedFoundItem.possibleValues = value;
+            clonedOperationDetails.operationRequest.headers[foundItemIndex] =
+              clonedFoundItem;
 
-          return clonedOperationDetails;
+            return clonedOperationDetails;
+          }
+        } else {
+          let foundItem = operationDetails.operationResponse.headers.find(
+            (x) => x.name === item.name
+          );
+          let foundItemIndex =
+            operationDetails.operationResponse.headers.findIndex(
+              (x) => x.name === item.name
+            );
+
+          if (foundItem) {
+            const clonedFoundItem = _.cloneDeep(foundItem);
+            const clonedOperationDetails = _.cloneDeep(operationDetails);
+
+            clonedFoundItem.possibleValues = value;
+            clonedOperationDetails.operationResponse.headers[foundItemIndex] =
+              clonedFoundItem;
+
+            return clonedOperationDetails;
+          }
         }
 
         return operationDetails;
@@ -174,7 +249,7 @@ const Headers = () => {
             </TableRow>
           </TableHead>
 
-          {!_.isEmpty(operationDetails?.operationRequest?.headers) && (
+          {request && !_.isEmpty(operationDetails?.operationRequest?.headers) && (
             <TableBody className='w-full max-h-6'>
               {operationDetails?.operationRequest?.headers?.map((row) => {
                 return (
@@ -193,153 +268,42 @@ const Headers = () => {
               })}
             </TableBody>
           )}
+
+          {!request &&
+            !_.isEmpty(operationDetails?.operationResponse?.headers) && (
+              <TableBody className='w-full max-h-6'>
+                {operationDetails?.operationResponse?.headers?.map((row) => {
+                  return (
+                    <Row
+                      key={row?.name}
+                      row={row}
+                      onItemDelete={itemDeleted}
+                      onDescriptionUpdate={(item, value) => {
+                        onDescriptionUpdate(item, value);
+                      }}
+                      onPossibleValuesUpdate={(item, value) => {
+                        onPossibleValuesUpdate(item, value);
+                      }}
+                    />
+                  );
+                })}
+              </TableBody>
+            )}
         </Table>
       </TableContainer>
 
-      {_.isEmpty(operationDetails?.operationRequest?.headers) && (
+      {request && _.isEmpty(operationDetails?.operationRequest?.headers) && (
+        <div className='border-dashed p-3 bg-neutral-gray7 rounded-md border-2 m-2 flex flex-row justify-center'>
+          <DragAndDropMessage isAttributeAllowed />
+        </div>
+      )}
+
+      {!request && _.isEmpty(operationDetails?.operationResponse?.headers) && (
         <div className='border-dashed p-3 bg-neutral-gray7 rounded-md border-2 m-2 flex flex-row justify-center'>
           <DragAndDropMessage isAttributeAllowed />
         </div>
       )}
     </DropArea>
-  );
-};
-
-const Row = ({
-  row,
-  onItemDelete,
-  onDescriptionUpdate,
-  onPossibleValuesUpdate,
-}) => {
-  const [isHovering, setHovering] = useState(false);
-
-  return (
-    <TableRow
-      key={row.name}
-      onMouseEnter={(e) => {
-        e?.preventDefault();
-        e?.stopPropagation();
-
-        setHovering(true);
-      }}
-      onMouseLeave={(e) => {
-        e?.preventDefault();
-        e?.stopPropagation();
-
-        setHovering(false);
-      }}
-    >
-      <TableCell
-        align='left'
-        style={{ width: "150px", padding: "4px", paddingLeft: "8px" }}
-      >
-        {row.name}
-      </TableCell>
-
-      <TableCell align='left' style={{ width: "150px", padding: "0px" }}>
-        {row.type}
-      </TableCell>
-
-      <TableCell
-        align='left'
-        style={{ width: "150px", padding: "0px", paddingRight: "16px" }}
-      >
-        <Formik
-          initialValues={{
-            description: row.description ?? "",
-          }}
-        >
-          {({ errors, touched }) => (
-            <Form>
-              <Field
-                id='description'
-                name='description'
-                fullWidth
-                color='primary'
-                variant='outlined'
-                error={touched.description && Boolean(errors.description)}
-                helperText={<ErrorMessage name='description' />}
-                onKeyUp={(e) => {
-                  const { value } = e.target;
-                  onDescriptionUpdate(row, value);
-                }}
-                inputProps={{
-                  style: {
-                    height: "6px",
-                  },
-                }}
-                as={TextField}
-              />
-            </Form>
-          )}
-        </Formik>
-      </TableCell>
-
-      <TableCell align='left' style={{ width: "150px", padding: "0px" }}>
-        {row?.required}
-      </TableCell>
-
-      <TableCell
-        align='left'
-        style={{
-          width: "150px",
-          padding: "0px",
-          paddingTop: "4px",
-          paddingBottom: "4px",
-          paddingRight: "16px",
-        }}
-      >
-        <Formik
-          initialValues={{
-            possibleValues: row.possibleValues ?? "",
-          }}
-        >
-          {({ errors, touched }) => (
-            <Form>
-              <Field
-                id='possibleValues'
-                name='possibleValues'
-                fullWidth
-                color='primary'
-                variant='outlined'
-                error={touched.possibleValues && Boolean(errors.possibleValues)}
-                helperText={<ErrorMessage name='possibleValues' />}
-                onKeyUp={(e) => {
-                  const { value } = e.target;
-                  onPossibleValuesUpdate(row, value);
-                }}
-                inputProps={{
-                  style: {
-                    height: "6px",
-                  },
-                }}
-                as={TextField}
-              />
-            </Form>
-          )}
-        </Formik>
-      </TableCell>
-
-      <TableCell
-        align='right'
-        style={{ width: "20px", padding: "0px", paddingRight: "16px" }}
-      >
-        {isHovering ? (
-          <AppIcon
-            style={{ padding: "0px" }}
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              onItemDelete(row);
-            }}
-          >
-            <DeleteIcon style={{ width: "20px", height: "20px" }} />
-          </AppIcon>
-        ) : (
-          <div style={{ width: "20px", height: "21px" }}></div>
-        )}
-      </TableCell>
-    </TableRow>
   );
 };
 

@@ -23,8 +23,9 @@ import {
 } from "../../../shared/utils";
 import AppIcon from "../../../shared/components/AppIcon";
 import DragAndDropMessage from "../../../shared/components/DragAndDropMessage";
+import Row from "../Row";
 
-const QueryParams = () => {
+const QueryParams = ({ request = true }) => {
   let [operationDetails, setOperationDetails] = useRecoilState(operationAtom);
   const { height, width } = useWindowSize();
 
@@ -36,21 +37,40 @@ const QueryParams = () => {
       !isObject(item)
     ) {
       setOperationDetails((operationDetails) => {
-        if (
-          !operationDetails.operationRequest.queryParams.find(
-            (x) => x.name === item.name
-          )
-        ) {
-          const newOperationDetails = _.cloneDeep(operationDetails);
+        if (request) {
+          if (
+            !operationDetails.operationRequest.queryParams.find(
+              (x) => x.name === item.name
+            )
+          ) {
+            const newOperationDetails = _.cloneDeep(operationDetails);
 
-          newOperationDetails.operationRequest.queryParams.push({
-            name: item?.name,
-            type: item?.type,
-            required: item?.required,
-            description: item?.description,
-          });
+            newOperationDetails.operationRequest.queryParams.push({
+              name: item?.name,
+              type: item?.type,
+              required: item?.required,
+              description: item?.description,
+            });
 
-          return newOperationDetails;
+            return newOperationDetails;
+          }
+        } else {
+          if (
+            !operationDetails.operationResponse.queryParams.find(
+              (x) => x.name === item.name
+            )
+          ) {
+            const newOperationDetails = _.cloneDeep(operationDetails);
+
+            newOperationDetails.operationResponse.queryParams.push({
+              name: item?.name,
+              type: item?.type,
+              required: item?.required,
+              description: item?.description,
+            });
+
+            return newOperationDetails;
+          }
         }
         return operationDetails;
       });
@@ -65,16 +85,31 @@ const QueryParams = () => {
       !isObject(item)
     ) {
       setOperationDetails((operationDetails) => {
-        const index = operationDetails.operationRequest.queryParams.findIndex(
-          (x) => x.name === item.name
-        );
+        if (request) {
+          const index = operationDetails.operationRequest.queryParams.findIndex(
+            (x) => x.name === item.name
+          );
 
-        if (index !== -1) {
-          const newOperationDetails = _.cloneDeep(operationDetails);
+          if (index !== -1) {
+            const newOperationDetails = _.cloneDeep(operationDetails);
 
-          newOperationDetails.operationRequest.queryParams.splice(index, 1);
+            newOperationDetails.operationRequest.queryParams.splice(index, 1);
 
-          return newOperationDetails;
+            return newOperationDetails;
+          }
+        } else {
+          const index =
+            operationDetails.operationResponse.queryParams.findIndex(
+              (x) => x.name === item.name
+            );
+
+          if (index !== -1) {
+            const newOperationDetails = _.cloneDeep(operationDetails);
+
+            newOperationDetails.operationResponse.queryParams.splice(index, 1);
+
+            return newOperationDetails;
+          }
         }
 
         return operationDetails;
@@ -85,23 +120,46 @@ const QueryParams = () => {
   const onDescriptionUpdate = useCallback(
     debounce((item, value) => {
       setOperationDetails((operationDetails) => {
-        let foundItem = operationDetails.operationRequest.queryParams.find(
-          (x) => x.name === item.name
-        );
-        let foundItemIndex =
-          operationDetails.operationRequest.queryParams.findIndex(
+        if (request) {
+          let foundItem = operationDetails.operationRequest.queryParams.find(
             (x) => x.name === item.name
           );
+          let foundItemIndex =
+            operationDetails.operationRequest.queryParams.findIndex(
+              (x) => x.name === item.name
+            );
 
-        if (foundItem) {
-          const clonedFoundItem = _.cloneDeep(foundItem);
-          const clonedOperationDetails = _.cloneDeep(operationDetails);
+          if (foundItem) {
+            const clonedFoundItem = _.cloneDeep(foundItem);
+            const clonedOperationDetails = _.cloneDeep(operationDetails);
 
-          clonedFoundItem.description = value;
-          clonedOperationDetails.operationRequest.queryParams[foundItemIndex] =
-            clonedFoundItem;
+            clonedFoundItem.description = value;
+            clonedOperationDetails.operationRequest.queryParams[
+              foundItemIndex
+            ] = clonedFoundItem;
 
-          return clonedOperationDetails;
+            return clonedOperationDetails;
+          }
+        } else {
+          let foundItem = operationDetails.operationResponse.queryParams.find(
+            (x) => x.name === item.name
+          );
+          let foundItemIndex =
+            operationDetails.operationResponse.queryParams.findIndex(
+              (x) => x.name === item.name
+            );
+
+          if (foundItem) {
+            const clonedFoundItem = _.cloneDeep(foundItem);
+            const clonedOperationDetails = _.cloneDeep(operationDetails);
+
+            clonedFoundItem.description = value;
+            clonedOperationDetails.operationResponse.queryParams[
+              foundItemIndex
+            ] = clonedFoundItem;
+
+            return clonedOperationDetails;
+          }
         }
 
         return operationDetails;
@@ -140,128 +198,56 @@ const QueryParams = () => {
             </TableRow>
           </TableHead>
 
-          {!_.isEmpty(operationDetails?.operationRequest?.queryParams) && (
-            <TableBody className='w-full max-h-6'>
-              {operationDetails?.operationRequest?.queryParams?.map((row) => {
-                return (
-                  <Row
-                    row={row}
-                    onItemDelete={itemDeleted}
-                    onDescriptionUpdate={(item, value) => {
-                      onDescriptionUpdate(item, value);
-                    }}
-                  />
-                );
-              })}
-            </TableBody>
-          )}
+          {request &&
+            !_.isEmpty(operationDetails?.operationRequest?.queryParams) && (
+              <TableBody className='w-full max-h-6'>
+                {operationDetails?.operationRequest?.queryParams?.map((row) => {
+                  return (
+                    <Row
+                      row={row}
+                      onItemDelete={itemDeleted}
+                      onDescriptionUpdate={(item, value) => {
+                        onDescriptionUpdate(item, value);
+                      }}
+                    />
+                  );
+                })}
+              </TableBody>
+            )}
+
+          {!request &&
+            !_.isEmpty(operationDetails?.operationResponse?.queryParams) && (
+              <TableBody className='w-full max-h-6'>
+                {operationDetails?.operationResponse?.queryParams?.map(
+                  (row) => {
+                    return (
+                      <Row
+                        row={row}
+                        onItemDelete={itemDeleted}
+                        onDescriptionUpdate={(item, value) => {
+                          onDescriptionUpdate(item, value);
+                        }}
+                      />
+                    );
+                  }
+                )}
+              </TableBody>
+            )}
         </Table>
       </TableContainer>
 
-      {_.isEmpty(operationDetails?.operationRequest?.queryParams) && (
+      {request && _.isEmpty(operationDetails?.operationRequest?.queryParams) && (
+        <div className='border-dashed p-3 bg-neutral-gray7 rounded-md border-2 m-2 flex flex-row justify-center'>
+          <DragAndDropMessage isAttributeAllowed />
+        </div>
+      )}
+
+      {!request && _.isEmpty(operationDetails?.operationResponse?.queryParams) && (
         <div className='border-dashed p-3 bg-neutral-gray7 rounded-md border-2 m-2 flex flex-row justify-center'>
           <DragAndDropMessage isAttributeAllowed />
         </div>
       )}
     </DropArea>
-  );
-};
-
-const Row = ({
-  row,
-  onItemDelete,
-  onDescriptionUpdate,
-  onPossibleValuesUpdate,
-}) => {
-  const [isHovering, setHovering] = useState(false);
-
-  return (
-    <TableRow
-      key={row.name}
-      onMouseEnter={(e) => {
-        e?.preventDefault();
-        e?.stopPropagation();
-
-        setHovering(true);
-      }}
-      onMouseLeave={(e) => {
-        e?.preventDefault();
-        e?.stopPropagation();
-
-        setHovering(false);
-      }}
-    >
-      <TableCell
-        align='left'
-        style={{ width: "150px", padding: "4px", paddingLeft: "8px" }}
-      >
-        {row.name}
-      </TableCell>
-
-      <TableCell align='left' style={{ width: "150px", padding: "0px" }}>
-        {row.type}
-      </TableCell>
-
-      <TableCell
-        align='left'
-        style={{ width: "150px", padding: "0px", paddingRight: "16px" }}
-      >
-        <Formik
-          initialValues={{
-            description: row.description ?? "",
-          }}
-        >
-          {({ errors, touched }) => (
-            <Form>
-              <Field
-                id='description'
-                name='description'
-                fullWidth
-                color='primary'
-                variant='outlined'
-                error={touched.description && Boolean(errors.description)}
-                helperText={<ErrorMessage name='description' />}
-                onKeyUp={(e) => {
-                  const { value } = e.target;
-                  onDescriptionUpdate(row, value);
-                }}
-                inputProps={{
-                  style: {
-                    height: "6px",
-                  },
-                }}
-                as={TextField}
-              />
-            </Form>
-          )}
-        </Formik>
-      </TableCell>
-
-      <TableCell
-        align='left'
-        style={{ width: "150px", padding: "0px" }}
-      ></TableCell>
-
-      <TableCell
-        align='right'
-        style={{ width: "20px", padding: "0px", paddingRight: "16px" }}
-      >
-        {isHovering ? (
-          <AppIcon
-            style={{ padding: "0px" }}
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              onItemDelete(row);
-            }}
-          >
-            <DeleteIcon style={{ width: "20px", height: "20px" }} />
-          </AppIcon>
-        ) : (
-          <div style={{ width: "20px", height: "21px" }}></div>
-        )}
-      </TableCell>
-    </TableRow>
   );
 };
 

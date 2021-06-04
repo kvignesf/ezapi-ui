@@ -13,6 +13,14 @@ export const defaultState = {
     queryParams: [],
     body: [],
   },
+
+  operationResponse: {
+    headers: [],
+    formData: [],
+    pathParams: [],
+    queryParams: [],
+    body: [],
+  },
 };
 
 const operationAtom = atom({
