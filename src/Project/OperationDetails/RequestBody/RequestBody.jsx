@@ -163,7 +163,8 @@ const SubSchemaTreeItems = ({ currentRef: some }) => {
     if (
       !isLoadingSubSchema &&
       !subSchemaRef.isLoaded &&
-      _.isEmpty(subSchemaRef.data)
+      _.isEmpty(subSchemaRef.data) &&
+      !subSchemaRef?.is_child
     ) {
       getSubSchema({
         projectId,

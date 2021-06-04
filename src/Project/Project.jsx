@@ -5,6 +5,7 @@ import { Tab, Tabs } from "@material-ui/core";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { useResetRecoilState, useRecoilState, useSetRecoilState } from "recoil";
+import CloudUploadIcon from "@material-ui/icons/CloudUpload";
 
 import AppIcon from "../shared/components/AppIcon";
 import { useFetchProjectDetails } from "./projectQueries";
@@ -25,6 +26,7 @@ import { ClassNames } from "@emotion/react";
 import classNames from "classnames";
 import _ from "lodash";
 import { endpoint } from "../shared/network/client";
+import { useSyncOperationRequest } from "./operationRequestQuery";
 
 const Project = () => {
   const resetOperationState = useResetRecoilState(operationAtom);
@@ -41,12 +43,28 @@ const Project = () => {
   const [currentTab, setCurrentTab] = useState(0);
   const [operationState, setOperationState] = useRecoilState(operationAtom);
   const setSchemaState = useSetRecoilState(schemaAtom);
+  const {
+    isLoading: isSyncingOperationRequest,
+    isSuccess: isSyncOperationRequestSuccess,
+    error: syncOperationRequestError,
+    mutate: syncOperationRequest,
+  } = useSyncOperationRequest();
 
   useEffect(() => {
     if (projectDetails && projectDetails?.status !== "IN_PROGRESS") {
       history.replace(endpoint.projects);
     }
   }, [projectDetails]);
+
+  const saveProject = () => {
+    // syncOperationRequest({
+    //   projectId,
+    //   operationId: operationState?.operation?.operationId,
+    //   pathId: operationState?.path?.pathId,
+    //   resourceId: operationState?.resource?.resourceId,
+    //   operationRequest: { ...operationState?.operationRequest },
+    // });
+  };
 
   return (
     <>
@@ -69,6 +87,19 @@ const Project = () => {
             </AppIcon>
 
             <p className='text-overline1'>{projectDetails?.projectName}</p>
+
+            <div className='ml-4'>
+              <AppIcon
+                onClick={(e) => {
+                  e?.preventDefault();
+                  e?.stopPropagation();
+
+                  saveProject();
+                }}
+              >
+                <CloudUploadIcon style={{ color: "lightblue" }} />
+              </AppIcon>
+            </div>
           </div>
 
           <div className='flex justify-center flex-1'>

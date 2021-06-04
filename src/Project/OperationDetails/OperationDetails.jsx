@@ -11,6 +11,7 @@ import Colors from "../../shared/colors";
 import Request from "./Request/Request";
 import { useRecoilValue } from "recoil";
 import operationAtom from "../operationAtom";
+import { useGetOperationRequest } from "../operationRequestQuery";
 
 const tabsStyles = makeStyles({
   indicator: {
@@ -38,6 +39,9 @@ const OperationDetails = ({
   const tabClasses = tabStyles();
   const [currentTab, setTab] = useState(0);
   const operationState = useRecoilValue(operationAtom);
+  // const { isLoading: isFetchingOperationRequest } = useGetOperationRequest(
+  //   operationState?.operation?.operationId
+  // );
 
   return (
     <div className={`border-t-2 h-full ${className}`} {...props}>

@@ -49,7 +49,7 @@ const Schema = () => {
 
         setSchemaData(clonedData);
       } else {
-        if (!isLoadingSubSchema) {
+        if (!isLoadingSubSchema && !selectedSchema?.is_child) {
           getSubSchema({
             projectId,
             name: selectedSchema?.name,
@@ -90,18 +90,20 @@ const Schema = () => {
 
   const onItemClick = (ref) => {
     if (isSchema(ref) || isArray(ref) || isObject(ref)) {
-      const updatedSchemaState = _.cloneDeep(schemaState);
+      if (!ref?.is_child) {
+        const updatedSchemaState = _.cloneDeep(schemaState);
 
-      if (
-        !updatedSchemaState?.selected ||
-        _.isEmpty(updatedSchemaState?.selected)
-      ) {
-        updatedSchemaState.selected = [];
+        if (
+          !updatedSchemaState?.selected ||
+          _.isEmpty(updatedSchemaState?.selected)
+        ) {
+          updatedSchemaState.selected = [];
+        }
+
+        updatedSchemaState?.selected?.push(ref);
+
+        setSchemaState(updatedSchemaState);
       }
-
-      updatedSchemaState?.selected?.push(ref);
-
-      setSchemaState(updatedSchemaState);
     }
   };
 
