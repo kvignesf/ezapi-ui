@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from "react";
-import { useRecoilState } from "recoil";
+import { useRecoilState, useSetRecoilState } from "recoil";
 import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
 import TableCell from "@material-ui/core/TableCell";
@@ -25,6 +25,7 @@ import {
   isSchema,
   isArray,
   useWindowSize,
+  isObject,
 } from "../../../shared/utils";
 import AppIcon from "../../../shared/components/AppIcon";
 import AttributeIcon from "../../../static/images/attribute.svg";
@@ -32,13 +33,19 @@ import SchemaIcon from "../../../static/images/schema-icon.svg";
 import { useGetSubSchema } from "./requestBodyQueries";
 import { useParams } from "react-router";
 import { current } from "immer";
+import DragAndDropMessage from "../../../shared/components/DragAndDropMessage";
 
 const RequestBody = () => {
   let [operationDetails, setOperationDetails] = useRecoilState(operationAtom);
   const { height, width } = useWindowSize();
 
   const itemDropped = (item) => {
-    if (isSchema(item) && !isArray(item) && !isAttribute(item)) {
+    if (
+      isSchema(item) &&
+      !isObject(item) &&
+      !isArray(item) &&
+      !isAttribute(item)
+    ) {
       setOperationDetails((operationDetails) => {
         if (
           !operationDetails.operationRequest.body.find(
@@ -103,10 +110,7 @@ const RequestBody = () => {
 
         {_.isEmpty(operationDetails?.operationRequest?.body) && (
           <div className='border-dashed p-3 bg-neutral-gray7 rounded-md border-2 m-2 flex flex-row justify-center'>
-            <p className='text-overline3'>
-              Drag and Drop
-              <span className='text-brand-primary ml-1'>Schema</span> here
-            </p>
+            <DragAndDropMessage isSchemaAllowed />
           </div>
         )}
       </div>
@@ -118,7 +122,6 @@ let treeIndex = 1;
 
 const SubSchemaTreeItems = ({ currentRef: some }) => {
   const [currentRef, setCurrentRef] = useState(some);
-  const [operationDetails, setOperationDetails] = useRecoilState(operationAtom);
   const { id: projectId } = useParams();
   const {
     isLoading: isLoadingSubSchema,
@@ -130,26 +133,24 @@ const SubSchemaTreeItems = ({ currentRef: some }) => {
   } = useGetSubSchema();
 
   useEffect(() => {
-    if (
-      subSchemaData &&
-      subSchemaData.nSchemaArray &&
-      !_.isEmpty(subSchemaData.nSchemaArray)
-    ) {
-      if (isSchema(currentRef) || isArray(currentRef)) {
+    if (subSchemaData) {
+      let itemsToConsider = [];
+
+      if (
+        subSchemaData?.nSchemaArray &&
+        !_.isEmpty(subSchemaData?.nSchemaArray)
+      ) {
+        itemsToConsider = subSchemaData?.nSchemaArray;
+      } else if (subSchemaData?.data && !_.isEmpty(subSchemaData?.data)) {
+        itemsToConsider = subSchemaData?.data;
+      }
+
+      if (isSchema(currentRef) || isArray(currentRef) || isObject(currentRef)) {
         currentRef.isLoaded = true;
 
-        for (
-          let index = 0;
-          index < subSchemaData.nSchemaArray.length;
-          index++
-        ) {
-          const element = subSchemaData.nSchemaArray[index];
-
-          if (isSchema(element) || isArray(element)) {
-            currentRef.refs.push(element);
-          } else if (isAttribute(element)) {
-            currentRef.attributes.push(element);
-          }
+        for (let index = 0; index < itemsToConsider.length; index++) {
+          const element = itemsToConsider[index];
+          currentRef.data.push(element);
         }
         const clonedClonedRef = _.cloneDeep(currentRef);
 
@@ -162,8 +163,7 @@ const SubSchemaTreeItems = ({ currentRef: some }) => {
     if (
       !isLoadingSubSchema &&
       !subSchemaRef.isLoaded &&
-      _.isEmpty(subSchemaRef.attributes) &&
-      _.isEmpty(subSchemaRef.refs)
+      _.isEmpty(subSchemaRef.data)
     ) {
       getSubSchema({
         projectId,
@@ -219,63 +219,59 @@ const SubSchemaTreeItems = ({ currentRef: some }) => {
         getSubschemaData(currentRef);
       }}
     >
-      {currentRef.attributes.map((attribute) => {
-        return (
-          <TreeItem
-            key={treeIndex++}
-            nodeId={treeIndex++}
-            label={
-              <div className='flex flex-row p-1 justify-between border-b-2'>
-                <div className='flex flex-row items-center justify-start w-1/3'>
-                  <img
-                    src={AttributeIcon}
-                    alt='ezapi logo'
-                    className='bg-white mr-2'
-                    style={{
-                      height: "24px",
-                      width: "24px",
-                    }}
-                  />
+      {currentRef.data.map((ref) => {
+        if (isSchema(ref) || isArray(ref) || isObject(ref)) {
+          const clonedRef = _.cloneDeep(ref);
 
-                  <p className='text-overline2'>{attribute?.name}</p>
+          if (!clonedRef.hasOwnProperty("data")) {
+            clonedRef["data"] = [];
+          }
+
+          if (!clonedRef.hasOwnProperty("isLoaded")) {
+            clonedRef["isLoaded"] = false;
+          }
+
+          return <SubSchemaTreeItems currentRef={clonedRef} />;
+        } else if (isAttribute(ref)) {
+          return (
+            <TreeItem
+              key={treeIndex++}
+              nodeId={treeIndex++}
+              label={
+                <div className='flex flex-row justify-between items-center p-1 border-b-2'>
+                  <div className='flex flex-row items-center justify-start flex-1'>
+                    <img
+                      src={AttributeIcon}
+                      alt='ezapi logo'
+                      className='bg-white mr-2'
+                      style={{
+                        height: "24px",
+                        width: "24px",
+                      }}
+                    />
+
+                    <p className='text-overline2 '>{ref?.name}</p>
+                  </div>
+
+                  <div className='flex-1'>
+                    <p>{ref?.type}</p>
+                  </div>
+
+                  <div className='flex-1'>
+                    <p>{ref?.required}</p>
+                  </div>
                 </div>
-
-                <div className='w-1/3'>
-                  <p>{attribute?.type}</p>
-                </div>
-
-                <div className='w-1/3'>
-                  <p>{attribute?.required}</p>
-                </div>
-              </div>
-            }
-          />
-        );
-      })}
-
-      {currentRef.refs.map((ref) => {
-        const clonedRef = _.cloneDeep(ref);
-
-        if (!clonedRef.hasOwnProperty("attributes")) {
-          clonedRef["attributes"] = [];
+              }
+            />
+          );
         }
-
-        if (!clonedRef.hasOwnProperty("refs")) {
-          clonedRef["refs"] = [];
-        }
-
-        if (!clonedRef.hasOwnProperty("isLoaded")) {
-          clonedRef["isLoaded"] = false;
-        }
-
-        return <SubSchemaTreeItems currentRef={clonedRef} />;
       })}
     </TreeItem>
   );
 };
 
 const SchemaItem = ({ schema }) => {
-  const [operationDetails, setOperationDetails] = useRecoilState(operationAtom);
+  const setOperationDetails = useSetRecoilState(operationAtom);
 
   const deleteSchema = (item) => {
     if (isSchema(item) && !isArray(item) && !isAttribute(item)) {
@@ -302,56 +298,52 @@ const SchemaItem = ({ schema }) => {
       nodeId={treeIndex++}
       label={<Label schema={schema} deleteSchema={deleteSchema} />}
     >
-      {schema?.attributes?.map((attribute) => {
-        return (
-          <TreeItem
-            key={treeIndex++}
-            nodeId={treeIndex++}
-            label={
-              <div className='flex flex-row p-1 justify-between border-b-2'>
-                <div className='flex flex-row items-center justify-start w-1/3'>
-                  <img
-                    src={AttributeIcon}
-                    alt='ezapi logo'
-                    className='bg-white mr-2'
-                    style={{
-                      height: "24px",
-                      width: "24px",
-                    }}
-                  />
+      {schema?.data?.map((ref) => {
+        if (isSchema(ref) || isArray(ref) || isObject(ref)) {
+          const clonedRef = _.cloneDeep(ref);
 
-                  <p className='text-overline2'>{attribute?.name}</p>
+          if (!clonedRef.hasOwnProperty("data")) {
+            clonedRef["data"] = [];
+          }
+
+          if (!clonedRef.hasOwnProperty("isLoaded")) {
+            clonedRef["isLoaded"] = false;
+          }
+
+          return <SubSchemaTreeItems currentRef={clonedRef} />;
+        } else if (isAttribute(ref)) {
+          return (
+            <TreeItem
+              key={treeIndex++}
+              nodeId={treeIndex++}
+              label={
+                <div className='flex flex-row p-1 justify-between items-center border-b-2'>
+                  <div className='flex flex-row items-center justify-start flex-1'>
+                    <img
+                      src={AttributeIcon}
+                      alt='ezapi logo'
+                      className='bg-white mr-2'
+                      style={{
+                        height: "24px",
+                        width: "24px",
+                      }}
+                    />
+
+                    <p className='text-overline2'>{ref?.name}</p>
+                  </div>
+
+                  <div className='flex-1'>
+                    <p>{ref?.type}</p>
+                  </div>
+
+                  <div className='flex-1'>
+                    <p>{ref?.required}</p>
+                  </div>
                 </div>
-
-                <div className='w-1/3'>
-                  <p>{attribute?.type}</p>
-                </div>
-
-                <div className='w-1/3'>
-                  <p>{attribute?.required}</p>
-                </div>
-              </div>
-            }
-          />
-        );
-      })}
-
-      {schema?.refs?.map((ref) => {
-        const clonedRef = _.cloneDeep(ref);
-
-        if (!clonedRef.hasOwnProperty("attributes")) {
-          clonedRef["attributes"] = [];
+              }
+            />
+          );
         }
-
-        if (!clonedRef.hasOwnProperty("refs")) {
-          clonedRef["refs"] = [];
-        }
-
-        if (!clonedRef.hasOwnProperty("isLoaded")) {
-          clonedRef["isLoaded"] = false;
-        }
-
-        return <SubSchemaTreeItems currentRef={clonedRef} />;
       })}
     </TreeItem>
   );

@@ -12,6 +12,7 @@ import {
   isArray,
   isFullMatch,
   isNoMatch,
+  isObject,
   isPartialMatch,
   isSchema,
 } from "../../shared/utils";
@@ -33,7 +34,8 @@ const DraggableMatchItem = ({ index, item, ...rest }) => {
       ref={drag}
       style={{
         opacity: isDragging ? 0.5 : 1,
-        cursor: isArray(item) || isSchema(item) ? "pointer" : null,
+        cursor:
+          isArray(item) || isSchema(item) || isObject(item) ? "pointer" : null,
       }}
       className='p-2 mb-2 rounded-md bg-white flex flex-row items-center'
       {...rest}
@@ -47,7 +49,11 @@ const DraggableMatchItem = ({ index, item, ...rest }) => {
 
       <img
         className='mr-2'
-        src={isArray(item) || isSchema(item) ? SchemaIcon : AttributeIcon}
+        src={
+          isArray(item) || isSchema(item) || isObject(item)
+            ? SchemaIcon
+            : AttributeIcon
+        }
         style={{ width: "24px", height: "24px" }}
       />
 

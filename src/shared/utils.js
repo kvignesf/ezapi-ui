@@ -43,11 +43,11 @@ export const isAttribute = (object) => {
 };
 
 export const isSchema = (object) => {
-  return (
-    object?.type === "ref" ||
-    object?.type === "ezapi_ref" ||
-    (object?.attributes && object?.refs)
-  );
+  return object?.type === "ref" || object?.type === "ezapi_ref" || object?.data;
+};
+
+export const isObject = (object) => {
+  return object?.type === "object";
 };
 
 export const isFullMatch = (object) => {

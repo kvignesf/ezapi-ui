@@ -8,6 +8,7 @@ const getSubSchema = async ({ projectId, name, type, ref }) => {
   try {
     const { data } = await client.post(`${endpoint.subSchemaData}`, {
       projectId,
+      // projectId: "30001",
       name,
       type,
       ref,

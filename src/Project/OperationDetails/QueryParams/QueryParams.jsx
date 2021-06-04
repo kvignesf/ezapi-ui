@@ -19,15 +19,22 @@ import {
   isSchema,
   isArray,
   useWindowSize,
+  isObject,
 } from "../../../shared/utils";
 import AppIcon from "../../../shared/components/AppIcon";
+import DragAndDropMessage from "../../../shared/components/DragAndDropMessage";
 
 const QueryParams = () => {
   let [operationDetails, setOperationDetails] = useRecoilState(operationAtom);
   const { height, width } = useWindowSize();
 
   const itemDropped = (item) => {
-    if (isAttribute(item) && !isArray(item) && !isSchema(item)) {
+    if (
+      isAttribute(item) &&
+      !isArray(item) &&
+      !isSchema(item) &&
+      !isObject(item)
+    ) {
       setOperationDetails((operationDetails) => {
         if (
           !operationDetails.operationRequest.queryParams.find(
@@ -51,7 +58,12 @@ const QueryParams = () => {
   };
 
   const itemDeleted = (item) => {
-    if (isAttribute(item) && !isArray(item) && !isSchema(item)) {
+    if (
+      isAttribute(item) &&
+      !isArray(item) &&
+      !isSchema(item) &&
+      !isObject(item)
+    ) {
       setOperationDetails((operationDetails) => {
         const index = operationDetails.operationRequest.queryParams.findIndex(
           (x) => x.name === item.name
@@ -148,10 +160,7 @@ const QueryParams = () => {
 
       {_.isEmpty(operationDetails?.operationRequest?.queryParams) && (
         <div className='border-dashed p-3 bg-neutral-gray7 rounded-md border-2 m-2 flex flex-row justify-center'>
-          <p className='text-overline3'>
-            Drag and Drop
-            <span className='text-brand-secondary ml-2'>Attribute</span> here
-          </p>
+          <DragAndDropMessage isAttributeAllowed />
         </div>
       )}
     </DropArea>

@@ -13,6 +13,7 @@ import {
   isArray,
   isFullMatch,
   isNoMatch,
+  isObject,
   isPartialMatch,
   isSchema,
 } from "../../../shared/utils";
@@ -43,21 +44,10 @@ const Schema = () => {
     } else {
       const selectedSchema = _.last(schemaState?.selected);
 
-      if (
-        !_.isEmpty(selectedSchema?.attributes) ||
-        !_.isEmpty(selectedSchema?.refs)
-      ) {
-        let clonedAttributes = [];
-        if (!_.isEmpty(selectedSchema?.attributes)) {
-          clonedAttributes = _.cloneDeep(selectedSchema?.attributes);
-        }
+      if (!_.isEmpty(selectedSchema?.data)) {
+        const clonedData = _.cloneDeep(selectedSchema?.data);
 
-        let clonedRefs = [];
-        if (!_.isEmpty(selectedSchema?.refs)) {
-          clonedRefs = _.cloneDeep(selectedSchema?.refs);
-        }
-
-        setSchemaData([...clonedAttributes, ...clonedRefs]);
+        setSchemaData(clonedData);
       } else {
         if (!isLoadingSubSchema) {
           getSubSchema({
@@ -73,7 +63,14 @@ const Schema = () => {
 
   useEffect(() => {
     if (subSchemaData) {
-      setSchemaData(subSchemaData?.nSchemaArray);
+      if (
+        subSchemaData?.nSchemaArray &&
+        !_.isEmpty(subSchemaData?.nSchemaArray)
+      ) {
+        setSchemaData(subSchemaData?.nSchemaArray);
+      } else if (subSchemaData?.data && !_.isEmpty(subSchemaData?.data)) {
+        setSchemaData(subSchemaData?.data);
+      }
       return;
     }
     setSchemaData(allSchemaData?.nSchemaArray);
@@ -92,7 +89,7 @@ const Schema = () => {
   };
 
   const onItemClick = (ref) => {
-    if (isSchema(ref) || isArray(ref)) {
+    if (isSchema(ref) || isArray(ref) || isObject(ref)) {
       const updatedSchemaState = _.cloneDeep(schemaState);
 
       if (

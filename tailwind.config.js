@@ -17,6 +17,7 @@ module.exports = {
         1: "1rem",
         2: "2rem",
         3: "3rem",
+        "1/3": "33.33%",
       },
       colors: {
         neutral: {
