@@ -7,8 +7,8 @@ import { getApiError } from "../../../shared/utils";
 const getSubSchema = async ({ projectId, name, type, ref }) => {
   try {
     const { data } = await client.post(`${endpoint.subSchemaData}`, {
-      // projectId,
-      projectId: "30001",
+      projectId,
+      // projectId: "30001",
       name,
       type,
       ref,

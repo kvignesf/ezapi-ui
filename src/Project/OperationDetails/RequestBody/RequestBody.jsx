@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from "react";
-import { useRecoilState } from "recoil";
+import { useRecoilState, useSetRecoilState } from "recoil";
 import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
 import TableCell from "@material-ui/core/TableCell";
@@ -131,7 +131,6 @@ const SubSchemaTreeItems = ({ currentRef: some }) => {
     reset: resetSubSchemaData,
     variables: subSchemaRequest,
   } = useGetSubSchema();
-  const { height, width } = useWindowSize();
 
   useEffect(() => {
     if (subSchemaData) {
@@ -239,8 +238,8 @@ const SubSchemaTreeItems = ({ currentRef: some }) => {
               key={treeIndex++}
               nodeId={treeIndex++}
               label={
-                <div className='flex flex-row p-1 justify-between border-b-2'>
-                  <div className='flex flex-row items-center justify-start w-1/3 max-w-1/3'>
+                <div className='flex flex-row justify-between items-center p-1 border-b-2'>
+                  <div className='flex flex-row items-center justify-start flex-1'>
                     <img
                       src={AttributeIcon}
                       alt='ezapi logo'
@@ -254,11 +253,11 @@ const SubSchemaTreeItems = ({ currentRef: some }) => {
                     <p className='text-overline2 '>{ref?.name}</p>
                   </div>
 
-                  <div className='w-1/3 max-w-1/3'>
+                  <div className='flex-1'>
                     <p>{ref?.type}</p>
                   </div>
 
-                  <div className=' w-1/3 max-w-1/3'>
+                  <div className='flex-1'>
                     <p>{ref?.required}</p>
                   </div>
                 </div>
@@ -272,7 +271,7 @@ const SubSchemaTreeItems = ({ currentRef: some }) => {
 };
 
 const SchemaItem = ({ schema }) => {
-  const [operationDetails, setOperationDetails] = useRecoilState(operationAtom);
+  const setOperationDetails = useSetRecoilState(operationAtom);
 
   const deleteSchema = (item) => {
     if (isSchema(item) && !isArray(item) && !isAttribute(item)) {
@@ -318,8 +317,8 @@ const SchemaItem = ({ schema }) => {
               key={treeIndex++}
               nodeId={treeIndex++}
               label={
-                <div className='flex flex-row p-1 justify-between border-b-2'>
-                  <div className='flex flex-row items-center justify-start bg-red-600 w-1/3 max-w-1/3'>
+                <div className='flex flex-row p-1 justify-between items-center border-b-2'>
+                  <div className='flex flex-row items-center justify-start flex-1'>
                     <img
                       src={AttributeIcon}
                       alt='ezapi logo'
@@ -333,11 +332,11 @@ const SchemaItem = ({ schema }) => {
                     <p className='text-overline2'>{ref?.name}</p>
                   </div>
 
-                  <div className='w-1/3'>
+                  <div className='flex-1'>
                     <p>{ref?.type}</p>
                   </div>
 
-                  <div className='w-1/3'>
+                  <div className='flex-1'>
                     <p>{ref?.required}</p>
                   </div>
                 </div>
