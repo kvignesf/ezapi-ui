@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useHistory, useParams } from "react-router";
 import ArrowBackIcon from "@material-ui/icons/ArrowBack";
-import { Tab, Tabs } from "@material-ui/core";
+import { CircularProgress, Dialog, Tab, Tabs } from "@material-ui/core";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { useResetRecoilState, useRecoilState, useSetRecoilState } from "recoil";
 import CloudUploadIcon from "@material-ui/icons/CloudUpload";
+import { ClassNames } from "@emotion/react";
+import classNames from "classnames";
+import _ from "lodash";
 
 import AppIcon from "../shared/components/AppIcon";
 import { useFetchProjectDetails } from "./projectQueries";
@@ -22,11 +25,11 @@ import operationAtom, {
 import schemaAtom, {
   defaultState as schemaAtomDefaultState,
 } from "./Match/Schema/schemaAtom";
-import { ClassNames } from "@emotion/react";
-import classNames from "classnames";
-import _ from "lodash";
 import { endpoint } from "../shared/network/client";
-import { useSyncOperationRequest } from "./operationRequestQuery";
+import {
+  useSyncOperationRequest,
+  useSyncOperationResponse,
+} from "./operationRequestQuery";
 import TabLabel from "../shared/components/TabLabel";
 
 const Project = () => {
@@ -51,24 +54,223 @@ const Project = () => {
     mutate: syncOperationRequest,
   } = useSyncOperationRequest();
 
+  const {
+    isLoading: isSyncingOperationResponse,
+    isSuccess: isSyncOperationResponseSuccess,
+    error: syncOperationResponseError,
+    mutate: syncOperationResponse,
+  } = useSyncOperationResponse();
+
   useEffect(() => {
     if (projectDetails && projectDetails?.status !== "IN_PROGRESS") {
       history.replace(endpoint.projects);
     }
   }, [projectDetails]);
 
-  const saveProject = () => {
+  const saveOperationRequest = () => {
+    const clonedRequest = _.cloneDeep(operationState?.operationRequest);
+    let operationRequest = {};
+
+    operationRequest["headers"] = [];
+    operationRequest["pathParams"] = [];
+    operationRequest["queryParams"] = [];
+    operationRequest["formData"] = [];
+    operationRequest["body"] = [];
+
+    if (clonedRequest?.headers && !_.isEmpty(clonedRequest?.headers)) {
+      operationRequest.headers = clonedRequest?.headers?.map((header) => {
+        let clonedHeader = _.cloneDeep(header);
+
+        clonedHeader.required =
+          header?.required === true || header?.required === "true"
+            ? true
+            : false;
+
+        clonedHeader.possibleValues =
+          header?.possibleValues?.split(",").map((item) => {
+            return item.trim(" ");
+          }) ?? [];
+
+        return clonedHeader;
+      });
+    }
+
+    if (clonedRequest?.queryParams && !_.isEmpty(clonedRequest?.queryParams)) {
+      operationRequest.queryParams = clonedRequest?.pathParams?.map((item) => {
+        let clonedItem = _.cloneDeep(item);
+
+        clonedItem.required =
+          item?.required === true || item?.required === "true" ? true : false;
+
+        return clonedItem;
+      });
+    }
+
+    if (clonedRequest?.pathParams && !_.isEmpty(clonedRequest?.pathParams)) {
+      operationRequest.pathParams = clonedRequest?.pathParams?.map((item) => {
+        let clonedItem = _.cloneDeep(item);
+
+        clonedItem.required =
+          item?.required === true || item?.required === "true" ? true : false;
+
+        return clonedItem;
+      });
+    }
+
+    if (clonedRequest?.formData && !_.isEmpty(clonedRequest?.formData)) {
+      operationRequest.formData = clonedRequest?.formData?.map((item) => {
+        let clonedItem = _.cloneDeep(item);
+
+        clonedItem.required =
+          item?.required === true || item?.required === "true" ? true : false;
+
+        return clonedItem;
+      });
+    }
+
+    if (clonedRequest?.body && !_.isEmpty(clonedRequest?.body)) {
+      operationRequest.body = clonedRequest?.body?.map((item) => {
+        let newItem = {};
+
+        newItem.required =
+          item?.required === true || item?.required === "true" ? true : false;
+
+        newItem.name = item?.name;
+        newItem.type = item?.type;
+        newItem.ref = item?.ref;
+
+        return newItem;
+      });
+    }
+
     syncOperationRequest({
       projectId,
       operationId: operationState?.operation?.operationId,
       pathId: operationState?.path?.pathId,
       resourceId: operationState?.resource?.resourceId,
-      operationRequest: { ...operationState?.operationRequest },
+      ...operationRequest,
     });
+  };
+
+  const saveOperationResponse = () => {
+    const clonedResponse = _.cloneDeep(operationState?.operationResponse);
+    let operationResponse = {};
+
+    operationResponse["headers"] = [];
+    operationResponse["pathParams"] = [];
+    operationResponse["queryParams"] = [];
+    operationResponse["formData"] = [];
+    operationResponse["body"] = [];
+
+    if (clonedResponse?.headers && !_.isEmpty(clonedResponse?.headers)) {
+      operationResponse.headers = clonedResponse?.headers?.map((header) => {
+        let clonedHeader = _.cloneDeep(header);
+
+        clonedHeader.required =
+          header?.required === true || header?.required === "true"
+            ? true
+            : false;
+
+        clonedHeader.possibleValues =
+          header?.possibleValues?.split(",").map((item) => {
+            return item.trim(" ");
+          }) ?? [];
+
+        return clonedHeader;
+      });
+    }
+
+    if (
+      clonedResponse?.queryParams &&
+      !_.isEmpty(clonedResponse?.queryParams)
+    ) {
+      operationResponse.queryParams = clonedResponse?.pathParams?.map(
+        (item) => {
+          let clonedItem = _.cloneDeep(item);
+
+          clonedItem.required =
+            item?.required === true || item?.required === "true" ? true : false;
+
+          return clonedItem;
+        }
+      );
+    }
+
+    if (clonedResponse?.pathParams && !_.isEmpty(clonedResponse?.pathParams)) {
+      operationResponse.pathParams = clonedResponse?.pathParams?.map((item) => {
+        let clonedItem = _.cloneDeep(item);
+
+        clonedItem.required =
+          item?.required === true || item?.required === "true" ? true : false;
+
+        return clonedItem;
+      });
+    }
+
+    if (clonedResponse?.formData && !_.isEmpty(clonedResponse?.formData)) {
+      operationResponse.formData = clonedResponse?.formData?.map((item) => {
+        let clonedItem = _.cloneDeep(item);
+
+        clonedItem.required =
+          item?.required === true || item?.required === "true" ? true : false;
+
+        return clonedItem;
+      });
+    }
+
+    if (clonedResponse?.body && !_.isEmpty(clonedResponse?.body)) {
+      operationResponse.body = clonedResponse?.body?.map((item) => {
+        let newItem = {};
+
+        newItem.required =
+          item?.required === true || item?.required === "true" ? true : false;
+
+        newItem.name = item?.name;
+        newItem.type = item?.type;
+        newItem.ref = item?.ref;
+
+        return newItem;
+      });
+    }
+
+    syncOperationResponse({
+      projectId,
+      operationId: operationState?.operation?.operationId,
+      pathId: operationState?.path?.pathId,
+      resourceId: operationState?.resource?.resourceId,
+      ...operationResponse,
+    });
+  };
+
+  const saveProject = () => {
+    saveOperationRequest();
+
+    saveOperationResponse();
   };
 
   return (
     <>
+      <Dialog
+        aria-labelledby='save-operation-dialog'
+        open={isSyncingOperationRequest || isSyncingOperationResponse}
+        fullWidth
+        PaperProps={{
+          style: { borderRadius: 8 },
+        }}
+        disableBackdropClick
+      >
+        <div className='p-6'>
+          <div className='w-full flex flex-row items-center'>
+            <p className='text-overline mr-3'>
+              {isSyncingOperationRequest
+                ? "Saving Operation Request"
+                : "Saving Operation Response"}
+            </p>
+            <CircularProgress style={{ width: "20px", height: "20px" }} />
+          </div>
+        </div>
+      </Dialog>
+
       <DndProvider backend={HTML5Backend}>
         <header className='px-2 border-b-2 flex flex-row items-center bg-white'>
           <div className='flex flex-row py-2 items-center'>
@@ -147,9 +349,14 @@ const Project = () => {
                 projectId={projectId}
                 selectedIndex={operationState.operationIndex}
                 onOperationSelect={(index, resource, path, operation) => {
-                  if (index !== operationState.operationIndex) {
+                  if (
+                    index === null &&
+                    resource === null &&
+                    path === null &&
+                    operation === null
+                  ) {
                     resetOperationState();
-
+                  } else if (index !== operationState.operationIndex) {
                     const cloned = _.cloneDeep(operationState);
                     cloned.operation = operation;
                     cloned.resource = resource;

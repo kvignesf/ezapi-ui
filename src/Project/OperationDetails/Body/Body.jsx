@@ -31,12 +31,7 @@ const Body = ({ request = true }) => {
   const { height, width } = useWindowSize();
 
   const itemDropped = (item) => {
-    if (
-      isSchema(item) &&
-      !isObject(item) &&
-      !isArray(item) &&
-      !isAttribute(item)
-    ) {
+    if (isSchema(item) && !isObject(item) && !isArray(item)) {
       setOperationDetails((operationDetails) => {
         if (request) {
           if (
@@ -106,7 +101,13 @@ const Body = ({ request = true }) => {
                 defaultExpandIcon={<ChevronRightIcon />}
               >
                 {operationDetails?.operationRequest?.body.map((item) => {
-                  return <SchemaItem schema={item} request={request} />;
+                  const clonedRef = _.cloneDeep(item);
+
+                  if (!clonedRef.hasOwnProperty("data")) {
+                    clonedRef["data"] = [];
+                  }
+
+                  return <SchemaItem schema={clonedRef} request={request} />;
                 })}
               </TreeView>
             </Scrollbar>
@@ -133,7 +134,13 @@ const Body = ({ request = true }) => {
                 defaultExpandIcon={<ChevronRightIcon />}
               >
                 {operationDetails?.operationResponse?.body.map((item) => {
-                  return <SchemaItem schema={item} request={request} />;
+                  const clonedRef = _.cloneDeep(item);
+
+                  if (!clonedRef.hasOwnProperty("data")) {
+                    clonedRef["data"] = [];
+                  }
+
+                  return <SchemaItem schema={clonedRef} request={request} />;
                 })}
               </TreeView>
             </Scrollbar>
@@ -198,6 +205,7 @@ const SubSchemaTreeItems = ({ currentRef: some }) => {
   }, [subSchemaData]);
 
   const getSubschemaData = (subSchemaRef) => {
+    console.log("subSchemaRef", subSchemaRef);
     if (
       !isLoadingSubSchema &&
       !subSchemaRef.isLoaded &&
@@ -309,11 +317,46 @@ const SubSchemaTreeItems = ({ currentRef: some }) => {
   );
 };
 
-const SchemaItem = ({ request = true, schema }) => {
+const SchemaItem = ({ request = true, schema: currSchema }) => {
+  const [schema, setSchema] = useState(currSchema);
   const setOperationDetails = useSetRecoilState(operationAtom);
+  const { id: projectId } = useParams();
+  const {
+    isLoading: isLoadingSubSchema,
+    error: getSubSchemasError,
+    data: subSchemaData,
+    mutate: getSubSchema,
+    reset: resetSubSchemaData,
+    variables: subSchemaRequest,
+  } = useGetSubSchema();
+
+  useEffect(() => {
+    if (subSchemaData) {
+      let itemsToConsider = [];
+
+      if (
+        subSchemaData?.nSchemaArray &&
+        !_.isEmpty(subSchemaData?.nSchemaArray)
+      ) {
+        itemsToConsider = subSchemaData?.nSchemaArray[0].data;
+      } else if (subSchemaData?.data && !_.isEmpty(subSchemaData?.data)) {
+        itemsToConsider = subSchemaData?.data;
+      }
+
+      if (isSchema(schema) || isArray(schema) || isObject(schema)) {
+        for (let index = 0; index < itemsToConsider.length; index++) {
+          const element = itemsToConsider[index];
+          schema.data.push(element);
+        }
+        const clonedClonedRef = _.cloneDeep(schema);
+
+        setSchema(clonedClonedRef);
+      }
+    }
+  }, [subSchemaData]);
 
   const deleteSchema = (item) => {
-    if (isSchema(item) && !isArray(item) && !isAttribute(item)) {
+    if (isSchema(item) && !isArray(item) && !isObject(item)) {
       setOperationDetails((operationDetails) => {
         if (request) {
           const index = operationDetails.operationRequest.body.findIndex(
@@ -343,11 +386,31 @@ const SchemaItem = ({ request = true, schema }) => {
     }
   };
 
+  const getSchemaData = (schemaRef) => {
+    if (!isLoadingSubSchema && _.isEmpty(schemaRef.data)) {
+      getSubSchema({
+        projectId,
+        name: schemaRef?.name,
+        type: schemaRef?.type,
+        ref: schemaRef?.ref,
+      });
+    }
+  };
+
   return (
     <TreeItem
       key={treeIndex++}
       nodeId={treeIndex++}
       label={<Label schema={schema} deleteSchema={deleteSchema} />}
+      onLabelClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        getSchemaData(schema);
+      }}
+      onIconClick={(e) => {
+        getSchemaData(schema);
+      }}
     >
       {schema?.data?.map((ref) => {
         if (isSchema(ref) || isArray(ref) || isObject(ref)) {
