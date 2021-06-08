@@ -58,13 +58,13 @@ const Project = () => {
   }, [projectDetails]);
 
   const saveProject = () => {
-    // syncOperationRequest({
-    //   projectId,
-    //   operationId: operationState?.operation?.operationId,
-    //   pathId: operationState?.path?.pathId,
-    //   resourceId: operationState?.resource?.resourceId,
-    //   operationRequest: { ...operationState?.operationRequest },
-    // });
+    syncOperationRequest({
+      projectId,
+      operationId: operationState?.operation?.operationId,
+      pathId: operationState?.path?.pathId,
+      resourceId: operationState?.resource?.resourceId,
+      operationRequest: { ...operationState?.operationRequest },
+    });
   };
 
   return (

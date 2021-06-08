@@ -36,25 +36,27 @@ export const useSyncOperationRequest = () => {
   return mutation;
 };
 
-const getOperationRequest = async ({ queryKey }) => {
+const getOperationRequest = async ({
+  projectId,
+  resourceId,
+  pathId,
+  operationId,
+}) => {
   try {
-    const { operationId } = queryKey[1];
-
-    const { data } = await client.get(`/operationData/request/${operationId}`);
+    const { data } = await client.post(
+      `/operationData/request/${operationId}`,
+      { projectId, resourceId, pathId }
+    );
     return data;
   } catch (error) {
     throw getApiError(error);
   }
 };
 
-export const useGetOperationRequest = (operationId, options = {}) => {
-  const query = useQuery(
-    [`${queries.resources}-${operationId}`, { operationId }],
-    getOperationRequest,
-    {
-      ...options,
-    }
-  );
+export const useGetOperationRequest = () => {
+  const mutation = useMutation(getOperationRequest, {
+    onSuccess: (data) => {},
+  });
 
-  return query;
+  return mutation;
 };

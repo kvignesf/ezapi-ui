@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   AppBar,
   IconButton,
@@ -14,6 +14,7 @@ import { useRecoilValue } from "recoil";
 import operationAtom from "../operationAtom";
 import { useGetOperationRequest } from "../operationRequestQuery";
 import TabLabel from "../../shared/components/TabLabel";
+import { useParams } from "react-router";
 
 const tabsStyles = makeStyles({
   indicator: {
@@ -41,9 +42,19 @@ const OperationDetails = ({
   const tabClasses = tabStyles();
   const [currentTab, setTab] = useState(0);
   const operationState = useRecoilValue(operationAtom);
-  // const { isLoading: isFetchingOperationRequest } = useGetOperationRequest(
-  //   operationState?.operation?.operationId
-  // );
+  const { id: projectId } = useParams();
+  const { isLoading, mutate: getOperationDetails } = useGetOperationRequest();
+
+  useEffect(() => {
+    if (operationState?.operationIndex && operationState?.operation) {
+      getOperationDetails({
+        operationId: operationState.operation.operationId,
+        pathId: operationState.path.pathId,
+        resourceId: operationState.resource.resourceId,
+        projectId: projectId,
+      });
+    }
+  }, [operationState?.operation]);
 
   return (
     <div className={`border-t-2 h-full ${className}`} {...props}>

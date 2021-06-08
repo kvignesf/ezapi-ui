@@ -43,6 +43,13 @@ export const useGetSubSchema = () => {
   const [schemaState, setSchemaState] = useRecoilState(schemaAtom);
 
   const query = useMutation(getSubSchema, {
+    onSuccess: (data) => {
+      if (data && data?.nSchemaArray && _.isEmpty(data?.nSchemaArray)) {
+        let updatedSchemaState = _.cloneDeep(schemaState);
+        updatedSchemaState?.selected?.pop();
+        setSchemaState(updatedSchemaState);
+      }
+    },
     onError: (err) => {
       let updatedSchemaState = _.cloneDeep(schemaState);
       updatedSchemaState?.selected?.pop();
