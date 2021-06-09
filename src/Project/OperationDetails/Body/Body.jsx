@@ -26,8 +26,8 @@ import { useGetSubSchema } from "./requestBodyQueries";
 import { useParams } from "react-router";
 import DragAndDropMessage from "../../../shared/components/DragAndDropMessage";
 
-const Body = ({ request = true }) => {
-  let [operationDetails, setOperationDetails] = useRecoilState(operationAtom);
+const Body = ({ request = true, responseCode }) => {
+  let [operationData, setOperationDetails] = useRecoilState(operationAtom);
   const { height, width } = useWindowSize();
 
   const itemDropped = (item) => {
@@ -46,22 +46,43 @@ const Body = ({ request = true }) => {
             return newOperationDetails;
           }
         } else {
-          if (
-            !operationDetails.operationResponse.body.find(
-              (x) => x.name === item.name
-            )
-          ) {
-            const newOperationDetails = _.cloneDeep(operationDetails);
+          const responseData = getResponseData(operationDetails);
+          const responseIndex = getResponseIndex(operationDetails);
 
-            newOperationDetails.operationResponse.body.push(item);
+          const existingBodyIndex = responseData?.body?.findIndex(
+            (body) => body.name === item.name
+          );
 
-            return newOperationDetails;
+          if (existingBodyIndex === -1 && responseData && responseIndex >= 0) {
+            const clonedOperationDetails = _.cloneDeep(operationDetails);
+            const clonedResponseData = _.cloneDeep(responseData);
+
+            clonedResponseData.body.push(item);
+
+            clonedOperationDetails.operationResponse[responseIndex] =
+              clonedResponseData;
+
+            return clonedOperationDetails;
           }
         }
         return operationDetails;
       });
     }
   };
+
+  const getResponseData = (operation) => {
+    return operation?.operationResponse?.find(
+      (item) => item.responseCode === responseCode
+    );
+  };
+
+  const getResponseIndex = (operation) => {
+    return operation?.operationResponse?.findIndex(
+      (item) => item.responseCode === responseCode
+    );
+  };
+
+  console.log("operationData", operationData);
 
   return (
     <DropArea onItemDropped={itemDropped}>
@@ -81,7 +102,7 @@ const Body = ({ request = true }) => {
           </p>
         </div>
 
-        {request && !_.isEmpty(operationDetails?.operationRequest?.body) && (
+        {request && !_.isEmpty(operationData?.operationRequest?.body) && (
           <div className='h-full flex-1'>
             <Scrollbar
               alwaysShowTracks={true}
@@ -100,21 +121,28 @@ const Body = ({ request = true }) => {
                 defaultCollapseIcon={<ExpandMoreIcon />}
                 defaultExpandIcon={<ChevronRightIcon />}
               >
-                {operationDetails?.operationRequest?.body.map((item) => {
+                {operationData?.operationRequest?.body.map((item) => {
                   const clonedRef = _.cloneDeep(item);
 
                   if (!clonedRef.hasOwnProperty("data")) {
                     clonedRef["data"] = [];
                   }
 
-                  return <SchemaItem schema={clonedRef} request={request} />;
+                  return (
+                    <SchemaItem
+                      key={item.name}
+                      schema={clonedRef}
+                      request={request}
+                      responseCode={responseCode}
+                    />
+                  );
                 })}
               </TreeView>
             </Scrollbar>
           </div>
         )}
 
-        {!request && !_.isEmpty(operationDetails?.operationResponse?.body) && (
+        {!request && !_.isEmpty(getResponseData(operationData)?.body) && (
           <div className='h-full flex-1'>
             <Scrollbar
               alwaysShowTracks={true}
@@ -133,27 +161,34 @@ const Body = ({ request = true }) => {
                 defaultCollapseIcon={<ExpandMoreIcon />}
                 defaultExpandIcon={<ChevronRightIcon />}
               >
-                {operationDetails?.operationResponse?.body.map((item) => {
+                {getResponseData(operationData)?.body.map((item) => {
                   const clonedRef = _.cloneDeep(item);
 
                   if (!clonedRef.hasOwnProperty("data")) {
                     clonedRef["data"] = [];
                   }
 
-                  return <SchemaItem schema={clonedRef} request={request} />;
+                  return (
+                    <SchemaItem
+                      key={item.name}
+                      schema={clonedRef}
+                      request={request}
+                      responseCode={responseCode}
+                    />
+                  );
                 })}
               </TreeView>
             </Scrollbar>
           </div>
         )}
 
-        {request && _.isEmpty(operationDetails?.operationRequest?.body) && (
+        {request && _.isEmpty(operationData?.operationRequest?.body) && (
           <div className='border-dashed p-3 bg-neutral-gray7 rounded-md border-2 m-2 flex flex-row justify-center'>
             <DragAndDropMessage isSchemaAllowed />
           </div>
         )}
 
-        {!request && _.isEmpty(operationDetails?.operationResponse?.body) && (
+        {!request && _.isEmpty(getResponseData(operationData)?.body) && (
           <div className='border-dashed p-3 bg-neutral-gray7 rounded-md border-2 m-2 flex flex-row justify-center'>
             <DragAndDropMessage isSchemaAllowed />
           </div>
@@ -205,7 +240,6 @@ const SubSchemaTreeItems = ({ currentRef: some }) => {
   }, [subSchemaData]);
 
   const getSubschemaData = (subSchemaRef) => {
-    console.log("subSchemaRef", subSchemaRef);
     if (
       !isLoadingSubSchema &&
       !subSchemaRef.isLoaded &&
@@ -317,7 +351,7 @@ const SubSchemaTreeItems = ({ currentRef: some }) => {
   );
 };
 
-const SchemaItem = ({ request = true, schema: currSchema }) => {
+const SchemaItem = ({ request = true, responseCode, schema: currSchema }) => {
   const [schema, setSchema] = useState(currSchema);
   const setOperationDetails = useSetRecoilState(operationAtom);
   const { id: projectId } = useParams();
@@ -370,17 +404,36 @@ const SchemaItem = ({ request = true, schema: currSchema }) => {
             return newOperationDetails;
           }
         } else {
-          const index = operationDetails.operationResponse.body.findIndex(
-            (x) => x.name === item.name
+          const responseData = operationDetails?.operationResponse?.find(
+            (item) => item.responseCode === responseCode
           );
-          if (index !== -1) {
-            const newOperationDetails = _.cloneDeep(operationDetails);
+          const responseIndex = operationDetails?.operationResponse?.findIndex(
+            (item) => item.responseCode === responseCode
+          );
 
-            newOperationDetails.operationResponse.body.splice(index, 1);
+          const existingBodyIndex = responseData?.body?.findIndex(
+            (body) => body.name === item.name
+          );
 
-            return newOperationDetails;
+          console.log("item", item);
+          console.log("existingBodyIndex", existingBodyIndex);
+          console.log("responseData", responseData);
+
+          if (existingBodyIndex >= 0 && responseData && responseIndex >= 0) {
+            const clonedOperationDetails = _.cloneDeep(operationDetails);
+            const clonedResponseData = _.cloneDeep(responseData);
+
+            clonedResponseData.body.splice(existingBodyIndex, 1);
+
+            clonedOperationDetails.operationResponse[responseIndex] =
+              clonedResponseData;
+
+            console.log("clonedOperationDetails", clonedOperationDetails);
+
+            return clonedOperationDetails;
           }
         }
+
         return operationDetails;
       });
     }

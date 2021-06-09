@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { useEffect, useCallback } from "react";
 import { useRecoilState } from "recoil";
 import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
@@ -21,8 +21,8 @@ import {
 import DragAndDropMessage from "../../../shared/components/DragAndDropMessage";
 import Row from "../Row";
 
-const Headers = ({ request = true }) => {
-  let [operationDetails, setOperationDetails] = useRecoilState(operationAtom);
+const Headers = ({ request = true, responseCode }) => {
+  let [operationData, setOperationDetails] = useRecoilState(operationAtom);
   const { height, width } = useWindowSize();
 
   const itemDropped = (item) => {
@@ -53,14 +53,22 @@ const Headers = ({ request = true }) => {
           }
           return operationDetails;
         } else {
-          if (
-            !operationDetails.operationResponse.headers.find(
-              (x) => x.name === item.name
-            )
-          ) {
-            const newOperationDetails = _.cloneDeep(operationDetails);
+          const responseData = getResponseData(operationDetails);
+          const responseIndex = getResponseIndex(operationDetails);
 
-            newOperationDetails.operationResponse.headers.push({
+          const existingHeaderIndex = responseData?.headers?.findIndex(
+            (header) => header.name === item.name
+          );
+
+          if (
+            existingHeaderIndex === -1 &&
+            responseData &&
+            responseIndex >= 0
+          ) {
+            const clonedOperationDetails = _.cloneDeep(operationDetails);
+            const clonedResponseData = _.cloneDeep(responseData);
+
+            clonedResponseData.headers.push({
               name: item?.name,
               type: item?.type,
               required: item?.required,
@@ -68,8 +76,12 @@ const Headers = ({ request = true }) => {
               possibleValues: item?.possibleValues,
             });
 
-            return newOperationDetails;
+            clonedOperationDetails.operationResponse[responseIndex] =
+              clonedResponseData;
+
+            return clonedOperationDetails;
           }
+
           return operationDetails;
         }
       });
@@ -99,16 +111,21 @@ const Headers = ({ request = true }) => {
 
           return operationDetails;
         } else {
-          const index = operationDetails.operationResponse.headers.findIndex(
-            (x) => x.name === item.name
+          const responseData = getResponseData(operationDetails);
+          const responseIndex = getResponseIndex(operationDetails);
+          const headerIndex = responseData.headers.findIndex(
+            (header) => header.name === item.name
           );
 
-          if (index !== -1) {
-            const newOperationDetails = _.cloneDeep(operationDetails);
+          if (responseData && responseIndex >= 0) {
+            const clonedOperationDetails = _.cloneDeep(operationDetails);
+            const clonedResponseData = _.cloneDeep(responseData);
 
-            newOperationDetails.operationResponse.headers.splice(index, 1);
+            clonedResponseData.headers.splice(headerIndex, 1);
+            clonedOperationDetails.operationResponse[responseIndex] =
+              clonedResponseData;
 
-            return newOperationDetails;
+            return clonedOperationDetails;
           }
 
           return operationDetails;
@@ -140,21 +157,26 @@ const Headers = ({ request = true }) => {
             return clonedOperationDetails;
           }
         } else {
-          let foundItem = operationDetails.operationResponse.headers.find(
+          const responseData = getResponseData(operationDetails);
+          const responseIndex = getResponseIndex(operationDetails);
+
+          let foundItem = responseData.headers.find(
             (x) => x.name === item.name
           );
-          let foundItemIndex =
-            operationDetails.operationResponse.headers.findIndex(
-              (x) => x.name === item.name
-            );
+          let foundItemIndex = responseData.headers.findIndex(
+            (x) => x.name === item.name
+          );
 
           if (foundItem) {
             const clonedFoundItem = _.cloneDeep(foundItem);
             const clonedOperationDetails = _.cloneDeep(operationDetails);
+            const clonedResponseData = _.cloneDeep(responseData);
 
             clonedFoundItem.description = value;
-            clonedOperationDetails.operationResponse.headers[foundItemIndex] =
-              clonedFoundItem;
+            clonedResponseData.headers[foundItemIndex] = clonedFoundItem;
+
+            clonedOperationDetails.operationResponse[responseIndex] =
+              clonedResponseData;
 
             return clonedOperationDetails;
           }
@@ -188,31 +210,47 @@ const Headers = ({ request = true }) => {
             return clonedOperationDetails;
           }
         } else {
-          let foundItem = operationDetails.operationResponse.headers.find(
+          const responseData = getResponseData(operationDetails);
+          const responseIndex = getResponseIndex(operationDetails);
+
+          let foundItem = responseData.headers.find(
             (x) => x.name === item.name
           );
-          let foundItemIndex =
-            operationDetails.operationResponse.headers.findIndex(
-              (x) => x.name === item.name
-            );
+          let foundItemIndex = responseData.headers.findIndex(
+            (x) => x.name === item.name
+          );
 
           if (foundItem) {
             const clonedFoundItem = _.cloneDeep(foundItem);
             const clonedOperationDetails = _.cloneDeep(operationDetails);
+            const clonedResponseData = _.cloneDeep(responseData);
 
             clonedFoundItem.possibleValues = value;
-            clonedOperationDetails.operationResponse.headers[foundItemIndex] =
-              clonedFoundItem;
+            clonedResponseData.headers[foundItemIndex] = clonedFoundItem;
+
+            clonedOperationDetails.operationResponse[responseIndex] =
+              clonedResponseData;
 
             return clonedOperationDetails;
           }
         }
-
         return operationDetails;
       });
     }, 300),
     [] // will be created only once initially
   );
+
+  const getResponseData = (operation) => {
+    return operation?.operationResponse?.find(
+      (item) => item.responseCode === responseCode
+    );
+  };
+
+  const getResponseIndex = (operation) => {
+    return operation?.operationResponse?.findIndex(
+      (item) => item.responseCode === responseCode
+    );
+  };
 
   return (
     <DropArea onItemDropped={itemDropped}>
@@ -249,9 +287,9 @@ const Headers = ({ request = true }) => {
             </TableRow>
           </TableHead>
 
-          {request && !_.isEmpty(operationDetails?.operationRequest?.headers) && (
+          {request && !_.isEmpty(operationData?.operationRequest?.headers) && (
             <TableBody className='w-full max-h-6'>
-              {operationDetails?.operationRequest?.headers?.map((row) => {
+              {operationData?.operationRequest?.headers?.map((row) => {
                 return (
                   <Row
                     key={row?.name}
@@ -269,36 +307,35 @@ const Headers = ({ request = true }) => {
             </TableBody>
           )}
 
-          {!request &&
-            !_.isEmpty(operationDetails?.operationResponse?.headers) && (
-              <TableBody className='w-full max-h-6'>
-                {operationDetails?.operationResponse?.headers?.map((row) => {
-                  return (
-                    <Row
-                      key={row?.name}
-                      row={row}
-                      onItemDelete={itemDeleted}
-                      onDescriptionUpdate={(item, value) => {
-                        onDescriptionUpdate(item, value);
-                      }}
-                      onPossibleValuesUpdate={(item, value) => {
-                        onPossibleValuesUpdate(item, value);
-                      }}
-                    />
-                  );
-                })}
-              </TableBody>
-            )}
+          {!request && !_.isEmpty(getResponseData(operationData).headers) && (
+            <TableBody className='w-full max-h-6'>
+              {getResponseData(operationData).headers?.map((row) => {
+                return (
+                  <Row
+                    key={row?.name}
+                    row={row}
+                    onItemDelete={itemDeleted}
+                    onDescriptionUpdate={(item, value) => {
+                      onDescriptionUpdate(item, value);
+                    }}
+                    onPossibleValuesUpdate={(item, value) => {
+                      onPossibleValuesUpdate(item, value);
+                    }}
+                  />
+                );
+              })}
+            </TableBody>
+          )}
         </Table>
       </TableContainer>
 
-      {request && _.isEmpty(operationDetails?.operationRequest?.headers) && (
+      {request && _.isEmpty(operationData?.operationRequest?.headers) && (
         <div className='border-dashed p-3 bg-neutral-gray7 rounded-md border-2 m-2 flex flex-row justify-center'>
           <DragAndDropMessage isAttributeAllowed />
         </div>
       )}
 
-      {!request && _.isEmpty(operationDetails?.operationResponse?.headers) && (
+      {!request && _.isEmpty(getResponseData(operationData)?.headers) && (
         <div className='border-dashed p-3 bg-neutral-gray7 rounded-md border-2 m-2 flex flex-row justify-center'>
           <DragAndDropMessage isAttributeAllowed />
         </div>

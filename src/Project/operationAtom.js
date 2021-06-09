@@ -1,4 +1,5 @@
 import { atom } from "recoil";
+import Constants from "../shared/constants";
 
 export const defaultState = {
   operation: null,
@@ -16,7 +17,7 @@ export const defaultState = {
 
   operationResponse: [
     {
-      responseCode: 200,
+      responseCode: Constants.mandatoryResponseCode,
       headers: [],
       body: [],
     },

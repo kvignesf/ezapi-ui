@@ -153,92 +153,56 @@ const Project = () => {
   };
 
   const saveOperationResponse = () => {
-    const clonedResponse = _.cloneDeep(operationState?.operationResponse);
-    let operationResponse = {};
+    const clonedOperationResponse = _.cloneDeep(
+      operationState?.operationResponse
+    );
+    let operationResponse = [];
 
-    operationResponse["headers"] = [];
-    operationResponse["pathParams"] = [];
-    operationResponse["queryParams"] = [];
-    operationResponse["formData"] = [];
-    operationResponse["body"] = [];
+    clonedOperationResponse?.forEach((response) => {
+      const clonedResponse = _.cloneDeep(response);
 
-    if (clonedResponse?.headers && !_.isEmpty(clonedResponse?.headers)) {
-      operationResponse.headers = clonedResponse?.headers?.map((header) => {
-        let clonedHeader = _.cloneDeep(header);
+      if (clonedResponse?.headers && !_.isEmpty(clonedResponse?.headers)) {
+        clonedResponse.headers = clonedResponse?.headers?.map((header) => {
+          let clonedHeader = _.cloneDeep(header);
 
-        clonedHeader.required =
-          header?.required === true || header?.required === "true"
-            ? true
-            : false;
+          clonedHeader.required =
+            header?.required === true || header?.required === "true"
+              ? true
+              : false;
 
-        clonedHeader.possibleValues =
-          header?.possibleValues?.split(",").map((item) => {
-            return item.trim(" ");
-          }) ?? [];
+          clonedHeader.possibleValues =
+            header?.possibleValues?.split(",").map((item) => {
+              return item.trim(" ");
+            }) ?? [];
 
-        return clonedHeader;
-      });
-    }
+          return clonedHeader;
+        });
+      }
 
-    if (
-      clonedResponse?.queryParams &&
-      !_.isEmpty(clonedResponse?.queryParams)
-    ) {
-      operationResponse.queryParams = clonedResponse?.pathParams?.map(
-        (item) => {
-          let clonedItem = _.cloneDeep(item);
+      if (clonedResponse?.body && !_.isEmpty(clonedResponse?.body)) {
+        clonedResponse.body = clonedResponse?.body?.map((item) => {
+          let newItem = {};
 
-          clonedItem.required =
+          newItem.required =
             item?.required === true || item?.required === "true" ? true : false;
 
-          return clonedItem;
-        }
-      );
-    }
+          newItem.name = item?.name;
+          newItem.type = item?.type;
+          newItem.ref = item?.ref;
 
-    if (clonedResponse?.pathParams && !_.isEmpty(clonedResponse?.pathParams)) {
-      operationResponse.pathParams = clonedResponse?.pathParams?.map((item) => {
-        let clonedItem = _.cloneDeep(item);
+          return newItem;
+        });
+      }
 
-        clonedItem.required =
-          item?.required === true || item?.required === "true" ? true : false;
-
-        return clonedItem;
-      });
-    }
-
-    if (clonedResponse?.formData && !_.isEmpty(clonedResponse?.formData)) {
-      operationResponse.formData = clonedResponse?.formData?.map((item) => {
-        let clonedItem = _.cloneDeep(item);
-
-        clonedItem.required =
-          item?.required === true || item?.required === "true" ? true : false;
-
-        return clonedItem;
-      });
-    }
-
-    if (clonedResponse?.body && !_.isEmpty(clonedResponse?.body)) {
-      operationResponse.body = clonedResponse?.body?.map((item) => {
-        let newItem = {};
-
-        newItem.required =
-          item?.required === true || item?.required === "true" ? true : false;
-
-        newItem.name = item?.name;
-        newItem.type = item?.type;
-        newItem.ref = item?.ref;
-
-        return newItem;
-      });
-    }
+      operationResponse.push(clonedResponse);
+    });
 
     syncOperationResponse({
       projectId,
       operationId: operationState?.operation?.operationId,
       pathId: operationState?.path?.pathId,
       resourceId: operationState?.resource?.resourceId,
-      ...operationResponse,
+      content: operationResponse,
     });
   };
 
