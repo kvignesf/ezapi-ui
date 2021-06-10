@@ -5,6 +5,7 @@ export const queries = {
   resources: "resources",
   project: "project",
   schemas: "schemas",
+  parameters: "parameters",
   operationRequest: "operationRequest",
 };
 

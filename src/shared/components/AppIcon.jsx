@@ -1,7 +1,7 @@
 import React from "react";
 import { IconButton } from "@material-ui/core";
 
-const AppIcon = ({ children, style, ...rest }) => {
+const AppIcon = ({ children, size, color, style, ...rest }) => {
   return (
     <IconButton
       disableTouchRipple
@@ -10,6 +10,9 @@ const AppIcon = ({ children, style, ...rest }) => {
         margin: 0,
         border: "none",
         outline: "none",
+        width: size ?? "min-content",
+        height: size ?? "min-content",
+        color: color ?? null,
         ...style,
       }}
       {...rest}

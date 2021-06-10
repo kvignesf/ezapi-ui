@@ -8,11 +8,13 @@ import {
   PrimaryButton,
   TextButton,
 } from "../../../shared/components/AppButton";
+import { useParams } from "react-router";
 
 const DeleteResource = ({
   resource: { resourceId, resourceName },
   onClose,
 }) => {
+  const { id: projectId } = useParams();
   const {
     isLoading: isDeleting,
     isSuccess: isDeleteSuccess,
@@ -21,7 +23,7 @@ const DeleteResource = ({
   } = useDeleteResource();
 
   const handleOnDelete = () => {
-    deleteItem({ id: resourceId });
+    deleteItem({ resourceId, projectId });
   };
 
   if (isDeleteSuccess) {
