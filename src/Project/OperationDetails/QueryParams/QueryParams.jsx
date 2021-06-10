@@ -77,6 +77,8 @@ const QueryParams = ({ request = true }) => {
     }
   };
 
+  console.log("operationDetails", operationDetails);
+
   const itemDeleted = (item) => {
     if (
       isAttribute(item) &&

@@ -96,7 +96,7 @@ const Project = () => {
     }
 
     if (clonedRequest?.queryParams && !_.isEmpty(clonedRequest?.queryParams)) {
-      operationRequest.queryParams = clonedRequest?.pathParams?.map((item) => {
+      operationRequest.queryParams = clonedRequest?.queryParams?.map((item) => {
         let clonedItem = _.cloneDeep(item);
 
         clonedItem.required =

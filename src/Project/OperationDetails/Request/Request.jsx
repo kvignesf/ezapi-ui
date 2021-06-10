@@ -122,11 +122,11 @@ const Request = () => {
         </Tabs>
       </div>
 
-      {currentTab === 0 && <Headers />}
-      {currentTab === 1 && <FormData />}
-      {currentTab === 2 && <QueryParams />}
-      {currentTab === 3 && <PathParams />}
-      {currentTab === 4 && <Body />}
+      {currentTab === 0 && <Headers request={true} />}
+      {currentTab === 1 && <FormData request={true} />}
+      {currentTab === 2 && <PathParams request={true} />}
+      {currentTab === 3 && <QueryParams request={true} />}
+      {currentTab === 4 && <Body request={true} />}
     </div>
   );
 };
