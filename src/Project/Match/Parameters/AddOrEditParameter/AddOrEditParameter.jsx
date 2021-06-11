@@ -2,18 +2,19 @@ import React, { useRef } from "react";
 import CloseIcon from "@material-ui/icons/Close";
 import { Checkbox, CircularProgress, TextField } from "@material-ui/core";
 import { ErrorMessage, Field, Form, Formik } from "formik";
+import { useParams } from "react-router";
 
 import {
   PrimaryButton,
   TextButton,
 } from "../../../../shared/components/AppButton";
 import AppIcon from "../../../../shared/components/AppIcon";
-import addParameterSchema from "./addParameterSchema";
-import { useAddParameter } from "./addParameterQuery";
+import addParameterSchema from "./parameterSchema";
+import { useEditParameter, useAddParameter } from "./modifyParameterQueries";
 import Colors from "../../../../shared/colors";
-import { useParams } from "react-router";
+import _ from "lodash";
 
-const AddParameter = ({ onClose }) => {
+const AddOrEditParameter = ({ parameter, onClose }) => {
   const formRef = useRef(null);
   const { id: projectId } = useParams();
   const {
@@ -23,21 +24,43 @@ const AddParameter = ({ onClose }) => {
     mutate: addParam,
     reset: resetAddParam,
   } = useAddParameter();
+  const {
+    isLoading: isEditingParameter,
+    isSuccess: isEditSuccess,
+    error: editParamError,
+    mutate: editParam,
+    reset: resetEditParam,
+  } = useEditParameter();
 
   const handleSubmit = (values) => {
+    if (parameter) {
+      editParam({
+        projectId,
+        paramId: parameter?.id,
+        ...values,
+      });
+      return;
+    }
     addParam({
       projectId,
       ...values,
     });
   };
 
-  const resetAddParamMutationState = () => {
+  const resetMutationState = () => {
+    if (parameter) {
+      if (isEditingParameter || isEditSuccess || editParamError) {
+        resetEditParam();
+      }
+      return;
+    }
+
     if (isAddingParameter || isAddSuccess || addParamError) {
       resetAddParam();
     }
   };
 
-  if (isAddSuccess) {
+  if (isAddSuccess || isEditSuccess) {
     onClose();
     return null;
   }
@@ -45,8 +68,10 @@ const AddParameter = ({ onClose }) => {
   return (
     <div className='flex flex-col'>
       <div className='p-4 flex flex-row justify-between border-b-1'>
-        <p className='text-subtitle1'>Add Parameter</p>
-        {!isAddingParameter && (
+        <p className='text-subtitle1'>
+          {parameter ? "Edit Parameter" : "Add Parameter"}
+        </p>
+        {!isAddingParameter && !isEditingParameter && (
           <AppIcon
             onClick={(e) => {
               e.preventDefault();
@@ -64,11 +89,17 @@ const AddParameter = ({ onClose }) => {
         <div className='mb-3'>
           <Formik
             initialValues={{
-              attribute: "",
-              dataType: "",
-              description: "",
-              required: false,
-              possibleValues: "",
+              attribute: parameter?.name ?? "",
+              dataType: parameter?.type ?? "",
+              description: parameter?.description ?? "",
+              required: parameter?.isRequired ?? false,
+              possibleValues:
+                parameter?.possibleValues?.reduce((acc, curr) => {
+                  if (!_.isEmpty(acc)) {
+                    return acc + ", " + curr;
+                  }
+                  return curr;
+                }, "") ?? "",
             }}
             validationSchema={addParameterSchema}
             innerRef={formRef}
@@ -85,11 +116,11 @@ const AddParameter = ({ onClose }) => {
                     fullWidth
                     color='primary'
                     variant='outlined'
-                    disabled={isAddingParameter}
+                    disabled={isAddingParameter || isEditingParameter}
                     error={touched.attribute && Boolean(errors.attribute)}
                     helperText={<ErrorMessage name='attribute' />}
                     onKeyUp={(e) => {
-                      resetAddParamMutationState();
+                      resetMutationState();
                     }}
                     inputProps={{
                       style: {
@@ -109,11 +140,11 @@ const AddParameter = ({ onClose }) => {
                     fullWidth
                     color='primary'
                     variant='outlined'
-                    disabled={isAddingParameter}
+                    disabled={isAddingParameter || isEditingParameter}
                     error={touched.dataType && Boolean(errors.dataType)}
                     helperText={<ErrorMessage name='dataType' />}
                     onKeyUp={(e) => {
-                      resetAddParamMutationState();
+                      resetMutationState();
                     }}
                     inputProps={{
                       style: {
@@ -133,11 +164,11 @@ const AddParameter = ({ onClose }) => {
                     fullWidth
                     color='primary'
                     variant='outlined'
-                    disabled={isAddingParameter}
+                    disabled={isAddingParameter || isEditingParameter}
                     error={touched.description && Boolean(errors.description)}
                     helperText={<ErrorMessage name='description' />}
                     onKeyUp={(e) => {
-                      resetAddParamMutationState();
+                      resetMutationState();
                     }}
                     inputProps={{
                       style: {
@@ -157,13 +188,13 @@ const AddParameter = ({ onClose }) => {
                     fullWidth
                     color='primary'
                     variant='outlined'
-                    disabled={isAddingParameter}
+                    disabled={isAddingParameter || isEditingParameter}
                     error={
                       touched.possibleValues && Boolean(errors.possibleValues)
                     }
                     helperText={<ErrorMessage name='possibleValues' />}
                     onKeyUp={(e) => {
-                      resetAddParamMutationState();
+                      resetMutationState();
                     }}
                     inputProps={{
                       style: {
@@ -181,13 +212,16 @@ const AddParameter = ({ onClose }) => {
                       id='required'
                       name='required'
                       type='checkbox'
-                      disabled={isAddingParameter}
+                      disabled={isAddingParameter || isEditingParameter}
                       component={({ field }) => {
                         return (
                           <Checkbox
                             {...field}
-                            disabled={isAddingParameter}
-                            style={{ color: Colors.brand.secondary }}
+                            disabled={isAddingParameter || isEditingParameter}
+                            style={{
+                              color: Colors.brand.secondary,
+                              padding: "0",
+                            }}
                           />
                         );
                       }}
@@ -204,10 +238,16 @@ const AddParameter = ({ onClose }) => {
             {addParamError?.message}
           </p>
         )}
+
+        {editParamError && (
+          <p className='text-accent-red text-overline2'>
+            {editParamError?.message}
+          </p>
+        )}
       </div>
 
       <div className='border-t-1 p-4 flex flex-row justify-end items-center'>
-        {!isAddingParameter ? (
+        {!isAddingParameter && !isEditingParameter ? (
           <>
             <TextButton
               onClick={(e) => {
@@ -227,7 +267,7 @@ const AddParameter = ({ onClose }) => {
                 formRef.current.submitForm();
               }}
             >
-              Add
+              {parameter ? "Save" : "Add"}
             </PrimaryButton>
           </>
         ) : (
@@ -244,4 +284,4 @@ const AddParameter = ({ onClose }) => {
   );
 };
 
-export default AddParameter;
+export default AddOrEditParameter;

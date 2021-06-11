@@ -17,10 +17,11 @@ import EmptyParameters from "../../../static/images/empty-parameters.svg";
 import { OutlineButton } from "../../../shared/components/AppButton";
 import AppIcon from "../../../shared/components/AppIcon";
 import Colors from "../../../shared/colors";
-import AddParameter from "./AddParameter/AddParameter";
+import AddOrEditParameter from "./AddOrEditParameter/AddOrEditParameter";
 import { useGetParameters } from "./parametersQuery";
 import operationAtom from "../../operationAtom";
 import { useRecoilValue } from "recoil";
+import DeleteParameter from "./DeleteParameter/DeleteParameter";
 
 const Parameters = () => {
   const { id: projectId } = useParams();
@@ -65,7 +66,7 @@ const Parameters = () => {
         disableBackdropClick
       >
         {dialog?.type === "add-parameter" && (
-          <AddParameter onClose={handleCloseDialog} />
+          <AddOrEditParameter onClose={handleCloseDialog} />
         )}
       </Dialog>
 
@@ -170,89 +171,142 @@ const Parameters = () => {
 const ParamRow = ({ param }) => {
   const [isHovering, setHovering] = useState(false);
   const [menuAnchorEl, setMenuAnchorEl] = useState(false);
+  const [dialog, setDialog] = useState({
+    show: false,
+    type: null,
+    data: null,
+  });
+
+  const showEditParameterDialog = () => {
+    setDialog({
+      show: true,
+      type: "edit-parameter",
+    });
+  };
+
+  const showDeleteParameterDialog = () => {
+    setDialog({
+      show: true,
+      type: "delete-parameter",
+    });
+  };
+
+  const handleCloseDialog = () => {
+    setDialog({
+      show: false,
+      data: null,
+    });
+  };
 
   return (
-    <div
-      key={param.name}
-      onMouseEnter={(e) => {
-        e?.preventDefault();
-        e?.stopPropagation();
+    <>
+      <Dialog
+        onClose={handleCloseDialog}
+        aria-labelledby='dashboard-dialog'
+        open={dialog?.show ?? false}
+        fullWidth
+        PaperProps={{
+          style: { borderRadius: 8 },
+        }}
+        disableBackdropClick
+      >
+        {dialog?.type === "edit-parameter" && (
+          <AddOrEditParameter onClose={handleCloseDialog} parameter={param} />
+        )}
 
-        setHovering(true);
-      }}
-      onMouseLeave={(e) => {
-        e?.preventDefault();
-        e?.stopPropagation();
+        {dialog?.type === "delete-parameter" && (
+          <DeleteParameter onClose={handleCloseDialog} parameter={param} />
+        )}
+      </Dialog>
 
-        setHovering(false);
-      }}
-      className='bg-white mb-1 rounded-md flex flex-row p-1 py-1 items-center'
-    >
-      <AppIcon className='mr-1 opacity-50'>
-        <DragIndicatorIcon
-          className={"cursor-move"}
-          style={{ height: "1.25rem" }}
-        />
-      </AppIcon>
-      <p className='flex-1 ml-1 text-overline2'>{param.name}</p>
-      <p className='flex-1 text-overline2'>{param.type}</p>
-      <p className='flex-1 text-overline2'>{param.description}</p>
-      <p className='flex-1 text-overline2'>{param.isRequired ? "Yes" : "No"}</p>
-      <p className='flex-1 text-overline2'>
-        {param.possibleValues?.reduce((acc, curr) => {
-          if (!_.isEmpty(acc)) {
-            return acc + ", " + curr;
-          }
-          return curr;
-        }, "")}
-      </p>
+      <div
+        key={param.name}
+        onMouseEnter={(e) => {
+          e?.preventDefault();
+          e?.stopPropagation();
 
-      <div className='w-8 h-8'>
-        {isHovering ? (
-          <AppIcon
-            style={{ padding: "0px" }}
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
+          setHovering(true);
+        }}
+        onMouseLeave={(e) => {
+          e?.preventDefault();
+          e?.stopPropagation();
 
-              setMenuAnchorEl(e.currentTarget);
+          setHovering(false);
+        }}
+        className='bg-white mb-1 rounded-md flex flex-row p-1 py-1 items-center'
+      >
+        <AppIcon className='mr-1 opacity-50'>
+          <DragIndicatorIcon
+            className={"cursor-move"}
+            style={{ height: "1.25rem" }}
+          />
+        </AppIcon>
+        <p className='flex-1 ml-1 text-overline2'>{param.name}</p>
+        <p className='flex-1 text-overline2'>{param.type}</p>
+        <p className='flex-1 text-overline2'>{param.description}</p>
+        <p className='flex-1 text-overline2'>
+          {param.isRequired ? "Yes" : "No"}
+        </p>
+        <p className='flex-1 text-overline2'>
+          {param.possibleValues?.reduce((acc, curr) => {
+            if (!_.isEmpty(acc)) {
+              return acc + ", " + curr;
+            }
+            return curr;
+          }, "")}
+        </p>
+
+        <div className='w-8 h-8'>
+          {isHovering ? (
+            <AppIcon
+              style={{ padding: "0px" }}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+
+                setMenuAnchorEl(e.currentTarget);
+              }}
+            >
+              <MoreVertIcon style={{ width: "20px", height: "min-content" }} />
+            </AppIcon>
+          ) : (
+            <div style={{ width: "20px", height: "min-content" }}></div>
+          )}
+        </div>
+
+        <Menu
+          id='param-menu'
+          anchorEl={menuAnchorEl}
+          keepMounted
+          open={Boolean(menuAnchorEl)}
+          onClose={() => {
+            setMenuAnchorEl(null);
+          }}
+          TransitionComponent={Fade}
+          style={{ borderRadius: "1rem", zIndex: "100" }}
+        >
+          <MenuItem
+            onClick={() => {
+              setMenuAnchorEl(null);
+
+              showEditParameterDialog();
             }}
           >
-            <MoreVertIcon style={{ width: "20px", height: "min-content" }} />
-          </AppIcon>
-        ) : (
-          <div style={{ width: "20px", height: "min-content" }}></div>
-        )}
-      </div>
+            Edit
+          </MenuItem>
+          <MenuItem
+            onClick={() => {
+              setMenuAnchorEl(null);
 
-      <Menu
-        id='param-menu'
-        anchorEl={menuAnchorEl}
-        keepMounted
-        open={Boolean(menuAnchorEl)}
-        onClose={() => {
-          setMenuAnchorEl(null);
-        }}
-        TransitionComponent={Fade}
-        style={{ borderRadius: "1rem", zIndex: "100" }}
-      >
-        <MenuItem
-          onClick={() => {
-            setMenuAnchorEl(null);
-          }}
-        >
-          Edit
-        </MenuItem>
-        <MenuItem
-          onClick={() => {
-            setMenuAnchorEl(null);
-          }}
-          style={{ color: Colors.accent.red }}
-        >
-          Delete
-        </MenuItem>
-      </Menu>
-    </div>
+              showDeleteParameterDialog();
+            }}
+            style={{ color: Colors.accent.red }}
+          >
+            Delete
+          </MenuItem>
+        </Menu>
+      </div>
+    </>
   );
 };
 

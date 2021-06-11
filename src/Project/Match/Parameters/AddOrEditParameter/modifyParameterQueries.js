@@ -42,3 +42,43 @@ export const useAddParameter = () => {
 
   return mutation;
 };
+
+const editParameter = async ({
+  projectId,
+  paramId,
+  attribute,
+  description,
+  dataType,
+  required,
+  possibleValues,
+}) => {
+  try {
+    const { data } = await client.patch(endpoint.editParameter, {
+      projectId,
+      data: {
+        paramId: paramId,
+        name: attribute,
+        type: dataType,
+        description,
+        possibleValues: possibleValues?.split(",")?.map((item) => {
+          return item.trim(" ");
+        }),
+        isRequired: required,
+      },
+    });
+    return data;
+  } catch (error) {
+    throw getApiError(error);
+  }
+};
+
+export const useEditParameter = () => {
+  const queryClient = useQueryClient();
+  const mutation = useMutation(editParameter, {
+    onSuccess: (data) => {
+      queryClient.invalidateQueries(queries.parameters);
+    },
+  });
+
+  return mutation;
+};

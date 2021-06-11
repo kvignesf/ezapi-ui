@@ -18,7 +18,9 @@ export const endpoint = Object.freeze({
   schemasList: "/schemasList",
   subSchemaData: "/subSchemaData",
   addParameter: "/projectParams/add",
+  editParameter: "/projectParams/edit",
   getParameter: "/projectParams/get",
+  deleteParameter: "/projectParams/delete",
 });
 
 const client = axios.create({
