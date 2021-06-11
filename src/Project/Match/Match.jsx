@@ -14,7 +14,7 @@ import { isArray } from "../../shared/utils";
 import TabLabel from "../../shared/components/TabLabel";
 import Parameters from "./Parameters/Parameters";
 import Colors from "../../shared/colors";
-import AddParameter from "./Parameters/AddParameter/AddParameter";
+import AddOrEditParameter from "./Parameters/AddOrEditParameter/AddOrEditParameter";
 
 const Match = (props) => {
   const [currentTab, setTab] = useState(0);
@@ -52,7 +52,7 @@ const Match = (props) => {
         disableBackdropClick
       >
         {dialog?.type === "add-parameter" && (
-          <AddParameter onClose={handleCloseDialog} />
+          <AddOrEditParameter onClose={handleCloseDialog} />
         )}
       </Dialog>
 
