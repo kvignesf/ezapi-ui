@@ -21,6 +21,8 @@ export const endpoint = Object.freeze({
   editParameter: "/projectParams/edit",
   getParameter: "/projectParams/get",
   deleteParameter: "/projectParams/delete",
+  tablesLookup: "/tablesLookup",
+  recommendations: "/recommendations",
 });
 
 const client = axios.create({

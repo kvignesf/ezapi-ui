@@ -4,7 +4,7 @@ import { useRecoilState } from "recoil";
 
 import client, { endpoint } from "../../../shared/network/client";
 import { getApiError } from "../../../shared/utils";
-import schemaAtom from "./schemaAtom";
+import schemaAtom from "../../../shared/atom/schemaAtom";
 
 const getAllSchemas = async ({ projectId }) => {
   try {

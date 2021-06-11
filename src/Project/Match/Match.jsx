@@ -7,7 +7,7 @@ import AddIcon from "@material-ui/icons/Add";
 import { Dialog } from "@material-ui/core";
 
 import Schema from "./Schema";
-import schemaAtom from "./Schema/schemaAtom";
+import schemaAtom from "../../shared/atom/schemaAtom";
 import AppIcon from "../../shared/components/AppIcon";
 import classNames from "classnames";
 import { isArray } from "../../shared/utils";

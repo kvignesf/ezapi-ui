@@ -1,9 +1,8 @@
 import _ from "lodash";
-import { useQuery, useMutation } from "react-query";
+import { useMutation } from "react-query";
 
-import client, { endpoint } from "../shared/network/client";
-import { queries } from "../shared/network/queryClient";
-import { getApiError } from "../shared/utils";
+import client from "../network/client";
+import { getApiError } from "../utils";
 
 const syncOperationRequest = async ({
   projectId,

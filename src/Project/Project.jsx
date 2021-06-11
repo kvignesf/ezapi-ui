@@ -24,12 +24,12 @@ import operationAtom, {
 } from "./operationAtom";
 import schemaAtom, {
   defaultState as schemaAtomDefaultState,
-} from "./Match/Schema/schemaAtom";
+} from "../shared/atom/schemaAtom";
 import { endpoint } from "../shared/network/client";
 import {
   useSyncOperationRequest,
   useSyncOperationResponse,
-} from "./operationDetailsQuery";
+} from "../shared/query/operationDetailsQuery";
 import TabLabel from "../shared/components/TabLabel";
 
 const Project = () => {

@@ -8,7 +8,7 @@ import PartialMatch from "./PartialMatch";
 import NoMatch from "./NoMatch";
 import { useGetAllSchemas, useGetSubSchema } from "./schemaQueries";
 import LoaderWithMessage from "../../../shared/components/LoaderWithMessage";
-import schemaAtom from "./schemaAtom";
+import schemaAtom from "../../../shared/atom/schemaAtom";
 import {
   isArray,
   isFullMatch,

@@ -1,12 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  AppBar,
-  IconButton,
-  Tab,
-  Tabs,
-  MuiThemeProvider,
-  makeStyles,
-} from "@material-ui/core";
+import { Tab, Tabs, makeStyles } from "@material-ui/core";
 import { useParams } from "react-router";
 import _ from "lodash";
 
@@ -18,7 +11,8 @@ import operationAtom from "../operationAtom";
 import {
   useGetOperationRequest,
   useGetOperationResponse,
-} from "../operationDetailsQuery";
+} from "../../shared/query/operationDetailsQuery";
+
 import TabLabel from "../../shared/components/TabLabel";
 
 const tabsStyles = makeStyles({
