@@ -209,13 +209,13 @@ const Project = () => {
       operationResponse.push(clonedResponse);
     });
 
-    // syncOperationResponse({
-    //   projectId,
-    //   operationId: operationState?.operation?.operationId,
-    //   pathId: operationState?.path?.pathId,
-    //   resourceId: operationState?.resource?.resourceId,
-    //   content: operationResponse,
-    // });
+    syncOperationResponse({
+      projectId,
+      operationId: operationState?.operation?.operationId,
+      pathId: operationState?.path?.pathId,
+      resourceId: operationState?.resource?.resourceId,
+      content: operationResponse,
+    });
   };
 
   const saveProject = () => {
