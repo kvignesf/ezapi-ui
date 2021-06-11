@@ -269,11 +269,11 @@ const ParamRow = ({ param }) => {
               style={{ height: "1.25rem" }}
             />
           </AppIcon>
-          <p className='flex-1 ml-1 text-overline2'>{param.name}</p>
-          <p className='flex-1 text-overline2'>{param.type}</p>
-          <p className='flex-1 text-overline2'>{param.description}</p>
+          <p className='flex-1 ml-1 text-overline2'>{param?.name}</p>
+          <p className='flex-1 text-overline2'>{param?.type}</p>
+          <p className='flex-1 text-overline2'>{param?.description}</p>
           <p className='flex-1 text-overline2'>
-            {param.isRequired ? "Yes" : "No"}
+            {param?.required ? "Yes" : "No"}
           </p>
           <p className='flex-1 text-overline2'>
             {param.possibleValues?.reduce((acc, curr) => {

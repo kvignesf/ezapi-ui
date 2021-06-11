@@ -23,7 +23,7 @@ const addParameter = async ({
         possibleValues: possibleValues?.split(",")?.map((item) => {
           return item.trim(" ");
         }),
-        isRequired: required,
+        required,
       },
     });
     return data;
@@ -63,7 +63,7 @@ const editParameter = async ({
         possibleValues: possibleValues?.split(",")?.map((item) => {
           return item.trim(" ");
         }),
-        isRequired: required,
+        required,
       },
     });
     return data;

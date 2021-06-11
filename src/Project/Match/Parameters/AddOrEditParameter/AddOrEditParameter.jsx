@@ -92,7 +92,7 @@ const AddOrEditParameter = ({ parameter, onClose }) => {
               attribute: parameter?.name ?? "",
               dataType: parameter?.type ?? "",
               description: parameter?.description ?? "",
-              required: parameter?.isRequired ?? false,
+              required: parameter?.required ?? false,
               possibleValues:
                 parameter?.possibleValues?.reduce((acc, curr) => {
                   if (!_.isEmpty(acc)) {

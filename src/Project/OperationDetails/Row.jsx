@@ -78,7 +78,7 @@ const Row = ({
       </TableCell>
 
       <TableCell align='left' style={{ width: "150px", padding: "0px" }}>
-        {row?.required}
+        {row?.required ? "Yes" : "No"}
       </TableCell>
 
       {onPossibleValuesUpdate && (
