@@ -18,7 +18,7 @@ import {
   isSchema,
 } from "../../shared/utils";
 
-const DraggableMatchItem = ({ index, item, ...rest }) => {
+const DraggableSchemaMatchItem = ({ index, item, ...rest }) => {
   const [{ isDragging }, drag, dragPreview] = useDrag(
     () => ({
       type: "drag_item",
@@ -78,4 +78,4 @@ const DraggableMatchItem = ({ index, item, ...rest }) => {
   );
 };
 
-export default DraggableMatchItem;
+export default DraggableSchemaMatchItem;

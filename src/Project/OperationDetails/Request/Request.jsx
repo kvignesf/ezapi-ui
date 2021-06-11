@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Tab, Tabs } from "@material-ui/core";
-import { useRecoilState } from "recoil";
+import { useRecoilValue, useRecoilState } from "recoil";
 import _ from "lodash";
 import { useParams } from "react-router";
 
@@ -12,57 +12,16 @@ import operationAtom from "../../operationAtom";
 import Body from "../Body/Body";
 import TabLabel from "../../../shared/components/TabLabel";
 import LoaderWithMessage from "../../../shared/components/LoaderWithMessage";
-import { useGetOperationRequest } from "../../operationRequestQuery";
 
-const Request = () => {
-  const [currentTab, setTab] = useState(0);
-  const { id: projectId } = useParams();
-  const [operationState, setOperationState] = useRecoilState(operationAtom);
-  const {
+const Request = ({
+  getDetailsMutation: {
     isLoading: isLoadingOperationRequest,
     data: operationData,
     mutate: getOperationDetails,
-  } = useGetOperationRequest();
-
-  useEffect(() => {
-    if (operationState?.operationIndex && operationState?.operation) {
-      getOperationDetails({
-        operationId: operationState.operation.operationId,
-        pathId: operationState.path.pathId,
-        resourceId: operationState.resource.resourceId,
-        projectId: projectId,
-      });
-    }
-  }, []);
-
-  useEffect(() => {
-    if (operationData) {
-      setOperationState((operationState) => {
-        const clonedOperationState = _.cloneDeep(operationState);
-        const clonedRequestBody = _.cloneDeep(operationData.requestBody);
-
-        clonedRequestBody.headers = operationData.requestBody.headers.map(
-          (header) => {
-            return {
-              ...header,
-              possibleValues: header.possibleValues.reduce((acc, curr) => {
-                if (acc) {
-                  return acc + ", " + curr;
-                }
-                return curr;
-              }, ""),
-            };
-          }
-        );
-
-        clonedOperationState.operationRequest = {
-          ...clonedRequestBody,
-        };
-
-        return clonedOperationState;
-      });
-    }
-  }, [operationData]);
+  },
+}) => {
+  const [currentTab, setTab] = useState(0);
+  const operationState = useRecoilValue(operationAtom);
 
   if (isLoadingOperationRequest) {
     return (

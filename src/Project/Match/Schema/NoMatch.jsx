@@ -5,7 +5,7 @@ import DragIndicatorIcon from "@material-ui/icons/DragIndicator";
 
 import operationAtom from "../../operationAtom";
 import AppIcon from "../../../shared/components/AppIcon";
-import DraggableMatchItem from "../DraggableMatchItem";
+import DraggableSchemaMatchItem from "../DraggableSchemaMatchItem";
 
 const NoMatch = ({ items, onItemClick }) => {
   const operationState = useRecoilValue(operationAtom);
@@ -29,7 +29,7 @@ const NoMatch = ({ items, onItemClick }) => {
           >
             {items?.map((item, index) => {
               return (
-                <DraggableMatchItem
+                <DraggableSchemaMatchItem
                   key={index}
                   index={index}
                   item={item}

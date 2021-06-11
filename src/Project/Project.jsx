@@ -29,7 +29,7 @@ import { endpoint } from "../shared/network/client";
 import {
   useSyncOperationRequest,
   useSyncOperationResponse,
-} from "./operationRequestQuery";
+} from "./operationDetailsQuery";
 import TabLabel from "../shared/components/TabLabel";
 
 const Project = () => {
@@ -86,10 +86,16 @@ const Project = () => {
             ? true
             : false;
 
-        clonedHeader.possibleValues =
-          header?.possibleValues?.split(",").map((item) => {
-            return item.trim(" ");
-          }) ?? [];
+        const possibleValuesType = Object.prototype.toString.call(
+          header?.possibleValues
+        );
+
+        if (possibleValuesType === "[object String]") {
+          clonedHeader.possibleValues =
+            header?.possibleValues?.split(",").map((item) => {
+              return item.trim(" ");
+            }) ?? [];
+        }
 
         return clonedHeader;
       });
@@ -170,10 +176,16 @@ const Project = () => {
               ? true
               : false;
 
-          clonedHeader.possibleValues =
-            header?.possibleValues?.split(",").map((item) => {
-              return item.trim(" ");
-            }) ?? [];
+          const possibleValuesType = Object.prototype.toString.call(
+            header?.possibleValues
+          );
+
+          if (possibleValuesType === "[object String]") {
+            clonedHeader.possibleValues =
+              header?.possibleValues?.split(",").map((item) => {
+                return item.trim(" ");
+              }) ?? [];
+          }
 
           return clonedHeader;
         });
@@ -197,13 +209,13 @@ const Project = () => {
       operationResponse.push(clonedResponse);
     });
 
-    syncOperationResponse({
-      projectId,
-      operationId: operationState?.operation?.operationId,
-      pathId: operationState?.path?.pathId,
-      resourceId: operationState?.resource?.resourceId,
-      content: operationResponse,
-    });
+    // syncOperationResponse({
+    //   projectId,
+    //   operationId: operationState?.operation?.operationId,
+    //   pathId: operationState?.path?.pathId,
+    //   resourceId: operationState?.resource?.resourceId,
+    //   content: operationResponse,
+    // });
   };
 
   const saveProject = () => {

@@ -87,6 +87,12 @@ h6,
   line-height: 1.57;
 }
 
+.text-smallLabel {
+  @apply font-bold;
+  font-size: 0.75rem;
+  line-height: 1.57;
+}
+
 .text-largeLabel {
   @apply font-semibold;
   font-size: 1rem;

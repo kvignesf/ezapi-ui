@@ -1,80 +1,33 @@
 import React, { useEffect, useState } from "react";
 import { Fade, Tab, Tabs } from "@material-ui/core";
-import { useRecoilState } from "recoil";
+import { useRecoilValue, useRecoilState } from "recoil";
 import _ from "lodash";
-import { useParams } from "react-router";
 import AddIcon from "@material-ui/icons/Add";
 import MoreVertIcon from "@material-ui/icons/MoreVert";
 import { Menu, MenuItem } from "@material-ui/core/index";
 
 import Headers from "../Headers/Headers";
-import PathParams from "../PathParams/PathParams";
-import QueryParams from "../QueryParams/QueryParams";
-import FormData from "../FormData/FormData";
 import operationAtom from "../../operationAtom";
 import Body from "../Body/Body";
 import TabLabel from "../../../shared/components/TabLabel";
-import { useGetOperationResponse } from "../../operationRequestQuery";
 import LoaderWithMessage from "../../../shared/components/LoaderWithMessage";
 import AppIcon from "../../../shared/components/AppIcon";
 import Colors from "../../../shared/colors";
 import classNames from "classnames";
 import Constants from "../../../shared/constants";
 
-const Response = () => {
-  const [operationState, setOperationState] = useRecoilState(operationAtom);
+const Response = ({
+  getDetailsMutation: {
+    isLoading: isLoadingOperationResponse,
+    data: operationData,
+    mutate: getOperationDetails,
+  },
+}) => {
+  const operationState = useRecoilValue(operationAtom);
   const [selectedResponseCode, setSelectedResponseCode] = useState(
     operationState?.operationResponse[0]?.responseCode ??
       Constants.mandatoryResponseCode
   );
-  const { id: projectId } = useParams();
-  const {
-    isLoading: isLoadingOperationResponse,
-    data: operationData,
-    mutate: getOperationDetails,
-  } = useGetOperationResponse();
-
-  useEffect(() => {
-    if (operationState?.operationIndex && operationState?.operation) {
-      getOperationDetails({
-        operationId: operationState.operation.operationId,
-        pathId: operationState.path.pathId,
-        resourceId: operationState.resource.resourceId,
-        projectId: projectId,
-      });
-    }
-  }, []);
-
-  useEffect(() => {
-    if (operationData) {
-      setOperationState((operationState) => {
-        const clonedOperationState = _.cloneDeep(operationState);
-        const clonedResponseBody = _.cloneDeep(operationData.responseBody);
-
-        clonedOperationState.operationResponse = clonedResponseBody.map(
-          (response) => {
-            const clonedResponse = _.cloneDeep(response);
-
-            clonedResponse.headers = clonedResponse.headers.map((header) => {
-              return {
-                ...header,
-                possibleValues: header.possibleValues.reduce((acc, curr) => {
-                  if (acc) {
-                    return acc + ", " + curr;
-                  }
-                  return curr;
-                }, ""),
-              };
-            });
-
-            return clonedResponse;
-          }
-        );
-
-        return clonedOperationState;
-      });
-    }
-  }, [operationData]);
 
   const changeResponseCode = (value) => {
     setSelectedResponseCode(value);
