@@ -1,18 +1,25 @@
 import React, { useRef } from "react";
 import CloseIcon from "@material-ui/icons/Close";
-import { Checkbox, CircularProgress, TextField } from "@material-ui/core";
+import {
+  Checkbox,
+  CircularProgress,
+  TextField,
+  Select,
+  MenuItem,
+} from "@material-ui/core";
 import { ErrorMessage, Field, Form, Formik } from "formik";
 import { useParams } from "react-router";
+import _ from "lodash";
 
 import {
   PrimaryButton,
   TextButton,
 } from "../../../../shared/components/AppButton";
 import AppIcon from "../../../../shared/components/AppIcon";
+import Constants from "../../../../shared/constants";
 import addParameterSchema from "./parameterSchema";
 import { useEditParameter, useAddParameter } from "./modifyParameterQueries";
 import Colors from "../../../../shared/colors";
-import _ from "lodash";
 
 const AddOrEditParameter = ({ parameter, onClose }) => {
   const formRef = useRef(null);
@@ -146,12 +153,35 @@ const AddOrEditParameter = ({ parameter, onClose }) => {
                     onKeyUp={(e) => {
                       resetMutationState();
                     }}
-                    inputProps={{
-                      style: {
-                        height: "6px",
-                      },
+                    as={(value) => {
+                      return (
+                        <div className='flex flex-col'>
+                          <Select
+                            labelId='demo-simple-select-label'
+                            id='demo-simple-select'
+                            variant='outlined'
+                            className='w-full'
+                            {...value}
+                          >
+                            {Constants.parameterDataTypes.map((type) => {
+                              return <MenuItem value={type}>{type}</MenuItem>;
+                            })}
+                          </Select>
+                          {value?.error && (
+                            <p
+                              className='py-1'
+                              style={{
+                                fontSize: "0.75rem",
+                                marginLeft: "1rem",
+                                color: "#f44336",
+                              }}
+                            >
+                              {errors?.dataType}
+                            </p>
+                          )}
+                        </div>
+                      );
                     }}
-                    as={TextField}
                   />
                 </div>
 

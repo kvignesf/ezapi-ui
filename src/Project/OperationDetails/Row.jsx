@@ -1,17 +1,21 @@
 import React, { useState } from "react";
 import TableCell from "@material-ui/core/TableCell";
 import TableRow from "@material-ui/core/TableRow";
+import { Field, ErrorMessage, Form, Formik } from "formik";
+import { Checkbox } from "@material-ui/core";
 import { TextField } from "@material-ui/core";
 import _ from "lodash";
 import DeleteIcon from "@material-ui/icons/Delete";
-import { Field, ErrorMessage, Form, Formik } from "formik";
+
 import AppIcon from "../../shared/components/AppIcon";
+import Colors from "../../shared/colors";
 
 const Row = ({
   row,
   onItemDelete,
   onDescriptionUpdate,
   onPossibleValuesUpdate,
+  onRequiredUpdate,
 }) => {
   const [isHovering, setHovering] = useState(false);
 
@@ -78,7 +82,16 @@ const Row = ({
       </TableCell>
 
       <TableCell align='left' style={{ width: "150px", padding: "0px" }}>
-        {row?.required ? "Yes" : "No"}
+        <Checkbox
+          checked={row?.required}
+          onChange={(event) => {
+            onRequiredUpdate(row, event?.target?.checked ?? false);
+          }}
+          style={{
+            color: Colors.brand.secondary,
+            padding: "0",
+          }}
+        />
       </TableCell>
 
       {onPossibleValuesUpdate && (

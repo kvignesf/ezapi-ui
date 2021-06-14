@@ -240,6 +240,54 @@ const Headers = ({ request = true, responseCode }) => {
     [] // will be created only once initially
   );
 
+  const onRequiredUpdate = (item, value) => {
+    setOperationDetails((operationDetails) => {
+      if (request) {
+        let foundItem = operationDetails.operationRequest.headers.find(
+          (x) => x.name === item.name
+        );
+        let foundItemIndex =
+          operationDetails.operationRequest.headers.findIndex(
+            (x) => x.name === item.name
+          );
+
+        if (foundItem) {
+          const clonedFoundItem = _.cloneDeep(foundItem);
+          const clonedOperationDetails = _.cloneDeep(operationDetails);
+
+          clonedFoundItem.required = value;
+          clonedOperationDetails.operationRequest.headers[foundItemIndex] =
+            clonedFoundItem;
+
+          return clonedOperationDetails;
+        }
+      } else {
+        const responseData = getResponseData(operationDetails);
+        const responseIndex = getResponseIndex(operationDetails);
+
+        let foundItem = responseData.headers.find((x) => x.name === item.name);
+        let foundItemIndex = responseData.headers.findIndex(
+          (x) => x.name === item.name
+        );
+
+        if (foundItem) {
+          const clonedFoundItem = _.cloneDeep(foundItem);
+          const clonedOperationDetails = _.cloneDeep(operationDetails);
+          const clonedResponseData = _.cloneDeep(responseData);
+
+          clonedFoundItem.required = value;
+
+          clonedResponseData.headers[foundItemIndex] = clonedFoundItem;
+          clonedOperationDetails.operationResponse[responseIndex] =
+            clonedResponseData;
+
+          return clonedOperationDetails;
+        }
+      }
+      return operationDetails;
+    });
+  };
+
   const getResponseData = (operation) => {
     return operation?.operationResponse?.find(
       (item) => item.responseCode === responseCode
@@ -301,6 +349,9 @@ const Headers = ({ request = true, responseCode }) => {
                     onPossibleValuesUpdate={(item, value) => {
                       onPossibleValuesUpdate(item, value);
                     }}
+                    onRequiredUpdate={(item, value) => {
+                      onRequiredUpdate(item, value);
+                    }}
                   />
                 );
               })}
@@ -320,6 +371,9 @@ const Headers = ({ request = true, responseCode }) => {
                     }}
                     onPossibleValuesUpdate={(item, value) => {
                       onPossibleValuesUpdate(item, value);
+                    }}
+                    onRequiredUpdate={(item, value) => {
+                      onRequiredUpdate(item, value);
                     }}
                   />
                 );

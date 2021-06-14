@@ -166,6 +166,29 @@ const FormData = ({ request = true }) => {
     [] // will be created only once initially
   );
 
+  const onRequiredUpdate = (item, value) => {
+    setOperationDetails((operationDetails) => {
+      let foundItem = operationDetails.operationRequest.formData.find(
+        (x) => x.name === item.name
+      );
+      let foundItemIndex = operationDetails.operationRequest.formData.findIndex(
+        (x) => x.name === item.name
+      );
+
+      if (foundItem) {
+        const clonedFoundItem = _.cloneDeep(foundItem);
+        const clonedOperationDetails = _.cloneDeep(operationDetails);
+
+        clonedFoundItem.required = value;
+        clonedOperationDetails.operationRequest.formData[foundItemIndex] =
+          clonedFoundItem;
+
+        return clonedOperationDetails;
+      }
+      return operationDetails;
+    });
+  };
+
   return (
     <DropArea onItemDropped={itemDropped}>
       <TableContainer
@@ -206,6 +229,9 @@ const FormData = ({ request = true }) => {
                     onDescriptionUpdate={(item, value) => {
                       onDescriptionUpdate(item, value);
                     }}
+                    onRequiredUpdate={(item, value) => {
+                      onRequiredUpdate(item, value);
+                    }}
                   />
                 );
               })}
@@ -222,6 +248,9 @@ const FormData = ({ request = true }) => {
                       onItemDelete={itemDeleted}
                       onDescriptionUpdate={(item, value) => {
                         onDescriptionUpdate(item, value);
+                      }}
+                      onRequiredUpdate={(item, value) => {
+                        onRequiredUpdate(item, value);
                       }}
                     />
                   );

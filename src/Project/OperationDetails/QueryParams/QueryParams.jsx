@@ -77,8 +77,6 @@ const QueryParams = ({ request = true }) => {
     }
   };
 
-  console.log("operationDetails", operationDetails);
-
   const itemDeleted = (item) => {
     if (
       isAttribute(item) &&
@@ -170,6 +168,30 @@ const QueryParams = ({ request = true }) => {
     [] // will be created only once initially
   );
 
+  const onRequiredUpdate = (item, value) => {
+    setOperationDetails((operationDetails) => {
+      let foundItem = operationDetails.operationRequest.queryParams.find(
+        (x) => x.name === item.name
+      );
+      let foundItemIndex =
+        operationDetails.operationRequest.queryParams.findIndex(
+          (x) => x.name === item.name
+        );
+
+      if (foundItem) {
+        const clonedFoundItem = _.cloneDeep(foundItem);
+        const clonedOperationDetails = _.cloneDeep(operationDetails);
+
+        clonedFoundItem.required = value;
+        clonedOperationDetails.operationRequest.queryParams[foundItemIndex] =
+          clonedFoundItem;
+
+        return clonedOperationDetails;
+      }
+      return operationDetails;
+    });
+  };
+
   return (
     <DropArea onItemDropped={itemDropped}>
       <TableContainer
@@ -211,6 +233,9 @@ const QueryParams = ({ request = true }) => {
                       onDescriptionUpdate={(item, value) => {
                         onDescriptionUpdate(item, value);
                       }}
+                      onRequiredUpdate={(item, value) => {
+                        onRequiredUpdate(item, value);
+                      }}
                     />
                   );
                 })}
@@ -228,6 +253,9 @@ const QueryParams = ({ request = true }) => {
                         onItemDelete={itemDeleted}
                         onDescriptionUpdate={(item, value) => {
                           onDescriptionUpdate(item, value);
+                        }}
+                        onRequiredUpdate={(item, value) => {
+                          onRequiredUpdate(item, value);
                         }}
                       />
                     );

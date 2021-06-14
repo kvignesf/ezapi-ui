@@ -82,8 +82,6 @@ const Body = ({ request = true, responseCode }) => {
     );
   };
 
-  console.log("operationData", operationData);
-
   return (
     <DropArea onItemDropped={itemDropped}>
       <div className='h-full flex flex-col'>

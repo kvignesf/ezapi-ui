@@ -160,6 +160,30 @@ const PathParams = ({ request }) => {
     [] // will be created only once initially
   );
 
+  const onRequiredUpdate = (item, value) => {
+    setOperationDetails((operationDetails) => {
+      let foundItem = operationDetails.operationRequest.pathParams.find(
+        (x) => x.name === item.name
+      );
+      let foundItemIndex =
+        operationDetails.operationRequest.pathParams.findIndex(
+          (x) => x.name === item.name
+        );
+
+      if (foundItem) {
+        const clonedFoundItem = _.cloneDeep(foundItem);
+        const clonedOperationDetails = _.cloneDeep(operationDetails);
+
+        clonedFoundItem.required = value;
+        clonedOperationDetails.operationRequest.pathParams[foundItemIndex] =
+          clonedFoundItem;
+
+        return clonedOperationDetails;
+      }
+      return operationDetails;
+    });
+  };
+
   return (
     <DropArea onItemDropped={itemDropped}>
       <TableContainer
@@ -201,6 +225,9 @@ const PathParams = ({ request }) => {
                       onDescriptionUpdate={(item, value) => {
                         onDescriptionUpdate(item, value);
                       }}
+                      onRequiredUpdate={(item, value) => {
+                        onRequiredUpdate(item, value);
+                      }}
                     />
                   );
                 })}
@@ -217,6 +244,9 @@ const PathParams = ({ request }) => {
                       onItemDelete={itemDeleted}
                       onDescriptionUpdate={(item, value) => {
                         onDescriptionUpdate(item, value);
+                      }}
+                      onRequiredUpdate={(item, value) => {
+                        onRequiredUpdate(item, value);
                       }}
                     />
                   );
