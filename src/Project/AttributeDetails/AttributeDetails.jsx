@@ -7,6 +7,7 @@ import Select from "@material-ui/core/Select";
 import { CircularProgress, MenuItem } from "@material-ui/core";
 import { useParams } from "react-router";
 import CheckCircleIcon from "@material-ui/icons/CheckCircle";
+import Scrollbar from "react-smooth-scrollbar";
 
 import AppIcon from "../../shared/components/AppIcon";
 import schemaAtom from "../../shared/atom/schemaAtom";
@@ -18,6 +19,7 @@ import {
   isSchema,
 } from "../../shared/utils";
 import {
+  useSaveAttrRecommendations,
   useGetAttrRecommendations,
   useGetTables,
 } from "./recommendationQueries";
@@ -52,8 +54,8 @@ const MatchItem = ({ item }) => {
 
 const AttributeDetails = ({ attribute, onClose }) => {
   const schemaDetails = useRecoilValue(schemaAtom);
-  const [table, setTable] = useState(null);
-  const [column, setColumn] = useState(null);
+  const [table, setTable] = useState(null); // table name
+  const [column, setColumn] = useState(null); // column name
   const { id: projectId } = useParams();
   const {
     isLoading: isFetchingTables,
@@ -67,6 +69,13 @@ const AttributeDetails = ({ attribute, onClose }) => {
     error: fetchAttributeError,
     mutate: fetchAttrData,
   } = useGetAttrRecommendations();
+  const {
+    isLoading: isSavingAttrData,
+    error: saveAttributeError,
+    data: saveAttrData,
+    mutate: saveAttrDetails,
+    reset: resetSaveAttrDetails,
+  } = useSaveAttrRecommendations();
 
   useEffect(() => {
     fetchTables({ projectId });
@@ -76,6 +85,23 @@ const AttributeDetails = ({ attribute, onClose }) => {
       attribute: attribute?.name,
     });
   }, []);
+
+  useEffect(() => {
+    if (saveAttrData) {
+      fetchAttrData({
+        projectId,
+        schema: getParentSchema()?.name,
+        attribute: attribute?.name,
+      });
+    }
+  }, [saveAttrData]);
+
+  useEffect(() => {
+    if (attributeData && attributeData?.overridenMatch) {
+      setTable(attributeData?.overridenMatch?.table);
+      setColumn(attributeData?.overridenMatch?.table_attribute);
+    }
+  }, [attributeData]);
 
   const getParentSchema = () => {
     if (
@@ -93,6 +119,33 @@ const AttributeDetails = ({ attribute, onClose }) => {
     return null;
   };
 
+  const saveAttributeData = (selectedTable, selectedAttribute) => {
+    saveAttrDetails({
+      projectId,
+      schema: getParentSchema()?.name,
+      schemaAttribute: attribute?.name,
+      level: attributeData?.level,
+      path: attributeData?.path,
+      tableName: selectedTable ?? table?.table,
+      tableAttribute: selectedAttribute ?? column?.name,
+    });
+  };
+
+  const getColumns = (tableName) => {
+    return _.find(tablesData, (tab) => tab?.table === tableName)?.columns ?? [];
+  };
+
+  const isRecommendationApplied = (recom) => {
+    if (attributeData?.overridenMatch) {
+      return (
+        attributeData?.overridenMatch?.table === recom?.table &&
+        attributeData?.overridenMatch?.table_attribute ===
+          recom?.table_attribute
+      );
+    }
+    return isFullMatch(recom);
+  };
+
   return (
     <div
       style={{ width: `50vw`, height: "100%", maxWidth: "600px" }}
@@ -106,7 +159,7 @@ const AttributeDetails = ({ attribute, onClose }) => {
       </div>
 
       <div className='flex-1'>
-        {true && (
+        {attributeData && !isSavingAttrData && (
           <div className='h-full p-4'>
             <div className='flex flex-row w-full mb-8 gap-3'>
               <div className='flex-1 flex flex-col'>
@@ -140,16 +193,20 @@ const AttributeDetails = ({ attribute, onClose }) => {
                     <Select
                       labelId='demo-simple-select-label'
                       id='table-select'
-                      value={table?.table}
+                      value={table}
                       variant='outlined'
                       onChange={({ target: { value } }) => {
+                        resetSaveAttrDetails();
                         setTable(value);
+                        setColumn(null);
                       }}
                       style={{ width: "100%" }}
                     >
                       {tablesData?.map((table) => {
                         return (
-                          <MenuItem value={table}>{table?.table}</MenuItem>
+                          <MenuItem value={table?.table}>
+                            {table?.table}
+                          </MenuItem>
                         );
                       })}
                     </Select>
@@ -161,16 +218,19 @@ const AttributeDetails = ({ attribute, onClose }) => {
                     <Select
                       labelId='column'
                       id='column-select'
-                      value={column?.name}
+                      value={column}
                       variant='outlined'
                       onChange={({ target: { value } }) => {
+                        resetSaveAttrDetails();
                         setColumn(value);
                       }}
                       style={{ width: "100%" }}
                     >
-                      {table?.columns?.map((column) => {
+                      {getColumns(table)?.map((column) => {
                         return (
-                          <MenuItem value={column}>{column?.name}</MenuItem>
+                          <MenuItem value={column?.name}>
+                            {column?.name}
+                          </MenuItem>
                         );
                       })}
                     </Select>
@@ -204,58 +264,65 @@ const AttributeDetails = ({ attribute, onClose }) => {
               </p>
               {attributeData?.recommendations &&
                 !_.isEmpty(attributeData?.recommendations) && (
-                  <div>
-                    {attributeData?.recommendations?.map((recom, index) => {
-                      return (
-                        <div
-                          className={classNames(
-                            "flex flex-row items-center justify-between py-1",
-                            {
-                              "border-b-1":
-                                index !==
-                                attributeData?.recommendations?.length - 1,
-                            }
-                          )}
-                        >
-                          <p className='text-overline2 mr-2'>
-                            {recom.table} / {recom.table_attribute}
-                          </p>
+                  <Scrollbar style={{ maxHeight: "25vh" }}>
+                    <div>
+                      {attributeData?.recommendations?.map((recom, index) => {
+                        return (
+                          <div
+                            className={classNames(
+                              "flex flex-row items-center justify-between py-1",
+                              {
+                                "border-b-1":
+                                  index !==
+                                  attributeData?.recommendations?.length - 1,
+                              }
+                            )}
+                          >
+                            <p className='text-overline2 mr-2'>
+                              {recom.table} / {recom.table_attribute}
+                            </p>
 
-                          {isFullMatch(recom) && (
-                            <div className='bg-brand-green p-1 px-2 rounded-md flex flex-row items-center'>
-                              <AppIcon
-                                color='white'
-                                style={{
-                                  padding: "0",
-                                  marginRight: "0.5rem",
-                                  cursor: "default",
+                            {isRecommendationApplied(recom) ? (
+                              <div className='bg-brand-green p-1 px-2 rounded-sm flex flex-row items-center'>
+                                <AppIcon
+                                  color='white'
+                                  style={{
+                                    padding: "0",
+                                    marginRight: "0.5rem",
+                                    cursor: "default",
+                                  }}
+                                >
+                                  <CheckCircleIcon
+                                    style={{ fontSize: "20px" }}
+                                  />
+                                </AppIcon>
+                                <p className='text-white text-smallLabel'>
+                                  Applied
+                                </p>
+                              </div>
+                            ) : (
+                              <div
+                                className='bg-brand-secondary p-1 px-3 rounded-sm cursor-pointer hover:opacity-90'
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+
+                                  saveAttributeData(
+                                    recom.table,
+                                    recom.table_attribute
+                                  );
                                 }}
                               >
-                                <CheckCircleIcon style={{ fontSize: "20px" }} />
-                              </AppIcon>
-                              <p className='text-white text-smallLabel'>
-                                Applied
-                              </p>
-                            </div>
-                          )}
-
-                          {(isPartialMatch(recom) || isNoMatch(recom)) && (
-                            <div
-                              className='bg-brand-secondary p-1 px-3 rounded-md cursor-pointer hover:opacity-90'
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                              }}
-                            >
-                              <p className='text-white text-smallLabel'>
-                                Apply
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
+                                <p className='text-white text-smallLabel'>
+                                  Apply
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </Scrollbar>
                 )}
 
               {!attributeData ||
@@ -266,6 +333,21 @@ const AttributeDetails = ({ attribute, onClose }) => {
                   </p>
                 ))}
             </div>
+
+            {saveAttributeError && (
+              <p className='text-overline2 my-4 text-accent-red'>
+                {saveAttributeError?.message}
+              </p>
+            )}
+          </div>
+        )}
+
+        {isSavingAttrData && (
+          <div className='h-full flex flex-col items-center justify-center'>
+            <CircularProgress
+              style={{ width: "28px", height: "28px", marginBottom: "1rem" }}
+            />
+            <p className='text-overline2'>Saving recommendations</p>
           </div>
         )}
 
@@ -274,12 +356,12 @@ const AttributeDetails = ({ attribute, onClose }) => {
             <CircularProgress
               style={{ width: "28px", height: "28px", marginBottom: "1rem" }}
             />
-            <p className='text-overline2'>Fetching attribute detailss</p>
+            <p className='text-overline2'>Fetching attribute details</p>
           </div>
         )}
 
         {fetchAttributeError && (
-          <div className=' h-full flex flex-col justify-center items-center'>
+          <div className='h-full flex flex-col justify-center items-center'>
             <p className='text-overline2'>{fetchAttributeError?.message}</p>
           </div>
         )}
@@ -300,6 +382,8 @@ const AttributeDetails = ({ attribute, onClose }) => {
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
+
+            saveAttributeData(table, column);
           }}
         >
           Save

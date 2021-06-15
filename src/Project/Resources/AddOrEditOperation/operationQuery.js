@@ -4,11 +4,19 @@ import client, { endpoint } from "../../../shared/network/client";
 import { queries } from "../../../shared/network/queryClient";
 import { getApiError } from "../../../shared/utils";
 
-const addOperation = async ({ pathId, resourceId, name, type, desc }) => {
+const addOperation = async ({
+  projectId,
+  pathId,
+  resourceId,
+  name,
+  type,
+  desc,
+}) => {
   try {
     const { data } = await client.patch(`${endpoint.operation}/add`, {
-      pathId: pathId,
-      resourceId: resourceId,
+      pathId,
+      resourceId,
+      projectId,
       operationName: name,
       operationType: type,
       operationDescription: desc,
@@ -34,6 +42,7 @@ const editOperation = async ({
   pathId,
   resourceId,
   operationId,
+  projectId,
   name,
   type,
   desc,
@@ -42,8 +51,9 @@ const editOperation = async ({
     const { data } = await client.patch(
       `${endpoint.operation}/edit/${operationId}`,
       {
-        pathId: pathId,
+        pathId,
         resourceId,
+        projectId,
         operationName: name,
         operationType: type,
         operationDescription: desc,

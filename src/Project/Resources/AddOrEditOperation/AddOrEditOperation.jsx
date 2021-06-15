@@ -2,13 +2,14 @@ import React from "react";
 import CloseIcon from "@material-ui/icons/Close";
 import {
   CircularProgress,
-  makeStyles,
   MenuItem,
   Select,
   TextField,
 } from "@material-ui/core";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import { ErrorMessage, Field, Form, Formik } from "formik";
+import _ from "lodash";
+import { useParams } from "react-router-dom";
 
 import AppIcon from "../../../shared/components/AppIcon";
 import {
@@ -17,7 +18,6 @@ import {
 } from "../../../shared/components/AppButton";
 import operationSchema from "./operationSchema";
 import { useAddOperation, useEditOperation } from "./operationQuery";
-import _ from "lodash";
 
 const OperationType = [
   {
@@ -49,6 +49,7 @@ const OperationType = [
     name: "HEAD",
   },
 ];
+
 const CustomTextField = (props) => (
   <TextField
     InputProps={{
@@ -59,6 +60,7 @@ const CustomTextField = (props) => (
     {...props}
   />
 );
+
 const CustomSelect = (props) => (
   <Select
     style={{ background: "white" }}
@@ -97,7 +99,7 @@ const AddOrEditOperation = ({
     mutate: editOperation,
     reset: resetEditOperation,
   } = useEditOperation();
-
+  const { id: projectId } = useParams();
   const resetMutationState = () => {
     if (operationName && operationDescription && operationType) {
       if (
@@ -125,6 +127,7 @@ const AddOrEditOperation = ({
       ) {
         editOperation({
           pathId,
+          projectId,
           resourceId,
           operationId,
           name,
@@ -137,6 +140,7 @@ const AddOrEditOperation = ({
 
     addOperation({
       pathId,
+      projectId,
       resourceId,
       name,
       type,

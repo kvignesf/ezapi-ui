@@ -23,6 +23,7 @@ export const endpoint = Object.freeze({
   deleteParameter: "/projectParams/delete",
   tablesLookup: "/tablesLookup",
   recommendations: "/recommendations",
+  saveAttributeMatch: "/overrideAttrMatch",
 });
 
 const client = axios.create({

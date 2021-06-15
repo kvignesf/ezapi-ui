@@ -41,3 +41,42 @@ export const useGetAttrRecommendations = () => {
 
   return mutation;
 };
+
+const saveAttrRecommendation = async ({
+  projectId,
+  schema,
+  schemaAttribute,
+  path,
+  level,
+  tableName,
+  tableAttribute,
+}) => {
+  if (!tableName) {
+    throw Error("Please select a table name");
+  }
+
+  if (!tableAttribute) {
+    throw Error("Please select a column name");
+  }
+
+  try {
+    const { data } = await client.post(endpoint.saveAttributeMatch, {
+      projectId,
+      schema,
+      schemaAttribute,
+      path,
+      level,
+      tableName,
+      tableAttribute,
+    });
+    return data;
+  } catch (error) {
+    throw getApiError(error);
+  }
+};
+
+export const useSaveAttrRecommendations = () => {
+  const mutation = useMutation(saveAttrRecommendation, {});
+
+  return mutation;
+};
