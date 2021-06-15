@@ -31,6 +31,10 @@ import {
   useSyncOperationResponse,
 } from "../shared/query/operationDetailsQuery";
 import TabLabel from "../shared/components/TabLabel";
+import {
+  generateSyncOperationRequestRequest,
+  generateSyncOperationResponseRequest,
+} from "../shared/utils";
 
 const Project = () => {
   const resetOperationState = useResetRecoilState(operationAtom);
@@ -43,7 +47,7 @@ const Project = () => {
     isSuccess: isProjectDetailsFetched,
     error: projectDetailsError,
     data: projectDetails,
-  } = useFetchProjectDetails(projectId);
+  } = useFetchProjectDetails(projectId, { refetchOnWindowFocus: false });
   const [currentTab, setCurrentTab] = useState(0);
   const [operationState, setOperationState] = useRecoilState(operationAtom);
   const setSchemaState = useSetRecoilState(schemaAtom);
@@ -68,153 +72,30 @@ const Project = () => {
   }, [projectDetails]);
 
   const saveOperationRequest = () => {
-    const clonedRequest = _.cloneDeep(operationState?.operationRequest);
-    let operationRequest = {};
-
-    operationRequest["headers"] = [];
-    operationRequest["pathParams"] = [];
-    operationRequest["queryParams"] = [];
-    operationRequest["formData"] = [];
-    operationRequest["body"] = [];
-
-    if (clonedRequest?.headers && !_.isEmpty(clonedRequest?.headers)) {
-      operationRequest.headers = clonedRequest?.headers?.map((header) => {
-        let clonedHeader = _.cloneDeep(header);
-
-        clonedHeader.required =
-          header?.required === true || header?.required === "true"
-            ? true
-            : false;
-
-        const possibleValuesType = Object.prototype.toString.call(
-          header?.possibleValues
-        );
-
-        if (possibleValuesType === "[object String]") {
-          clonedHeader.possibleValues =
-            header?.possibleValues?.split(",").map((item) => {
-              return item.trim(" ");
-            }) ?? [];
-        }
-
-        return clonedHeader;
-      });
-    }
-
-    if (clonedRequest?.queryParams && !_.isEmpty(clonedRequest?.queryParams)) {
-      operationRequest.queryParams = clonedRequest?.queryParams?.map((item) => {
-        let clonedItem = _.cloneDeep(item);
-
-        clonedItem.required =
-          item?.required === true || item?.required === "true" ? true : false;
-
-        return clonedItem;
-      });
-    }
-
-    if (clonedRequest?.pathParams && !_.isEmpty(clonedRequest?.pathParams)) {
-      operationRequest.pathParams = clonedRequest?.pathParams?.map((item) => {
-        let clonedItem = _.cloneDeep(item);
-
-        clonedItem.required =
-          item?.required === true || item?.required === "true" ? true : false;
-
-        return clonedItem;
-      });
-    }
-
-    if (clonedRequest?.formData && !_.isEmpty(clonedRequest?.formData)) {
-      operationRequest.formData = clonedRequest?.formData?.map((item) => {
-        let clonedItem = _.cloneDeep(item);
-
-        clonedItem.required =
-          item?.required === true || item?.required === "true" ? true : false;
-
-        return clonedItem;
-      });
-    }
-
-    if (clonedRequest?.body && !_.isEmpty(clonedRequest?.body)) {
-      operationRequest.body = clonedRequest?.body?.map((item) => {
-        let newItem = {};
-
-        newItem.required =
-          item?.required === true || item?.required === "true" ? true : false;
-
-        newItem.name = item?.name;
-        newItem.type = item?.type;
-        newItem.ref = item?.ref;
-
-        return newItem;
-      });
-    }
+    const apiRequest = generateSyncOperationRequestRequest(
+      operationState?.operationRequest
+    );
 
     syncOperationRequest({
       projectId,
       operationId: operationState?.operation?.operationId,
       pathId: operationState?.path?.pathId,
       resourceId: operationState?.resource?.resourceId,
-      ...operationRequest,
+      ...apiRequest,
     });
   };
 
   const saveOperationResponse = () => {
-    const clonedOperationResponse = _.cloneDeep(
+    const apiRequest = generateSyncOperationResponseRequest(
       operationState?.operationResponse
     );
-    let operationResponse = [];
-
-    clonedOperationResponse?.forEach((response) => {
-      const clonedResponse = _.cloneDeep(response);
-
-      if (clonedResponse?.headers && !_.isEmpty(clonedResponse?.headers)) {
-        clonedResponse.headers = clonedResponse?.headers?.map((header) => {
-          let clonedHeader = _.cloneDeep(header);
-
-          clonedHeader.required =
-            header?.required === true || header?.required === "true"
-              ? true
-              : false;
-
-          const possibleValuesType = Object.prototype.toString.call(
-            header?.possibleValues
-          );
-
-          if (possibleValuesType === "[object String]") {
-            clonedHeader.possibleValues =
-              header?.possibleValues?.split(",").map((item) => {
-                return item.trim(" ");
-              }) ?? [];
-          }
-
-          return clonedHeader;
-        });
-      }
-
-      if (clonedResponse?.body && !_.isEmpty(clonedResponse?.body)) {
-        clonedResponse.body = clonedResponse?.body?.map((item) => {
-          let newItem = {};
-
-          newItem.required =
-            item?.required === true || item?.required === "true" ? true : false;
-
-          newItem.name = item?.name;
-          newItem.type = item?.type;
-          newItem.ref = item?.ref;
-
-          return newItem;
-        });
-      }
-
-      operationResponse.push(clonedResponse);
-    });
 
     syncOperationResponse({
       projectId,
       operationId: operationState?.operation?.operationId,
       pathId: operationState?.path?.pathId,
       resourceId: operationState?.resource?.resourceId,
-      content: operationResponse,
+      responseData: apiRequest,
     });
   };
 

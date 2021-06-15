@@ -2,18 +2,22 @@ import React, { useState, useEffect } from "react";
 import { Tab, Tabs, makeStyles } from "@material-ui/core";
 import { useParams } from "react-router";
 import _ from "lodash";
+import { useRecoilState } from "recoil";
 
 import Colors from "../../shared/colors";
+import {
+  parseGetOperationRequestResponse,
+  parseGetOperationResponseResponse,
+} from "../../shared/utils";
 import Request from "./Request/Request";
 import Response from "./Response/Response";
-import { useRecoilState } from "recoil";
 import operationAtom from "../operationAtom";
 import {
   useGetOperationRequest,
   useGetOperationResponse,
 } from "../../shared/query/operationDetailsQuery";
-
 import TabLabel from "../../shared/components/TabLabel";
+import Constants from "../../shared/constants";
 
 const tabsStyles = makeStyles({
   indicator: {
@@ -69,27 +73,21 @@ const OperationDetails = ({
 
       setOperationState((operationState) => {
         const clonedOperationState = _.cloneDeep(operationState);
-        const clonedResponseBody = _.cloneDeep(operationData.responseBody);
-
-        clonedOperationState.operationResponse = clonedResponseBody.map(
-          (response) => {
-            const clonedResponse = _.cloneDeep(response);
-
-            clonedResponse.headers = clonedResponse.headers.map((header) => {
-              return {
-                ...header,
-                possibleValues: header.possibleValues.reduce((acc, curr) => {
-                  if (acc) {
-                    return acc + ", " + curr;
-                  }
-                  return curr;
-                }, ""),
-              };
-            });
-
-            return clonedResponse;
-          }
+        let parsedOperationResponse = parseGetOperationResponseResponse(
+          operationData?.responseBody
         );
+
+        if (!parsedOperationResponse || _.isEmpty(parsedOperationResponse)) {
+          parsedOperationResponse = [
+            {
+              responseCode: Constants.mandatoryResponseCode,
+              headers: [],
+              body: [],
+            },
+          ];
+        }
+
+        clonedOperationState.operationResponse = parsedOperationResponse;
 
         return clonedOperationState;
       });
@@ -102,25 +100,11 @@ const OperationDetails = ({
 
       setOperationState((operationState) => {
         const clonedOperationState = _.cloneDeep(operationState);
-        const clonedRequestBody = _.cloneDeep(operationData.requestBody);
-
-        clonedRequestBody.headers = operationData.requestBody.headers.map(
-          (header) => {
-            return {
-              ...header,
-              possibleValues: header.possibleValues.reduce((acc, curr) => {
-                if (acc) {
-                  return acc + ", " + curr;
-                }
-                return curr;
-              }, ""),
-            };
-          }
+        const parsedOperationRequest = parseGetOperationRequestResponse(
+          operationData?.requestBody
         );
 
-        clonedOperationState.operationRequest = {
-          ...clonedRequestBody,
-        };
+        clonedOperationState.operationRequest = parsedOperationRequest;
 
         return clonedOperationState;
       });

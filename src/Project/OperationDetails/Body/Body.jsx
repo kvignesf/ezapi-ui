@@ -413,10 +413,6 @@ const SchemaItem = ({ request = true, responseCode, schema: currSchema }) => {
             (body) => body.name === item.name
           );
 
-          console.log("item", item);
-          console.log("existingBodyIndex", existingBodyIndex);
-          console.log("responseData", responseData);
-
           if (existingBodyIndex >= 0 && responseData && responseIndex >= 0) {
             const clonedOperationDetails = _.cloneDeep(operationDetails);
             const clonedResponseData = _.cloneDeep(responseData);
@@ -425,8 +421,6 @@ const SchemaItem = ({ request = true, responseCode, schema: currSchema }) => {
 
             clonedOperationDetails.operationResponse[responseIndex] =
               clonedResponseData;
-
-            console.log("clonedOperationDetails", clonedOperationDetails);
 
             return clonedOperationDetails;
           }

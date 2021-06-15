@@ -89,3 +89,346 @@ export const useWindowSize = () => {
   }, []); // Empty array ensures that effect is only run on mount
   return windowSize;
 };
+
+/**
+ * Generates request body that can be passed to Sync Operation Request API
+ *
+ * @param  {[object]} [operationRequest] The operation request state saved in the local.
+ * @return {[object]} [apiRequest] The request body that can be passed to the API.
+ */
+export const generateSyncOperationRequestRequest = (operationRequest) => {
+  let request = {
+    headers: [],
+    path: [],
+    query: [],
+    formData: [],
+    body: [],
+    cookie: [],
+  };
+
+  if (!operationRequest || _.isEmpty(operationRequest)) {
+    return request;
+  }
+
+  if (operationRequest?.headers && !_.isEmpty(operationRequest?.headers)) {
+    request.headers = operationRequest?.headers?.map((header) => {
+      let clonedHeader = _.cloneDeep(header);
+
+      clonedHeader.required =
+        header?.required === true || header?.required === "true" ? true : false;
+
+      const possibleValuesType = Object.prototype.toString.call(
+        header?.possibleValues
+      );
+
+      if (possibleValuesType === "[object String]") {
+        clonedHeader.possibleValues =
+          header?.possibleValues?.split(",").map((item) => {
+            return item.trim(" ");
+          }) ?? [];
+      }
+
+      clonedHeader.format = "format";
+      clonedHeader.header = true;
+
+      return clonedHeader;
+    });
+  }
+
+  if (
+    operationRequest?.queryParams &&
+    !_.isEmpty(operationRequest?.queryParams)
+  ) {
+    request.query = operationRequest?.queryParams?.map((item) => {
+      let clonedItem = _.cloneDeep(item);
+
+      clonedItem.required =
+        item?.required === true || item?.required === "true" ? true : false;
+
+      clonedItem.format = "format";
+      clonedItem.header = true;
+
+      return clonedItem;
+    });
+  }
+
+  if (
+    operationRequest?.pathParams &&
+    !_.isEmpty(operationRequest?.pathParams)
+  ) {
+    request.path = operationRequest?.pathParams?.map((item) => {
+      let clonedItem = _.cloneDeep(item);
+
+      clonedItem.required =
+        item?.required === true || item?.required === "true" ? true : false;
+
+      clonedItem.format = "format";
+      clonedItem.header = true;
+
+      return clonedItem;
+    });
+  }
+
+  if (operationRequest?.formData && !_.isEmpty(operationRequest?.formData)) {
+    request.formData = operationRequest?.formData?.map((item) => {
+      let clonedItem = _.cloneDeep(item);
+
+      clonedItem.required =
+        item?.required === true || item?.required === "true" ? true : false;
+
+      clonedItem.format = "format";
+      clonedItem.header = true;
+
+      return clonedItem;
+    });
+  }
+
+  if (operationRequest?.body && !_.isEmpty(operationRequest?.body)) {
+    request.body = operationRequest?.body?.map((item) => {
+      let newItem = {};
+
+      // newItem.required =
+      //   item?.required === true || item?.required === "true" ? true : false;
+
+      newItem.name = item?.name;
+      newItem.type = item?.type;
+      newItem.ezapi_ref = item?.ref;
+
+      return newItem;
+    });
+  }
+
+  return request;
+};
+
+/**
+ * Parses the response of Get Operation Request API to the local state format.
+ *
+ * @param  {[object]} [operationResponse] The operation response which is to be parsed into the local state format.
+ * @return {[object]} [object] Operation Request in the local state format.
+ */
+export const parseGetOperationRequestResponse = (operationResponse) => {
+  if (!operationResponse || _.isEmpty(operationResponse)) {
+    return {
+      headers: [],
+      formData: [],
+      pathParams: [],
+      queryParams: [],
+      body: [],
+    };
+  }
+  let request = {
+    headers: [],
+    formData: [],
+    pathParams: [],
+    queryParams: [],
+    body: [],
+  };
+
+  if (operationResponse?.header && !_.isEmpty(operationResponse?.header)) {
+    request.headers = operationResponse?.header?.map((header) => {
+      const headerName = Object.keys(header)[0];
+      const headerObject = header[headerName];
+
+      let clonedHeader = _.cloneDeep(headerObject);
+
+      clonedHeader.name = headerName;
+
+      clonedHeader.required =
+        headerObject?.required === true || headerObject?.required === "true"
+          ? true
+          : false;
+
+      clonedHeader.possibleValues =
+        headerObject?.possibleValues?.reduce((acc, curr) => {
+          if (acc) {
+            return acc + ", " + curr;
+          }
+          return curr;
+        }, "") ?? [];
+
+      return clonedHeader;
+    });
+  }
+
+  if (operationResponse?.query && !_.isEmpty(operationResponse?.query)) {
+    request.queryParams = operationResponse?.query?.map((query) => {
+      const queryName = Object.keys(query)[0];
+      const queryObject = query[queryName];
+
+      const clonedQueryObject = _.cloneDeep(queryObject);
+      clonedQueryObject.name = queryName;
+
+      return clonedQueryObject;
+    });
+  }
+
+  if (operationResponse?.path && !_.isEmpty(operationResponse?.path)) {
+    request.pathParams = operationResponse?.path?.map((param) => {
+      const paramName = Object.keys(param)[0];
+      const paramObject = param[paramName];
+
+      const clonedParamObject = _.cloneDeep(paramObject);
+      clonedParamObject.name = paramName;
+
+      return clonedParamObject;
+    });
+  }
+
+  if (operationResponse?.formData && !_.isEmpty(operationResponse?.formData)) {
+    request.formData = operationResponse?.formData?.map((formData) => {
+      const formDataName = Object.keys(formData)[0];
+      const formDataObject = formData[formDataName];
+
+      const clonedFormDataObject = _.cloneDeep(formDataObject);
+      clonedFormDataObject.name = formDataName;
+
+      return clonedFormDataObject;
+    });
+  }
+
+  if (operationResponse?.body && !_.isEmpty(operationResponse?.body)) {
+    request.body = operationResponse?.body?.map((item) => {
+      let newItem = {};
+
+      // newItem.required =
+      //   item?.required === true || item?.required === "true" ? true : false;
+
+      newItem.name = item?.name;
+      newItem.type = item?.type;
+      newItem.ref = item?.ezapi_ref;
+
+      return newItem;
+    });
+  }
+
+  return request;
+};
+
+/**
+ * Generates request body that can be passed to Sync Operation Response API
+ *
+ * @param  {[object]} [operationRequest] The operation response state saved in the local.
+ * @return {[object]} [apiRequest] The request body that can be passed to the API.
+ */
+export const generateSyncOperationResponseRequest = (operationResponse) => {
+  let request = [];
+
+  if (!operationResponse || _.isEmpty(operationResponse)) {
+    return request;
+  }
+
+  request = operationResponse?.map((reponseData) => {
+    let responseObject = {
+      status_code: reponseData?.responseCode,
+      description: "Description",
+      links: [],
+      headers: [],
+      content: [],
+    };
+
+    if (reponseData?.headers && !_.isEmpty(reponseData?.headers)) {
+      responseObject.headers = reponseData?.headers?.map((header) => {
+        let clonedHeader = _.cloneDeep(header);
+
+        clonedHeader.required =
+          header?.required === true || header?.required === "true"
+            ? true
+            : false;
+
+        const possibleValuesType = Object.prototype.toString.call(
+          header?.possibleValues
+        );
+
+        if (possibleValuesType === "[object String]") {
+          clonedHeader.possibleValues =
+            header?.possibleValues?.split(",").map((item) => {
+              return item.trim(" ");
+            }) ?? [];
+        }
+
+        clonedHeader.format = "format";
+        clonedHeader.header = true;
+
+        return clonedHeader;
+      });
+    }
+
+    if (reponseData?.body && !_.isEmpty(reponseData?.body)) {
+      responseObject.content = reponseData?.body?.map((item) => {
+        let newItem = {};
+
+        // newItem.required =
+        //   item?.required === true || item?.required === "true" ? true : false;
+
+        newItem.name = item?.name;
+        newItem.type = item?.type;
+        newItem.ezapi_ref = item?.ref;
+
+        return newItem;
+      });
+    }
+
+    return responseObject;
+  });
+
+  return request;
+};
+
+/**
+ * Parses the response of Get Operation Response API to the local state format.
+ *
+ * @param  {[object]} [operationResponse] The operation response which is to be parsed into the local state format.
+ * @return {[object]} [object] Operation Response in the local state format.
+ */
+export const parseGetOperationResponseResponse = (operationResponse) => {
+  let response = [];
+
+  if (!operationResponse || _.isEmpty(operationResponse)) {
+    return response;
+  }
+
+  response = operationResponse?.map((responseData) => {
+    let responseObj = {};
+
+    responseObj.responseCode = responseData.status_code;
+
+    responseObj.headers = responseData?.headers?.map((header) => {
+      const headerName = Object.keys(header)[0];
+      const headerObject = header[headerName];
+
+      let clonedHeader = _.cloneDeep(headerObject);
+
+      clonedHeader.name = headerName;
+
+      clonedHeader.required =
+        headerObject?.required === true || headerObject?.required === "true"
+          ? true
+          : false;
+
+      clonedHeader.possibleValues =
+        headerObject?.possibleValues?.reduce((acc, curr) => {
+          if (acc) {
+            return acc + ", " + curr;
+          }
+          return curr;
+        }, "") ?? [];
+
+      return clonedHeader;
+    });
+
+    responseObj.body = responseData?.content?.map((content) => {
+      let bodyObject = {};
+
+      bodyObject.name = content?.name;
+      bodyObject.type = content?.type;
+      bodyObject.ref = content?.ezapi_ref;
+
+      return bodyObject;
+    });
+
+    return responseObj;
+  });
+
+  return response;
+};
