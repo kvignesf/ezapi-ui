@@ -136,7 +136,10 @@ const AttributeDetails = ({ attribute, onClose }) => {
   };
 
   const isRecommendationApplied = (recom) => {
-    if (attributeData?.overridenMatch) {
+    if (
+      attributeData?.overridenMatch &&
+      !_.isEmpty(attributeData?.overridenMatch)
+    ) {
       return (
         attributeData?.overridenMatch?.table === recom?.table &&
         attributeData?.overridenMatch?.table_attribute ===
