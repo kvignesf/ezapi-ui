@@ -29,27 +29,7 @@ import schemaAtom from "../../../shared/atom/schemaAtom";
 
 const QueryParams = ({ request = true }) => {
   let [operationDetails, setOperationDetails] = useRecoilState(operationAtom);
-  // const getRecoilValueInfo = useGetRecoilValueInfo_UNSTABLE();
   const { height, width } = useWindowSize();
-
-  // const fetchParentSchema = () => {
-  //   const { loadable } = getRecoilValueInfo(schemaAtom);
-  //   const schemaDetails = loadable?.contents;
-
-  //   if (
-  //     schemaDetails &&
-  //     schemaDetails?.selected &&
-  //     !_.isEmpty(schemaDetails?.selected)
-  //   ) {
-  //     const value = schemaDetails?.selected
-  //       ?.slice()
-  //       ?.reverse()
-  //       ?.find((item) => isSchema(item));
-
-  //     return value;
-  //   }
-  //   return null;
-  // };
 
   const itemDropped = (item) => {
     if (
@@ -72,7 +52,6 @@ const QueryParams = ({ request = true }) => {
               type: item?.type,
               required: item?.required,
               description: item?.description,
-              // schemaName: fetchParentSchema()?.name ?? "global",
             });
 
             return newOperationDetails;
@@ -90,7 +69,6 @@ const QueryParams = ({ request = true }) => {
               type: item?.type,
               required: item?.required,
               description: item?.description,
-              // schemaName: fetchParentSchema()?.name ?? "global",
             });
 
             return newOperationDetails;

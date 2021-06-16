@@ -41,41 +41,21 @@ export const useGetSchemaRecommendations = () => {
   return mutation;
 };
 
-// const saveSchemaRecommendation = async ({
-//   projectId,
-//   schema,
-//   schemaSchemaibute,
-//   path,
-//   level,
-//   tableName,
-//   tableSchemaibute,
-// }) => {
-//   if (!tableName) {
-//     throw Error("Please select a table name");
-//   }
+const saveSchemaRecommendation = async ({ projectId, schema, data }) => {
+  try {
+    const { data } = await client.post(endpoint.saveSchemaMatch, {
+      projectId,
+      schema,
+      data: [],
+    });
+    return data;
+  } catch (error) {
+    throw getApiError(error);
+  }
+};
 
-//   if (!tableSchemaibute) {
-//     throw Error("Please select a column name");
-//   }
+export const useSaveSchemaRecommendations = () => {
+  const mutation = useMutation(saveSchemaRecommendation, {});
 
-//   try {
-//     const { data } = await client.post(endpoint.saveSchemaibuteMatch, {
-//       projectId,
-//       schema,
-//       schemaSchemaibute,
-//       path,
-//       level,
-//       tableName,
-//       tableSchemaibute,
-//     });
-//     return data;
-//   } catch (error) {
-//     throw getApiError(error);
-//   }
-// };
-
-// export const useSaveSchemaRecommendations = () => {
-//   const mutation = useMutation(saveSchemaRecommendation, {});
-
-//   return mutation;
-// };
+  return mutation;
+};

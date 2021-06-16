@@ -23,7 +23,9 @@ import { PrimaryButton, TextButton } from "../../shared/components/AppButton";
 import {
   useGetTables,
   useGetSchemaRecommendations,
+  useSaveSchemaRecommendations,
 } from "./schemaRecommendationQuery";
+import { isFullMatch } from "../../shared/utils";
 
 const SchemaDetails = ({ schema, onClose }) => {
   const history = useHistory();
@@ -77,7 +79,7 @@ const SchemaDetails = ({ schema, onClose }) => {
       className='flex flex-col'
     >
       <div className='p-4 border-b-1 flex flex-row justify-between'>
-        <p className='text-subtitle1'>Schema Details</p>
+        <p className='text-subtitle1'>{schema?.name}</p>
         <AppIcon onClick={onClose}>
           <CloseIcon />
         </AppIcon>
@@ -176,7 +178,7 @@ const SchemaDetails = ({ schema, onClose }) => {
             e.preventDefault();
             e.stopPropagation();
 
-            // saveAttributeData(table, column);
+            // saveSchemaMatchData(table, column);
           }}
         >
           Save
@@ -189,6 +191,30 @@ const SchemaDetails = ({ schema, onClose }) => {
 const SchemaDetailsRow = ({ attribute, tablesData }) => {
   const [table, setTable] = useState(null); // table name
   const [column, setColumn] = useState(null); // column name
+
+  useEffect(() => {
+    if (
+      attribute &&
+      attribute?.overridenMatch &&
+      !_.isEmpty(attribute?.overridenMatch)
+    ) {
+      setTable(attribute?.overridenMatch?.table);
+      setColumn(attribute?.overridenMatch?.table_attribute);
+    } else if (
+      attribute &&
+      attribute?.recommendations &&
+      !_.isEmpty(attribute?.recommendations)
+    ) {
+      const fullMatchRecommendation = attribute?.recommendations?.find(
+        (recom) => isFullMatch(recom)
+      );
+
+      if (fullMatchRecommendation) {
+        setTable(fullMatchRecommendation?.table);
+        setColumn(fullMatchRecommendation?.table_attribute);
+      }
+    }
+  }, []);
 
   const getColumns = (tableName) => {
     return _.find(tablesData, (tab) => tab?.table === tableName)?.columns ?? [];
@@ -206,7 +232,7 @@ const SchemaDetailsRow = ({ attribute, tablesData }) => {
           width: "25%",
         }}
       >
-        {attribute?.name}
+        <p className='text-overline2'>{attribute?.name}</p>
       </TableCell>
       <TableCell
         align='left'
@@ -217,6 +243,7 @@ const SchemaDetailsRow = ({ attribute, tablesData }) => {
       >
         <p className='text-overline2'>{attribute?.path}</p>
       </TableCell>
+
       <TableCell
         align='left'
         style={{
@@ -257,9 +284,12 @@ const SchemaDetailsRow = ({ attribute, tablesData }) => {
             },
           }}
         >
-          <p className='text-capitalised text-brand-primary p-4 py-2'>
-            Recommended
-          </p>
+          {attribute?.recommendations &&
+            !_.isEmpty(attribute?.recommendations) && (
+              <p className='text-capitalised text-brand-primary p-4 py-2'>
+                Recommended
+              </p>
+            )}
           {attribute?.recommendations?.map((recom) => {
             return (
               <MenuItem value={`${recom?.table}$$$${recom?.table_attribute}`}>
@@ -269,10 +299,13 @@ const SchemaDetailsRow = ({ attribute, tablesData }) => {
               </MenuItem>
             );
           })}
-          <div
-            className='bg-neutral-gray7 my-2'
-            style={{ height: "1px" }}
-          ></div>
+          {attribute?.recommendations &&
+            !_.isEmpty(attribute?.recommendations) && (
+              <div
+                className='bg-neutral-gray7 my-2'
+                style={{ height: "1px" }}
+              ></div>
+            )}
           {tablesData?.map((table) => {
             return (
               <MenuItem value={table?.table}>
@@ -282,6 +315,7 @@ const SchemaDetailsRow = ({ attribute, tablesData }) => {
           })}
         </Select>
       </TableCell>
+
       <TableCell
         align='left'
         style={{
