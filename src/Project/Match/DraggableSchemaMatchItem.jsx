@@ -19,6 +19,7 @@ import {
   isSchema,
 } from "../../shared/utils";
 import AttributeDetails from "../AttributeDetails/AttributeDetails";
+import SchemaDetails from "../SchemaDetails/SchemaDetails";
 
 const DraggableSchemaMatchItem = ({ index, item, ...rest }) => {
   const [dialog, setDialog] = useState({
@@ -39,7 +40,10 @@ const DraggableSchemaMatchItem = ({ index, item, ...rest }) => {
 
   const showDetailsDialog = () => {
     if (isSchema(item)) {
-      return;
+      setDialog({
+        show: true,
+        type: "show-schema-details",
+      });
     } else if (isAttribute(item)) {
       setDialog({
         show: true,
@@ -60,6 +64,9 @@ const DraggableSchemaMatchItem = ({ index, item, ...rest }) => {
       <Drawer anchor={"right"} open={dialog?.show} onClose={handleCloseDialog}>
         {dialog?.type === "show-attribute-details" && (
           <AttributeDetails attribute={item} onClose={handleCloseDialog} />
+        )}
+        {dialog?.type === "show-schema-details" && (
+          <SchemaDetails schema={item} onClose={handleCloseDialog} />
         )}
       </Drawer>
 
