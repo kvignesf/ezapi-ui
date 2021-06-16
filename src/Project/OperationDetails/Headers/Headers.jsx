@@ -17,6 +17,7 @@ import {
   isArray,
   useWindowSize,
   isObject,
+  useParentSchemaNameFetcher,
 } from "../../../shared/utils";
 import DragAndDropMessage from "../../../shared/components/DragAndDropMessage";
 import Row from "../Row";
