@@ -65,7 +65,7 @@ const OperationDetails = ({
         projectId: projectId,
       });
     }
-  }, []);
+  }, [operationState?.operationIndex]);
 
   useEffect(() => {
     if (getResponseMutation.data) {

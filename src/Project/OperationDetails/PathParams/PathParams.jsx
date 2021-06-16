@@ -1,5 +1,5 @@
-import React, { useCallback } from "react";
-import { useRecoilState } from "recoil";
+import React, { useState, useCallback, useEffect } from "react";
+import { useRecoilState, useGetRecoilValueInfo_UNSTABLE } from "recoil";
 import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
 import TableCell from "@material-ui/core/TableCell";
@@ -20,10 +20,31 @@ import {
 } from "../../../shared/utils";
 import DragAndDropMessage from "../../../shared/components/DragAndDropMessage";
 import Row from "../Row";
+import schemaAtom from "../../../shared/atom/schemaAtom";
 
 const PathParams = ({ request }) => {
-  let [operationDetails, setOperationDetails] = useRecoilState(operationAtom);
+  const [operationDetails, setOperationDetails] = useRecoilState(operationAtom);
   const { height, width } = useWindowSize();
+  const getRecoilValueInfo = useGetRecoilValueInfo_UNSTABLE();
+
+  const fetchParentSchema = () => {
+    const { loadable } = getRecoilValueInfo(schemaAtom);
+    const schemaDetails = loadable?.contents;
+
+    if (
+      schemaDetails &&
+      schemaDetails?.selected &&
+      !_.isEmpty(schemaDetails?.selected)
+    ) {
+      const value = schemaDetails?.selected
+        ?.slice()
+        ?.reverse()
+        ?.find((item) => isSchema(item));
+
+      return value;
+    }
+    return null;
+  };
 
   const itemDropped = (item) => {
     if (
@@ -40,14 +61,13 @@ const PathParams = ({ request }) => {
             )
           ) {
             const newOperationDetails = _.cloneDeep(operationDetails);
-
             newOperationDetails.operationRequest.pathParams.push({
               name: item?.name,
               type: item?.type,
               required: item?.required,
               description: item?.description,
+              schemaName: fetchParentSchema()?.name ?? "global",
             });
-
             return newOperationDetails;
           }
         } else {
@@ -57,14 +77,13 @@ const PathParams = ({ request }) => {
             )
           ) {
             const newOperationDetails = _.cloneDeep(operationDetails);
-
             newOperationDetails.operationResponse.pathParams.push({
               name: item?.name,
               type: item?.type,
               required: item?.required,
               description: item?.description,
+              schemaName: fetchParentSchema()?.name ?? "global",
             });
-
             return newOperationDetails;
           }
         }
@@ -185,7 +204,11 @@ const PathParams = ({ request }) => {
   };
 
   return (
-    <DropArea onItemDropped={itemDropped}>
+    <DropArea
+      onItemDropped={(item) => {
+        itemDropped(item);
+      }}
+    >
       <TableContainer
         style={{
           maxHeight: height > 750 ? "30vh" : height > 600 ? "26vh" : "23vh",

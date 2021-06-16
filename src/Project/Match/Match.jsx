@@ -1,7 +1,7 @@
 import { Tab, Tabs } from "@material-ui/core";
 import _ from "lodash";
 import React, { useState } from "react";
-import { useRecoilState } from "recoil";
+import { useRecoilState, useResetRecoilState } from "recoil";
 import ArrowBackIcon from "@material-ui/icons/ArrowBack";
 import AddIcon from "@material-ui/icons/Add";
 import { Dialog } from "@material-ui/core";
@@ -19,6 +19,7 @@ import AddOrEditParameter from "./Parameters/AddOrEditParameter/AddOrEditParamet
 const Match = (props) => {
   const [currentTab, setTab] = useState(0);
   const [schemaState, setSchemaState] = useRecoilState(schemaAtom);
+  const resetSchemaState = useResetRecoilState(schemaAtom);
   const [dialog, setDialog] = useState({
     show: false,
     type: null,
@@ -147,6 +148,7 @@ const Match = (props) => {
               value={currentTab}
               onChange={(_, index) => {
                 setTab(index);
+                resetSchemaState();
               }}
               aria-label='schema tabs'
               indicatorColor='primary'

@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from "react";
-import { useRecoilState } from "recoil";
+import { useRecoilState, useGetRecoilValueInfo_UNSTABLE } from "recoil";
 import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
 import TableCell from "@material-ui/core/TableCell";
@@ -20,14 +20,36 @@ import {
   isArray,
   useWindowSize,
   isObject,
+  useParentSchemaNameFetcher,
 } from "../../../shared/utils";
 import AppIcon from "../../../shared/components/AppIcon";
 import DragAndDropMessage from "../../../shared/components/DragAndDropMessage";
 import Row from "../Row";
+import schemaAtom from "../../../shared/atom/schemaAtom";
 
 const QueryParams = ({ request = true }) => {
   let [operationDetails, setOperationDetails] = useRecoilState(operationAtom);
+  // const getRecoilValueInfo = useGetRecoilValueInfo_UNSTABLE();
   const { height, width } = useWindowSize();
+
+  // const fetchParentSchema = () => {
+  //   const { loadable } = getRecoilValueInfo(schemaAtom);
+  //   const schemaDetails = loadable?.contents;
+
+  //   if (
+  //     schemaDetails &&
+  //     schemaDetails?.selected &&
+  //     !_.isEmpty(schemaDetails?.selected)
+  //   ) {
+  //     const value = schemaDetails?.selected
+  //       ?.slice()
+  //       ?.reverse()
+  //       ?.find((item) => isSchema(item));
+
+  //     return value;
+  //   }
+  //   return null;
+  // };
 
   const itemDropped = (item) => {
     if (
@@ -50,6 +72,7 @@ const QueryParams = ({ request = true }) => {
               type: item?.type,
               required: item?.required,
               description: item?.description,
+              // schemaName: fetchParentSchema()?.name ?? "global",
             });
 
             return newOperationDetails;
@@ -67,6 +90,7 @@ const QueryParams = ({ request = true }) => {
               type: item?.type,
               required: item?.required,
               description: item?.description,
+              // schemaName: fetchParentSchema()?.name ?? "global",
             });
 
             return newOperationDetails;
