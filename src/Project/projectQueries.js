@@ -1,4 +1,4 @@
-import { useQuery } from "react-query";
+import { useMutation, useQuery } from "react-query";
 
 import client, { endpoint } from "../shared/network/client";
 import { queries } from "../shared/network/queryClient";
@@ -27,4 +27,21 @@ export const useFetchProjectDetails = (projectId, options = {}) => {
   );
 
   return query;
+};
+
+const publishProject = async ({ projectId }) => {
+  try {
+    const { data } = await client.post(endpoint.publishProject, {
+      projectId,
+    });
+    return data;
+  } catch (error) {
+    throw getApiError(error);
+  }
+};
+
+export const usePublishProject = () => {
+  const mutation = useMutation(publishProject);
+
+  return mutation;
 };

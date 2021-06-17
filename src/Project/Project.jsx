@@ -30,6 +30,7 @@ import {
   useSyncOperationRequest,
   useSyncOperationResponse,
 } from "../shared/query/operationDetailsQuery";
+import { usePublishProject } from "./projectQueries";
 import TabLabel from "../shared/components/TabLabel";
 import {
   generateSyncOperationRequestRequest,
@@ -57,13 +58,18 @@ const Project = () => {
     error: syncOperationRequestError,
     mutate: syncOperationRequest,
   } = useSyncOperationRequest();
-
   const {
     isLoading: isSyncingOperationResponse,
     isSuccess: isSyncOperationResponseSuccess,
     error: syncOperationResponseError,
     mutate: syncOperationResponse,
   } = useSyncOperationResponse();
+  const {
+    isLoading: isPublishingProject,
+    isSuccess: isPublishProjectSuccess,
+    error: publishProjectError,
+    mutate: publish,
+  } = usePublishProject();
 
   useEffect(() => {
     if (projectDetails && projectDetails?.status !== "IN_PROGRESS") {
@@ -105,11 +111,19 @@ const Project = () => {
     saveOperationResponse();
   };
 
+  const publishProject = () => {
+    publish({ projectId });
+  };
+
   return (
     <>
       <Dialog
         aria-labelledby='save-operation-dialog'
-        open={isSyncingOperationRequest || isSyncingOperationResponse}
+        open={
+          isSyncingOperationRequest ||
+          isSyncingOperationResponse ||
+          isPublishingProject
+        }
         fullWidth
         PaperProps={{
           style: { borderRadius: 8 },
@@ -121,7 +135,9 @@ const Project = () => {
             <p className='text-overline mr-3'>
               {isSyncingOperationRequest
                 ? "Saving Operation Request"
-                : "Saving Operation Response"}
+                : isSyncingOperationResponse
+                ? "Saving Operation Response"
+                : "Publishing project"}
             </p>
             <CircularProgress style={{ width: "20px", height: "20px" }} />
           </div>
@@ -186,7 +202,17 @@ const Project = () => {
           <div className='flex flex-row py-2'>
             <OutlineButton classes='mr-3'>Invite</OutlineButton>
 
-            <PrimaryButton classes='mr-3'>Publish</PrimaryButton>
+            <PrimaryButton
+              classes='mr-3'
+              onClick={(e) => {
+                e?.preventDefault();
+                e?.stopPropagation();
+
+                publishProject();
+              }}
+            >
+              Publish
+            </PrimaryButton>
 
             <InitialsAvatar firstName={firstName} lastName={lastName} />
           </div>

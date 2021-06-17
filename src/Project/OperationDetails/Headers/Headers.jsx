@@ -41,14 +41,9 @@ const Headers = ({ request = true, responseCode }) => {
             )
           ) {
             const newOperationDetails = _.cloneDeep(operationDetails);
+            const clonedItem = _.cloneDeep(item);
 
-            newOperationDetails.operationRequest.headers.push({
-              name: item?.name,
-              type: item?.type,
-              required: item?.required,
-              description: item?.description,
-              possibleValues: item?.possibleValues,
-            });
+            newOperationDetails.operationRequest.headers.push(clonedItem);
 
             return newOperationDetails;
           }
@@ -68,14 +63,9 @@ const Headers = ({ request = true, responseCode }) => {
           ) {
             const clonedOperationDetails = _.cloneDeep(operationDetails);
             const clonedResponseData = _.cloneDeep(responseData);
+            const clonedItem = _.cloneDeep(item);
 
-            clonedResponseData.headers.push({
-              name: item?.name,
-              type: item?.type,
-              required: item?.required,
-              description: item?.description,
-              possibleValues: item?.possibleValues,
-            });
+            clonedResponseData.headers.push(clonedItem);
 
             clonedOperationDetails.operationResponse[responseIndex] =
               clonedResponseData;

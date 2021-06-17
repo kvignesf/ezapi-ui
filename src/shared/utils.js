@@ -130,9 +130,6 @@ export const generateSyncOperationRequestRequest = (operationRequest) => {
           }) ?? [];
       }
 
-      clonedHeader.format = "format";
-      clonedHeader.header = true;
-
       return clonedHeader;
     });
   }
@@ -146,9 +143,6 @@ export const generateSyncOperationRequestRequest = (operationRequest) => {
 
       clonedItem.required =
         item?.required === true || item?.required === "true" ? true : false;
-
-      clonedItem.format = "format";
-      clonedItem.header = true;
 
       return clonedItem;
     });
@@ -164,9 +158,6 @@ export const generateSyncOperationRequestRequest = (operationRequest) => {
       clonedItem.required =
         item?.required === true || item?.required === "true" ? true : false;
 
-      clonedItem.format = "format";
-      clonedItem.header = true;
-
       return clonedItem;
     });
   }
@@ -177,9 +168,6 @@ export const generateSyncOperationRequestRequest = (operationRequest) => {
 
       clonedItem.required =
         item?.required === true || item?.required === "true" ? true : false;
-
-      clonedItem.format = "format";
-      clonedItem.header = true;
 
       return clonedItem;
     });
@@ -194,7 +182,7 @@ export const generateSyncOperationRequestRequest = (operationRequest) => {
 
       newItem.name = item?.name;
       newItem.type = item?.type;
-      newItem.ezapi_ref = item?.ref;
+      newItem.ref = item?.ref;
 
       return newItem;
     });
@@ -290,18 +278,28 @@ export const parseGetOperationRequestResponse = (operationResponse) => {
   }
 
   if (operationResponse?.body && !_.isEmpty(operationResponse?.body)) {
-    request.body = operationResponse?.body?.map((item) => {
-      let newItem = {};
+    if (
+      operationResponse?.body?.properties &&
+      !_.isEmpty(operationResponse?.body?.properties)
+    ) {
+      // Multiple body items
 
-      // newItem.required =
-      //   item?.required === true || item?.required === "true" ? true : false;
+      request.body = Object.keys(operationResponse?.body?.properties).map(
+        (objectName) => {
+          return _.cloneDeep(operationResponse?.body?.properties[objectName]);
+        }
+      );
+    } else {
+      // Single body item
 
-      newItem.name = item?.name;
-      newItem.type = item?.type;
-      newItem.ref = item?.ezapi_ref;
-
-      return newItem;
-    });
+      if (operationResponse?.body?.ezapi_ref) {
+        request.body = [
+          {
+            ...operationResponse?.body,
+          },
+        ];
+      }
+    }
   }
 
   return request;
@@ -349,9 +347,6 @@ export const generateSyncOperationResponseRequest = (operationResponse) => {
             }) ?? [];
         }
 
-        clonedHeader.format = "format";
-        clonedHeader.header = true;
-
         return clonedHeader;
       });
     }
@@ -365,7 +360,7 @@ export const generateSyncOperationResponseRequest = (operationResponse) => {
 
         newItem.name = item?.name;
         newItem.type = item?.type;
-        newItem.ezapi_ref = item?.ref;
+        newItem.ref = item?.ref;
 
         return newItem;
       });
@@ -391,9 +386,13 @@ export const parseGetOperationResponseResponse = (operationResponse) => {
   }
 
   response = operationResponse?.map((responseData) => {
-    let responseObj = {};
+    let responseObj = {
+      responseCode: null,
+      headers: [],
+      body: [],
+    };
 
-    responseObj.responseCode = responseData.status_code;
+    responseObj.responseCode = parseInt(responseData.status_code);
 
     responseObj.headers = responseData?.headers?.map((header) => {
       const headerName = Object.keys(header)[0];
@@ -419,15 +418,29 @@ export const parseGetOperationResponseResponse = (operationResponse) => {
       return clonedHeader;
     });
 
-    responseObj.body = responseData?.content?.map((content) => {
-      let bodyObject = {};
+    responseObj.body = [];
+    if (
+      responseData?.content?.properties &&
+      !_.isEmpty(responseData?.content?.properties)
+    ) {
+      // Multiple body items
 
-      bodyObject.name = content?.name;
-      bodyObject.type = content?.type;
-      bodyObject.ref = content?.ezapi_ref;
+      responseObj.body = Object.keys(responseData?.content?.properties).map(
+        (objectName) => {
+          return _.cloneDeep(responseData?.content?.properties[objectName]);
+        }
+      );
+    } else {
+      // Single body item
 
-      return bodyObject;
-    });
+      if (responseData?.content?.ezapi_ref) {
+        responseObj.body = [
+          {
+            ...responseData?.content,
+          },
+        ];
+      }
+    }
 
     return responseObj;
   });

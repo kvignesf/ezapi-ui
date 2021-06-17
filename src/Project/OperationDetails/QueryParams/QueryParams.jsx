@@ -46,13 +46,9 @@ const QueryParams = ({ request = true }) => {
             )
           ) {
             const newOperationDetails = _.cloneDeep(operationDetails);
+            const clonedItem = _.cloneDeep(item);
 
-            newOperationDetails.operationRequest.queryParams.push({
-              name: item?.name,
-              type: item?.type,
-              required: item?.required,
-              description: item?.description,
-            });
+            newOperationDetails.operationRequest.queryParams.push(clonedItem);
 
             return newOperationDetails;
           }
@@ -63,13 +59,9 @@ const QueryParams = ({ request = true }) => {
             )
           ) {
             const newOperationDetails = _.cloneDeep(operationDetails);
+            const clonedItem = _.cloneDeep(item);
 
-            newOperationDetails.operationResponse.queryParams.push({
-              name: item?.name,
-              type: item?.type,
-              required: item?.required,
-              description: item?.description,
-            });
+            newOperationDetails.operationResponse.queryParams.push(clonedItem);
 
             return newOperationDetails;
           }

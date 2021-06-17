@@ -40,13 +40,9 @@ const FormData = ({ request = true }) => {
             )
           ) {
             const newOperationDetails = _.cloneDeep(operationDetails);
+            const clonedItem = _.cloneDeep(item);
 
-            newOperationDetails.operationRequest.formData.push({
-              name: item?.name,
-              type: item?.type,
-              required: item?.required,
-              description: item?.description,
-            });
+            newOperationDetails.operationRequest.formData.push(clonedItem);
 
             return newOperationDetails;
           }
@@ -58,13 +54,9 @@ const FormData = ({ request = true }) => {
             )
           ) {
             const newOperationDetails = _.cloneDeep(operationDetails);
+            const clonedItem = _.cloneDeep(item);
 
-            newOperationDetails.operationResponse.formData.push({
-              name: item?.name,
-              type: item?.type,
-              required: item?.required,
-              description: item?.description,
-            });
+            newOperationDetails.operationResponse.formData.push(clonedItem);
 
             return newOperationDetails;
           }

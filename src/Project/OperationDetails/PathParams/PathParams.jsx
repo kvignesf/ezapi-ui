@@ -61,13 +61,10 @@ const PathParams = ({ request }) => {
             )
           ) {
             const newOperationDetails = _.cloneDeep(operationDetails);
-            newOperationDetails.operationRequest.pathParams.push({
-              name: item?.name,
-              type: item?.type,
-              required: item?.required,
-              description: item?.description,
-              schemaName: fetchParentSchema()?.name ?? "global",
-            });
+            const clonedItem = _.cloneDeep(item);
+
+            clonedItem.schemaName = fetchParentSchema()?.name ?? "global";
+            newOperationDetails.operationRequest.pathParams.push(clonedItem);
             return newOperationDetails;
           }
         } else {
@@ -77,13 +74,11 @@ const PathParams = ({ request }) => {
             )
           ) {
             const newOperationDetails = _.cloneDeep(operationDetails);
-            newOperationDetails.operationResponse.pathParams.push({
-              name: item?.name,
-              type: item?.type,
-              required: item?.required,
-              description: item?.description,
-              schemaName: fetchParentSchema()?.name ?? "global",
-            });
+            const clonedItem = _.cloneDeep(item);
+
+            clonedItem.schemaName = fetchParentSchema()?.name ?? "global";
+            newOperationDetails.operationResponse.pathParams.push(clonedItem);
+
             return newOperationDetails;
           }
         }

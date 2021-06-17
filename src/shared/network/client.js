@@ -26,6 +26,7 @@ export const endpoint = Object.freeze({
   schemaRecommendations: "/schemaRecommendations",
   saveAttributeMatch: "/overrideAttrMatch",
   saveSchemaMatch: "/overrideSchemaMatch",
+  publishProject: "/publish",
 });
 
 const client = axios.create({

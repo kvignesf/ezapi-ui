@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import MoreVertIcon from "@material-ui/icons/MoreVert";
 import GetAppIcon from "@material-ui/icons/GetApp";
+import SystemUpdateAltIcon from "@material-ui/icons/SystemUpdateAlt";
 import TimeAgo from "react-timeago";
 import _ from "lodash";
 import classNames from "classnames";
@@ -96,6 +97,8 @@ const ProjectRow = ({
     setAnchorEl(event.currentTarget);
   };
 
+  const onDownloadClick = (event) => {};
+
   return (
     <tr className='text-overline2'>
       <td
@@ -124,7 +127,16 @@ const ProjectRow = ({
       <td>
         <p className='text-overline2'>{project?.status}</p>
       </td>
-      <td></td>
+      <td>
+        <AppIcon onClick={onDownloadClick}>
+          <GetAppIcon />
+        </AppIcon>
+      </td>
+      <td align='center'>
+        <AppIcon onClick={onDownloadClick}>
+          <SystemUpdateAltIcon />
+        </AppIcon>
+      </td>
 
       <td align='right'>
         <AppIcon onClick={handleOnOptionsClick}>
@@ -179,7 +191,7 @@ const ProjectRow = ({
               style={{ color: Colors.accent.red }}
             >
               Delete API
-            </MenuItem>{" "}
+            </MenuItem>
           </div>
         )}
       </Menu>
@@ -291,9 +303,10 @@ const Content = ({ showCreateProjectDialog }) => {
             <th className='p-2 w-1/4 rounded-tl-md rounded-bl-md'>NAME</th>
             <th className='w-1/4'>MEMBERS</th>
             <th className='w-1/4'>LAST ACTIVITY</th>
-            <th className='w-1/4'>STATUS</th>
-            <th className='w-1/4 mr-4'></th>
-            <th className='w-1/4 rounded-tr-md rounded-br-md'>
+            <th className='w-1/5'>STATUS</th>
+            <th className=''></th>
+            <th className='w-1/5'></th>
+            <th className='rounded-tr-md rounded-br-md'>
               {isFetchingProjectsBg && <CircularProgress size='20px' />}
             </th>
           </tr>

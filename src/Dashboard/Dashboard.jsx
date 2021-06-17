@@ -245,7 +245,8 @@ const Dashboard = ({ selectedIndex, children }) => {
             </ListItem>
           </List>
         </div>
-        <div className='ml-52 w-full' style={{ height: `calc(100vh)` }}>
+
+        <div className='ml-52 w-full' style={{ height: `calc(100vh - 80px)` }}>
           {React.cloneElement(children, {
             showCreateProjectDialog: showAddProjectDialog,
           })}

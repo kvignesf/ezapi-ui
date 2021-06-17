@@ -40,8 +40,9 @@ const Body = ({ request = true, responseCode }) => {
             )
           ) {
             const newOperationDetails = _.cloneDeep(operationDetails);
+            const clonedItem = _.cloneDeep(item);
 
-            newOperationDetails.operationRequest.body.push(item);
+            newOperationDetails.operationRequest.body.push(clonedItem);
 
             return newOperationDetails;
           }
@@ -56,8 +57,9 @@ const Body = ({ request = true, responseCode }) => {
           if (existingBodyIndex === -1 && responseData && responseIndex >= 0) {
             const clonedOperationDetails = _.cloneDeep(operationDetails);
             const clonedResponseData = _.cloneDeep(responseData);
+            const clonedItem = _.cloneDeep(item);
 
-            clonedResponseData.body.push(item);
+            clonedResponseData.body.push(clonedItem);
 
             clonedOperationDetails.operationResponse[responseIndex] =
               clonedResponseData;
