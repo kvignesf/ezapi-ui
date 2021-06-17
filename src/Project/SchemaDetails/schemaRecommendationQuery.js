@@ -41,12 +41,30 @@ export const useGetSchemaRecommendations = () => {
   return mutation;
 };
 
-const saveSchemaRecommendation = async ({ projectId, schema, data }) => {
+const saveSchemaRecommendation = async ({
+  projectId,
+  schema,
+  attributesWithOverrides,
+}) => {
+  const incompleteOverridenAttribute = attributesWithOverrides.find(
+    (overridenAttribute) =>
+      !overridenAttribute?.overridenMatch ||
+      _.isEmpty(overridenAttribute?.overridenMatch) ||
+      _.isEmpty(overridenAttribute?.overridenMatch?.tableName) ||
+      _.isEmpty(overridenAttribute?.overridenMatch?.tableAttribute)
+  );
+
+  if (incompleteOverridenAttribute) {
+    throw new Error(
+      `Please fill all the details of ${incompleteOverridenAttribute?.name} attribute`
+    );
+  }
+
   try {
     const { data } = await client.post(endpoint.saveSchemaMatch, {
       projectId,
       schema,
-      data: [],
+      data: attributesWithOverrides ?? [],
     });
     return data;
   } catch (error) {

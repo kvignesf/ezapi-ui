@@ -42,6 +42,13 @@ const SchemaDetails = ({ schema, onClose }) => {
     error: fetchSchemaError,
     mutate: fetchSchemaData,
   } = useGetSchemaRecommendations();
+  const {
+    isLoading: isSavingSchemaData,
+    isSuccess: isSavingSchemaSuccess,
+    error: saveSchemaMatchError,
+    mutate: saveSchemaMatchData,
+    reset: resetSaveSchemaMutation,
+  } = useSaveSchemaRecommendations();
 
   useEffect(() => {
     if (schema && schema?.name) {
@@ -60,6 +67,8 @@ const SchemaDetails = ({ schema, onClose }) => {
       return "Fetching schema data";
     } else if (isFetchingTables) {
       return "Fetching tables data";
+    } else if (isSavingSchemaData) {
+      return "Saving schema data";
     }
     return null;
   };
@@ -72,6 +81,32 @@ const SchemaDetails = ({ schema, onClose }) => {
     }
     return null;
   };
+
+  const saveSchema = () => {
+    const attributesWithOverrides = schemaData
+      ?.filter(
+        (attribute) =>
+          attribute?.overridenMatch && !_.isEmpty(attribute?.overridenMatch)
+      )
+      ?.map((overridenAttribute) => {
+        const clonedOverridenAttribute = _.cloneDeep(overridenAttribute);
+
+        delete clonedOverridenAttribute["recommendations"];
+
+        return clonedOverridenAttribute;
+      });
+
+    saveSchemaMatchData({
+      projectId,
+      schema: schema?.name,
+      attributesWithOverrides: attributesWithOverrides ?? [],
+    });
+  };
+
+  if (isSavingSchemaSuccess) {
+    onClose();
+    return null;
+  }
 
   return (
     <div
@@ -131,6 +166,7 @@ const SchemaDetails = ({ schema, onClose }) => {
                       <SchemaDetailsRow
                         attribute={attribute}
                         tablesData={tablesData}
+                        resetSaveSchemaMutation={resetSaveSchemaMutation}
                       />
                     );
                   })}
@@ -145,6 +181,12 @@ const SchemaDetails = ({ schema, onClose }) => {
               <p className='text-overline2'>No schema data available</p>
             </div>
           ))}
+
+        {saveSchemaMatchError && (
+          <p className='text-overline2 text-accent-red pl-4 my-2'>
+            {saveSchemaMatchError?.message}
+          </p>
+        )}
 
         {getLoadingMessage() && (
           <div className='h-full flex flex-col items-center justify-center'>
@@ -178,7 +220,7 @@ const SchemaDetails = ({ schema, onClose }) => {
             e.preventDefault();
             e.stopPropagation();
 
-            // saveSchemaMatchData(table, column);
+            saveSchema();
           }}
         >
           Save
@@ -188,7 +230,11 @@ const SchemaDetails = ({ schema, onClose }) => {
   );
 };
 
-const SchemaDetailsRow = ({ attribute, tablesData }) => {
+const SchemaDetailsRow = ({
+  attribute,
+  tablesData,
+  resetSaveSchemaMutation,
+}) => {
   const [table, setTable] = useState(null); // table name
   const [column, setColumn] = useState(null); // column name
 
@@ -198,8 +244,8 @@ const SchemaDetailsRow = ({ attribute, tablesData }) => {
       attribute?.overridenMatch &&
       !_.isEmpty(attribute?.overridenMatch)
     ) {
-      setTable(attribute?.overridenMatch?.table);
-      setColumn(attribute?.overridenMatch?.table_attribute);
+      setTable(attribute?.overridenMatch?.tableName);
+      setColumn(attribute?.overridenMatch?.tableAttribute);
     } else if (
       attribute &&
       attribute?.recommendations &&
@@ -218,6 +264,46 @@ const SchemaDetailsRow = ({ attribute, tablesData }) => {
 
   const getColumns = (tableName) => {
     return _.find(tablesData, (tab) => tab?.table === tableName)?.columns ?? [];
+  };
+
+  const modifyTableAndColumnData = (value) => {
+    if (value && !_.isEmpty(value)) {
+      resetSaveSchemaMutation();
+
+      if (value?.includes("$$$")) {
+        // Recommended value is selected
+
+        attribute.overridenMatch = {
+          tableName: value?.split("$$$")[0],
+          tableAttribute: value?.split("$$$")[1],
+        };
+
+        setTable(value?.split("$$$")[0]);
+        setColumn(value?.split("$$$")[1]);
+      } else {
+        // Table is selected
+
+        attribute.overridenMatch = {
+          tableName: value,
+          tableAttribute: null,
+        };
+
+        setTable(value);
+        setColumn(null);
+      }
+    }
+  };
+
+  const modifyColumnData = (value) => {
+    if (value && !_.isEmpty(value)) {
+      const clonedOverrideMatch = _.cloneDeep(attribute?.overridenMatch);
+
+      clonedOverrideMatch.tableAttribute = value;
+      attribute.overridenMatch = clonedOverrideMatch;
+
+      resetSaveSchemaMutation();
+      setColumn(value);
+    }
   };
 
   return (
@@ -260,19 +346,7 @@ const SchemaDetailsRow = ({ attribute, tablesData }) => {
           onChange={(event) => {
             const value = event?.target?.value;
 
-            if (value && !_.isEmpty(value)) {
-              if (value?.includes("$$$")) {
-                // Recommended value is selected
-
-                setTable(value?.split("$$$")[0]);
-                setColumn(value?.split("$$$")[1]);
-              } else {
-                // Table is selected
-
-                setTable(value);
-                setColumn(null);
-              }
-            }
+            modifyTableAndColumnData(value);
           }}
           style={{
             width: "100%",
@@ -330,8 +404,7 @@ const SchemaDetailsRow = ({ attribute, tablesData }) => {
           value={column}
           variant='outlined'
           onChange={({ target: { value } }) => {
-            // resetSaveAttrDetails();
-            setColumn(value);
+            modifyColumnData(value);
           }}
           style={{
             width: "100%",

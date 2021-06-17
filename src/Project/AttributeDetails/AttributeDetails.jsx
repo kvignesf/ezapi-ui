@@ -71,6 +71,7 @@ const AttributeDetails = ({ attribute, onClose }) => {
   } = useGetAttrRecommendations();
   const {
     isLoading: isSavingAttrData,
+    isSuccess: saveAttributeSuccess,
     error: saveAttributeError,
     data: saveAttrData,
     mutate: saveAttrDetails,
@@ -98,8 +99,8 @@ const AttributeDetails = ({ attribute, onClose }) => {
 
   useEffect(() => {
     if (attributeData && attributeData?.overridenMatch) {
-      setTable(attributeData?.overridenMatch?.table);
-      setColumn(attributeData?.overridenMatch?.table_attribute);
+      setTable(attributeData?.overridenMatch?.tableName);
+      setColumn(attributeData?.overridenMatch?.tableAttribute);
     }
   }, [attributeData]);
 
@@ -141,13 +142,17 @@ const AttributeDetails = ({ attribute, onClose }) => {
       !_.isEmpty(attributeData?.overridenMatch)
     ) {
       return (
-        attributeData?.overridenMatch?.table === recom?.table &&
-        attributeData?.overridenMatch?.table_attribute ===
-          recom?.table_attribute
+        attributeData?.overridenMatch?.tableName === recom?.table &&
+        attributeData?.overridenMatch?.tableAttribute === recom?.table_attribute
       );
     }
     return isFullMatch(recom);
   };
+
+  if (saveAttributeSuccess) {
+    onClose();
+    return null;
+  }
 
   return (
     <div
