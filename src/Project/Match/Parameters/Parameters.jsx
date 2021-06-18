@@ -119,7 +119,9 @@ const Parameters = () => {
 
               <Scrollbar
                 style={{
-                  height: !operationState?.operationIndex ? "h-full" : null,
+                  height: !operationState?.operationIndex
+                    ? `calc(100vh - 180px)`
+                    : null,
                   maxHeight: operationState?.operationIndex
                     ? `calc(50vh - 180px)`
                     : null,

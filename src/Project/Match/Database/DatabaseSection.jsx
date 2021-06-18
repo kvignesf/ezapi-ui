@@ -5,9 +5,9 @@ import DragIndicatorIcon from "@material-ui/icons/DragIndicator";
 
 import operationAtom from "../../operationAtom";
 import AppIcon from "../../../shared/components/AppIcon";
-import DraggableSchemaMatchItem from "../DraggableSchemaMatchItem";
+import DraggableDatabaseItem from "./DraggableDatabaseItem";
 
-const FullMatch = ({ items, onItemClick }) => {
+const DatabaseSection = ({ items, onItemClick, section }) => {
   const operationState = useRecoilValue(operationAtom);
 
   return (
@@ -31,9 +31,10 @@ const FullMatch = ({ items, onItemClick }) => {
           >
             {items?.map((item, index) => {
               return (
-                <DraggableSchemaMatchItem
+                <DraggableDatabaseItem
                   index={index}
                   item={item}
+                  section={section}
                   onClick={(e) => {
                     e?.preventDefault();
                     e?.stopPropagation();
@@ -50,4 +51,4 @@ const FullMatch = ({ items, onItemClick }) => {
   );
 };
 
-export default FullMatch;
+export default DatabaseSection;

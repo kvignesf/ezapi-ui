@@ -15,6 +15,7 @@ import TabLabel from "../../shared/components/TabLabel";
 import Parameters from "./Parameters/Parameters";
 import Colors from "../../shared/colors";
 import AddOrEditParameter from "./Parameters/AddOrEditParameter/AddOrEditParameter";
+import Database from "./Database/Database";
 
 const Match = (props) => {
   const [currentTab, setTab] = useState(0);
@@ -199,6 +200,8 @@ const Match = (props) => {
           <Schema />
         ) : currentTab === 1 ? (
           <Parameters />
+        ) : currentTab === 2 ? (
+          <Database />
         ) : null}
       </div>
     </div>
