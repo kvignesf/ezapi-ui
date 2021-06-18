@@ -27,6 +27,8 @@ export const endpoint = Object.freeze({
   saveAttributeMatch: "/overrideAttrMatch",
   saveSchemaMatch: "/overrideSchemaMatch",
   publishProject: "/publish",
+  downloadSpec: "/download_spec",
+  downloadArtifact: "/download_apiops",
 });
 
 const client = axios.create({

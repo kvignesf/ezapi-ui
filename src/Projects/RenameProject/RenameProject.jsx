@@ -5,7 +5,7 @@ import { CircularProgress, TextField } from "@material-ui/core";
 
 import AppIcon from "../../shared/components/AppIcon";
 import { PrimaryButton, TextButton } from "../../shared/components/AppButton";
-import { useUpdateProject } from "../updateProjectQueries";
+import { useUpdateProject } from "../projectQueries";
 import apiNameSchema from "../../shared/schemas/apiNameSchema";
 
 const RenameProject = ({ project, onClose }) => {

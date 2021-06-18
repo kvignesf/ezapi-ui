@@ -222,7 +222,7 @@ const ProjectDetails = ({
           </div>
         ) : null}
 
-        {specsError &&
+        {_.isEmpty(projectDetails?.dbs) &&
           _.isEmpty(projectDetails?.specs) &&
           !_.isEmpty(specsError) && (
             <p className='text-accent-red text-overline2 mt-2'>{specsError}</p>
@@ -279,9 +279,11 @@ const ProjectDetails = ({
           </div>
         ) : null}
 
-        {dbsError && _.isEmpty(projectDetails?.dbs) && !_.isEmpty(dbsError) && (
-          <p className='text-accent-red text-overline2 mt-2'>{dbsError}</p>
-        )}
+        {_.isEmpty(projectDetails?.dbs) &&
+          _.isEmpty(projectDetails?.specs) &&
+          !_.isEmpty(dbsError) && (
+            <p className='text-accent-red text-overline2 mt-2'>{dbsError}</p>
+          )}
       </div>
     </div>
   );

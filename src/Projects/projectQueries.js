@@ -1,12 +1,30 @@
 import _ from "lodash";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useHistory } from "react-router-dom";
+import { saveAs } from "file-saver";
 
 import client, { endpoint } from "../shared/network/client";
 import { clearQueryCache, queries } from "../shared/network/queryClient";
 import routes from "../shared/routes";
 import { clearSession, setAccessToken } from "../shared/storage";
 import { getApiError } from "../shared/utils";
+
+const getProjects = async () => {
+  try {
+    const { data } = await client.get(endpoint.project);
+    return data;
+  } catch (error) {
+    throw getApiError(error);
+  }
+};
+
+export const useGetProjects = () => {
+  const mutation = useQuery([queries.projects], getProjects, {
+    refetchOnWindowFocus: false,
+  });
+
+  return mutation;
+};
 
 const updateProject = async ({ id, projectName, removeInvites }) => {
   let requestData = {};
@@ -64,6 +82,64 @@ export const useInviteCollaborator = () => {
   const mutation = useMutation(inviteCollaborators, {
     onSuccess: (data) => {
       queryClient.invalidateQueries(queries.projects);
+    },
+  });
+
+  return mutation;
+};
+
+const downloadSpecs = async ({ projectId }) => {
+  try {
+    const { data } = await client.post(endpoint.downloadSpec, {
+      projectId,
+    });
+    return data;
+  } catch (error) {
+    throw getApiError(error);
+  }
+};
+
+export const useDownloadSpecs = () => {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation(downloadSpecs, {
+    onSuccess: (data) => {
+      if (data?.downloadUrl && !_.isEmpty(data?.downloadUrl)) {
+        const link =
+          "https://s3.us-east-2.amazonaws.com/brilliantpet.images/aki_YJmvVw16198431256609.jpg";
+
+        const filename = link.substring(link.lastIndexOf("/") + 1);
+        saveAs(link, filename);
+      }
+    },
+  });
+
+  return mutation;
+};
+
+const downloadArtifacts = async ({ projectId }) => {
+  try {
+    const { data } = await client.post(endpoint.downloadArtifact, {
+      projectId,
+    });
+    return data;
+  } catch (error) {
+    throw getApiError(error);
+  }
+};
+
+export const useDownloadArtifacts = () => {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation(downloadArtifacts, {
+    onSuccess: (data) => {
+      if (data?.downloadUrl && !_.isEmpty(data?.downloadUrl)) {
+        const link =
+          "https://s3.us-east-2.amazonaws.com/brilliantpet.images/aki_YJmvVw16198431256609.jpg";
+
+        const filename = link.substring(link.lastIndexOf("/") + 1);
+        saveAs(link, filename);
+      }
     },
   });
 

@@ -73,19 +73,14 @@ const AddProject = ({ onClose }) => {
     if (formRef.current) {
       formRef.current.handleSubmit();
 
-      if (_.isEmpty(projectDetails?.specs)) {
-        setSpecsError("Upload atleast one specs file.");
-      }
-
-      if (_.isEmpty(projectDetails?.dbs)) {
-        setDbsError("Upload atleast one database file.");
+      if (_.isEmpty(projectDetails?.specs) || _.isEmpty(projectDetails?.dbs)) {
+        setDbsError("Atleast one spec or db file must be uploaded");
       }
 
       if (
         formRef.current.isValid &&
         !_.isEmpty(projectDetails?.name) &&
-        !_.isEmpty(projectDetails?.dbs) &&
-        !_.isEmpty(projectDetails?.specs)
+        !(_.isEmpty(projectDetails?.dbs) && _.isEmpty(projectDetails?.specs))
       ) {
         setTab(1);
       }
@@ -95,8 +90,7 @@ const AddProject = ({ onClose }) => {
   const handleDone = () => {
     if (
       _.isEmpty(projectDetails?.name) ||
-      _.isEmpty(projectDetails?.dbs) ||
-      _.isEmpty(projectDetails?.specs)
+      (_.isEmpty(projectDetails?.dbs) && _.isEmpty(projectDetails?.specs))
     ) {
       setTab(0);
       if (formRef.current) {
@@ -115,17 +109,21 @@ const AddProject = ({ onClose }) => {
           };
         }),
       });
-    } else if (!uploadSpecsSuccess) {
+    } else if (!uploadSpecsSuccess && !_.isEmpty(projectDetails?.specs)) {
       uploadSpecs({
         projectId: createdProjectDetails?.projectId,
         files: projectDetails?.specs,
       });
-    } else if (!uploadDbsSuccess) {
+    } else if (!uploadDbsSuccess && !_.isEmpty(projectDetails?.dbs)) {
       uploadDbs({
         projectId: createdProjectDetails?.projectId,
         files: projectDetails?.dbs,
       });
-    } else if (!matchAiSuccess) {
+    } else if (
+      !matchAiSuccess &&
+      !_.isEmpty(projectDetails?.specs) &&
+      !_.isEmpty(projectDetails?.dbs)
+    ) {
       callAiMatcher({
         projectId: createdProjectDetails?.projectId,
       });
@@ -150,7 +148,16 @@ const AddProject = ({ onClose }) => {
     });
   };
 
-  if (matchAiSuccess) {
+  if (
+    (isProjectDetailsUploadSuccess &&
+      _.isEmpty(projectDetails?.specs) &&
+      _.isEmpty(projectDetails?.dbs)) ||
+    (uploadSpecsSuccess && _.isEmpty(projectDetails?.dbs)) ||
+    (uploadDbsSuccess && _.isEmpty(projectDetails?.specs)) ||
+    (matchAiSuccess &&
+      !_.isEmpty(projectDetails?.specs) &&
+      !_.isEmpty(projectDetails?.dbs))
+  ) {
     onClose();
     return null;
   }

@@ -9,6 +9,7 @@ import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
 import Fade from "@material-ui/core/Fade";
 import { CircularProgress, Dialog } from "@material-ui/core";
+import { useHistory } from "react-router";
 
 import Dashboard from "../Dashboard";
 import AppIcon from "../shared/components/AppIcon";
@@ -19,13 +20,16 @@ import InitialsAvatar from "../shared/components/InitialsAvatar";
 import Colors from "../shared/colors";
 import RenameProject from "./RenameProject/RenameProject";
 import DeleteProject from "./DeleteProject/DeleteProject";
-import { useGetProjects } from "./listProjectQueries";
+import {
+  useDownloadArtifacts,
+  useDownloadSpecs,
+  useGetProjects,
+} from "./projectQueries";
 import EmptyLogo from "../static/images/empty-state.svg";
 import { PrimaryButton } from "../shared/components/AppButton";
 import LoaderWithMessage from "../shared/components/LoaderWithMessage";
 import { getUserId } from "../shared/storage";
 import routes, { generateRoute } from "../shared/routes";
-import { useHistory } from "react-router";
 
 const MembersImages = ({ project, ...rest }) => {
   const loggedInUserId = getUserId();
@@ -92,12 +96,22 @@ const ProjectRow = ({
   const [anchorEl, setAnchorEl] = React.useState(null);
   const datetime = new Date(project?.updatedAt);
   const loggedInUserId = getUserId();
+  const { isLoading: isDownloadingSpecs, mutate: downloadSpecs } =
+    useDownloadSpecs();
+  const { isLoading: isDownloadingArtifacts, mutate: downloadArtifacts } =
+    useDownloadArtifacts();
 
   const handleOnOptionsClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
 
-  const onDownloadClick = (event) => {};
+  const onDownloadSpecs = () => {
+    downloadSpecs({ projectId: project?.projectId });
+  };
+
+  const onDownloadArtifact = () => {
+    downloadArtifacts({ projectId: project?.projectId });
+  };
 
   return (
     <tr className='text-overline2'>
@@ -128,14 +142,47 @@ const ProjectRow = ({
         <p className='text-overline2'>{project?.status}</p>
       </td>
       <td>
-        <AppIcon onClick={onDownloadClick}>
-          <GetAppIcon />
-        </AppIcon>
+        {/* Spec download */}
+        {project?.status?.toLowerCase() === "complete" &&
+          project?.publishStatus?.SpecGeneration?.success &&
+          !isDownloadingSpecs && (
+            <AppIcon
+              onClick={(e) => {
+                e?.preventDefault();
+                e?.stopPropagation();
+
+                onDownloadSpecs();
+              }}
+            >
+              <GetAppIcon />
+            </AppIcon>
+          )}
+
+        {isDownloadingSpecs && (
+          <CircularProgress style={{ width: "24px", height: "24px" }} />
+        )}
       </td>
       <td align='center'>
-        <AppIcon onClick={onDownloadClick}>
-          <SystemUpdateAltIcon />
-        </AppIcon>
+        {/* Artefact download */}
+        {project?.status?.toLowerCase() === "complete" &&
+          project?.publishStatus?.SankyGeneration?.success &&
+          project?.publishStatus?.ArtefactGeneration?.success &&
+          !isDownloadingArtifacts && (
+            <AppIcon
+              onClick={(e) => {
+                e?.preventDefault();
+                e?.stopPropagation();
+
+                onDownloadArtifact();
+              }}
+            >
+              <SystemUpdateAltIcon />
+            </AppIcon>
+          )}
+
+        {isDownloadingArtifacts && (
+          <CircularProgress style={{ width: "24px", height: "24px" }} />
+        )}
       </td>
 
       <td align='right'>

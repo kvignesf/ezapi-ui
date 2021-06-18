@@ -33,13 +33,23 @@ export const useAddProject = () => {
   const dbMutation = useUploadProjectDbs(aiMutation);
   const specsMutation = useUploadProjectSpecs(dbMutation);
   const projectDetails = useRecoilValue(projectAtom);
+  const queryClient = useQueryClient();
 
   const mutation = useMutation(addProject, {
     onSuccess: (data) => {
-      specsMutation.mutate({
-        projectId: data?.projectId,
-        files: projectDetails?.specs,
-      });
+      if (!_.isEmpty(projectDetails?.specs)) {
+        specsMutation.mutate({
+          projectId: data?.projectId,
+          files: projectDetails?.specs,
+        });
+      } else if (!_.isEmpty(projectDetails?.dbs)) {
+        dbMutation.mutate({
+          projectId: data?.projectId,
+          files: projectDetails?.dbs,
+        });
+      } else {
+        queryClient.invalidateQueries(queries.projects);
+      }
     },
   });
 
@@ -78,14 +88,19 @@ const uploadProjectSpecs = async ({ projectId, files }) => {
 
 const useUploadProjectSpecs = (dbMutation) => {
   const projectDetails = useRecoilValue(projectAtom);
+  const queryClient = useQueryClient();
 
   const mutation = useMutation(uploadProjectSpecs, {
     onSuccess: (data) => {
       if (data?.projectId) {
-        dbMutation.mutate({
-          projectId: data?.projectId,
-          files: projectDetails?.dbs,
-        });
+        if (!_.isEmpty(projectDetails?.dbs)) {
+          dbMutation.mutate({
+            projectId: data?.projectId,
+            files: projectDetails?.dbs,
+          });
+        } else {
+          queryClient.invalidateQueries(queries.projects);
+        }
       }
     },
   });
@@ -120,12 +135,22 @@ const uploadProjectDbs = async ({ projectId, files }) => {
 };
 
 const useUploadProjectDbs = (aiMutation) => {
+  const projectDetails = useRecoilValue(projectAtom);
+  const queryClient = useQueryClient();
+
   const mutation = useMutation(uploadProjectDbs, {
     onSuccess: (data) => {
       if (data?.projectId) {
-        aiMutation.mutate({
-          projectId: data?.projectId,
-        });
+        if (
+          !_.isEmpty(projectDetails?.dbs) &&
+          !_.isEmpty(projectDetails?.specs)
+        ) {
+          aiMutation.mutate({
+            projectId: data?.projectId,
+          });
+        } else {
+          queryClient.invalidateQueries(queries.projects);
+        }
       }
     },
   });

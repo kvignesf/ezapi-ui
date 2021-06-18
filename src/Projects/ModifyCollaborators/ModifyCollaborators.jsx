@@ -11,10 +11,7 @@ import Colors from "../../shared/colors";
 import InviteCollaborators from "../../shared/components/InviteCollaborators";
 import { PrimaryButton } from "../../shared/components/AppButton";
 import InitialsAvatar from "../../shared/components/InitialsAvatar";
-import {
-  useUpdateProject,
-  useInviteCollaborator,
-} from "../updateProjectQueries";
+import { useUpdateProject, useInviteCollaborator } from "../projectQueries";
 import { CircularProgress } from "@material-ui/core";
 import { getEmailId } from "../../shared/storage";
 
