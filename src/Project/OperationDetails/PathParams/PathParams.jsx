@@ -17,19 +17,21 @@ import {
   isArray,
   isObject,
   useWindowSize,
+  isColumn,
 } from "../../../shared/utils";
 import DragAndDropMessage from "../../../shared/components/DragAndDropMessage";
 import Row from "../Row";
 import schemaAtom from "../../../shared/atom/schemaAtom";
+import tableAtom from "../../../shared/atom/tableAtom";
 
 const PathParams = ({ request }) => {
   const [operationDetails, setOperationDetails] = useRecoilState(operationAtom);
   const { height, width } = useWindowSize();
   const getRecoilValueInfo = useGetRecoilValueInfo_UNSTABLE();
 
-  const fetchParentSchema = () => {
-    const { loadable } = getRecoilValueInfo(schemaAtom);
-    const schemaDetails = loadable?.contents;
+  const fetchParentSchemaName = () => {
+    const { loadable: schemaAtomLoadable } = getRecoilValueInfo(schemaAtom);
+    const schemaDetails = schemaAtomLoadable?.contents;
 
     if (
       schemaDetails &&
@@ -41,14 +43,29 @@ const PathParams = ({ request }) => {
         ?.reverse()
         ?.find((item) => isSchema(item));
 
-      return value;
+      return value?.name;
+    }
+
+    return null;
+  };
+
+  const fetchParentTableName = () => {
+    const { loadable: tableAtomLoadable } = getRecoilValueInfo(tableAtom);
+    const tableDetails = tableAtomLoadable?.contents;
+
+    if (
+      tableDetails &&
+      tableDetails?.selected &&
+      !_.isEmpty(tableDetails?.selected)
+    ) {
+      return tableDetails?.selected?.name;
     }
     return null;
   };
 
   const itemDropped = (item) => {
     if (
-      isAttribute(item) &&
+      (isAttribute(item) || isColumn(item)) &&
       !isArray(item) &&
       !isSchema(item) &&
       !isObject(item)
@@ -63,7 +80,16 @@ const PathParams = ({ request }) => {
             const newOperationDetails = _.cloneDeep(operationDetails);
             const clonedItem = _.cloneDeep(item);
 
-            clonedItem.schemaName = fetchParentSchema()?.name ?? "global";
+            if (
+              clonedItem?.paramType &&
+              !_.isEmpty(clonedItem?.paramType) &&
+              clonedItem?.paramType === "column"
+            ) {
+              clonedItem.schemaName = fetchParentTableName() ?? "global";
+            } else {
+              clonedItem.schemaName = fetchParentSchemaName() ?? "global";
+            }
+
             newOperationDetails.operationRequest.pathParams.push(clonedItem);
             return newOperationDetails;
           }
@@ -75,8 +101,15 @@ const PathParams = ({ request }) => {
           ) {
             const newOperationDetails = _.cloneDeep(operationDetails);
             const clonedItem = _.cloneDeep(item);
-
-            clonedItem.schemaName = fetchParentSchema()?.name ?? "global";
+            if (
+              clonedItem?.paramType &&
+              !_.isEmpty(clonedItem?.paramType) &&
+              clonedItem?.paramType === "column"
+            ) {
+              clonedItem.schemaName = fetchParentTableName() ?? "global";
+            } else {
+              clonedItem.schemaName = fetchParentSchemaName() ?? "global";
+            }
             newOperationDetails.operationResponse.pathParams.push(clonedItem);
 
             return newOperationDetails;

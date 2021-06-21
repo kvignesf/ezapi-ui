@@ -17,9 +17,7 @@ const Database = () => {
     data: tablesData,
     mutate: fetchTablesData,
   } = useGetTables();
-  const [firstPartContent, setFirstContent] = useState(null);
-  const [secondPartContent, setSecondContent] = useState(null);
-  const [thirdPartContent, setThirdContent] = useState(null);
+  const [content, setContent] = useState(null);
   const [tableState, setTableState] = useRecoilState(tableAtom);
 
   useEffect(() => {
@@ -36,9 +34,7 @@ const Database = () => {
       const secondPart = columnsData.splice(-threePartIndex);
       const firstPart = columnsData;
 
-      setFirstContent(firstPart);
-      setSecondContent(secondPart);
-      setThirdContent(thirdPart);
+      setContent([firstPart, secondPart, thirdPart]);
     } else if (tablesData && !_.isEmpty(tablesData)) {
       const clonedTablesData = _.cloneDeep(tablesData);
 
@@ -54,9 +50,7 @@ const Database = () => {
       const secondPart = clonedTablesData.splice(-threePartIndex);
       const firstPart = clonedTablesData;
 
-      setFirstContent(firstPart);
-      setSecondContent(secondPart);
-      setThirdContent(thirdPart);
+      setContent([firstPart, secondPart, thirdPart]);
     }
   }, [tablesData, tableState?.selected]);
 
@@ -70,9 +64,9 @@ const Database = () => {
     );
   }
 
-  if (!firstPartContent || _.isEmpty(firstPartContent)) {
+  if (!content || _.isEmpty(content)) {
     return (
-      <div>
+      <div className='flex flex-col items-center'>
         <p>No items available</p>
       </div>
     );
@@ -84,7 +78,7 @@ const Database = () => {
         <div className='flex-1 h-fit bg-neutral-gray7 rounded-md p-2'>
           <DatabaseSection
             section={"1"}
-            items={firstPartContent}
+            items={content[0]}
             onItemClick={(item) => {
               if (isDatabase(item)) {
                 setTableState((tableState) => {
@@ -102,7 +96,7 @@ const Database = () => {
         <div className='flex-1 h-fit bg-neutral-gray7 rounded-md p-2 '>
           <DatabaseSection
             section={"2"}
-            items={secondPartContent}
+            items={content[1]}
             onItemClick={(item) => {
               if (isDatabase(item)) {
                 setTableState((tableState) => {
@@ -120,7 +114,7 @@ const Database = () => {
         <div className='flex-1 h-fit  bg-neutral-gray7 rounded-md p-2'>
           <DatabaseSection
             section={"3"}
-            items={thirdPartContent}
+            items={content[2]}
             onItemClick={(item) => {
               if (isDatabase(item)) {
                 setTableState((tableState) => {

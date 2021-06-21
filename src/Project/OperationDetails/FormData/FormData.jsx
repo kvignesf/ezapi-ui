@@ -17,6 +17,7 @@ import {
   isArray,
   useWindowSize,
   isObject,
+  isColumn,
 } from "../../../shared/utils";
 import DragAndDropMessage from "../../../shared/components/DragAndDropMessage";
 import Row from "../Row";
@@ -27,7 +28,7 @@ const FormData = ({ request = true }) => {
 
   const itemDropped = (item) => {
     if (
-      isAttribute(item) &&
+      (isAttribute(item) || isColumn(item)) &&
       !isArray(item) &&
       !isSchema(item) &&
       !isObject(item)

@@ -18,6 +18,7 @@ import {
   useWindowSize,
   isObject,
   useParentSchemaNameFetcher,
+  isColumn,
 } from "../../../shared/utils";
 import DragAndDropMessage from "../../../shared/components/DragAndDropMessage";
 import Row from "../Row";
@@ -28,7 +29,7 @@ const Headers = ({ request = true, responseCode }) => {
 
   const itemDropped = (item) => {
     if (
-      isAttribute(item) &&
+      (isAttribute(item) || isColumn(item)) &&
       !isArray(item) &&
       !isSchema(item) &&
       !isObject(item)

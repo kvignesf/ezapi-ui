@@ -21,6 +21,7 @@ import {
   useWindowSize,
   isObject,
   useParentSchemaNameFetcher,
+  isColumn,
 } from "../../../shared/utils";
 import AppIcon from "../../../shared/components/AppIcon";
 import DragAndDropMessage from "../../../shared/components/DragAndDropMessage";
@@ -33,7 +34,7 @@ const QueryParams = ({ request = true }) => {
 
   const itemDropped = (item) => {
     if (
-      isAttribute(item) &&
+      (isAttribute(item) || isColumn(item)) &&
       !isArray(item) &&
       !isSchema(item) &&
       !isObject(item)
