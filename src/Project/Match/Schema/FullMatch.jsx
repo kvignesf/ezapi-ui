@@ -21,9 +21,10 @@ const FullMatch = ({ items, onItemClick }) => {
         <Scrollbar>
           <div
             style={{
-              height: !operationState?.operationIndex
-                ? `calc(100vh - 180px)`
-                : null,
+              // height: !operationState?.operationIndex
+              //   ? `calc(100vh - 180px)`
+              //   : null,
+              height: !operationState?.operationIndex ? `h-full` : null,
               maxHeight: operationState?.operationIndex
                 ? `calc(50vh - 150px)`
                 : null,

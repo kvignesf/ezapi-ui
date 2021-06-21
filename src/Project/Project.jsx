@@ -26,10 +26,7 @@ import schemaAtom, {
   defaultState as schemaAtomDefaultState,
 } from "../shared/atom/schemaAtom";
 import { endpoint } from "../shared/network/client";
-import {
-  useSyncOperationRequest,
-  useSyncOperationResponse,
-} from "../shared/query/operationDetailsQuery";
+import { useSyncOperation } from "../shared/query/operationDetailsQuery";
 import { usePublishProject } from "./projectQueries";
 import TabLabel from "../shared/components/TabLabel";
 import {
@@ -53,17 +50,11 @@ const Project = () => {
   const [operationState, setOperationState] = useRecoilState(operationAtom);
   const setSchemaState = useSetRecoilState(schemaAtom);
   const {
-    isLoading: isSyncingOperationRequest,
-    isSuccess: isSyncOperationRequestSuccess,
-    error: syncOperationRequestError,
-    mutate: syncOperationRequest,
-  } = useSyncOperationRequest();
-  const {
-    isLoading: isSyncingOperationResponse,
-    isSuccess: isSyncOperationResponseSuccess,
-    error: syncOperationResponseError,
-    mutate: syncOperationResponse,
-  } = useSyncOperationResponse();
+    isLoading: isSyncingOperation,
+    isSuccess: isSyncOperationSuccess,
+    error: syncOperationError,
+    mutate: syncOperation,
+  } = useSyncOperation();
   const {
     isLoading: isPublishingProject,
     isSuccess: isPublishProjectSuccess,
@@ -77,38 +68,22 @@ const Project = () => {
     }
   }, [projectDetails]);
 
-  const saveOperationRequest = () => {
-    const apiRequest = generateSyncOperationRequestRequest(
+  const saveProject = () => {
+    const saveRequestApiRequest = generateSyncOperationRequestRequest(
       operationState?.operationRequest
     );
-
-    syncOperationRequest({
-      projectId,
-      operationId: operationState?.operation?.operationId,
-      pathId: operationState?.path?.pathId,
-      resourceId: operationState?.resource?.resourceId,
-      ...apiRequest,
-    });
-  };
-
-  const saveOperationResponse = () => {
-    const apiRequest = generateSyncOperationResponseRequest(
+    const saveResponseApiRequest = generateSyncOperationResponseRequest(
       operationState?.operationResponse
     );
 
-    syncOperationResponse({
+    syncOperation({
       projectId,
       operationId: operationState?.operation?.operationId,
       pathId: operationState?.path?.pathId,
       resourceId: operationState?.resource?.resourceId,
-      responseData: apiRequest,
+      requestData: saveRequestApiRequest,
+      responseData: saveResponseApiRequest,
     });
-  };
-
-  const saveProject = () => {
-    saveOperationRequest();
-
-    saveOperationResponse();
   };
 
   const publishProject = () => {
@@ -119,11 +94,7 @@ const Project = () => {
     <>
       <Dialog
         aria-labelledby='save-operation-dialog'
-        open={
-          isSyncingOperationRequest ||
-          isSyncingOperationResponse ||
-          isPublishingProject
-        }
+        open={isSyncingOperation || isPublishingProject}
         fullWidth
         PaperProps={{
           style: { borderRadius: 8 },
@@ -133,11 +104,11 @@ const Project = () => {
         <div className='p-6'>
           <div className='w-full flex flex-row items-center'>
             <p className='text-overline mr-3'>
-              {isSyncingOperationRequest
-                ? "Saving Operation Request"
-                : isSyncingOperationResponse
-                ? "Saving Operation Response"
-                : "Publishing project"}
+              {isSyncingOperation
+                ? "Saving Operation"
+                : isPublishingProject
+                ? "Publishing project"
+                : null}
             </p>
             <CircularProgress style={{ width: "20px", height: "20px" }} />
           </div>

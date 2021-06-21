@@ -4,112 +4,75 @@ import { useMutation } from "react-query";
 import client from "../network/client";
 import { getApiError } from "../utils";
 
-const syncOperationRequest = async ({
+const syncOperation = async ({
   projectId,
   resourceId,
   pathId,
   operationId,
-  ...rest
+  requestData,
+  responseData,
 }) => {
   try {
-    const { data } = await client.post(
+    const { data: saveRequestApiData } = await client.post(
       `/operationData/sinkRequest/${operationId}`,
       {
         projectId,
         resourceId,
         pathId,
-        ...rest,
+        ...requestData,
       }
     );
-    return data;
-  } catch (error) {
-    throw getApiError(error);
-  }
-};
 
-export const useSyncOperationRequest = () => {
-  const mutation = useMutation(syncOperationRequest, {
-    onSuccess: (data) => {},
-  });
-
-  return mutation;
-};
-
-const syncOperationResponse = async ({
-  projectId,
-  resourceId,
-  pathId,
-  operationId,
-  ...rest
-}) => {
-  try {
-    const { data } = await client.post(
+    const { data: saveResponseApiData } = await client.post(
       `/operationData/sinkResponse/${operationId}`,
       {
         projectId,
         resourceId,
         pathId,
-        ...rest,
+        responseData,
       }
     );
-    return data;
+
+    return {
+      saveRequestApiData,
+      saveResponseApiData,
+    };
   } catch (error) {
     throw getApiError(error);
   }
 };
 
-export const useSyncOperationResponse = () => {
-  const mutation = useMutation(syncOperationResponse, {
+export const useSyncOperation = () => {
+  const mutation = useMutation(syncOperation, {
     onSuccess: (data) => {},
   });
 
   return mutation;
 };
 
-const getOperationRequest = async ({
-  projectId,
-  resourceId,
-  pathId,
-  operationId,
-}) => {
+const getOperation = async ({ projectId, resourceId, pathId, operationId }) => {
   try {
-    const { data } = await client.post(
+    const { data: getRequestApiData } = await client.post(
       `/operationData/request/${operationId}`,
       { projectId, resourceId, pathId }
     );
-    return data;
-  } catch (error) {
-    throw getApiError(error);
-  }
-};
 
-export const useGetOperationRequest = () => {
-  const mutation = useMutation(getOperationRequest, {
-    onSuccess: (data) => {},
-  });
-
-  return mutation;
-};
-
-const getOperationResponse = async ({
-  projectId,
-  resourceId,
-  pathId,
-  operationId,
-}) => {
-  try {
-    const { data } = await client.post(
+    const { data: getResponseApiData } = await client.post(
       `/operationData/response/${operationId}`,
       { projectId, resourceId, pathId }
     );
-    return data;
+
+    return {
+      getRequestApiData,
+      getResponseApiData,
+    };
   } catch (error) {
     throw getApiError(error);
   }
 };
 
-export const useGetOperationResponse = () => {
-  const mutation = useMutation(getOperationResponse, {
+export const useGetOperation = () => {
+  const mutation = useMutation(getOperation, {
     onSuccess: (data) => {},
   });
 

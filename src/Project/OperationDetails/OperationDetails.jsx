@@ -12,12 +12,10 @@ import {
 import Request from "./Request/Request";
 import Response from "./Response/Response";
 import operationAtom from "../operationAtom";
-import {
-  useGetOperationRequest,
-  useGetOperationResponse,
-} from "../../shared/query/operationDetailsQuery";
+import { useGetOperation } from "../../shared/query/operationDetailsQuery";
 import TabLabel from "../../shared/components/TabLabel";
 import Constants from "../../shared/constants";
+import LoaderWithMessage from "../../shared/components/LoaderWithMessage";
 
 const tabsStyles = makeStyles({
   indicator: {
@@ -46,19 +44,11 @@ const OperationDetails = ({
   const tabClasses = tabStyles();
   const [currentTab, setTab] = useState(0);
   const [operationState, setOperationState] = useRecoilState(operationAtom);
-  const getRequestMutation = useGetOperationRequest();
-  const getResponseMutation = useGetOperationResponse();
+  const getOperationMutation = useGetOperation();
 
   useEffect(() => {
     if (operationState?.operationIndex && operationState?.operation) {
-      getRequestMutation.mutate({
-        operationId: operationState.operation.operationId,
-        pathId: operationState.path.pathId,
-        resourceId: operationState.resource.resourceId,
-        projectId: projectId,
-      });
-
-      getResponseMutation.mutate({
+      getOperationMutation.mutate({
         operationId: operationState.operation.operationId,
         pathId: operationState.path.pathId,
         resourceId: operationState.resource.resourceId,
@@ -68,8 +58,8 @@ const OperationDetails = ({
   }, [operationState?.operationIndex]);
 
   useEffect(() => {
-    if (getResponseMutation.data) {
-      const operationData = getResponseMutation.data;
+    if (getOperationMutation?.data?.getResponseApiData) {
+      const operationData = getOperationMutation?.data?.getResponseApiData;
 
       setOperationState((operationState) => {
         const clonedOperationState = _.cloneDeep(operationState);
@@ -92,11 +82,11 @@ const OperationDetails = ({
         return clonedOperationState;
       });
     }
-  }, [getResponseMutation?.data]);
+  }, [getOperationMutation?.data?.getResponseApiData]);
 
   useEffect(() => {
-    if (getRequestMutation.data) {
-      const operationData = getRequestMutation.data;
+    if (getOperationMutation?.data?.getRequestApiData) {
+      const operationData = getOperationMutation?.data?.getRequestApiData;
 
       setOperationState((operationState) => {
         const clonedOperationState = _.cloneDeep(operationState);
@@ -109,7 +99,18 @@ const OperationDetails = ({
         return clonedOperationState;
       });
     }
-  }, [getRequestMutation?.data]);
+  }, [getOperationMutation?.data?.getRequestApiData]);
+
+  if (getOperationMutation?.isLoading) {
+    return (
+      <div
+        className={`border-t-2 h-full flex flex-col justify-center ${className}`}
+        {...props}
+      >
+        <LoaderWithMessage contained message={"Fetching Operation Details"} />
+      </div>
+    );
+  }
 
   return (
     <div className={`border-t-2 h-full ${className}`} {...props}>
@@ -160,11 +161,11 @@ const OperationDetails = ({
 
             {currentTab === 0 ? (
               <div className='h-full'>
-                <Request getDetailsMutation={getRequestMutation} />
+                <Request getDetailsMutation={getOperationMutation} />
               </div>
             ) : (
               <div className='h-full'>
-                <Response getDetailsMutation={getResponseMutation} />
+                <Response getDetailsMutation={getOperationMutation} />
               </div>
             )}
           </div>

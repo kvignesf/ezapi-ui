@@ -14,11 +14,7 @@ import TabLabel from "../../../shared/components/TabLabel";
 import LoaderWithMessage from "../../../shared/components/LoaderWithMessage";
 
 const Request = ({
-  getDetailsMutation: {
-    isLoading: isLoadingOperationRequest,
-    data: operationData,
-    mutate: getOperationDetails,
-  },
+  getDetailsMutation: { isLoading: isLoadingOperationRequest },
 }) => {
   const [currentTab, setTab] = useState(0);
   const operationState = useRecoilValue(operationAtom);
