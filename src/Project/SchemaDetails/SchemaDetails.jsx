@@ -263,7 +263,7 @@ const SchemaDetailsRow = ({
   }, []);
 
   const getColumns = (tableName) => {
-    return _.find(tablesData, (tab) => tab?.table === tableName)?.data ?? [];
+    return _.find(tablesData, (tab) => tab?.name === tableName)?.data ?? [];
   };
 
   const modifyTableAndColumnData = (value) => {
@@ -382,8 +382,8 @@ const SchemaDetailsRow = ({
             )}
           {tablesData?.map((table) => {
             return (
-              <MenuItem value={table?.table}>
-                <p className='text-overline2'>{table?.table}</p>
+              <MenuItem value={table?.name}>
+                <p className='text-overline2'>{table?.name}</p>
               </MenuItem>
             );
           })}

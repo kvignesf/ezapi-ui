@@ -8,14 +8,14 @@ import { Drawer } from "@material-ui/core";
 import AppIcon from "../../../shared/components/AppIcon";
 import Colors from "../../../shared/colors";
 import AttributeIcon from "../../../static/images/attribute.svg";
-import SchemaIcon from "../../../static/images/schema-icon.svg";
+import TableIcon from "../../../static/images/table-icon.svg";
+import ColumnIcon from "../../../static/images/column-icon.svg";
 import {
   isArray,
   isAttribute,
-  isFullMatch,
-  isNoMatch,
+  isColumn,
+  isDatabase,
   isObject,
-  isPartialMatch,
   isSchema,
 } from "../../../shared/utils";
 
@@ -51,10 +51,7 @@ const DraggableDatabaseItem = ({ index, item, section, ...rest }) => {
         ref={drag}
         style={{
           opacity: isDragging ? 0.5 : 1,
-          cursor:
-            isArray(item) || isSchema(item) || isObject(item)
-              ? "pointer"
-              : null,
+          cursor: isDatabase(item) ? "pointer" : null,
         }}
         className='p-2 mb-2 rounded-md bg-white flex flex-row items-center'
         {...rest}
@@ -63,8 +60,9 @@ const DraggableDatabaseItem = ({ index, item, section, ...rest }) => {
           <DragIndicatorIcon
             className={classNames({
               "cursor-move":
-                (isSchema(item) || isAttribute(item)) &&
+                (isDatabase(item) || isColumn(item)) &&
                 !isArray(item) &&
+                !isSchema(item) &&
                 !isObject(item),
             })}
             style={{ height: "1.25rem" }}
@@ -74,15 +72,13 @@ const DraggableDatabaseItem = ({ index, item, section, ...rest }) => {
         <img
           className='mr-2'
           src={
-            isArray(item) || isSchema(item) || isObject(item)
-              ? SchemaIcon
-              : AttributeIcon
+            isDatabase(item) ? TableIcon : isColumn(item) ? ColumnIcon : null
           }
           style={{ width: "24px", height: "24px" }}
         />
 
         <p className='flex-1 text-overline3 mr-2 overflow-ellipsis'>
-          {item?.table} {isArray(item) ? " [ ]" : ""}
+          {item?.name}
         </p>
 
         <div
@@ -90,7 +86,6 @@ const DraggableDatabaseItem = ({ index, item, section, ...rest }) => {
             "bg-brand-green": section === "1",
             "bg-score-yellow": section === "2",
             "bg-score-red": section === "3",
-            "cursor-pointer": isAttribute(item),
           })}
         />
       </div>

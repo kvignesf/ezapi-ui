@@ -7,6 +7,7 @@ import { useGetTables } from "../../../shared/query/tablesQueries";
 import LoaderWithMessage from "../../../shared/components/LoaderWithMessage";
 import DatabaseSection from "./DatabaseSection";
 import tableAtom from "../../../shared/atom/tableAtom";
+import { isDatabase } from "../../../shared/utils";
 
 const Database = () => {
   const { id: projectId } = useParams();
@@ -16,9 +17,9 @@ const Database = () => {
     data: tablesData,
     mutate: fetchTablesData,
   } = useGetTables();
-  const [firstPartTables, setFirstTables] = useState(null);
-  const [secondPartTables, setSecondTables] = useState(null);
-  const [thirdPartTables, setThirdTables] = useState(null);
+  const [firstPartContent, setFirstContent] = useState(null);
+  const [secondPartContent, setSecondContent] = useState(null);
+  const [thirdPartContent, setThirdContent] = useState(null);
   const [tableState, setTableState] = useRecoilState(tableAtom);
 
   useEffect(() => {
@@ -26,7 +27,19 @@ const Database = () => {
   }, []);
 
   useEffect(() => {
-    if (tablesData && !_.isEmpty(tablesData)) {
+    if (tableState?.selected) {
+      const columnsData = _.cloneDeep(tableState?.selected?.data);
+
+      const threePartIndex = Math.ceil(columnsData?.length / 3);
+
+      const thirdPart = columnsData.splice(-threePartIndex);
+      const secondPart = columnsData.splice(-threePartIndex);
+      const firstPart = columnsData;
+
+      setFirstContent(firstPart);
+      setSecondContent(secondPart);
+      setThirdContent(thirdPart);
+    } else if (tablesData && !_.isEmpty(tablesData)) {
       const clonedTablesData = _.cloneDeep(tablesData);
 
       clonedTablesData?.sort((a, b) => {
@@ -41,11 +54,11 @@ const Database = () => {
       const secondPart = clonedTablesData.splice(-threePartIndex);
       const firstPart = clonedTablesData;
 
-      setFirstTables(firstPart);
-      setSecondTables(secondPart);
-      setThirdTables(thirdPart);
+      setFirstContent(firstPart);
+      setSecondContent(secondPart);
+      setThirdContent(thirdPart);
     }
-  }, [tablesData]);
+  }, [tablesData, tableState?.selected]);
 
   if (isFetchingTables) {
     return (
@@ -57,7 +70,7 @@ const Database = () => {
     );
   }
 
-  if (!firstPartTables || _.isEmpty(firstPartTables)) {
+  if (!firstPartContent || _.isEmpty(firstPartContent)) {
     return (
       <div>
         <p>No items available</p>
@@ -71,15 +84,17 @@ const Database = () => {
         <div className='flex-1 h-fit bg-neutral-gray7 rounded-md p-2'>
           <DatabaseSection
             section={"1"}
-            items={firstPartTables}
-            onItemClick={(table) => {
-              setTableState((tableState) => {
-                const clonedTableState = _.cloneDeep(tableState);
+            items={firstPartContent}
+            onItemClick={(item) => {
+              if (isDatabase(item)) {
+                setTableState((tableState) => {
+                  const clonedTableState = _.cloneDeep(tableState);
 
-                clonedTableState.selected = table;
+                  clonedTableState.selected = item;
 
-                return clonedTableState;
-              });
+                  return clonedTableState;
+                });
+              }
             }}
           />
         </div>
@@ -87,15 +102,17 @@ const Database = () => {
         <div className='flex-1 h-fit bg-neutral-gray7 rounded-md p-2 '>
           <DatabaseSection
             section={"2"}
-            items={secondPartTables}
-            onItemClick={(table) => {
-              setTableState((tableState) => {
-                const clonedTableState = _.cloneDeep(tableState);
+            items={secondPartContent}
+            onItemClick={(item) => {
+              if (isDatabase(item)) {
+                setTableState((tableState) => {
+                  const clonedTableState = _.cloneDeep(tableState);
 
-                clonedTableState.selected = table;
+                  clonedTableState.selected = item;
 
-                return clonedTableState;
-              });
+                  return clonedTableState;
+                });
+              }
             }}
           />
         </div>
@@ -103,15 +120,17 @@ const Database = () => {
         <div className='flex-1 h-fit  bg-neutral-gray7 rounded-md p-2'>
           <DatabaseSection
             section={"3"}
-            items={thirdPartTables}
-            onItemClick={(table) => {
-              setTableState((tableState) => {
-                const clonedTableState = _.cloneDeep(tableState);
+            items={thirdPartContent}
+            onItemClick={(item) => {
+              if (isDatabase(item)) {
+                setTableState((tableState) => {
+                  const clonedTableState = _.cloneDeep(tableState);
 
-                clonedTableState.selected = table;
+                  clonedTableState.selected = item;
 
-                return clonedTableState;
-              });
+                  return clonedTableState;
+                });
+              }
             }}
           />
         </div>

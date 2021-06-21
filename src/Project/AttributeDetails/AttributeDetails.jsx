@@ -133,7 +133,7 @@ const AttributeDetails = ({ attribute, onClose }) => {
   };
 
   const getColumns = (tableName) => {
-    return _.find(tablesData, (tab) => tab?.table === tableName)?.data ?? [];
+    return _.find(tablesData, (tab) => tab?.name === tableName)?.data ?? [];
   };
 
   const isRecommendationApplied = (recom) => {
@@ -212,9 +212,7 @@ const AttributeDetails = ({ attribute, onClose }) => {
                     >
                       {tablesData?.map((table) => {
                         return (
-                          <MenuItem value={table?.table}>
-                            {table?.table}
-                          </MenuItem>
+                          <MenuItem value={table?.name}>{table?.name}</MenuItem>
                         );
                       })}
                     </Select>

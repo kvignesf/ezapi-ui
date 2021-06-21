@@ -48,6 +48,14 @@ export const isSchema = (object) => {
   return object?.type === "ref" || object?.type === "ezapi_ref" || object?.data;
 };
 
+export const isDatabase = (object) => {
+  return object?.type === "ezapi_table" || object?.data;
+};
+
+export const isColumn = (object) => {
+  return object?.type && !_.isEmpty(object?.type);
+};
+
 export const isObject = (object) => {
   return object?.type === "object";
 };

@@ -183,7 +183,7 @@ const Match = (props) => {
                         "text-overline3 cursor-pointer hover:opacity-70"
                       )}
                     >
-                      {tableState?.selected?.table}
+                      {tableState?.selected?.name}
                     </p>
                   </div>
                 )}
