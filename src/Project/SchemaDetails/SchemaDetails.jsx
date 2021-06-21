@@ -263,7 +263,7 @@ const SchemaDetailsRow = ({
   }, []);
 
   const getColumns = (tableName) => {
-    return _.find(tablesData, (tab) => tab?.table === tableName)?.columns ?? [];
+    return _.find(tablesData, (tab) => tab?.table === tableName)?.data ?? [];
   };
 
   const modifyTableAndColumnData = (value) => {

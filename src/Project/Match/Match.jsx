@@ -16,11 +16,14 @@ import Parameters from "./Parameters/Parameters";
 import Colors from "../../shared/colors";
 import AddOrEditParameter from "./Parameters/AddOrEditParameter/AddOrEditParameter";
 import Database from "./Database/Database";
+import tableAtom from "../../shared/atom/tableAtom";
 
 const Match = (props) => {
   const [currentTab, setTab] = useState(0);
   const [schemaState, setSchemaState] = useRecoilState(schemaAtom);
   const resetSchemaState = useResetRecoilState(schemaAtom);
+  const [tableState, setTableState] = useRecoilState(tableAtom);
+  const resetTableState = useResetRecoilState(tableAtom);
   const [dialog, setDialog] = useState({
     show: false,
     type: null,
@@ -142,6 +145,48 @@ const Match = (props) => {
                     </div>
                   );
                 })}
+              </div>
+            </div>
+          ) : tableState?.selected ? (
+            <div className='flex flex-row items-center ml-3 py-3'>
+              <AppIcon
+                style={{ marginRight: "0.5rem" }}
+                onClick={(e) => {
+                  e?.preventDefault();
+                  e?.stopPropagation();
+
+                  resetTableState();
+                }}
+              >
+                <ArrowBackIcon style={{ fontSize: "1.25rem" }} />
+              </AppIcon>
+
+              <div className='flex flex-row items-center'>
+                <p
+                  className='text-overline3 text-neutral-gray4 cursor-pointer hover:opacity-70'
+                  onClick={(e) => {
+                    e?.preventDefault();
+                    e?.stopPropagation();
+
+                    resetTableState();
+                  }}
+                >
+                  Tables
+                </p>
+
+                {tableState?.selected && (
+                  <div className='flex flex-row items-center'>
+                    <p className='mx-1 text-neutral-gray3'> / </p>
+
+                    <p
+                      className={classNames(
+                        "text-overline3 cursor-pointer hover:opacity-70"
+                      )}
+                    >
+                      {tableState?.selected?.table}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           ) : (

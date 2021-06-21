@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
+import { useRecoilState } from "recoil";
 import _ from "lodash";
 
 import { useGetTables } from "../../../shared/query/tablesQueries";
 import LoaderWithMessage from "../../../shared/components/LoaderWithMessage";
 import DatabaseSection from "./DatabaseSection";
+import tableAtom from "../../../shared/atom/tableAtom";
 
 const Database = () => {
   const { id: projectId } = useParams();
@@ -17,6 +19,7 @@ const Database = () => {
   const [firstPartTables, setFirstTables] = useState(null);
   const [secondPartTables, setSecondTables] = useState(null);
   const [thirdPartTables, setThirdTables] = useState(null);
+  const [tableState, setTableState] = useRecoilState(tableAtom);
 
   useEffect(() => {
     fetchTablesData({ projectId });
@@ -69,7 +72,15 @@ const Database = () => {
           <DatabaseSection
             section={"1"}
             items={firstPartTables}
-            onItemClick={() => {}}
+            onItemClick={(table) => {
+              setTableState((tableState) => {
+                const clonedTableState = _.cloneDeep(tableState);
+
+                clonedTableState.selected = table;
+
+                return clonedTableState;
+              });
+            }}
           />
         </div>
 
@@ -77,7 +88,15 @@ const Database = () => {
           <DatabaseSection
             section={"2"}
             items={secondPartTables}
-            onItemClick={() => {}}
+            onItemClick={(table) => {
+              setTableState((tableState) => {
+                const clonedTableState = _.cloneDeep(tableState);
+
+                clonedTableState.selected = table;
+
+                return clonedTableState;
+              });
+            }}
           />
         </div>
 
@@ -85,7 +104,15 @@ const Database = () => {
           <DatabaseSection
             section={"3"}
             items={thirdPartTables}
-            onItemClick={() => {}}
+            onItemClick={(table) => {
+              setTableState((tableState) => {
+                const clonedTableState = _.cloneDeep(tableState);
+
+                clonedTableState.selected = table;
+
+                return clonedTableState;
+              });
+            }}
           />
         </div>
       </div>
