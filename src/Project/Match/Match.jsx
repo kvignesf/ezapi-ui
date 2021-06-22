@@ -220,7 +220,7 @@ const Match = ({ projectType, ...props }) => {
                 style={{ outline: "none", border: "none" }}
                 value={"param"}
               />
-              {projectType === "db" && (
+              {(projectType === "db" || projectType === "both") && (
                 <Tab
                   label={<TabLabel label={"Database"} />}
                   style={{ outline: "none", border: "none" }}

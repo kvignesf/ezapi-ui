@@ -66,8 +66,8 @@ const Database = () => {
 
   if (!content || _.isEmpty(content)) {
     return (
-      <div className='flex flex-col items-center'>
-        <p>No items available</p>
+      <div className='h-full flex flex-col justify-center items-center'>
+        <p className='text-overline2'>No tables available</p>
       </div>
     );
   }
