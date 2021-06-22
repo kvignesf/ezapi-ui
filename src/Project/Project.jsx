@@ -9,6 +9,7 @@ import CloudUploadIcon from "@material-ui/icons/CloudUpload";
 import { ClassNames } from "@emotion/react";
 import classNames from "classnames";
 import _ from "lodash";
+import { useSnackbar } from "react-simple-snackbar";
 
 import AppIcon from "../shared/components/AppIcon";
 import { useFetchProjectDetails } from "./projectQueries";
@@ -19,12 +20,6 @@ import AddOrEditResource from "./Resources/AddOrEditResource";
 import Resources from "./Resources/Resources";
 import Match from "./Match";
 import OperationDetails from "./OperationDetails";
-import operationAtom, {
-  defaultState as operationAtomDefaultState,
-} from "./operationAtom";
-import schemaAtom, {
-  defaultState as schemaAtomDefaultState,
-} from "../shared/atom/schemaAtom";
 import { endpoint } from "../shared/network/client";
 import { useSyncOperation } from "../shared/query/operationDetailsQuery";
 import { usePublishProject } from "./projectQueries";
@@ -33,9 +28,14 @@ import {
   generateSyncOperationRequestRequest,
   generateSyncOperationResponseRequest,
 } from "../shared/utils";
+import tableAtom from "../shared/atom/tableAtom";
+import schemaAtom from "../shared/atom/schemaAtom";
+import operationAtom from "./operationAtom";
+import Colors from "../shared/colors";
+import routes from "../shared/routes";
+import { Redirect } from "react-router-dom";
 
 const Project = () => {
-  const resetOperationState = useResetRecoilState(operationAtom);
   const { id: projectId } = useParams();
   const history = useHistory();
   const firstName = getFirstName();
@@ -60,13 +60,44 @@ const Project = () => {
     isSuccess: isPublishProjectSuccess,
     error: publishProjectError,
     mutate: publish,
+    reset: resetPublishMutation,
   } = usePublishProject();
+  const resetSchemaState = useResetRecoilState(schemaAtom);
+  const resetTableState = useResetRecoilState(tableAtom);
+  const resetOperationState = useResetRecoilState(operationAtom);
+  const [openSnackbar, closeSnackbar] = useSnackbar({
+    style: {
+      backgroundColor: Colors.brand.green,
+      color: "white",
+    },
+    closeStyle: {
+      color: "white",
+    },
+  });
 
   useEffect(() => {
-    if (projectDetails && projectDetails?.status !== "IN_PROGRESS") {
-      history.replace(endpoint.projects);
+    resetProjectState();
+  }, [projectId]);
+
+  useEffect(() => {
+    console.log(
+      'projectDetails?.status !== "COMPLETE"',
+      projectDetails?.status !== "COMPLETE"
+    );
+    if (
+      projectDetails &&
+      projectDetails?.status !== "IN_PROGRESS" &&
+      projectDetails?.status !== "COMPLETE"
+    ) {
+      history.goBack();
     }
   }, [projectDetails]);
+
+  const resetProjectState = () => {
+    resetTableState();
+    resetOperationState();
+    resetSchemaState();
+  };
 
   const saveProject = () => {
     const saveRequestApiRequest = generateSyncOperationRequestRequest(
@@ -89,6 +120,16 @@ const Project = () => {
   const publishProject = () => {
     publish({ projectId });
   };
+
+  if (isPublishProjectSuccess) {
+    resetPublishMutation();
+    openSnackbar(
+      "Project successfully published. You can now download the specs and artifacts"
+    );
+    history.goBack();
+
+    return null;
+  }
 
   return (
     <>
@@ -124,8 +165,7 @@ const Project = () => {
                 event?.preventDefault();
                 event?.stopPropagation();
 
-                setOperationState(operationAtomDefaultState);
-                setSchemaState(schemaAtomDefaultState);
+                resetProjectState();
 
                 history.goBack();
               }}
@@ -230,7 +270,7 @@ const Project = () => {
                   "h-full": !operationState.operationIndex,
                 })}
               >
-                <Match />
+                <Match projectType={projectDetails?.projectType} />
               </div>
 
               {operationState.resource &&

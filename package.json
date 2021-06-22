@@ -33,6 +33,7 @@
     "react-router-dom": "^5.2.0",
     "react-sage": "^0.2.3",
     "react-scripts": "^4.0.3",
+    "react-simple-snackbar": "^1.1.11",
     "react-smooth-scrollbar": "^8.0.6",
     "react-timeago": "^5.2.0",
     "recoil": "^0.2.0",

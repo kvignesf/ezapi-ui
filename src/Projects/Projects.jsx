@@ -294,7 +294,7 @@ const Content = ({ showCreateProjectDialog }) => {
   };
 
   const handleOnView = (project) => {
-    if (project?.status === "IN_PROGRESS") {
+    if (project?.status === "IN_PROGRESS" || project?.status === "COMPLETE") {
       history.push(generateRoute(routes.projects, project?.projectId));
     }
   };

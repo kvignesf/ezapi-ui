@@ -105,8 +105,7 @@ export const useDownloadSpecs = () => {
   const mutation = useMutation(downloadSpecs, {
     onSuccess: (data) => {
       if (data?.downloadUrl && !_.isEmpty(data?.downloadUrl)) {
-        const link =
-          "https://s3.us-east-2.amazonaws.com/brilliantpet.images/aki_YJmvVw16198431256609.jpg";
+        const link = data?.downloadUrl;
 
         const filename = link.substring(link.lastIndexOf("/") + 1);
         saveAs(link, filename);
@@ -134,8 +133,7 @@ export const useDownloadArtifacts = () => {
   const mutation = useMutation(downloadArtifacts, {
     onSuccess: (data) => {
       if (data?.downloadUrl && !_.isEmpty(data?.downloadUrl)) {
-        const link =
-          "https://s3.us-east-2.amazonaws.com/brilliantpet.images/aki_YJmvVw16198431256609.jpg";
+        const link = data?.downloadUrl;
 
         const filename = link.substring(link.lastIndexOf("/") + 1);
         saveAs(link, filename);

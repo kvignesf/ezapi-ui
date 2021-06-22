@@ -1,6 +1,6 @@
 import { Tab, Tabs } from "@material-ui/core";
 import _ from "lodash";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRecoilState, useResetRecoilState } from "recoil";
 import ArrowBackIcon from "@material-ui/icons/ArrowBack";
 import AddIcon from "@material-ui/icons/Add";
@@ -18,8 +18,8 @@ import AddOrEditParameter from "./Parameters/AddOrEditParameter/AddOrEditParamet
 import Database from "./Database/Database";
 import tableAtom from "../../shared/atom/tableAtom";
 
-const Match = (props) => {
-  const [currentTab, setTab] = useState(0);
+const Match = ({ projectType, ...props }) => {
+  const [currentTab, setTab] = useState(null);
   const [schemaState, setSchemaState] = useRecoilState(schemaAtom);
   const resetSchemaState = useResetRecoilState(schemaAtom);
   const [tableState, setTableState] = useRecoilState(tableAtom);
@@ -29,6 +29,14 @@ const Match = (props) => {
     type: null,
     data: null,
   });
+
+  useEffect(() => {
+    if (projectType === "schema" || projectType === "both") {
+      setTab("schema");
+    } else {
+      setTab("param");
+    }
+  }, []);
 
   const showAddParameterDialog = () => {
     setDialog({
@@ -192,31 +200,38 @@ const Match = (props) => {
           ) : (
             <Tabs
               value={currentTab}
-              onChange={(_, index) => {
-                setTab(index);
+              onChange={(_, value) => {
+                setTab(value);
                 resetSchemaState();
               }}
               aria-label='schema tabs'
               indicatorColor='primary'
               textColor='primary'
             >
-              <Tab
-                label={<TabLabel label={"Schema"} />}
-                style={{ outline: "none", border: "none" }}
-              />
+              {(projectType === "schema" || projectType === "both") && (
+                <Tab
+                  label={<TabLabel label={"Schema"} />}
+                  style={{ outline: "none", border: "none" }}
+                  value={"schema"}
+                />
+              )}
               <Tab
                 label={<TabLabel label={"Parameters"} />}
                 style={{ outline: "none", border: "none" }}
+                value={"param"}
               />
-              <Tab
-                label={<TabLabel label={"Database"} />}
-                style={{ outline: "none", border: "none" }}
-              />
+              {projectType === "db" && (
+                <Tab
+                  label={<TabLabel label={"Database"} />}
+                  style={{ outline: "none", border: "none" }}
+                  value={"db"}
+                />
+              )}
             </Tabs>
           )}
         </div>
 
-        {currentTab === 1 && (
+        {currentTab === "param" && (
           <div
             className='flex flex-row items-center cursor-pointer hover:opacity-80 mr-4 border-1 rounded-md border-brand-secondary px-2 py-2'
             onClick={(e) => {
@@ -241,11 +256,11 @@ const Match = (props) => {
       </div>
 
       <div className='h-full'>
-        {currentTab === 0 ? (
+        {currentTab === "schema" ? (
           <Schema />
-        ) : currentTab === 1 ? (
+        ) : currentTab === "param" ? (
           <Parameters />
-        ) : currentTab === 2 ? (
+        ) : currentTab === "db" ? (
           <Database />
         ) : null}
       </div>

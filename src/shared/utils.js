@@ -49,7 +49,7 @@ export const isSchema = (object) => {
 };
 
 export const isDatabase = (object) => {
-  return object?.type === "ezapi_table" || object?.data;
+  return object?.type === "ezapi_table";
 };
 
 export const isColumn = (object) => {

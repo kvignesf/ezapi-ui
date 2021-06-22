@@ -24,3 +24,21 @@ export const useGetSubSchema = () => {
 
   return query;
 };
+
+const getTableData = async ({ projectId, ref }) => {
+  try {
+    const { data } = await client.post(`${endpoint.tablesLookup}`, {
+      projectId,
+      tableFilter: ref,
+    });
+    return data;
+  } catch (error) {
+    throw getApiError(error);
+  }
+};
+
+export const useGetTableData = () => {
+  const query = useMutation(getTableData);
+
+  return query;
+};
