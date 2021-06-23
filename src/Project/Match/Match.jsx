@@ -33,10 +33,12 @@ const Match = ({ projectType, ...props }) => {
   useEffect(() => {
     if (projectType === "schema" || projectType === "both") {
       setTab("schema");
+    } else if(projectType === 'db'){
+      setTab("db");
     } else {
       setTab("param");
     }
-  }, []);
+  }, [projectType]);
 
   const showAddParameterDialog = () => {
     setDialog({
@@ -220,7 +222,7 @@ const Match = ({ projectType, ...props }) => {
                 style={{ outline: "none", border: "none" }}
                 value={"param"}
               />
-              {(projectType === "db" || projectType === "both") && (
+              {(projectType === "db") && (
                 <Tab
                   label={<TabLabel label={"Database"} />}
                   style={{ outline: "none", border: "none" }}

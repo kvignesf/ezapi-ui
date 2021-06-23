@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import _ from "lodash";
+import { useRecoilValue } from "recoil";
+
 import { endpoint } from "./network/client";
 import { getAccessToken } from "./storage";
-import { useRecoilValue } from "recoil";
+import Constants from "./constants";
 import schemaAtom from "./atom/schemaAtom";
 
 export const isEmailValid = (email) => {
@@ -41,11 +43,20 @@ export const isArray = (object) => {
 };
 
 export const isAttribute = (object) => {
-  return object?.type && !_.isEmpty(object?.type);
+  return (
+    object?.type &&
+    !_.isEmpty(object?.type) &&
+    object?.paramType !== "column" &&
+    _.includes(Constants.parameterDataTypes, object?.type)
+  );
 };
 
 export const isSchema = (object) => {
-  return object?.type === "ref" || object?.type === "ezapi_ref" || object?.data;
+  return (
+    object?.type === "ref" ||
+    object?.type === "ezapi_ref" ||
+    (object?.data !== null && object?.data !== undefined)
+  );
 };
 
 export const isDatabase = (object) => {
@@ -53,7 +64,7 @@ export const isDatabase = (object) => {
 };
 
 export const isColumn = (object) => {
-  return object?.type && !_.isEmpty(object?.type);
+  return object?.paramType === "column";
 };
 
 export const isObject = (object) => {

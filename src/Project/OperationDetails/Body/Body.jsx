@@ -45,7 +45,11 @@ const Body = ({ request = true, responseCode }) => {
   const { height, width } = useWindowSize();
 
   const itemDropped = (item) => {
-    if (isSchema(item) && !isObject(item) && !isArray(item)) {
+    if (
+      (isSchema(item) || isAttribute(item) || isColumn(item)) &&
+      !isObject(item) &&
+      !isArray(item)
+    ) {
       setOperationDetails((operationDetails) => {
         if (request) {
           if (
@@ -136,16 +140,20 @@ const Body = ({ request = true, responseCode }) => {
                 defaultExpandIcon={<ChevronRightIcon />}
               >
                 {operationData?.operationRequest?.body.map((item) => {
-                  const clonedRef = _.cloneDeep(item);
+                  let clonedRef;
 
-                  if (!clonedRef.hasOwnProperty("data")) {
-                    clonedRef["data"] = [];
+                  if (isSchema(item)) {
+                    clonedRef = _.cloneDeep(item);
+
+                    if (!clonedRef.hasOwnProperty("data")) {
+                      clonedRef["data"] = [];
+                    }
                   }
 
                   return (
                     <BodyItem
                       key={item.name}
-                      itemRef={clonedRef}
+                      itemRef={item}
                       request={request}
                       responseCode={responseCode}
                     />
@@ -269,7 +277,11 @@ const BodyItem = ({ request = true, responseCode, itemRef }) => {
   }, [itemRef]);
 
   const deleteItem = (item) => {
-    if (isSchema(item) && !isArray(item) && !isObject(item)) {
+    if (
+      (isSchema(item) || isColumn(item) || isAttribute(item)) &&
+      !isArray(item) &&
+      !isObject(item)
+    ) {
       setOperationDetails((operationDetails) => {
         if (request) {
           const index = operationDetails.operationRequest.body.findIndex(
@@ -332,6 +344,39 @@ const BodyItem = ({ request = true, responseCode, itemRef }) => {
     }
   };
 
+  const onItemClick = () => {
+    console.log("bodyItem", isSchema(bodyItem), isAttribute(bodyItem));
+    console.log("bodyItem", bodyItem);
+    // if (isDatabase(bodyItem)) {
+    //   getTableData(bodyItem);
+    // } else if (isSchema(bodyItem)) {
+    //   getSchemaData(bodyItem);
+    // }
+  };
+
+  if (isAttribute(bodyItem)) {
+    console.log("attribute", bodyItem);
+    return (
+      <AttributeLabel
+        labelItem={bodyItem}
+        deleteItem={deleteItem}
+        request={request}
+        responseCode={responseCode}
+      />
+    );
+  }
+
+  if (isColumn(bodyItem)) {
+    return (
+      <ColumnLabel
+        labelItem={bodyItem}
+        deleteItem={deleteItem}
+        request={request}
+        responseCode={responseCode}
+      />
+    );
+  }
+
   return (
     <TreeItem
       key={treeIndex++}
@@ -354,23 +399,13 @@ const BodyItem = ({ request = true, responseCode, itemRef }) => {
         ) : null
       }
       onLabelClick={(e) => {
-        console.log("onLabelClick");
         e.preventDefault();
         e.stopPropagation();
 
-        if (isDatabase(bodyItem)) {
-          getTableData(bodyItem);
-        } else if (isSchema(bodyItem)) {
-          getSchemaData(bodyItem);
-        }
+        onItemClick();
       }}
       onIconClick={(e) => {
-        console.log("onIconClick");
-        if (isDatabase(bodyItem)) {
-          getTableData(bodyItem);
-        } else if (isSchema(bodyItem)) {
-          getSchemaData(bodyItem);
-        }
+        onItemClick();
       }}
     >
       {bodyItem?.data?.map((ref) => {
@@ -735,6 +770,102 @@ const SchemaLabel = ({ labelItem, deleteItem }) => {
                 <DeleteIcon />
               </AppIcon>
             )}
+          </div>
+        );
+      }}
+    </ReactHoverObserver>
+  );
+};
+
+const AttributeLabel = ({ labelItem, deleteItem }) => {
+  return (
+    <ReactHoverObserver>
+      {({ isHovering }) => {
+        return (
+          <div className='flex flex-row p-1 h-8 justify-between items-center border-b-2 ml-6'>
+            <div className='flex flex-row items-center justify-start flex-1'>
+              <div className='flex-1 flex flex-row'>
+                <img
+                  src={AttributeIcon}
+                  alt='ezapi logo'
+                  className='bg-white mr-4'
+                  style={{ height: "24px", width: "24px" }}
+                />
+
+                <p className='text-overline2'>{labelItem?.name}</p>
+              </div>
+
+              <div className='flex-1 pl-10'>
+                <p>{labelItem?.type}</p>
+              </div>
+
+              <div className='flex-1 pl-5'>
+                <p>{labelItem?.required ?? "asd"}</p>
+              </div>
+            </div>
+
+            <div className='w-6'>
+              {isHovering && (
+                <AppIcon
+                  onClick={(ev) => {
+                    ev?.preventDefault();
+                    ev?.stopPropagation();
+
+                    deleteItem(labelItem);
+                  }}
+                >
+                  <DeleteIcon />
+                </AppIcon>
+              )}
+            </div>
+          </div>
+        );
+      }}
+    </ReactHoverObserver>
+  );
+};
+
+const ColumnLabel = ({ labelItem, deleteItem }) => {
+  return (
+    <ReactHoverObserver>
+      {({ isHovering }) => {
+        return (
+          <div className='flex flex-row p-1 h-8 justify-between items-center border-b-2 ml-6'>
+            <div className='flex flex-row items-center justify-start flex-1'>
+              <div className='flex-1 flex flex-row'>
+                <img
+                  src={ColumnIcon}
+                  alt='ezapi logo'
+                  className='bg-white mr-4'
+                  style={{ height: "24px", width: "24px" }}
+                />
+
+                <p className='text-overline2'>{labelItem?.name}</p>
+              </div>
+
+              <div className='flex-1 pl-10'>
+                <p>{labelItem?.type}</p>
+              </div>
+
+              <div className='flex-1 pl-5'>
+                <p>{labelItem?.required}</p>
+              </div>
+            </div>
+
+            <div className='w-6'>
+              {isHovering && (
+                <AppIcon
+                  onClick={(ev) => {
+                    ev?.preventDefault();
+                    ev?.stopPropagation();
+
+                    deleteItem(labelItem);
+                  }}
+                >
+                  <DeleteIcon />
+                </AppIcon>
+              )}
+            </div>
           </div>
         );
       }}

@@ -254,12 +254,12 @@ const Content = ({ showCreateProjectDialog }) => {
     error: fetchProjectsError,
     isFetching: isFetchingProjectsBg,
   } = useGetProjects();
-
   const [dialog, setDialog] = useState({
     show: false,
     type: null,
     data: null,
   });
+
 
   const showMembersDialog = (project) => {
     setDialog({

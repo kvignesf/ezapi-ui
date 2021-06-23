@@ -9,7 +9,7 @@ import CloudUploadIcon from "@material-ui/icons/CloudUpload";
 import { ClassNames } from "@emotion/react";
 import classNames from "classnames";
 import _ from "lodash";
-import { useSnackbar } from "react-simple-snackbar";
+import CloseIcon from "@material-ui/icons/Close";
 
 import AppIcon from "../shared/components/AppIcon";
 import { useFetchProjectDetails } from "./projectQueries";
@@ -33,7 +33,6 @@ import schemaAtom from "../shared/atom/schemaAtom";
 import operationAtom from "./operationAtom";
 import Colors from "../shared/colors";
 import routes from "../shared/routes";
-import { Redirect } from "react-router-dom";
 
 const Project = () => {
   const { id: projectId } = useParams();
@@ -65,15 +64,7 @@ const Project = () => {
   const resetSchemaState = useResetRecoilState(schemaAtom);
   const resetTableState = useResetRecoilState(tableAtom);
   const resetOperationState = useResetRecoilState(operationAtom);
-  const [openSnackbar, closeSnackbar] = useSnackbar({
-    style: {
-      backgroundColor: Colors.brand.green,
-      color: "white",
-    },
-    closeStyle: {
-      color: "white",
-    },
-  });
+
 
   useEffect(() => {
     resetProjectState();
@@ -121,28 +112,23 @@ const Project = () => {
     publish({ projectId });
   };
 
-  if (isPublishProjectSuccess) {
+  const closePublishProjectSuccess =  () =>{
     resetPublishMutation();
-    openSnackbar(
-      "Project successfully published. You can now download the specs and artifacts"
-    );
     history.goBack();
-
-    return null;
   }
 
   return (
     <>
       <Dialog
         aria-labelledby='save-operation-dialog'
-        open={isSyncingOperation || isPublishingProject}
+        open={isSyncingOperation || isPublishingProject || isPublishProjectSuccess}
         fullWidth
         PaperProps={{
           style: { borderRadius: 8 },
         }}
         disableBackdropClick
       >
-        <div className='p-6'>
+        {(isSyncingOperation || isPublishingProject) && <div className='p-6'>
           <div className='w-full flex flex-row items-center'>
             <p className='text-overline mr-3'>
               {isSyncingOperation
@@ -153,7 +139,33 @@ const Project = () => {
             </p>
             <CircularProgress style={{ width: "20px", height: "20px" }} />
           </div>
-        </div>
+        </div>}
+
+        {(isPublishProjectSuccess) && <div>
+          <div className='p-4 flex flex-row justify-between border-b-1'>
+            <p className='text-subtitle2'>Publish success</p>
+            <AppIcon onClick={(e) => {
+              e?.preventDefault();
+              e?.stopPropagation();
+
+              closePublishProjectSuccess();
+            }}>
+              <CloseIcon></CloseIcon>
+            </AppIcon>
+
+         </div>
+          <div className='p-4 py-6'>
+            <p className='text-overline2'>{`Project ${projectDetails?.projectName} successfully published. You can now download the specs and artifacts.`}</p>
+         </div>
+          <div className='p-4 border-t-1 flex flex-row justify-end'>
+            <PrimaryButton onClick={(e) => {
+              e?.preventDefault();
+              e?.stopPropagation();
+
+              closePublishProjectSuccess();
+            }}>Okay</PrimaryButton>
+         </div>
+        </div>}
       </Dialog>
 
       <DndProvider backend={HTML5Backend}>
