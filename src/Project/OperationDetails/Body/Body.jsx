@@ -48,7 +48,10 @@ const Body = ({ request = true, responseCode }) => {
 
   const itemDropped = (item) => {
     if (
-      (isSchema(item) || isAttribute(item) || isColumn(item)) &&
+      (isSchema(item) ||
+        isDatabase(item) ||
+        isAttribute(item) ||
+        isColumn(item)) &&
       !isObject(item) &&
       !isArray(item)
     ) {
@@ -148,7 +151,7 @@ const Body = ({ request = true, responseCode }) => {
                 {operationData?.operationRequest?.body.map((item) => {
                   let clonedRef;
 
-                  if (isSchema(item)) {
+                  if (isSchema(item) || isDatabase(item)) {
                     clonedRef = _.cloneDeep(item);
 
                     if (!clonedRef.hasOwnProperty("data")) {
@@ -159,7 +162,7 @@ const Body = ({ request = true, responseCode }) => {
                   return (
                     <BodyItem
                       key={item.name}
-                      itemRef={item}
+                      itemRef={clonedRef ?? item}
                       request={request}
                       responseCode={responseCode}
                     />
@@ -190,16 +193,20 @@ const Body = ({ request = true, responseCode }) => {
                 defaultExpandIcon={<ChevronRightIcon />}
               >
                 {getResponseData(operationData)?.body.map((item) => {
-                  const clonedRef = _.cloneDeep(item);
+                  let clonedRef;
 
-                  if (!clonedRef.hasOwnProperty("data")) {
-                    clonedRef["data"] = [];
+                  if (isSchema(item) || isDatabase(item)) {
+                    clonedRef = _.cloneDeep(item);
+
+                    if (!clonedRef.hasOwnProperty("data")) {
+                      clonedRef["data"] = [];
+                    }
                   }
 
                   return (
                     <BodyItem
                       key={item.name}
-                      itemRef={clonedRef}
+                      itemRef={clonedRef ?? item}
                       request={request}
                       responseCode={responseCode}
                     />
@@ -230,6 +237,7 @@ let treeIndex = 1;
 
 // This can either be a schema or table
 const BodyItem = ({ request = true, responseCode, itemRef }) => {
+  console.log("itemRef", itemRef);
   const [bodyItem, setItem] = useState(itemRef);
   const setOperationDetails = useSetRecoilState(operationAtom);
   const { id: projectId } = useParams();
