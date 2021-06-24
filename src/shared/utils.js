@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import _ from "lodash";
-import { useRecoilValue } from "recoil";
+import { useRecoilValue, useGetRecoilValueInfo_UNSTABLE } from "recoil";
 
 import { endpoint } from "./network/client";
 import { getAccessToken } from "./storage";
 import Constants from "./constants";
 import schemaAtom from "./atom/schemaAtom";
+import tableAtom from "./atom/tableAtom";
 
 export const isEmailValid = (email) => {
   const re =
@@ -47,7 +48,7 @@ export const isAttribute = (object) => {
     object?.type &&
     !_.isEmpty(object?.type) &&
     object?.paramType !== "column" &&
-    _.includes(Constants.parameterDataTypes, object?.type)
+    _.includes(Constants.acceptedTypes, object?.type)
   );
 };
 
@@ -194,16 +195,20 @@ export const generateSyncOperationRequestRequest = (operationRequest) => {
 
   if (operationRequest?.body && !_.isEmpty(operationRequest?.body)) {
     request.body = operationRequest?.body?.map((item) => {
-      let newItem = {};
+      if (isSchema(item) || isDatabase(item)) {
+        let newItem = {};
 
-      // newItem.required =
-      //   item?.required === true || item?.required === "true" ? true : false;
+        // newItem.required =
+        //   item?.required === true || item?.required === "true" ? true : false;
 
-      newItem.name = item?.name;
-      newItem.type = item?.type;
-      newItem.ref = item?.ref;
+        newItem.name = item?.name;
+        newItem.type = item?.type;
+        newItem.ref = item?.ref;
 
-      return newItem;
+        return newItem;
+      } else if (isAttribute(item) || isColumn(item)) {
+        return item;
+      }
     });
   }
 
@@ -305,7 +310,15 @@ export const parseGetOperationRequestResponse = (operationResponse) => {
 
       request.body = Object.keys(operationResponse?.body?.properties).map(
         (objectName) => {
-          return _.cloneDeep(operationResponse?.body?.properties[objectName]);
+          const clonedObj = _.cloneDeep(
+            operationResponse?.body?.properties[objectName]
+          );
+
+          if (!clonedObj?.name || _.isEmpty(clonedObj?.name)) {
+            clonedObj.name = objectName;
+          }
+
+          return clonedObj;
         }
       );
     } else {
@@ -372,16 +385,20 @@ export const generateSyncOperationResponseRequest = (operationResponse) => {
 
     if (reponseData?.body && !_.isEmpty(reponseData?.body)) {
       responseObject.content = reponseData?.body?.map((item) => {
-        let newItem = {};
+        if (isSchema(item) || isDatabase(item)) {
+          let newItem = {};
 
-        // newItem.required =
-        //   item?.required === true || item?.required === "true" ? true : false;
+          // newItem.required =
+          //   item?.required === true || item?.required === "true" ? true : false;
 
-        newItem.name = item?.name;
-        newItem.type = item?.type;
-        newItem.ref = item?.ref;
+          newItem.name = item?.name;
+          newItem.type = item?.type;
+          newItem.ref = item?.ref;
 
-        return newItem;
+          return newItem;
+        } else if (isAttribute(item) || isColumn(item)) {
+          return item;
+        }
       });
     }
 
@@ -446,7 +463,15 @@ export const parseGetOperationResponseResponse = (operationResponse) => {
 
       responseObj.body = Object.keys(responseData?.content?.properties).map(
         (objectName) => {
-          return _.cloneDeep(responseData?.content?.properties[objectName]);
+          const clonedObj = _.cloneDeep(
+            responseData?.content?.properties[objectName]
+          );
+
+          if (!clonedObj?.name || _.isEmpty(clonedObj?.name)) {
+            clonedObj.name = objectName;
+          }
+
+          return clonedObj;
         }
       );
     } else {
@@ -465,4 +490,45 @@ export const parseGetOperationResponseResponse = (operationResponse) => {
   });
 
   return response;
+};
+
+export const useGetParentName = () => {
+  const getRecoilValueInfo = useGetRecoilValueInfo_UNSTABLE();
+  const fetch = (object) => {
+    if (isAttribute(object)) {
+      const { loadable: schemaAtomLoadable } = getRecoilValueInfo(schemaAtom);
+      const schemaDetails = schemaAtomLoadable?.contents;
+
+      if (
+        schemaDetails &&
+        schemaDetails?.selected &&
+        !_.isEmpty(schemaDetails?.selected)
+      ) {
+        const value = schemaDetails?.selected
+          ?.slice()
+          ?.reverse()
+          ?.find((item) => isSchema(item));
+
+        return value?.name;
+      }
+
+      return null;
+    } else if (isColumn(object)) {
+      const { loadable: tableAtomLoadable } = getRecoilValueInfo(tableAtom);
+      const tableDetails = tableAtomLoadable?.contents;
+
+      if (
+        tableDetails &&
+        tableDetails?.selected &&
+        !_.isEmpty(tableDetails?.selected)
+      ) {
+        return tableDetails?.selected?.name;
+      }
+      return null;
+    }
+  };
+
+  return {
+    fetch,
+  };
 };

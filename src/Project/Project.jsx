@@ -57,6 +57,7 @@ const Project = () => {
   const {
     isLoading: isPublishingProject,
     isSuccess: isPublishProjectSuccess,
+    data: publishProjectData,
     error: publishProjectError,
     mutate: publish,
     reset: resetPublishMutation,
@@ -65,16 +66,11 @@ const Project = () => {
   const resetTableState = useResetRecoilState(tableAtom);
   const resetOperationState = useResetRecoilState(operationAtom);
 
-
   useEffect(() => {
     resetProjectState();
   }, [projectId]);
 
   useEffect(() => {
-    console.log(
-      'projectDetails?.status !== "COMPLETE"',
-      projectDetails?.status !== "COMPLETE"
-    );
     if (
       projectDetails &&
       projectDetails?.status !== "IN_PROGRESS" &&
@@ -112,60 +108,89 @@ const Project = () => {
     publish({ projectId });
   };
 
-  const closePublishProjectSuccess =  () =>{
+  const closePublishProjectSuccess = () => {
     resetPublishMutation();
     history.goBack();
-  }
+  };
 
   return (
     <>
       <Dialog
         aria-labelledby='save-operation-dialog'
-        open={isSyncingOperation || isPublishingProject || isPublishProjectSuccess}
+        open={isSyncingOperation || isPublishingProject || publishProjectData}
         fullWidth
         PaperProps={{
           style: { borderRadius: 8 },
         }}
         disableBackdropClick
       >
-        {(isSyncingOperation || isPublishingProject) && <div className='p-6'>
-          <div className='w-full flex flex-row items-center'>
-            <p className='text-overline mr-3'>
-              {isSyncingOperation
-                ? "Saving Operation"
-                : isPublishingProject
-                ? "Publishing project"
-                : null}
-            </p>
-            <CircularProgress style={{ width: "20px", height: "20px" }} />
+        {(isSyncingOperation || isPublishingProject) && (
+          <div className='p-6'>
+            <div className='w-full flex flex-row items-center'>
+              <p className='text-overline mr-3'>
+                {isSyncingOperation
+                  ? "Saving Operation"
+                  : isPublishingProject
+                  ? "Publishing project"
+                  : null}
+              </p>
+              <CircularProgress style={{ width: "20px", height: "20px" }} />
+            </div>
           </div>
-        </div>}
+        )}
 
-        {(isPublishProjectSuccess) && <div>
-          <div className='p-4 flex flex-row justify-between border-b-1'>
-            <p className='text-subtitle2'>Publish success</p>
-            <AppIcon onClick={(e) => {
-              e?.preventDefault();
-              e?.stopPropagation();
+        {(publishProjectData || publishProjectError) && (
+          <div>
+            <div className='p-4 flex flex-row justify-between border-b-1'>
+              <p className='text-subtitle2'>
+                {publishProjectData?.status === "success"
+                  ? "Publish success"
+                  : "Publish Failure"}
+              </p>
+              <AppIcon
+                onClick={(e) => {
+                  e?.preventDefault();
+                  e?.stopPropagation();
 
-              closePublishProjectSuccess();
-            }}>
-              <CloseIcon></CloseIcon>
-            </AppIcon>
+                  if (publishProjectData?.success) {
+                    closePublishProjectSuccess();
+                  } else {
+                    resetPublishMutation();
+                  }
+                }}
+              >
+                <CloseIcon></CloseIcon>
+              </AppIcon>
+            </div>
+            <div className='p-4 py-6'>
+              {publishProjectData?.success ? (
+                <p className='text-overline2'>{`Project ${projectDetails?.projectName} successfully published. You can now download the specs and artifacts.`}</p>
+              ) : (
+                <p className='text-overline2'>{publishProjectData?.message}</p>
+              )}
 
-         </div>
-          <div className='p-4 py-6'>
-            <p className='text-overline2'>{`Project ${projectDetails?.projectName} successfully published. You can now download the specs and artifacts.`}</p>
-         </div>
-          <div className='p-4 border-t-1 flex flex-row justify-end'>
-            <PrimaryButton onClick={(e) => {
-              e?.preventDefault();
-              e?.stopPropagation();
+              {publishProjectError && (
+                <p className='text-overline2'>{publishProjectError?.message}</p>
+              )}
+            </div>
+            <div className='p-4 border-t-1 flex flex-row justify-end'>
+              <PrimaryButton
+                onClick={(e) => {
+                  e?.preventDefault();
+                  e?.stopPropagation();
 
-              closePublishProjectSuccess();
-            }}>Okay</PrimaryButton>
-         </div>
-        </div>}
+                  if (publishProjectData?.success) {
+                    closePublishProjectSuccess();
+                  } else {
+                    resetPublishMutation();
+                  }
+                }}
+              >
+                Okay
+              </PrimaryButton>
+            </div>
+          </div>
+        )}
       </Dialog>
 
       <DndProvider backend={HTML5Backend}>

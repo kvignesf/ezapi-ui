@@ -30,6 +30,7 @@ import {
   isObject,
   isDatabase,
   isColumn,
+  useGetParentName,
 } from "../../../shared/utils";
 import AppIcon from "../../../shared/components/AppIcon";
 import AttributeIcon from "../../../static/images/attribute.svg";
@@ -43,6 +44,7 @@ import ChangeTableName from "./ChangeTableName";
 const Body = ({ request = true, responseCode }) => {
   let [operationData, setOperationDetails] = useRecoilState(operationAtom);
   const { height, width } = useWindowSize();
+  const { fetch: fetchParentName } = useGetParentName();
 
   const itemDropped = (item) => {
     if (
@@ -60,6 +62,8 @@ const Body = ({ request = true, responseCode }) => {
             const newOperationDetails = _.cloneDeep(operationDetails);
             const clonedItem = _.cloneDeep(item);
 
+            clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
+
             newOperationDetails.operationRequest.body.push(clonedItem);
 
             return newOperationDetails;
@@ -76,6 +80,8 @@ const Body = ({ request = true, responseCode }) => {
             const clonedOperationDetails = _.cloneDeep(operationDetails);
             const clonedResponseData = _.cloneDeep(responseData);
             const clonedItem = _.cloneDeep(item);
+
+            clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
 
             clonedResponseData.body.push(clonedItem);
 
@@ -345,17 +351,14 @@ const BodyItem = ({ request = true, responseCode, itemRef }) => {
   };
 
   const onItemClick = () => {
-    console.log("bodyItem", isSchema(bodyItem), isAttribute(bodyItem));
-    console.log("bodyItem", bodyItem);
-    // if (isDatabase(bodyItem)) {
-    //   getTableData(bodyItem);
-    // } else if (isSchema(bodyItem)) {
-    //   getSchemaData(bodyItem);
-    // }
+    if (isDatabase(bodyItem)) {
+      getTableData(bodyItem);
+    } else if (isSchema(bodyItem)) {
+      getSchemaData(bodyItem);
+    }
   };
 
   if (isAttribute(bodyItem)) {
-    console.log("attribute", bodyItem);
     return (
       <AttributeLabel
         labelItem={bodyItem}
@@ -796,11 +799,13 @@ const AttributeLabel = ({ labelItem, deleteItem }) => {
               </div>
 
               <div className='flex-1 pl-10'>
-                <p>{labelItem?.type}</p>
+                <p className='text-overline2'>{labelItem?.type}</p>
               </div>
 
               <div className='flex-1 pl-5'>
-                <p>{labelItem?.required ?? "asd"}</p>
+                <p className='text-overline2'>
+                  {labelItem?.required ? "true" : "false"}
+                </p>
               </div>
             </div>
 
@@ -844,11 +849,13 @@ const ColumnLabel = ({ labelItem, deleteItem }) => {
               </div>
 
               <div className='flex-1 pl-10'>
-                <p>{labelItem?.type}</p>
+                <p className='text-overline2'>{labelItem?.type}</p>
               </div>
 
               <div className='flex-1 pl-5'>
-                <p>{labelItem?.required}</p>
+                <p className='text-overline2'>
+                  {labelItem?.required ? "true" : "false"}
+                </p>
               </div>
             </div>
 

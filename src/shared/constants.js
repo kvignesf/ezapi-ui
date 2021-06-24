@@ -15,6 +15,7 @@ const Constants = {
     "dateTime",
     "password",
   ],
+  acceptedTypes: ["integer", "number", "string", "boolean"],
 };
 
 export default Constants;

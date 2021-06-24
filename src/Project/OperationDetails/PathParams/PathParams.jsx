@@ -18,6 +18,7 @@ import {
   isObject,
   useWindowSize,
   isColumn,
+  useGetParentName,
 } from "../../../shared/utils";
 import DragAndDropMessage from "../../../shared/components/DragAndDropMessage";
 import Row from "../Row";
@@ -28,6 +29,7 @@ const PathParams = ({ request }) => {
   const [operationDetails, setOperationDetails] = useRecoilState(operationAtom);
   const { height, width } = useWindowSize();
   const getRecoilValueInfo = useGetRecoilValueInfo_UNSTABLE();
+  const { fetch: fetchParentName } = useGetParentName();
 
   const fetchParentSchemaName = () => {
     const { loadable: schemaAtomLoadable } = getRecoilValueInfo(schemaAtom);
@@ -80,15 +82,7 @@ const PathParams = ({ request }) => {
             const newOperationDetails = _.cloneDeep(operationDetails);
             const clonedItem = _.cloneDeep(item);
 
-            if (
-              clonedItem?.paramType &&
-              !_.isEmpty(clonedItem?.paramType) &&
-              clonedItem?.paramType === "column"
-            ) {
-              clonedItem.schemaName = fetchParentTableName() ?? "global";
-            } else {
-              clonedItem.schemaName = fetchParentSchemaName() ?? "global";
-            }
+            clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
 
             newOperationDetails.operationRequest.pathParams.push(clonedItem);
             return newOperationDetails;
@@ -101,15 +95,8 @@ const PathParams = ({ request }) => {
           ) {
             const newOperationDetails = _.cloneDeep(operationDetails);
             const clonedItem = _.cloneDeep(item);
-            if (
-              clonedItem?.paramType &&
-              !_.isEmpty(clonedItem?.paramType) &&
-              clonedItem?.paramType === "column"
-            ) {
-              clonedItem.schemaName = fetchParentTableName() ?? "global";
-            } else {
-              clonedItem.schemaName = fetchParentSchemaName() ?? "global";
-            }
+
+            clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
             newOperationDetails.operationResponse.pathParams.push(clonedItem);
 
             return newOperationDetails;
