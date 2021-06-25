@@ -22,6 +22,7 @@ export const endpoint = Object.freeze({
   getParameter: "/projectParams/get",
   deleteParameter: "/projectParams/delete",
   tablesLookup: "/tablesLookup",
+  tablesData: "/tablesData",
   recommendations: "/recommendations",
   schemaRecommendations: "/schemaRecommendations",
   saveAttributeMatch: "/overrideAttrMatch",

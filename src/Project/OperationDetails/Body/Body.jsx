@@ -40,6 +40,7 @@ import TableIcon from "../../../static/images/table-icon.svg";
 import { useGetSubSchema, useGetTableData } from "./requestBodyQueries";
 import DragAndDropMessage from "../../../shared/components/DragAndDropMessage";
 import ChangeTableName from "./ChangeTableName";
+import ChangeColumnName from "./ChangeColumnName";
 
 const Body = ({ request = true, responseCode }) => {
   let [operationData, setOperationDetails] = useRecoilState(operationAtom);
@@ -151,11 +152,17 @@ const Body = ({ request = true, responseCode }) => {
                 {operationData?.operationRequest?.body.map((item) => {
                   let clonedRef;
 
-                  if (isSchema(item) || isDatabase(item)) {
+                  if (isSchema(item)) {
                     clonedRef = _.cloneDeep(item);
 
                     if (!clonedRef.hasOwnProperty("data")) {
                       clonedRef["data"] = [];
+                    }
+                  } else if (isDatabase(item)) {
+                    clonedRef = _.cloneDeep(item);
+
+                    if (!clonedRef.hasOwnProperty("selectedColumns")) {
+                      clonedRef["selectedColumns"] = [];
                     }
                   }
 
@@ -195,11 +202,17 @@ const Body = ({ request = true, responseCode }) => {
                 {getResponseData(operationData)?.body.map((item) => {
                   let clonedRef;
 
-                  if (isSchema(item) || isDatabase(item)) {
+                  if (isSchema(item)) {
                     clonedRef = _.cloneDeep(item);
 
                     if (!clonedRef.hasOwnProperty("data")) {
                       clonedRef["data"] = [];
+                    }
+                  } else if (isDatabase(item)) {
+                    clonedRef = _.cloneDeep(item);
+
+                    if (!clonedRef.hasOwnProperty("selectedColumns")) {
+                      clonedRef["selectedColumns"] = [];
                     }
                   }
 
@@ -237,7 +250,6 @@ let treeIndex = 1;
 
 // This can either be a schema or table
 const BodyItem = ({ request = true, responseCode, itemRef }) => {
-  console.log("itemRef", itemRef);
   const [bodyItem, setItem] = useState(itemRef);
   const setOperationDetails = useSetRecoilState(operationAtom);
   const { id: projectId } = useParams();
@@ -292,14 +304,17 @@ const BodyItem = ({ request = true, responseCode, itemRef }) => {
 
   const deleteItem = (item) => {
     if (
-      (isSchema(item) || isColumn(item) || isAttribute(item)) &&
+      (isSchema(item) ||
+        isColumn(item) ||
+        isAttribute(item) ||
+        isDatabase(item)) &&
       !isArray(item) &&
       !isObject(item)
     ) {
       setOperationDetails((operationDetails) => {
         if (request) {
           const index = operationDetails.operationRequest.body.findIndex(
-            (x) => x.name === item.name
+            (x) => x?.sourceName === item?.sourceName
           );
           if (index !== -1) {
             const newOperationDetails = _.cloneDeep(operationDetails);
@@ -317,7 +332,7 @@ const BodyItem = ({ request = true, responseCode, itemRef }) => {
           );
 
           const existingBodyIndex = responseData?.body?.findIndex(
-            (body) => body.name === item.name
+            (body) => body?.sourceName === item?.sourceName
           );
 
           if (existingBodyIndex >= 0 && responseData && responseIndex >= 0) {
@@ -338,6 +353,236 @@ const BodyItem = ({ request = true, responseCode, itemRef }) => {
     }
   };
 
+  const deleteColumnOfTable = (column, table) => {
+    if (isColumn(column) && isDatabase(table)) {
+      setOperationDetails((operationDetails) => {
+        if (request) {
+          const newOperationDetails = _.cloneDeep(operationDetails);
+
+          const tableIndex =
+            newOperationDetails.operationRequest.body.findIndex(
+              (x) => isDatabase(x) && x?.sourceName === table?.sourceName
+            );
+
+          if (tableIndex !== -1) {
+            const clonedTable = _.cloneDeep(
+              newOperationDetails.operationRequest.body[tableIndex]
+            );
+
+            const columnIndex =
+              clonedTable?.selectedColumns?.findIndex(
+                (x) => isColumn(x) && x?.sourceName === column?.sourceName
+              ) ?? -1;
+
+            if (columnIndex !== -1) {
+              clonedTable.selectedColumns.splice(columnIndex, 1);
+            }
+
+            newOperationDetails.operationRequest.body[tableIndex] = clonedTable;
+
+            return newOperationDetails;
+          }
+        } else {
+          const responseData = operationDetails?.operationResponse?.find(
+            (item) => item.responseCode === responseCode
+          );
+          const responseIndex = operationDetails?.operationResponse?.findIndex(
+            (item) => item.responseCode === responseCode
+          );
+
+          const tableIndex = responseData?.body?.findIndex(
+            (body) => body?.sourceName === table?.sourceName
+          );
+
+          if (tableIndex >= 0 && responseData && responseIndex >= 0) {
+            const clonedOperationDetails = _.cloneDeep(operationDetails);
+            const clonedResponseData = _.cloneDeep(responseData);
+            const clonedTable = _.cloneDeep(
+              clonedResponseData.body[tableIndex]
+            );
+
+            const columnIndex =
+              clonedTable?.selectedColumns?.findIndex(
+                (x) => isColumn(x) && x?.sourceName === column?.sourceName
+              ) ?? -1;
+
+            if (columnIndex !== -1) {
+              clonedTable.selectedColumns.splice(columnIndex, 1);
+            }
+
+            clonedResponseData.body[tableIndex] = clonedTable;
+
+            clonedOperationDetails.operationResponse[responseIndex] =
+              clonedResponseData;
+
+            return clonedOperationDetails;
+          }
+        }
+
+        return operationDetails;
+      });
+    }
+  };
+
+  const renameColumn = (column, name) => {
+    setOperationDetails((operationDetails) => {
+      if (request) {
+        const newOperationDetails = _.cloneDeep(operationDetails);
+
+        // Get column index
+        const columnIndex = newOperationDetails.operationRequest.body.findIndex(
+          (bodyItem) => column?.sourceName === bodyItem?.sourceName
+        );
+
+        if (columnIndex !== -1) {
+          // Clone column
+          const clonedColumn = _.cloneDeep(
+            newOperationDetails.operationRequest.body[columnIndex]
+          );
+
+          // Set updated name to column
+          clonedColumn.name = name;
+
+          // Set cloned column to body
+          newOperationDetails.operationRequest.body[columnIndex] = clonedColumn;
+
+          return newOperationDetails;
+        }
+      } else {
+        const responseIndex = operationDetails?.operationResponse?.findIndex(
+          (item) => item.responseCode === responseCode
+        );
+
+        if (responseIndex !== -1) {
+          const clonedOperationDetails = _.cloneDeep(operationDetails);
+          const clonedResponseData = _.cloneDeep(
+            operationDetails?.operationResponse[responseIndex]
+          );
+
+          // Get column
+          const columnIndex = clonedResponseData?.body?.findIndex(
+            (bodyItem) => column?.sourceName === bodyItem?.sourceName
+          );
+
+          if (columnIndex !== -1) {
+            // Clone column
+            const clonedColumn = _.cloneDeep(
+              clonedResponseData?.body[columnIndex]
+            );
+
+            // Set updated name to column
+            clonedColumn.name = name;
+
+            // Set cloned column to body
+            clonedResponseData.body[columnIndex] = clonedColumn;
+          }
+
+          clonedOperationDetails.operationResponse[responseIndex] =
+            clonedResponseData;
+
+          return clonedOperationDetails;
+        }
+      }
+
+      return operationDetails;
+    });
+  };
+
+  const renameColumnOfTable = (column, table, name) => {
+    setOperationDetails((operationDetails) => {
+      if (request) {
+        const newOperationDetails = _.cloneDeep(operationDetails);
+
+        // Get parent table index
+        const parentTableIndex =
+          newOperationDetails.operationRequest.body.findIndex(
+            (bodyItem) =>
+              isDatabase(bodyItem) && table?.sourceName === bodyItem?.sourceName
+          );
+
+        if (parentTableIndex !== -1) {
+          // Clone parent table
+          const clonedParentTable = _.cloneDeep(
+            newOperationDetails.operationRequest.body[parentTableIndex]
+          );
+
+          // Get column
+          const columnIndex = clonedParentTable?.selectedColumns?.findIndex(
+            (columnItem) => column?.sourceName === columnItem?.sourceName
+          );
+
+          if (columnIndex !== -1) {
+            // Clone column
+            const clonedColumn = _.cloneDeep(
+              clonedParentTable.selectedColumns[columnIndex]
+            );
+
+            // Set updated name to column
+            clonedColumn.name = name;
+
+            // Set cloned column to table
+            clonedParentTable.selectedColumns[columnIndex] = clonedColumn;
+
+            // Set table to operations body
+            newOperationDetails.operationRequest.body[parentTableIndex] =
+              clonedParentTable;
+          }
+
+          return newOperationDetails;
+        }
+      } else {
+        const responseIndex = operationDetails?.operationResponse?.findIndex(
+          (item) => item.responseCode === responseCode
+        );
+
+        if (responseIndex !== -1) {
+          const responseData =
+            operationDetails?.operationResponse[responseIndex];
+          const clonedOperationDetails = _.cloneDeep(operationDetails);
+          const clonedResponseData = _.cloneDeep(responseData);
+
+          const tableIndex = responseData?.body?.findIndex(
+            (body) => body?.sourceName === table?.sourceName
+          );
+
+          if (tableIndex !== -1) {
+            const clonedTableData = _.cloneDeep(
+              clonedResponseData.body[tableIndex]
+            );
+
+            // Get column
+            const columnIndex = clonedTableData?.selectedColumns?.findIndex(
+              (columnItem) => column?.sourceName === columnItem?.sourceName
+            );
+
+            if (columnIndex !== -1) {
+              // Clone column
+              const clonedColumn = _.cloneDeep(
+                clonedTableData.selectedColumns[columnIndex]
+              );
+
+              // Set updated name to column
+              clonedColumn.name = name;
+
+              // Set cloned column to table
+              clonedTableData.selectedColumns[columnIndex] = clonedColumn;
+
+              // Set table to response data body
+              clonedResponseData.body[tableIndex] = clonedTableData;
+            }
+
+            clonedOperationDetails.operationResponse[responseIndex] =
+              clonedResponseData;
+
+            return clonedOperationDetails;
+          }
+        }
+      }
+
+      return operationDetails;
+    });
+  };
+
   const getSchemaData = (schemaRef) => {
     if (!isLoadingSubSchema && _.isEmpty(schemaRef.data)) {
       getSubSchema({
@@ -350,7 +595,7 @@ const BodyItem = ({ request = true, responseCode, itemRef }) => {
   };
 
   const getTableData = (tableRef) => {
-    if (!isLoadingTableData && _.isEmpty(tableRef.data)) {
+    if (!isLoadingTableData && _.isEmpty(tableRef.selectedColumns)) {
       getTable({
         projectId,
         ref: tableRef?.name,
@@ -360,7 +605,9 @@ const BodyItem = ({ request = true, responseCode, itemRef }) => {
 
   const onItemClick = () => {
     if (isDatabase(bodyItem)) {
-      getTableData(bodyItem);
+      if (!bodyItem?.selectedColumns || _.isEmpty(bodyItem?.selectedColumns)) {
+        getTableData(bodyItem);
+      }
     } else if (isSchema(bodyItem)) {
       getSchemaData(bodyItem);
     }
@@ -380,8 +627,9 @@ const BodyItem = ({ request = true, responseCode, itemRef }) => {
   if (isColumn(bodyItem)) {
     return (
       <ColumnLabel
-        labelItem={bodyItem}
-        deleteItem={deleteItem}
+        columnLabelItem={bodyItem}
+        deleteColumn={deleteItem}
+        renameColumn={renameColumn}
         request={request}
         responseCode={responseCode}
       />
@@ -395,7 +643,7 @@ const BodyItem = ({ request = true, responseCode, itemRef }) => {
       label={
         isDatabase(bodyItem) ? (
           <DatabaseLabel
-            labelItem={bodyItem}
+            tableLabelItem={bodyItem}
             deleteItem={deleteItem}
             request={request}
             responseCode={responseCode}
@@ -404,6 +652,7 @@ const BodyItem = ({ request = true, responseCode, itemRef }) => {
           <SchemaLabel
             labelItem={bodyItem}
             deleteItem={deleteItem}
+            isLoading={isLoadingSubSchema}
             request={request}
             responseCode={responseCode}
           />
@@ -419,59 +668,70 @@ const BodyItem = ({ request = true, responseCode, itemRef }) => {
         onItemClick();
       }}
     >
-      {bodyItem?.data?.map((ref) => {
-        if (isSchema(ref) || isArray(ref) || isObject(ref)) {
-          const clonedRef = _.cloneDeep(ref);
+      {isSchema(bodyItem) &&
+        bodyItem?.data?.map((ref) => {
+          // Sub schema/array/object
+          if (isSchema(ref) || isArray(ref) || isObject(ref)) {
+            const clonedRef = _.cloneDeep(ref);
 
-          if (!clonedRef.hasOwnProperty("data")) {
-            clonedRef["data"] = [];
+            if (!clonedRef.hasOwnProperty("data")) {
+              clonedRef["data"] = [];
+            }
+
+            if (!clonedRef.hasOwnProperty("isLoaded")) {
+              clonedRef["isLoaded"] = false;
+            }
+
+            return <BodySubTreeItems currentRef={clonedRef} />;
+          } else if (isAttribute(ref)) {
+            return (
+              <TreeItem
+                key={treeIndex++}
+                nodeId={treeIndex++}
+                label={
+                  <div className='flex flex-row p-1 justify-between items-center border-b-2'>
+                    <div className='flex flex-row items-center justify-start flex-1'>
+                      <img
+                        src={AttributeIcon}
+                        alt='ezapi logo'
+                        className='bg-white mr-2'
+                        style={{
+                          height: "24px",
+                          width: "24px",
+                        }}
+                      />
+
+                      <p className='text-overline2'>{ref?.name}</p>
+                    </div>
+
+                    <div className='flex-1'>
+                      <p>{ref?.type}</p>
+                    </div>
+
+                    <div className='flex-1'>
+                      <p>{ref?.required}</p>
+                    </div>
+                  </div>
+                }
+              />
+            );
           }
+        })}
 
-          if (!clonedRef.hasOwnProperty("isLoaded")) {
-            clonedRef["isLoaded"] = false;
-          }
-
-          return <BodySubTreeItems currentRef={clonedRef} />;
-        } else if (isAttribute(ref) || isColumn(ref)) {
+      {isDatabase(bodyItem) &&
+        bodyItem?.selectedColumns?.map((ref) => {
           return (
-            <TreeItem
-              key={treeIndex++}
-              nodeId={treeIndex++}
-              label={
-                <div className='flex flex-row p-1 justify-between items-center border-b-2'>
-                  <div className='flex flex-row items-center justify-start flex-1'>
-                    <img
-                      src={
-                        isDatabase(bodyItem)
-                          ? ColumnIcon
-                          : isSchema(bodyItem)
-                          ? AttributeIcon
-                          : null
-                      }
-                      alt='ezapi logo'
-                      className='bg-white mr-2'
-                      style={{
-                        height: "24px",
-                        width: "24px",
-                      }}
-                    />
-
-                    <p className='text-overline2'>{ref?.name}</p>
-                  </div>
-
-                  <div className='flex-1'>
-                    <p>{ref?.type}</p>
-                  </div>
-
-                  <div className='flex-1'>
-                    <p>{ref?.required}</p>
-                  </div>
-                </div>
+            <ColumnLabel
+              columnLabelItem={ref}
+              deleteColumn={(column) => deleteColumnOfTable(column, bodyItem)}
+              renameColumn={(column, name) =>
+                renameColumnOfTable(column, bodyItem, name)
               }
+              request={request}
+              responseCode={responseCode}
             />
           );
-        }
-      })}
+        })}
     </TreeItem>
   );
 };
@@ -628,131 +888,7 @@ const BodySubTreeItems = ({ currentRef: some }) => {
   );
 };
 
-const DatabaseLabel = ({ labelItem, request, responseCode, deleteItem }) => {
-  const [optionsMenuAnchorEl, setOptionsMenuAnchorEl] = useState(false);
-  const [dialog, setDialog] = useState({
-    show: false,
-    type: null,
-    data: null,
-  });
-
-  const showTableNameChangeDialog = () => {
-    setDialog({
-      show: true,
-      type: "rename-table",
-    });
-  };
-
-  const handleOptionsClick = (event) => {
-    setOptionsMenuAnchorEl(event?.currentTarget);
-  };
-
-  const handleCloseDialog = () => {
-    setDialog({
-      show: false,
-      data: null,
-    });
-  };
-
-  return (
-    <ReactHoverObserver>
-      {({ isHovering }) => {
-        return (
-          <>
-            <Dialog
-              onClose={handleCloseDialog}
-              aria-labelledby='dashboard-dialog'
-              open={dialog?.show ?? false}
-              fullWidth
-              PaperProps={{
-                style: { borderRadius: 8 },
-              }}
-              disableBackdropClick
-            >
-              {dialog?.type === "rename-table" && (
-                <ChangeTableName
-                  labelItem={labelItem}
-                  request={request}
-                  responseCode={responseCode}
-                  onClose={handleCloseDialog}
-                />
-              )}
-            </Dialog>
-
-            <div className='flex flex-row p-1 justify-between items-center border-b-2'>
-              <div className='flex flex-row items-center justify-start w-1/3'>
-                <img
-                  src={TableIcon}
-                  alt='ezapi logo'
-                  className='bg-white mr-4'
-                  style={{ height: "24px", width: "24px" }}
-                />
-
-                {labelItem?.customName && !_.isEmpty(labelItem?.customName) ? (
-                  <p className='text-overline2'>{labelItem?.customName}</p>
-                ) : labelItem?.name && !_.isEmpty(labelItem?.name) ? (
-                  <p className='text-overline2'>{labelItem?.name}</p>
-                ) : null}
-              </div>
-
-              {isHovering && (
-                <>
-                  <AppIcon
-                    onClick={(ev) => {
-                      ev?.preventDefault();
-                      ev?.stopPropagation();
-
-                      handleOptionsClick(ev);
-                    }}
-                  >
-                    <MoreVertIcon style={{ fontSize: "24px" }} />
-                  </AppIcon>
-
-                  <Menu
-                    id='table-menu'
-                    anchorEl={optionsMenuAnchorEl}
-                    keepMounted
-                    open={Boolean(optionsMenuAnchorEl)}
-                    onClose={() => {
-                      setOptionsMenuAnchorEl(null);
-                    }}
-                    TransitionComponent={Fade}
-                    style={{ borderRadius: "1rem", zIndex: "100" }}
-                  >
-                    <MenuItem
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setOptionsMenuAnchorEl(null);
-
-                        showTableNameChangeDialog();
-                      }}
-                    >
-                      <p className='text-overline2'>Rename</p>
-                    </MenuItem>
-                    <MenuItem
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setOptionsMenuAnchorEl(null);
-
-                        deleteItem(labelItem);
-                      }}
-                    >
-                      <p className='text-overline2 text-accent-red'>Delete</p>
-                    </MenuItem>
-                  </Menu>
-                </>
-              )}
-            </div>
-          </>
-        );
-      }}
-    </ReactHoverObserver>
-  );
-};
-
-const SchemaLabel = ({ labelItem, deleteItem }) => {
+const SchemaLabel = ({ labelItem, isLoading, deleteItem }) => {
   return (
     <ReactHoverObserver>
       {({ isHovering }) => {
@@ -767,6 +903,16 @@ const SchemaLabel = ({ labelItem, deleteItem }) => {
               />
 
               <p className='text-overline2'>{labelItem?.name}</p>
+
+              {isLoading && (
+                <CircularProgress
+                  style={{
+                    marginLeft: "0.5rem",
+                    width: "20px",
+                    height: "20px",
+                  }}
+                />
+              )}
             </div>
 
             {isHovering && (
@@ -793,7 +939,7 @@ const AttributeLabel = ({ labelItem, deleteItem }) => {
     <ReactHoverObserver>
       {({ isHovering }) => {
         return (
-          <div className='flex flex-row p-1 h-8 justify-between items-center border-b-2 ml-6'>
+          <div className='flex flex-row p-1 h-8 justify-between items-center border-b-2 ml-6 hover:bg-neutral-gray8'>
             <div className='flex flex-row items-center justify-start flex-1'>
               <div className='flex-1 flex flex-row'>
                 <img
@@ -838,50 +984,268 @@ const AttributeLabel = ({ labelItem, deleteItem }) => {
   );
 };
 
-const ColumnLabel = ({ labelItem, deleteItem }) => {
+const DatabaseLabel = ({
+  tableLabelItem,
+  request,
+  responseCode,
+  deleteItem,
+}) => {
+  const [optionsMenuAnchorEl, setOptionsMenuAnchorEl] = useState(false);
+  const [dialog, setDialog] = useState({
+    show: false,
+    type: null,
+    data: null,
+  });
+
+  const showTableNameChangeDialog = () => {
+    setDialog({
+      show: true,
+      type: "rename-table",
+    });
+  };
+
+  const handleOptionsClick = (event) => {
+    setOptionsMenuAnchorEl(event?.currentTarget);
+  };
+
+  const handleCloseDialog = () => {
+    setDialog({
+      show: false,
+      data: null,
+    });
+  };
+
   return (
     <ReactHoverObserver>
       {({ isHovering }) => {
         return (
-          <div className='flex flex-row p-1 h-8 justify-between items-center border-b-2 ml-6'>
-            <div className='flex flex-row items-center justify-start flex-1'>
-              <div className='flex-1 flex flex-row'>
+          <>
+            <Dialog
+              onClose={handleCloseDialog}
+              aria-labelledby='dashboard-dialog'
+              open={dialog?.show ?? false}
+              fullWidth
+              PaperProps={{
+                style: { borderRadius: 8 },
+              }}
+              disableBackdropClick
+            >
+              {dialog?.type === "rename-table" && (
+                <ChangeTableName
+                  labelItem={tableLabelItem}
+                  request={request}
+                  responseCode={responseCode}
+                  onClose={handleCloseDialog}
+                />
+              )}
+            </Dialog>
+
+            <div className='flex flex-row p-1 justify-between items-center border-b-2'>
+              <div className='flex flex-row items-center justify-start w-1/3'>
                 <img
-                  src={ColumnIcon}
+                  src={TableIcon}
                   alt='ezapi logo'
                   className='bg-white mr-4'
                   style={{ height: "24px", width: "24px" }}
                 />
 
-                <p className='text-overline2'>{labelItem?.name}</p>
+                {tableLabelItem?.name && !_.isEmpty(tableLabelItem?.name) ? (
+                  <p className='text-overline2'>{tableLabelItem?.name}</p>
+                ) : null}
               </div>
 
-              <div className='flex-1 pl-10'>
-                <p className='text-overline2'>{labelItem?.type}</p>
-              </div>
-
-              <div className='flex-1 pl-5'>
-                <p className='text-overline2'>
-                  {labelItem?.required ? "true" : "false"}
-                </p>
-              </div>
-            </div>
-
-            <div className='w-6'>
               {isHovering && (
-                <AppIcon
-                  onClick={(ev) => {
-                    ev?.preventDefault();
-                    ev?.stopPropagation();
+                <>
+                  <AppIcon
+                    onClick={(ev) => {
+                      ev?.preventDefault();
+                      ev?.stopPropagation();
 
-                    deleteItem(labelItem);
-                  }}
-                >
-                  <DeleteIcon />
-                </AppIcon>
+                      handleOptionsClick(ev);
+                    }}
+                  >
+                    <MoreVertIcon style={{ fontSize: "24px" }} />
+                  </AppIcon>
+
+                  <Menu
+                    id='table-menu'
+                    anchorEl={optionsMenuAnchorEl}
+                    keepMounted
+                    open={Boolean(optionsMenuAnchorEl)}
+                    onClose={() => {
+                      setOptionsMenuAnchorEl(null);
+                    }}
+                    TransitionComponent={Fade}
+                    style={{ borderRadius: "1rem", zIndex: "100" }}
+                  >
+                    <MenuItem
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setOptionsMenuAnchorEl(null);
+
+                        showTableNameChangeDialog();
+                      }}
+                    >
+                      <p className='text-overline2'>Rename</p>
+                    </MenuItem>
+                    <MenuItem
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setOptionsMenuAnchorEl(null);
+
+                        deleteItem(tableLabelItem);
+                      }}
+                    >
+                      <p className='text-overline2 text-accent-red'>Delete</p>
+                    </MenuItem>
+                  </Menu>
+                </>
               )}
             </div>
-          </div>
+          </>
+        );
+      }}
+    </ReactHoverObserver>
+  );
+};
+
+const ColumnLabel = ({
+  columnLabelItem,
+  request,
+  responseCode,
+  deleteColumn,
+  renameColumn,
+}) => {
+  const [optionsMenuAnchorEl, setOptionsMenuAnchorEl] = useState(false);
+  const [dialog, setDialog] = useState({
+    show: false,
+    type: null,
+    data: null,
+  });
+
+  const showColumnNameChangeDialog = () => {
+    setDialog({
+      show: true,
+      type: "rename-column",
+    });
+  };
+
+  const handleOptionsClick = (event) => {
+    setOptionsMenuAnchorEl(event?.currentTarget);
+  };
+
+  const handleCloseDialog = () => {
+    setDialog({
+      show: false,
+      data: null,
+    });
+  };
+
+  return (
+    <ReactHoverObserver>
+      {({ isHovering }) => {
+        return (
+          <>
+            <Dialog
+              onClose={handleCloseDialog}
+              aria-labelledby='column-dialog'
+              open={dialog?.show ?? false}
+              fullWidth
+              PaperProps={{
+                style: { borderRadius: 8 },
+              }}
+              disableBackdropClick
+            >
+              {dialog?.type === "rename-column" && (
+                <ChangeColumnName
+                  labelItem={columnLabelItem}
+                  request={request}
+                  responseCode={responseCode}
+                  renameColumn={renameColumn}
+                  onClose={handleCloseDialog}
+                />
+              )}
+            </Dialog>
+
+            <div className='flex flex-row p-1 h-8 justify-between items-center border-b-2 ml-6 hover:bg-neutral-gray8'>
+              <div className='flex flex-row items-center justify-start flex-1'>
+                <div className='flex-1 flex flex-row'>
+                  <img
+                    src={ColumnIcon}
+                    alt='ezapi logo'
+                    className='bg-white mr-4'
+                    style={{ height: "24px", width: "24px" }}
+                  />
+
+                  <p className='text-overline2'>{columnLabelItem?.name}</p>
+                </div>
+
+                <div className='flex-1 pl-10'>
+                  <p className='text-overline2'>{columnLabelItem?.type}</p>
+                </div>
+
+                <div className='flex-1 pl-5'>
+                  <p className='text-overline2'>
+                    {columnLabelItem?.required ? "true" : "false"}
+                  </p>
+                </div>
+              </div>
+
+              <div className='w-6'>
+                {isHovering && (
+                  <>
+                    <AppIcon
+                      onClick={(ev) => {
+                        ev?.preventDefault();
+                        ev?.stopPropagation();
+
+                        handleOptionsClick(ev);
+                      }}
+                    >
+                      <MoreVertIcon />
+                    </AppIcon>
+
+                    <Menu
+                      id='table-menu'
+                      anchorEl={optionsMenuAnchorEl}
+                      keepMounted
+                      open={Boolean(optionsMenuAnchorEl)}
+                      onClose={() => {
+                        setOptionsMenuAnchorEl(null);
+                      }}
+                      TransitionComponent={Fade}
+                      style={{ borderRadius: "1rem", zIndex: "100" }}
+                    >
+                      <MenuItem
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setOptionsMenuAnchorEl(null);
+
+                          showColumnNameChangeDialog();
+                        }}
+                      >
+                        <p className='text-overline2'>Rename</p>
+                      </MenuItem>
+                      <MenuItem
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setOptionsMenuAnchorEl(null);
+
+                          deleteColumn(columnLabelItem);
+                        }}
+                      >
+                        <p className='text-overline2 text-accent-red'>Delete</p>
+                      </MenuItem>
+                    </Menu>
+                  </>
+                )}
+              </div>
+            </div>
+          </>
         );
       }}
     </ReactHoverObserver>

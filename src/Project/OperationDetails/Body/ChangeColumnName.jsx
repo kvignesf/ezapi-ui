@@ -12,55 +12,13 @@ import {
   TextButton,
   PrimaryButton,
 } from "../../../shared/components/AppButton";
+import { isDatabase } from "../../../shared/utils";
 
-const ChangeTableName = ({ labelItem, request, responseCode, onClose }) => {
+const ChangeColumnName = ({ labelItem, renameColumn, onClose }) => {
   const formRef = useRef(null);
-  const setOperationDetails = useSetRecoilState(operationAtom);
 
   const onTableNameUpdate = ({ name }) => {
-    setOperationDetails((operationDetails) => {
-      if (request) {
-        const index = operationDetails.operationRequest.body.findIndex(
-          (x) => x.name === labelItem?.name
-        );
-        if (index !== -1) {
-          const newOperationDetails = _.cloneDeep(operationDetails);
-          const clonedTableData = _.cloneDeep(labelItem);
-
-          clonedTableData.name = name;
-          newOperationDetails.operationRequest.body[index] = clonedTableData;
-
-          return newOperationDetails;
-        }
-      } else {
-        const responseData = operationDetails?.operationResponse?.find(
-          (item) => item.responseCode === responseCode
-        );
-        const responseIndex = operationDetails?.operationResponse?.findIndex(
-          (item) => item.responseCode === responseCode
-        );
-
-        const existingBodyIndex = responseData?.body?.findIndex(
-          (body) => body.name === labelItem.name
-        );
-
-        if (existingBodyIndex >= 0 && responseData && responseIndex >= 0) {
-          const clonedOperationDetails = _.cloneDeep(operationDetails);
-          const clonedResponseData = _.cloneDeep(responseData);
-          const clonedTableData = _.cloneDeep(labelItem);
-
-          clonedTableData.name = name;
-          clonedResponseData.body[existingBodyIndex] = clonedTableData;
-
-          clonedOperationDetails.operationResponse[responseIndex] =
-            clonedResponseData;
-
-          return clonedOperationDetails;
-        }
-      }
-
-      return operationDetails;
-    });
+    renameColumn(labelItem, name);
   };
 
   return (
@@ -72,7 +30,7 @@ const ChangeTableName = ({ labelItem, request, responseCode, onClose }) => {
       }}
     >
       <div className='flex flex-row p-4 justify-between border-b-1'>
-        <p className='text-subtitle2'>Edit Table Name</p>
+        <p className='text-subtitle2'>Edit Column Name</p>
         <AppIcon
           onClick={(e) => {
             e?.preventDefault();
@@ -146,4 +104,4 @@ const ChangeTableName = ({ labelItem, request, responseCode, onClose }) => {
   );
 };
 
-export default ChangeTableName;
+export default ChangeColumnName;

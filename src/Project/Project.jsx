@@ -143,8 +143,8 @@ const Project = () => {
           <div>
             <div className='p-4 flex flex-row justify-between border-b-1'>
               <p className='text-subtitle2'>
-                {publishProjectData?.status === "success"
-                  ? "Publish success"
+                {publishProjectData?.success
+                  ? "Publish Successful"
                   : "Publish Failure"}
               </p>
               <AppIcon

@@ -156,6 +156,7 @@ const ProjectRow = ({
               <img
                 src={Logo}
                 alt='ezapi logo'
+                className='cursor-pointer'
                 onClick={(e) => {
                   e?.preventDefault();
                   e?.stopPropagation();

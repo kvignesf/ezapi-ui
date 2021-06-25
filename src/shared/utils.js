@@ -331,11 +331,7 @@ export const parseGetOperationRequestResponse = (operationResponse) => {
       // Single body item
 
       if (operationResponse?.body?.ezapi_ref) {
-        request.body = [
-          {
-            ...operationResponse?.body,
-          },
-        ];
+        request.body = [_.cloneDeep(operationResponse?.body)];
       }
     }
   }
@@ -391,24 +387,15 @@ export const generateSyncOperationResponseRequest = (operationResponse) => {
 
     if (reponseData?.body && !_.isEmpty(reponseData?.body)) {
       responseObject.content = reponseData?.body?.map((item) => {
-        if (isSchema(item) || isDatabase(item)) {
+        if (isSchema(item)) {
           const clonedItem = _.cloneDeep(item);
-
-          // // newItem.required =
-          // //   item?.required === true || item?.required === "true" ? true : false;
-
-          // newItem.name = item?.name;
-          // newItem.type = item?.type;
-          // newItem.ref = item?.ref;
-          // newItem.customName = item?.customName;
-          // return newItem;
 
           if (clonedItem?.hasOwnProperty("data")) {
             delete clonedItem?.data;
           }
 
           return clonedItem;
-        } else if (isAttribute(item) || isColumn(item)) {
+        } else if (isAttribute(item) || isColumn(item) || isDatabase(item)) {
           return item;
         }
       });
@@ -490,11 +477,7 @@ export const parseGetOperationResponseResponse = (operationResponse) => {
       // Single body item
 
       if (responseData?.content?.ezapi_ref) {
-        responseObj.body = [
-          {
-            ...responseData?.content,
-          },
-        ];
+        responseObj.body = [_.cloneDeep(responseData?.content)];
       }
     }
 

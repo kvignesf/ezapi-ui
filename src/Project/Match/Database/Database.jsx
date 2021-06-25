@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { useRecoilState } from "recoil";
 import _ from "lodash";
 
-import { useGetTables } from "../../../shared/query/tablesQueries";
+import { useGetTablesData } from "../../../shared/query/tablesQueries";
 import LoaderWithMessage from "../../../shared/components/LoaderWithMessage";
 import DatabaseSection from "./DatabaseSection";
 import tableAtom from "../../../shared/atom/tableAtom";
@@ -16,7 +16,7 @@ const Database = () => {
     error: fetchTablesError,
     data: tablesData,
     mutate: fetchTablesData,
-  } = useGetTables();
+  } = useGetTablesData();
   const [content, setContent] = useState(null);
   const [tableState, setTableState] = useRecoilState(tableAtom);
 
@@ -26,7 +26,7 @@ const Database = () => {
 
   useEffect(() => {
     if (tableState?.selected) {
-      const columnsData = _.cloneDeep(tableState?.selected?.data);
+      const columnsData = _.cloneDeep(tableState?.selected?.selectedColumns);
 
       const threePartIndex = Math.ceil(columnsData?.length / 3);
 
@@ -39,8 +39,8 @@ const Database = () => {
       const clonedTablesData = _.cloneDeep(tablesData);
 
       clonedTablesData?.sort((a, b) => {
-        if (a?.data?.length < b?.data?.length) return 1;
-        if (a?.data?.length > b?.data?.length) return -1;
+        if (a?.selectedColumns?.length < b?.selectedColumns?.length) return 1;
+        if (a?.selectedColumns?.length > b?.selectedColumns?.length) return -1;
         return 0;
       });
 
