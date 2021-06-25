@@ -30,6 +30,7 @@ import { PrimaryButton } from "../shared/components/AppButton";
 import LoaderWithMessage from "../shared/components/LoaderWithMessage";
 import { getUserId } from "../shared/storage";
 import routes, { generateRoute } from "../shared/routes";
+import Logo from "../static/images/logo/svg.svg";
 
 const MembersImages = ({ project, ...rest }) => {
   const loggedInUserId = getUserId();
@@ -146,16 +147,23 @@ const ProjectRow = ({
         {project?.status?.toLowerCase() === "complete" &&
           project?.publishStatus?.SpecGeneration?.success &&
           !isDownloadingSpecs && (
-            <AppIcon
-              onClick={(e) => {
-                e?.preventDefault();
-                e?.stopPropagation();
-
-                onDownloadSpecs();
+            <div
+              style={{
+                width: "32px",
+                height: "32px",
               }}
             >
-              <GetAppIcon />
-            </AppIcon>
+              <img
+                src={Logo}
+                alt='ezapi logo'
+                onClick={(e) => {
+                  e?.preventDefault();
+                  e?.stopPropagation();
+
+                  onDownloadSpecs();
+                }}
+              />
+            </div>
           )}
 
         {isDownloadingSpecs && (
@@ -259,7 +267,6 @@ const Content = ({ showCreateProjectDialog }) => {
     type: null,
     data: null,
   });
-
 
   const showMembersDialog = (project) => {
     setDialog({

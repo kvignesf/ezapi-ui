@@ -31,40 +31,6 @@ const PathParams = ({ request }) => {
   const getRecoilValueInfo = useGetRecoilValueInfo_UNSTABLE();
   const { fetch: fetchParentName } = useGetParentName();
 
-  const fetchParentSchemaName = () => {
-    const { loadable: schemaAtomLoadable } = getRecoilValueInfo(schemaAtom);
-    const schemaDetails = schemaAtomLoadable?.contents;
-
-    if (
-      schemaDetails &&
-      schemaDetails?.selected &&
-      !_.isEmpty(schemaDetails?.selected)
-    ) {
-      const value = schemaDetails?.selected
-        ?.slice()
-        ?.reverse()
-        ?.find((item) => isSchema(item));
-
-      return value?.name;
-    }
-
-    return null;
-  };
-
-  const fetchParentTableName = () => {
-    const { loadable: tableAtomLoadable } = getRecoilValueInfo(tableAtom);
-    const tableDetails = tableAtomLoadable?.contents;
-
-    if (
-      tableDetails &&
-      tableDetails?.selected &&
-      !_.isEmpty(tableDetails?.selected)
-    ) {
-      return tableDetails?.selected?.name;
-    }
-    return null;
-  };
-
   const itemDropped = (item) => {
     if (
       (isAttribute(item) || isColumn(item)) &&
@@ -83,6 +49,7 @@ const PathParams = ({ request }) => {
             const clonedItem = _.cloneDeep(item);
 
             clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
+            clonedItem.required = true;
 
             newOperationDetails.operationRequest.pathParams.push(clonedItem);
             return newOperationDetails;
@@ -97,6 +64,8 @@ const PathParams = ({ request }) => {
             const clonedItem = _.cloneDeep(item);
 
             clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
+            clonedItem.required = true;
+
             newOperationDetails.operationResponse.pathParams.push(clonedItem);
 
             return newOperationDetails;
@@ -264,7 +233,7 @@ const PathParams = ({ request }) => {
                         onDescriptionUpdate(item, value);
                       }}
                       onRequiredUpdate={(item, value) => {
-                        onRequiredUpdate(item, value);
+                        // onRequiredUpdate(item, value);
                       }}
                     />
                   );
@@ -284,7 +253,7 @@ const PathParams = ({ request }) => {
                         onDescriptionUpdate(item, value);
                       }}
                       onRequiredUpdate={(item, value) => {
-                        onRequiredUpdate(item, value);
+                        // onRequiredUpdate(item, value);
                       }}
                     />
                   );
