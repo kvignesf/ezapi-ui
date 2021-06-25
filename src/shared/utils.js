@@ -196,16 +196,22 @@ export const generateSyncOperationRequestRequest = (operationRequest) => {
   if (operationRequest?.body && !_.isEmpty(operationRequest?.body)) {
     request.body = operationRequest?.body?.map((item) => {
       if (isSchema(item) || isDatabase(item)) {
-        let newItem = {};
+        const clonedItem = _.cloneDeep(item);
 
-        // newItem.required =
-        //   item?.required === true || item?.required === "true" ? true : false;
+        // // newItem.required =
+        // //   item?.required === true || item?.required === "true" ? true : false;
 
-        newItem.name = item?.name;
-        newItem.type = item?.type;
-        newItem.ref = item?.ref;
+        // newItem.name = item?.name;
+        // newItem.type = item?.type;
+        // newItem.ref = item?.ref;
+        // newItem.customName = item?.customName;
+        // return newItem;
 
-        return newItem;
+        if (clonedItem?.hasOwnProperty("data")) {
+          delete clonedItem?.data;
+        }
+
+        return clonedItem;
       } else if (isAttribute(item) || isColumn(item)) {
         return item;
       }
@@ -386,16 +392,22 @@ export const generateSyncOperationResponseRequest = (operationResponse) => {
     if (reponseData?.body && !_.isEmpty(reponseData?.body)) {
       responseObject.content = reponseData?.body?.map((item) => {
         if (isSchema(item) || isDatabase(item)) {
-          let newItem = {};
+          const clonedItem = _.cloneDeep(item);
 
-          // newItem.required =
-          //   item?.required === true || item?.required === "true" ? true : false;
+          // // newItem.required =
+          // //   item?.required === true || item?.required === "true" ? true : false;
 
-          newItem.name = item?.name;
-          newItem.type = item?.type;
-          newItem.ref = item?.ref;
+          // newItem.name = item?.name;
+          // newItem.type = item?.type;
+          // newItem.ref = item?.ref;
+          // newItem.customName = item?.customName;
+          // return newItem;
 
-          return newItem;
+          if (clonedItem?.hasOwnProperty("data")) {
+            delete clonedItem?.data;
+          }
+
+          return clonedItem;
         } else if (isAttribute(item) || isColumn(item)) {
           return item;
         }
