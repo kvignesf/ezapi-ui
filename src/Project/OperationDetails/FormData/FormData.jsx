@@ -69,7 +69,7 @@ const FormData = ({ request = true }) => {
 
   const itemDeleted = (item) => {
     if (
-      isAttribute(item) &&
+      (isAttribute(item) || isColumn(item)) &&
       !isArray(item) &&
       !isSchema(item) &&
       !isObject(item)
@@ -182,6 +182,32 @@ const FormData = ({ request = true }) => {
     });
   };
 
+  const onNameUpdate = (item, name) => {
+    setOperationDetails((operationDetails) => {
+      if (request) {
+        let foundItemIndex =
+          operationDetails.operationRequest.formData.findIndex(
+            (x) => x?.sourceName === item?.sourceName
+          );
+
+        if (foundItemIndex !== -1) {
+          let foundItem =
+            operationDetails.operationRequest.formData[foundItemIndex];
+
+          const clonedFoundItem = _.cloneDeep(foundItem);
+          const clonedOperationDetails = _.cloneDeep(operationDetails);
+
+          clonedFoundItem.name = name;
+          clonedOperationDetails.operationRequest.formData[foundItemIndex] =
+            clonedFoundItem;
+
+          return clonedOperationDetails;
+        }
+      }
+      return operationDetails;
+    });
+  };
+
   return (
     <DropArea onItemDropped={itemDropped}>
       <TableContainer
@@ -224,6 +250,9 @@ const FormData = ({ request = true }) => {
                     }}
                     onRequiredUpdate={(item, value) => {
                       onRequiredUpdate(item, value);
+                    }}
+                    onNameUpdate={(item, name) => {
+                      onNameUpdate(item, name);
                     }}
                   />
                 );

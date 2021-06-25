@@ -25,7 +25,7 @@ import Row from "../Row";
 import schemaAtom from "../../../shared/atom/schemaAtom";
 import tableAtom from "../../../shared/atom/tableAtom";
 
-const PathParams = ({ request }) => {
+const PathParams = ({ request = true }) => {
   const [operationDetails, setOperationDetails] = useRecoilState(operationAtom);
   const { height, width } = useWindowSize();
   const getRecoilValueInfo = useGetRecoilValueInfo_UNSTABLE();
@@ -48,7 +48,11 @@ const PathParams = ({ request }) => {
             const newOperationDetails = _.cloneDeep(operationDetails);
             const clonedItem = _.cloneDeep(item);
 
-            clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
+            if (isAttribute(item)) {
+              clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
+            } else if (isColumn(item)) {
+              clonedItem.tableName = fetchParentName(clonedItem) ?? "global";
+            }
             clonedItem.required = true;
 
             newOperationDetails.operationRequest.pathParams.push(clonedItem);
@@ -63,7 +67,11 @@ const PathParams = ({ request }) => {
             const newOperationDetails = _.cloneDeep(operationDetails);
             const clonedItem = _.cloneDeep(item);
 
-            clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
+            if (isAttribute(item)) {
+              clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
+            } else if (isColumn(item)) {
+              clonedItem.tableName = fetchParentName(clonedItem) ?? "global";
+            }
             clonedItem.required = true;
 
             newOperationDetails.operationResponse.pathParams.push(clonedItem);
@@ -78,7 +86,7 @@ const PathParams = ({ request }) => {
 
   const itemDeleted = (item) => {
     if (
-      isAttribute(item) &&
+      (isAttribute(item) || isColumn(item)) &&
       !isArray(item) &&
       !isSchema(item) &&
       !isObject(item)
@@ -187,6 +195,32 @@ const PathParams = ({ request }) => {
     });
   };
 
+  const onNameUpdate = (item, name) => {
+    setOperationDetails((operationDetails) => {
+      if (request) {
+        let foundItemIndex =
+          operationDetails.operationRequest.pathParams.findIndex(
+            (x) => x?.sourceName === item?.sourceName
+          );
+
+        if (foundItemIndex !== -1) {
+          let foundItem =
+            operationDetails.operationRequest.pathParams[foundItemIndex];
+
+          const clonedFoundItem = _.cloneDeep(foundItem);
+          const clonedOperationDetails = _.cloneDeep(operationDetails);
+
+          clonedFoundItem.name = name;
+          clonedOperationDetails.operationRequest.pathParams[foundItemIndex] =
+            clonedFoundItem;
+
+          return clonedOperationDetails;
+        }
+      }
+      return operationDetails;
+    });
+  };
+
   return (
     <DropArea
       onItemDropped={(item) => {
@@ -234,6 +268,9 @@ const PathParams = ({ request }) => {
                       }}
                       onRequiredUpdate={(item, value) => {
                         // onRequiredUpdate(item, value);
+                      }}
+                      onNameUpdate={(item, name) => {
+                        onNameUpdate(item, name);
                       }}
                     />
                   );

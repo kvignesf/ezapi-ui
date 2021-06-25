@@ -6,13 +6,10 @@ import { TextField } from "@material-ui/core";
 import CloseIcon from "@material-ui/icons/Close";
 import * as Yup from "yup";
 
-import operationAtom from "../../operationAtom";
-import AppIcon from "../../../shared/components/AppIcon";
-import {
-  TextButton,
-  PrimaryButton,
-} from "../../../shared/components/AppButton";
-import { isDatabase } from "../../../shared/utils";
+import operationAtom from "../operationAtom";
+import AppIcon from "../../shared/components/AppIcon";
+import { TextButton, PrimaryButton } from "../../shared/components/AppButton";
+import { isDatabase } from "../../shared/utils";
 
 const ChangeColumnName = ({ labelItem, renameColumn, onClose }) => {
   const formRef = useRef(null);

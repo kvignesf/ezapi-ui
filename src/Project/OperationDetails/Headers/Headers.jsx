@@ -82,7 +82,7 @@ const Headers = ({ request = true, responseCode }) => {
 
   const itemDeleted = (item) => {
     if (
-      isAttribute(item) &&
+      (isAttribute(item) || isColumn(item)) &&
       !isArray(item) &&
       !isSchema(item) &&
       !isObject(item)
@@ -232,6 +232,55 @@ const Headers = ({ request = true, responseCode }) => {
     [] // will be created only once initially
   );
 
+  const onNameUpdate = (item, name) => {
+    setOperationDetails((operationDetails) => {
+      if (request) {
+        let foundItemIndex =
+          operationDetails.operationRequest.headers.findIndex(
+            (x) => x?.sourceName === item?.sourceName
+          );
+
+        if (foundItemIndex !== -1) {
+          let foundItem =
+            operationDetails.operationRequest.headers[foundItemIndex];
+
+          const clonedFoundItem = _.cloneDeep(foundItem);
+          const clonedOperationDetails = _.cloneDeep(operationDetails);
+
+          clonedFoundItem.name = name;
+          clonedOperationDetails.operationRequest.headers[foundItemIndex] =
+            clonedFoundItem;
+
+          return clonedOperationDetails;
+        }
+      } else {
+        const responseData = getResponseData(operationDetails);
+        const responseIndex = getResponseIndex(operationDetails);
+
+        let foundItemIndex = responseData.headers.findIndex(
+          (x) => x?.sourceName === item?.sourceName
+        );
+
+        if (foundItemIndex !== -1) {
+          const clonedFoundItem = _.cloneDeep(
+            responseData.headers[foundItemIndex]
+          );
+          const clonedOperationDetails = _.cloneDeep(operationDetails);
+          const clonedResponseData = _.cloneDeep(responseData);
+
+          clonedFoundItem.name = name;
+          clonedResponseData.headers[foundItemIndex] = clonedFoundItem;
+
+          clonedOperationDetails.operationResponse[responseIndex] =
+            clonedResponseData;
+
+          return clonedOperationDetails;
+        }
+      }
+      return operationDetails;
+    });
+  };
+
   const onRequiredUpdate = (item, value) => {
     setOperationDetails((operationDetails) => {
       if (request) {
@@ -344,6 +393,9 @@ const Headers = ({ request = true, responseCode }) => {
                     onRequiredUpdate={(item, value) => {
                       onRequiredUpdate(item, value);
                     }}
+                    onNameUpdate={(item, name) => {
+                      onNameUpdate(item, name);
+                    }}
                   />
                 );
               })}
@@ -366,6 +418,9 @@ const Headers = ({ request = true, responseCode }) => {
                     }}
                     onRequiredUpdate={(item, value) => {
                       onRequiredUpdate(item, value);
+                    }}
+                    onNameUpdate={(item, name) => {
+                      onNameUpdate(item, name);
                     }}
                   />
                 );

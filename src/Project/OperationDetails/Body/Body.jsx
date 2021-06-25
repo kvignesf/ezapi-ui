@@ -40,7 +40,7 @@ import TableIcon from "../../../static/images/table-icon.svg";
 import { useGetSubSchema, useGetTableData } from "./requestBodyQueries";
 import DragAndDropMessage from "../../../shared/components/DragAndDropMessage";
 import ChangeTableName from "./ChangeTableName";
-import ChangeColumnName from "./ChangeColumnName";
+import ChangeColumnName from "../ChangeColumnName";
 
 const Body = ({ request = true, responseCode }) => {
   let [operationData, setOperationDetails] = useRecoilState(operationAtom);

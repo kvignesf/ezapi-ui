@@ -74,7 +74,7 @@ const QueryParams = ({ request = true }) => {
 
   const itemDeleted = (item) => {
     if (
-      isAttribute(item) &&
+      (isAttribute(item) || isColumn(item)) &&
       !isArray(item) &&
       !isSchema(item) &&
       !isObject(item)
@@ -163,6 +163,32 @@ const QueryParams = ({ request = true }) => {
     [] // will be created only once initially
   );
 
+  const onNameUpdate = (item, name) => {
+    setOperationDetails((operationDetails) => {
+      if (request) {
+        let foundItemIndex =
+          operationDetails.operationRequest.queryParams.findIndex(
+            (x) => x?.sourceName === item?.sourceName
+          );
+
+        if (foundItemIndex !== -1) {
+          let foundItem =
+            operationDetails.operationRequest.queryParams[foundItemIndex];
+
+          const clonedFoundItem = _.cloneDeep(foundItem);
+          const clonedOperationDetails = _.cloneDeep(operationDetails);
+
+          clonedFoundItem.name = name;
+          clonedOperationDetails.operationRequest.queryParams[foundItemIndex] =
+            clonedFoundItem;
+
+          return clonedOperationDetails;
+        }
+      }
+      return operationDetails;
+    });
+  };
+
   const onRequiredUpdate = (item, value) => {
     setOperationDetails((operationDetails) => {
       let foundItem = operationDetails.operationRequest.queryParams.find(
@@ -230,6 +256,9 @@ const QueryParams = ({ request = true }) => {
                       }}
                       onRequiredUpdate={(item, value) => {
                         onRequiredUpdate(item, value);
+                      }}
+                      onNameUpdate={(item, name) => {
+                        onNameUpdate(item, name);
                       }}
                     />
                   );
