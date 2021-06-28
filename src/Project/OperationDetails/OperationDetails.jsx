@@ -8,6 +8,7 @@ import Colors from "../../shared/colors";
 import {
   parseGetOperationRequestResponse,
   parseGetOperationResponseResponse,
+  operationAtomWithMiddleware,
 } from "../../shared/utils";
 import Request from "./Request/Request";
 import Response from "./Response/Response";
@@ -37,13 +38,16 @@ const OperationDetails = ({
   path,
   operation,
   className,
+  projectType,
   ...props
 }) => {
   const { id: projectId } = useParams();
   const tabsClasses = tabsStyles();
   const tabClasses = tabStyles();
   const [currentTab, setTab] = useState(0);
-  const [operationState, setOperationState] = useRecoilState(operationAtom);
+  const [operationState, setOperationState] = useRecoilState(
+    operationAtomWithMiddleware
+  );
   const getOperationMutation = useGetOperation();
 
   useEffect(() => {
@@ -161,11 +165,17 @@ const OperationDetails = ({
 
             {currentTab === 0 ? (
               <div className='h-full'>
-                <Request getDetailsMutation={getOperationMutation} />
+                <Request
+                  getDetailsMutation={getOperationMutation}
+                  projectType={projectType}
+                />
               </div>
             ) : (
               <div className='h-full'>
-                <Response getDetailsMutation={getOperationMutation} />
+                <Response
+                  getDetailsMutation={getOperationMutation}
+                  projectType={projectType}
+                />
               </div>
             )}
           </div>

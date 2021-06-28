@@ -23,6 +23,7 @@ import operationAtom from "../../operationAtom";
 import { useRecoilValue } from "recoil";
 import DeleteParameter from "./DeleteParameter/DeleteParameter";
 import { useDrag } from "react-dnd";
+import { operationAtomWithMiddleware } from "../../../shared/utils";
 
 const Parameters = () => {
   const { id: projectId } = useParams();
@@ -38,7 +39,7 @@ const Parameters = () => {
     type: null,
     data: null,
   });
-  const operationState = useRecoilValue(operationAtom);
+  const operationState = useRecoilValue(operationAtomWithMiddleware);
 
   const showAddParameterDialog = () => {
     setDialog({

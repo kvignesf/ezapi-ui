@@ -6,9 +6,10 @@ import DragIndicatorIcon from "@material-ui/icons/DragIndicator";
 import operationAtom from "../../operationAtom";
 import AppIcon from "../../../shared/components/AppIcon";
 import DraggableDatabaseItem from "./DraggableDatabaseItem";
+import { operationAtomWithMiddleware } from "../../../shared/utils";
 
 const DatabaseSection = ({ items, onItemClick, section }) => {
-  const operationState = useRecoilValue(operationAtom);
+  const operationState = useRecoilValue(operationAtomWithMiddleware);
 
   return (
     <div className='flex flex-col'>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useRecoilState, useSetRecoilState } from "recoil";
 import { CircularProgress } from "@material-ui/core";
 import _ from "lodash";
@@ -19,6 +19,7 @@ import {
   Menu,
   MenuItem,
 } from "@material-ui/core/index";
+import useDoubleClick from "use-double-click";
 
 import DropArea from "../DropArea";
 import operationAtom from "../../operationAtom";
@@ -31,6 +32,7 @@ import {
   isDatabase,
   isColumn,
   useGetParentName,
+  operationAtomWithMiddleware,
 } from "../../../shared/utils";
 import AppIcon from "../../../shared/components/AppIcon";
 import AttributeIcon from "../../../static/images/attribute.svg";
@@ -42,8 +44,10 @@ import DragAndDropMessage from "../../../shared/components/DragAndDropMessage";
 import ChangeTableName from "./ChangeTableName";
 import ChangeColumnName from "../ChangeColumnName";
 
-const Body = ({ request = true, responseCode }) => {
-  let [operationData, setOperationDetails] = useRecoilState(operationAtom);
+const Body = ({ request = true, responseCode, projectType = "schema" }) => {
+  let [operationData, setOperationDetails] = useRecoilState(
+    operationAtomWithMiddleware
+  );
   const { height, width } = useWindowSize();
   const { fetch: fetchParentName } = useGetParentName();
 
@@ -117,8 +121,20 @@ const Body = ({ request = true, responseCode }) => {
       <div className='h-full flex flex-col'>
         <div className='flex flex-row p-2 border-t-2 border-b-2 bg-neutral-gray8 mb-1/2'>
           <p className='w-1/3 ml-3 text-overline2 text-neutral-gray4 uppercase font-bold'>
-            Schema
+            {projectType === "schema" || projectType === "both"
+              ? "Schema/Attribute"
+              : projectType === "db"
+              ? "Table/Column"
+              : "-"}
           </p>
+          {projectType === "db" && (
+            <p
+              className='w-1/3 text-overline2 uppercase text-neutral-gray4 font-bold'
+              style={{ marginLeft: "28px" }}
+            >
+              Name
+            </p>
+          )}
           <p
             className='w-1/3 text-overline2 uppercase text-neutral-gray4 font-bold'
             style={{ marginLeft: "28px" }}
@@ -251,7 +267,7 @@ let treeIndex = 1;
 // This can either be a schema or table
 const BodyItem = ({ request = true, responseCode, itemRef }) => {
   const [bodyItem, setItem] = useState(itemRef);
-  const setOperationDetails = useSetRecoilState(operationAtom);
+  const setOperationDetails = useSetRecoilState(operationAtomWithMiddleware);
   const { id: projectId } = useParams();
   const {
     isLoading: isLoadingSubSchema,
@@ -996,6 +1012,19 @@ const DatabaseLabel = ({
     type: null,
     data: null,
   });
+  const nameRef = useRef();
+
+  useDoubleClick({
+    onSingleClick: (e) => {},
+    onDoubleClick: (e) => {
+      e?.preventDefault();
+      e?.stopPropagation();
+
+      showTableNameChangeDialog();
+    },
+    ref: nameRef,
+    latency: 275,
+  });
 
   const showTableNameChangeDialog = () => {
     setDialog({
@@ -1040,69 +1069,82 @@ const DatabaseLabel = ({
               )}
             </Dialog>
 
-            <div className='flex flex-row p-1 justify-between items-center border-b-2'>
-              <div className='flex flex-row items-center justify-start w-1/3'>
-                <img
-                  src={TableIcon}
-                  alt='ezapi logo'
-                  className='bg-white mr-4'
-                  style={{ height: "24px", width: "24px" }}
-                />
+            <div className='flex flex-row p-1 justify-between items-center border-b-2 h-8'>
+              <div className='flex flex-row items-center justify-start w-full '>
+                <div className='flex flex-row items-center justify-start  w-1/4'>
+                  <img
+                    src={TableIcon}
+                    alt='ezapi logo'
+                    className='bg-white mr-4'
+                    style={{ height: "24px", width: "24px" }}
+                  />
+
+                  {tableLabelItem?.sourceName &&
+                  !_.isEmpty(tableLabelItem?.sourceName) ? (
+                    <p className='text-overline2'>
+                      {tableLabelItem?.sourceName}
+                    </p>
+                  ) : null}
+                </div>
 
                 {tableLabelItem?.name && !_.isEmpty(tableLabelItem?.name) ? (
-                  <p className='text-overline2'>{tableLabelItem?.name}</p>
+                  <p className='text-overline2 ml-4 select-none' ref={nameRef}>
+                    {tableLabelItem?.name}
+                  </p>
                 ) : null}
               </div>
 
-              {isHovering && (
-                <>
-                  <AppIcon
-                    onClick={(ev) => {
-                      ev?.preventDefault();
-                      ev?.stopPropagation();
+              <div className='w-6'>
+                {isHovering && (
+                  <>
+                    <AppIcon
+                      onClick={(ev) => {
+                        ev?.preventDefault();
+                        ev?.stopPropagation();
 
-                      handleOptionsClick(ev);
-                    }}
-                  >
-                    <MoreVertIcon style={{ fontSize: "24px" }} />
-                  </AppIcon>
-
-                  <Menu
-                    id='table-menu'
-                    anchorEl={optionsMenuAnchorEl}
-                    keepMounted
-                    open={Boolean(optionsMenuAnchorEl)}
-                    onClose={() => {
-                      setOptionsMenuAnchorEl(null);
-                    }}
-                    TransitionComponent={Fade}
-                    style={{ borderRadius: "1rem", zIndex: "100" }}
-                  >
-                    <MenuItem
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setOptionsMenuAnchorEl(null);
-
-                        showTableNameChangeDialog();
+                        handleOptionsClick(ev);
                       }}
                     >
-                      <p className='text-overline2'>Rename</p>
-                    </MenuItem>
-                    <MenuItem
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setOptionsMenuAnchorEl(null);
+                      <MoreVertIcon style={{ fontSize: "24px" }} />
+                    </AppIcon>
 
-                        deleteItem(tableLabelItem);
+                    <Menu
+                      id='table-menu'
+                      anchorEl={optionsMenuAnchorEl}
+                      keepMounted
+                      open={Boolean(optionsMenuAnchorEl)}
+                      onClose={() => {
+                        setOptionsMenuAnchorEl(null);
                       }}
+                      TransitionComponent={Fade}
+                      style={{ borderRadius: "1rem", zIndex: "100" }}
                     >
-                      <p className='text-overline2 text-accent-red'>Delete</p>
-                    </MenuItem>
-                  </Menu>
-                </>
-              )}
+                      <MenuItem
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setOptionsMenuAnchorEl(null);
+
+                          showTableNameChangeDialog();
+                        }}
+                      >
+                        <p className='text-overline2'>Rename</p>
+                      </MenuItem>
+                      <MenuItem
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setOptionsMenuAnchorEl(null);
+
+                          deleteItem(tableLabelItem);
+                        }}
+                      >
+                        <p className='text-overline2 text-accent-red'>Delete</p>
+                      </MenuItem>
+                    </Menu>
+                  </>
+                )}
+              </div>
             </div>
           </>
         );
@@ -1123,6 +1165,19 @@ const ColumnLabel = ({
     show: false,
     type: null,
     data: null,
+  });
+  const nameRef = useRef();
+
+  useDoubleClick({
+    onSingleClick: (e) => {},
+    onDoubleClick: (e) => {
+      e?.preventDefault();
+      e?.stopPropagation();
+
+      showColumnNameChangeDialog();
+    },
+    ref: nameRef,
+    latency: 275,
   });
 
   const showColumnNameChangeDialog = () => {
@@ -1179,6 +1234,15 @@ const ColumnLabel = ({
                     style={{ height: "24px", width: "24px" }}
                   />
 
+                  <p className='text-overline2'>
+                    {columnLabelItem?.sourceName}
+                  </p>
+                </div>
+
+                <div
+                  className='flex-1 pl-10 cursor-pointer select-none'
+                  ref={nameRef}
+                >
                   <p className='text-overline2'>{columnLabelItem?.name}</p>
                 </div>
 

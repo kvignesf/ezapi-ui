@@ -19,12 +19,15 @@ import {
   isObject,
   useParentSchemaNameFetcher,
   isColumn,
+  operationAtomWithMiddleware,
 } from "../../../shared/utils";
 import DragAndDropMessage from "../../../shared/components/DragAndDropMessage";
 import Row from "../Row";
 
 const Headers = ({ request = true, responseCode }) => {
-  let [operationData, setOperationDetails] = useRecoilState(operationAtom);
+  let [operationData, setOperationDetails] = useRecoilState(
+    operationAtomWithMiddleware
+  );
   const { height, width } = useWindowSize();
 
   const itemDropped = (item) => {

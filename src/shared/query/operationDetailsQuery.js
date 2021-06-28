@@ -1,8 +1,9 @@
 import _ from "lodash";
 import { useMutation } from "react-query";
+import { useSetRecoilState, useGetRecoilValueInfo_UNSTABLE } from "recoil";
 
 import client from "../network/client";
-import { getApiError } from "../utils";
+import { getApiError, operationAtomWithMiddleware } from "../utils";
 
 const syncOperation = async ({
   projectId,
@@ -43,8 +44,20 @@ const syncOperation = async ({
 };
 
 export const useSyncOperation = () => {
+  const setOperationState = useSetRecoilState(operationAtomWithMiddleware);
+  const getRecoilValueInfo = useGetRecoilValueInfo_UNSTABLE();
+
   const mutation = useMutation(syncOperation, {
-    onSuccess: (data) => {},
+    onMutate: () => {
+      const { loadable: operationAtomLoadable } = getRecoilValueInfo(
+        operationAtomWithMiddleware
+      );
+      const clonedOperationState = _.cloneDeep(operationAtomLoadable?.contents);
+
+      clonedOperationState.isModified = false;
+
+      setOperationState(clonedOperationState);
+    },
   });
 
   return mutation;

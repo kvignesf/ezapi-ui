@@ -19,6 +19,7 @@ import {
   useWindowSize,
   isColumn,
   useGetParentName,
+  operationAtomWithMiddleware,
 } from "../../../shared/utils";
 import DragAndDropMessage from "../../../shared/components/DragAndDropMessage";
 import Row from "../Row";
@@ -26,7 +27,9 @@ import schemaAtom from "../../../shared/atom/schemaAtom";
 import tableAtom from "../../../shared/atom/tableAtom";
 
 const PathParams = ({ request = true }) => {
-  const [operationDetails, setOperationDetails] = useRecoilState(operationAtom);
+  const [operationDetails, setOperationDetails] = useRecoilState(
+    operationAtomWithMiddleware
+  );
   const { height, width } = useWindowSize();
   const getRecoilValueInfo = useGetRecoilValueInfo_UNSTABLE();
   const { fetch: fetchParentName } = useGetParentName();

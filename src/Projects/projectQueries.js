@@ -7,7 +7,7 @@ import client, { endpoint } from "../shared/network/client";
 import { clearQueryCache, queries } from "../shared/network/queryClient";
 import routes from "../shared/routes";
 import { clearSession, setAccessToken } from "../shared/storage";
-import { getApiError } from "../shared/utils";
+import { getApiError, getOs } from "../shared/utils";
 
 const getProjects = async () => {
   try {
@@ -90,8 +90,11 @@ export const useInviteCollaborator = () => {
 
 const downloadSpecs = async ({ projectId }) => {
   try {
+    const osName = getOs();
+
     const { data } = await client.post(endpoint.downloadSpec, {
       projectId,
+      osType: osName,
     });
     return data;
   } catch (error) {
@@ -119,9 +122,18 @@ export const useDownloadSpecs = () => {
 
 const downloadArtifacts = async ({ projectId }) => {
   try {
-    const { data } = await client.post(endpoint.downloadArtifact, {
-      projectId,
-    });
+    const osName = getOs();
+
+    const { data } = await client.post(
+      endpoint.downloadArtifact,
+      {
+        projectId,
+        osType: osName,
+      },
+      {
+        timeout: 480000,
+      }
+    );
     return data;
   } catch (error) {
     throw getApiError(error);
@@ -134,9 +146,7 @@ export const useDownloadArtifacts = () => {
   const mutation = useMutation(downloadArtifacts, {
     onSuccess: (data) => {
       if (data?.downloadUrl && !_.isEmpty(data?.downloadUrl)) {
-        // const link = data?.downloadUrl;
-        const link =
-          "https://storage.googleapis.com/ezpai-poc/proj_af8a3781-a410-49ae-9f07-e01645490783/proj_spec.json?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=ezapi-filecopyservice%40civic-access-286104.iam.gserviceaccount.com%2F20210623%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20210623T133826Z&X-Goog-Expires=901&X-Goog-SignedHeaders=host&X-Goog-Signature=981a27042ca3d92de0c125ca16b0ba92c38ca1c2d785c8010061b6aa63f616cd8d5f852107f8a07e903c5a47ba73702927c080c8e6bfd06ea881dc6d222505bf5fa28915084c76859ff35570f836baeb06f0b88307a968c17561996f2c31b606bb1fd83bf7383098df604cfbfff21d717524a1b64486014e5c5237fbc1ba2aaf14e3adf62e74068497ea1678e345a107eb61ed00676fde76b8736baa7d0fcd432313edf5947eab2092fb8fd1311643e6b4d00a7ec2395e4f2143763848ecdcdd38d9c041802b210a2fd6f6410698eaa126aa98000c724ce515b2b274f9bd246466dc556a7560ea559d3055fd4c02ccbda627d0d99c210688777490440c4e874d";
+        const link = data?.downloadUrl;
 
         const filename = link.substring(link.lastIndexOf("/") + 1);
         saveAs(link, filename);

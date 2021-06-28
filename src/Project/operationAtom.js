@@ -22,6 +22,8 @@ export const defaultState = {
       body: [],
     },
   ],
+
+  isModified: false,
 };
 
 const operationAtom = atom({

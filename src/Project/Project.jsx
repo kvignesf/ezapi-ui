@@ -4,12 +4,18 @@ import ArrowBackIcon from "@material-ui/icons/ArrowBack";
 import { CircularProgress, Dialog, Tab, Tabs } from "@material-ui/core";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import { useResetRecoilState, useRecoilState, useSetRecoilState } from "recoil";
+import {
+  useResetRecoilState,
+  useRecoilState,
+  useSetRecoilState,
+  useGetRecoilValueInfo_UNSTABLE,
+} from "recoil";
 import CloudUploadIcon from "@material-ui/icons/CloudUpload";
 import { ClassNames } from "@emotion/react";
 import classNames from "classnames";
 import _ from "lodash";
 import CloseIcon from "@material-ui/icons/Close";
+import { Fade, Menu, MenuItem } from "@material-ui/core/index";
 
 import AppIcon from "../shared/components/AppIcon";
 import { useFetchProjectDetails } from "./projectQueries";
@@ -20,19 +26,21 @@ import AddOrEditResource from "./Resources/AddOrEditResource";
 import Resources from "./Resources/Resources";
 import Match from "./Match";
 import OperationDetails from "./OperationDetails";
-import { endpoint } from "../shared/network/client";
 import { useSyncOperation } from "../shared/query/operationDetailsQuery";
 import { usePublishProject } from "./projectQueries";
 import TabLabel from "../shared/components/TabLabel";
 import {
   generateSyncOperationRequestRequest,
   generateSyncOperationResponseRequest,
+  operationAtomWithMiddleware,
 } from "../shared/utils";
 import tableAtom from "../shared/atom/tableAtom";
 import schemaAtom from "../shared/atom/schemaAtom";
 import operationAtom from "./operationAtom";
 import Colors from "../shared/colors";
 import routes from "../shared/routes";
+import { useLogout } from "../shared/query/authQueries";
+import SaveProjectWarning from "./SaveProjectWarning";
 
 const Project = () => {
   const { id: projectId } = useParams();
@@ -46,13 +54,15 @@ const Project = () => {
     data: projectDetails,
   } = useFetchProjectDetails(projectId, { refetchOnWindowFocus: false });
   const [currentTab, setCurrentTab] = useState(0);
-  const [operationState, setOperationState] = useRecoilState(operationAtom);
-  const setSchemaState = useSetRecoilState(schemaAtom);
+  const [operationState, setOperationState] = useRecoilState(
+    operationAtomWithMiddleware
+  );
   const {
     isLoading: isSyncingOperation,
     isSuccess: isSyncOperationSuccess,
     error: syncOperationError,
     mutate: syncOperation,
+    reset: resetSyncOperationMutation,
   } = useSyncOperation();
   const {
     isLoading: isPublishingProject,
@@ -64,7 +74,29 @@ const Project = () => {
   } = usePublishProject();
   const resetSchemaState = useResetRecoilState(schemaAtom);
   const resetTableState = useResetRecoilState(tableAtom);
-  const resetOperationState = useResetRecoilState(operationAtom);
+  const resetOperationState = useResetRecoilState(operationAtomWithMiddleware);
+  const [profileMenuAnchorEl, setProfilemenuAnchorEl] = useState(false);
+  const { isLoading: isLoggingOut, mutate: logout } = useLogout();
+  const [dialog, setDialog] = useState({
+    show: false,
+    type: null,
+    data: null,
+  });
+  const getRecoilValueInfo = useGetRecoilValueInfo_UNSTABLE();
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const { loadable: operationAtomLoadable } = getRecoilValueInfo(
+        operationAtomWithMiddleware
+      );
+      const operationState = operationAtomLoadable?.contents;
+
+      if (operationState?.isModified) {
+        saveProject();
+      }
+    }, 8000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     resetProjectState();
@@ -87,6 +119,11 @@ const Project = () => {
   };
 
   const saveProject = () => {
+    const { loadable: operationAtomLoadable } = getRecoilValueInfo(
+      operationAtomWithMiddleware
+    );
+    const operationState = operationAtomLoadable?.contents;
+
     const saveRequestApiRequest = generateSyncOperationRequestRequest(
       operationState?.operationRequest
     );
@@ -113,25 +150,65 @@ const Project = () => {
     history.goBack();
   };
 
+  const handleProfileMenuClick = (event) => {
+    setProfilemenuAnchorEl(event?.currentTarget);
+  };
+
+  const showSaveProjectWarning = (navigationFlag) => {
+    setDialog({
+      show: true,
+      type: "save-project-warning",
+      data: navigationFlag,
+    });
+  };
+
+  const handleCloseDialog = () => {
+    setDialog({
+      show: false,
+      type: null,
+      data: null,
+    });
+  };
+
+  const navigateBack = () => {
+    history.goBack();
+  };
+
+  if (
+    isSyncOperationSuccess &&
+    dialog?.show &&
+    dialog?.type === "save-project-warning"
+  ) {
+    resetSyncOperationMutation();
+
+    setDialog({
+      show: false,
+      type: null,
+      data: null,
+    });
+
+    navigateBack();
+  }
+
   return (
     <>
       <Dialog
         aria-labelledby='save-operation-dialog'
-        open={isSyncingOperation || isPublishingProject || publishProjectData}
+        open={isPublishingProject || publishProjectData || dialog?.show}
         fullWidth
         PaperProps={{
           style: { borderRadius: 8 },
         }}
         disableBackdropClick
       >
-        {(isSyncingOperation || isPublishingProject) && (
+        {(isPublishingProject || isLoggingOut) && (
           <div className='p-6'>
             <div className='w-full flex flex-row items-center'>
               <p className='text-overline mr-3'>
-                {isSyncingOperation
-                  ? "Saving Operation"
-                  : isPublishingProject
+                {isPublishingProject
                   ? "Publishing project"
+                  : isLoggingOut
+                  ? "Logging out"
                   : null}
               </p>
               <CircularProgress style={{ width: "20px", height: "20px" }} />
@@ -159,7 +236,7 @@ const Project = () => {
                   }
                 }}
               >
-                <CloseIcon></CloseIcon>
+                <CloseIcon />
               </AppIcon>
             </div>
             <div className='p-4 py-6'>
@@ -191,6 +268,27 @@ const Project = () => {
             </div>
           </div>
         )}
+
+        {!isSyncingOperation &&
+          dialog?.show &&
+          dialog?.type === "save-project-warning" && (
+            <SaveProjectWarning
+              onClose={handleCloseDialog}
+              navigateBack={() => {
+                handleCloseDialog();
+
+                resetProjectState();
+
+                if (dialog?.data === "with-nav") {
+                  navigateBack();
+                }
+              }}
+              saveProject={() => {
+                handleCloseDialog();
+                saveProject();
+              }}
+            />
+          )}
       </Dialog>
 
       <DndProvider backend={HTML5Backend}>
@@ -202,9 +300,12 @@ const Project = () => {
                 event?.preventDefault();
                 event?.stopPropagation();
 
-                resetProjectState();
-
-                history.goBack();
+                if (!operationState?.isModified) {
+                  resetProjectState();
+                  navigateBack();
+                } else {
+                  showSaveProjectWarning("with-nav");
+                }
               }}
             >
               <ArrowBackIcon />
@@ -213,16 +314,30 @@ const Project = () => {
             <p className='text-overline1'>{projectDetails?.projectName}</p>
 
             <div className='ml-4'>
-              <AppIcon
-                onClick={(e) => {
-                  e?.preventDefault();
-                  e?.stopPropagation();
+              {!isSyncingOperation ? (
+                <AppIcon
+                  onClick={(e) => {
+                    e?.preventDefault();
+                    e?.stopPropagation();
 
-                  saveProject();
-                }}
-              >
-                <CloudUploadIcon style={{ color: "lightblue" }} />
-              </AppIcon>
+                    saveProject();
+                  }}
+                >
+                  <CloudUploadIcon style={{ color: "lightblue" }} />
+                </AppIcon>
+              ) : (
+                <div className='flex flex-row items-center'>
+                  <CircularProgress
+                    style={{
+                      width: "18px",
+                      height: "18px",
+                      marginRight: "0.5rem",
+                    }}
+                  />
+
+                  <p className='text-overline2 opacity-60'>Saving ...</p>
+                </div>
+              )}
             </div>
           </div>
 
@@ -262,7 +377,41 @@ const Project = () => {
               Publish
             </PrimaryButton>
 
-            <InitialsAvatar firstName={firstName} lastName={lastName} />
+            <div>
+              <InitialsAvatar
+                firstName={firstName}
+                lastName={lastName}
+                className='cursor-pointer'
+                onClick={(e) => {
+                  e?.preventDefault();
+                  e?.stopPropagation();
+
+                  handleProfileMenuClick(e);
+                }}
+              />
+
+              <Menu
+                id='profile-menu'
+                anchorEl={profileMenuAnchorEl}
+                keepMounted
+                open={Boolean(profileMenuAnchorEl)}
+                onClose={() => {
+                  setProfilemenuAnchorEl(null);
+                }}
+                TransitionComponent={Fade}
+                style={{ borderRadius: "1rem", zIndex: "100" }}
+              >
+                <MenuItem
+                  onClick={() => {
+                    setProfilemenuAnchorEl(null);
+                    logout();
+                  }}
+                  style={{ color: Colors.accent.red }}
+                >
+                  Logout
+                </MenuItem>
+              </Menu>
+            </div>
           </div>
         </header>
 
@@ -286,15 +435,23 @@ const Project = () => {
                     path === null &&
                     operation === null
                   ) {
-                    resetOperationState();
+                    if (!operationState?.isModified) {
+                      resetOperationState();
+                    } else {
+                      showSaveProjectWarning("without-nav");
+                    }
                   } else if (index !== operationState.operationIndex) {
-                    const cloned = _.cloneDeep(operationState);
-                    cloned.operation = operation;
-                    cloned.resource = resource;
-                    cloned.path = path;
-                    cloned.operationIndex = index;
+                    if (!operationState?.isModified) {
+                      const cloned = _.cloneDeep(operationState);
+                      cloned.operation = operation;
+                      cloned.resource = resource;
+                      cloned.path = path;
+                      cloned.operationIndex = index;
 
-                    setOperationState(cloned);
+                      setOperationState(cloned);
+                    } else {
+                      showSaveProjectWarning("without-nav");
+                    }
                   }
                 }}
               />
@@ -318,7 +475,9 @@ const Project = () => {
                       "h-1/2": operationState.operationIndex !== null,
                     })}
                   >
-                    <OperationDetails />
+                    <OperationDetails
+                      projectType={projectDetails?.projectType}
+                    />
                   </div>
                 )}
             </section>

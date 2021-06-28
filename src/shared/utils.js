@@ -1,12 +1,18 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import _ from "lodash";
-import { useRecoilValue, useGetRecoilValueInfo_UNSTABLE } from "recoil";
+import {
+  useRecoilValue,
+  useGetRecoilValueInfo_UNSTABLE,
+  useRecoilTransactionObserver_UNSTABLE,
+  selector,
+} from "recoil";
 
 import { endpoint } from "./network/client";
 import { getAccessToken } from "./storage";
 import Constants from "./constants";
 import schemaAtom from "./atom/schemaAtom";
 import tableAtom from "./atom/tableAtom";
+import operationAtom, { defaultState } from "../Project/operationAtom";
 
 export const isEmailValid = (email) => {
   const re =
@@ -527,3 +533,79 @@ export const useGetParentName = () => {
     fetch,
   };
 };
+
+/**
+ * Returns the OS name which is running this webapp.
+ *
+ * @return {[string]} Name of the OS
+ */
+export const getOs = () => {
+  let userAgent = window.navigator.userAgent,
+    platform = window.navigator.platform,
+    macosPlatforms = ["Macintosh", "MacIntel", "MacPPC", "Mac68K"],
+    windowsPlatforms = ["Win32", "Win64", "Windows", "WinCE"],
+    iosPlatforms = ["iPhone", "iPad", "iPod"],
+    os = null;
+
+  if (macosPlatforms.indexOf(platform) !== -1) {
+    os = "mac";
+  } else if (iosPlatforms.indexOf(platform) !== -1) {
+    os = "ios";
+  } else if (windowsPlatforms.indexOf(platform) !== -1) {
+    os = "windows";
+  } else if (/Android/.test(userAgent)) {
+    os = "android";
+  } else if (!os && /Linux/.test(platform)) {
+    os = "linux";
+  }
+
+  return os;
+};
+
+export const operationAtomWithMiddleware = selector({
+  key: operationAtom.key + "_middleware",
+  get: ({ get }) => {
+    return get(operationAtom);
+  },
+  set: ({ set, get }, newValue) => {
+    // Setting isModified Flag
+    const previousValue = get(operationAtom);
+    const clonedNewValue = _.cloneDeep(newValue);
+
+    if (previousValue === defaultState) {
+      // Initial data loading up
+      clonedNewValue.isModified = false;
+    } else if (
+      _.isEqual(previousValue?.operationRequest, defaultState?.operationRequest)
+    ) {
+      // Loading up request data
+      clonedNewValue.isModified = false;
+    } else if (
+      _.isEqual(
+        previousValue?.operationResponse,
+        defaultState?.operationResponse
+      )
+    ) {
+      // Loading up response data
+      clonedNewValue.isModified = false;
+    } else if (!clonedNewValue?.operation || !clonedNewValue?.operationIndex) {
+      // Resetting atom state
+      clonedNewValue.isModified = false;
+    } else if (
+      clonedNewValue?.operationIndex !== previousValue?.operationIndex
+    ) {
+      // New operation is selected
+      clonedNewValue.isModified = false;
+      clonedNewValue.operationRequest = defaultState?.operationRequest;
+      clonedNewValue.operationResponse = defaultState?.operationResponse;
+    } else if (clonedNewValue?.isModified !== previousValue?.isModified) {
+      // Operation is synced
+      clonedNewValue.isModified = false;
+    } else {
+      // Something internally is modified
+      clonedNewValue.isModified = true;
+    }
+
+    set(operationAtom, clonedNewValue);
+  },
+});

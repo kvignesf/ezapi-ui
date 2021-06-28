@@ -40,6 +40,7 @@
     "serve": "^11.3.2",
     "smooth-scrollbar": "^8.6.2",
     "twin.macro": "^2.4.0",
+    "use-double-click": "^1.0.5",
     "use-file-picker": "^1.0.1",
     "yup": "^0.32.9"
   },

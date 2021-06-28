@@ -12,12 +12,14 @@ import operationAtom from "../../operationAtom";
 import Body from "../Body/Body";
 import TabLabel from "../../../shared/components/TabLabel";
 import LoaderWithMessage from "../../../shared/components/LoaderWithMessage";
+import { operationAtomWithMiddleware } from "../../../shared/utils";
 
 const Request = ({
   getDetailsMutation: { isLoading: isLoadingOperationRequest },
+  projectType = "schema",
 }) => {
   const [currentTab, setTab] = useState(0);
-  const operationState = useRecoilValue(operationAtom);
+  const operationState = useRecoilValue(operationAtomWithMiddleware);
 
   if (isLoadingOperationRequest) {
     return (
@@ -81,7 +83,7 @@ const Request = ({
       {currentTab === 1 && <FormData request={true} />}
       {currentTab === 2 && <PathParams request={true} />}
       {currentTab === 3 && <QueryParams request={true} />}
-      {currentTab === 4 && <Body request={true} />}
+      {currentTab === 4 && <Body request={true} projectType={projectType} />}
     </div>
   );
 };

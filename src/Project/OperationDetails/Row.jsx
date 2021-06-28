@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import TableCell from "@material-ui/core/TableCell";
 import TableRow from "@material-ui/core/TableRow";
 import { Field, ErrorMessage, Form, Formik } from "formik";
@@ -14,6 +14,7 @@ import {
   Menu,
   MenuItem,
 } from "@material-ui/core/index";
+import useDoubleClick from "use-double-click";
 
 import AppIcon from "../../shared/components/AppIcon";
 import Colors from "../../shared/colors";
@@ -34,6 +35,21 @@ const Row = ({
     show: false,
     type: null,
     data: null,
+  });
+  const nameRef = useRef();
+
+  useDoubleClick({
+    onSingleClick: (e) => {},
+    onDoubleClick: (e) => {
+      e?.preventDefault();
+      e?.stopPropagation();
+
+      if (isColumn(row)) {
+        showColumnNameChangeDialog();
+      }
+    },
+    ref: nameRef,
+    latency: 275,
   });
 
   const showColumnNameChangeDialog = () => {
@@ -95,7 +111,14 @@ const Row = ({
       >
         <TableCell
           align='left'
-          style={{ width: "150px", padding: "4px", paddingLeft: "8px" }}
+          style={{
+            width: "150px",
+            padding: "4px",
+            paddingLeft: "8px",
+            cursor: isColumn(row) ? "pointer" : null,
+            userSelect: "none",
+          }}
+          ref={nameRef}
         >
           {row.name}
         </TableCell>

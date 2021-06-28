@@ -12,10 +12,11 @@ import {
   TextButton,
   PrimaryButton,
 } from "../../../shared/components/AppButton";
+import { operationAtomWithMiddleware } from "../../../shared/utils";
 
 const ChangeTableName = ({ labelItem, request, responseCode, onClose }) => {
   const formRef = useRef(null);
-  const setOperationDetails = useSetRecoilState(operationAtom);
+  const setOperationDetails = useSetRecoilState(operationAtomWithMiddleware);
 
   const onTableNameUpdate = ({ name }) => {
     setOperationDetails((operationDetails) => {

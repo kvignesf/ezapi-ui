@@ -15,6 +15,7 @@ import AppIcon from "../../../shared/components/AppIcon";
 import Colors from "../../../shared/colors";
 import classNames from "classnames";
 import Constants from "../../../shared/constants";
+import { operationAtomWithMiddleware } from "../../../shared/utils";
 
 const Response = ({
   getDetailsMutation: {
@@ -22,8 +23,9 @@ const Response = ({
     data: operationData,
     mutate: getOperationDetails,
   },
+  projectType = "schema",
 }) => {
-  const operationState = useRecoilValue(operationAtom);
+  const operationState = useRecoilValue(operationAtomWithMiddleware);
   const [selectedResponseCode, setSelectedResponseCode] = useState(
     operationState?.operationResponse[0]?.responseCode ??
       Constants.mandatoryResponseCode
@@ -52,14 +54,19 @@ const Response = ({
         <AddResponseCode />
       </div>
 
-      <ResponseContent selectedCode={selectedResponseCode} />
+      <ResponseContent
+        selectedCode={selectedResponseCode}
+        projectType={projectType}
+      />
     </div>
   );
 };
 
-const ResponseContent = ({ selectedCode }) => {
+const ResponseContent = ({ selectedCode, projectType }) => {
   const [currentTab, setTab] = useState(0);
-  const [operationState, setOperationState] = useRecoilState(operationAtom);
+  const [operationState, setOperationState] = useRecoilState(
+    operationAtomWithMiddleware
+  );
   const [responseData, setData] = useState(null);
 
   useEffect(() => {
@@ -109,7 +116,12 @@ const ResponseContent = ({ selectedCode }) => {
         />
       )}
       {currentTab === 1 && (
-        <Body key={selectedCode} request={false} responseCode={selectedCode} />
+        <Body
+          key={selectedCode}
+          request={false}
+          responseCode={selectedCode}
+          projectType={projectType}
+        />
       )}
     </div>
   );
@@ -117,7 +129,9 @@ const ResponseContent = ({ selectedCode }) => {
 
 const AddResponseCode = () => {
   const [profileMenuAnchorEl, setProfilemenuAnchorEl] = useState(null);
-  const [operationState, setOperationState] = useRecoilState(operationAtom);
+  const [operationState, setOperationState] = useRecoilState(
+    operationAtomWithMiddleware
+  );
 
   const getAvailableResponseCodes = () => {
     return _.difference(
@@ -187,7 +201,9 @@ const AddResponseCode = () => {
 
 const ResponseCodeSelection = ({ selectedCode, onChange }) => {
   const [profileMenuAnchorEl, setProfilemenuAnchorEl] = useState(null);
-  const [operationState, setOperationState] = useRecoilState(operationAtom);
+  const [operationState, setOperationState] = useRecoilState(
+    operationAtomWithMiddleware
+  );
 
   const getResponseCodes = () => {
     return (

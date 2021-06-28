@@ -22,6 +22,7 @@ import {
   isObject,
   useParentSchemaNameFetcher,
   isColumn,
+  operationAtomWithMiddleware,
 } from "../../../shared/utils";
 import AppIcon from "../../../shared/components/AppIcon";
 import DragAndDropMessage from "../../../shared/components/DragAndDropMessage";
@@ -29,7 +30,9 @@ import Row from "../Row";
 import schemaAtom from "../../../shared/atom/schemaAtom";
 
 const QueryParams = ({ request = true }) => {
-  let [operationDetails, setOperationDetails] = useRecoilState(operationAtom);
+  let [operationDetails, setOperationDetails] = useRecoilState(
+    operationAtomWithMiddleware
+  );
   const { height, width } = useWindowSize();
 
   const itemDropped = (item) => {

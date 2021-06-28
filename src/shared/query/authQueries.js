@@ -88,6 +88,7 @@ export const useLogout = () => {
     },
     onError: (err) => {
       clearQueryCache(queryClient);
+
       history.replace(routes.signIn);
     },
   });

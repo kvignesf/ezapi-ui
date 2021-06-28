@@ -14,7 +14,7 @@ import Colors from "./shared/colors";
 import Login from "./Login";
 import Projects from "./Projects";
 import Landing from "./Landing";
-import { isUserLoggedIn } from "./shared/utils";
+import { isUserLoggedIn, DebugObserver } from "./shared/utils";
 import Project from "./Project";
 
 const theme = createMuiTheme({
