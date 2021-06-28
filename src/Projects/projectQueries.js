@@ -94,7 +94,7 @@ const downloadSpecs = async ({ projectId }) => {
 
     const { data } = await client.post(endpoint.downloadSpec, {
       projectId,
-      osType: osName,
+      os_type: osName,
     });
     return data;
   } catch (error) {
@@ -128,7 +128,7 @@ const downloadArtifacts = async ({ projectId }) => {
       endpoint.downloadArtifact,
       {
         projectId,
-        osType: osName,
+        os_type: osName,
       },
       {
         timeout: 480000,
