@@ -132,7 +132,7 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
               className='w-1/3 text-overline2 uppercase text-neutral-gray4 font-bold'
               style={{ marginLeft: "28px" }}
             >
-              Name
+              Schema/Attribute
             </p>
           )}
           <p
