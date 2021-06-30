@@ -50,42 +50,19 @@ client.interceptors.request.use((request) => {
   return request;
 });
 
-// // Token refresh
-// const navigateToSignin = () => {
-//   clearSession();
-//   window.location.replace(routes.signIn);
-// };
-// const refreshToken = async (failedRequest) => {
-//   try {
-//     const refreshToken = getRefreshToken();
+const navigateToSignin = () => {
+  clearSession();
+  window.location.replace(routes.signIn);
+};
 
-//     if (refreshToken) {
-//       const { data } = await client.post(endpoint.refreshToken, {
-//         data: {
-//           refreshToken,
-//         },
-//       });
+// Intercepting error responses
+client.interceptors.response.use(null, (err) => {
+  const error = err?.response;
 
-//       const {
-//         accessToken: newAccessToken,
-//         refreshToken: newRefreshToken,
-//       } = data;
-
-//       // Update the new tokens
-//       setAccessToken(newAccessToken);
-//       setRefreshToken(newRefreshToken);
-
-//       // Update the failed request with new token
-//       failedRequest.response.config.headers[
-//         'Authorization'
-//       ] = `Bearer ${newAccessToken}`;
-//     } else {
-//       navigateToSignin();
-//     }
-//   } catch (error) {
-//     navigateToSignin();
-//   }
-// };
-// createAuthRefreshInterceptor(client, refreshToken);
+  // Logout if 401
+  if (error?.status === 401) {
+    navigateToSignin();
+  }
+});
 
 export default client;

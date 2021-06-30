@@ -118,8 +118,6 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
     );
   };
 
-  console.log("getExandedIds()", getExandedIds());
-
   return (
     <DropArea onItemDropped={itemDropped}>
       <div className='h-full flex flex-col'>
@@ -170,8 +168,7 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
                 defaultExpandIcon={<ChevronRightIcon />}
                 expanded={getExandedIds() ?? []}
                 onNodeToggle={(event, nodeIds) => {
-                  console.log("event", event, nodeIds);
-                  setExpandedIds(nodeIds.map((item) => item.toString()));
+                  setExpandedIds(nodeIds);
                 }}
               >
                 {operationData?.operationRequest?.body.map((item) => {
@@ -225,7 +222,7 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
                 defaultExpandIcon={<ChevronRightIcon />}
                 expanded={getExandedIds() ?? []}
                 onNodeToggle={(event, nodeIds) => {
-                  setExpandedIds(nodeIds.map((item) => item.toString()));
+                  setExpandedIds(nodeIds);
                 }}
               >
                 {getResponseData(operationData)?.body.map((item) => {
@@ -665,12 +662,10 @@ const BodyItem = ({ request = true, responseCode, itemRef }) => {
     );
   }
 
-  console.log("treeIndex", treeIndex);
-
   return (
     <TreeItem
-      key={treeIndex++}
-      nodeId={itemRef?.sourceName}
+      key={bodyItem?.payloadId ?? bodyItem?.name ?? treeIndex++}
+      nodeId={bodyItem?.payloadId ?? bodyItem?.name ?? treeIndex++}
       label={
         isDatabase(bodyItem) ? (
           <DatabaseLabel
@@ -717,8 +712,8 @@ const BodyItem = ({ request = true, responseCode, itemRef }) => {
           } else if (isAttribute(ref)) {
             return (
               <TreeItem
-                key={treeIndex++}
-                nodeId={treeIndex++}
+                key={ref?.payloadId ?? ref?.name ?? treeIndex++}
+                nodeId={ref?.payloadId ?? ref?.name ?? treeIndex++}
                 label={
                   <div className='flex flex-row p-1 justify-between items-center border-b-2'>
                     <div className='flex flex-row items-center justify-start flex-1'>
@@ -825,8 +820,8 @@ const BodySubTreeItems = ({ currentRef: some }) => {
 
   return (
     <TreeItem
-      key={treeIndex++}
-      nodeId={treeIndex++}
+      key={currentRef?.payloadId ?? currentRef?.name ?? treeIndex++}
+      nodeId={currentRef?.payloadId ?? currentRef?.name ?? treeIndex++}
       label={
         <div className='flex flex-row p-1 justify-between border-b-2'>
           <div className='flex flex-row items-center justify-center'>
@@ -884,8 +879,8 @@ const BodySubTreeItems = ({ currentRef: some }) => {
         } else if (isAttribute(ref)) {
           return (
             <TreeItem
-              key={treeIndex++}
-              nodeId={treeIndex++}
+              key={ref?.payloadId ?? ref?.name ?? treeIndex++}
+              nodeId={ref?.payloadId ?? ref?.name ?? treeIndex++}
               label={
                 <div className='flex flex-row justify-between items-center p-1 border-b-2'>
                   <div className='flex flex-row items-center justify-start flex-1'>
@@ -1233,7 +1228,11 @@ const ColumnLabel = ({
                   labelItem={columnLabelItem}
                   request={request}
                   responseCode={responseCode}
-                  renameColumn={renameColumn}
+                  renameColumn={(column, value) => {
+                    renameColumn(column, value);
+
+                    handleCloseDialog();
+                  }}
                   onClose={handleCloseDialog}
                 />
               )}
