@@ -20,6 +20,7 @@ import {
   MenuItem,
 } from "@material-ui/core/index";
 import useDoubleClick from "use-double-click";
+import { Checkbox } from "@material-ui/core";
 
 import DropArea from "../DropArea";
 import operationAtom from "../../operationAtom";
@@ -44,6 +45,7 @@ import DragAndDropMessage from "../../../shared/components/DragAndDropMessage";
 import ChangeTableName from "./ChangeTableName";
 import ChangeColumnName from "../ChangeColumnName";
 import { useExpandedIds } from "./utils";
+import Colors from "../../../shared/colors";
 
 const Body = ({ request = true, responseCode, projectType = "schema" }) => {
   let [operationData, setOperationDetails] = useRecoilState(
@@ -735,7 +737,13 @@ const BodyItem = ({ request = true, responseCode, itemRef }) => {
                     </div>
 
                     <div className='flex-1'>
-                      <p>{ref?.required}</p>
+                      <Checkbox
+                        checked={ref?.required ?? false}
+                        style={{
+                          color: Colors.brand.secondary,
+                          padding: "0",
+                        }}
+                      />
                     </div>
                   </div>
                 }
@@ -902,7 +910,13 @@ const BodySubTreeItems = ({ currentRef: some }) => {
                   </div>
 
                   <div className='flex-1'>
-                    <p>{ref?.required}</p>
+                    <Checkbox
+                      checked={ref?.required}
+                      style={{
+                        color: Colors.brand.secondary,
+                        padding: "0",
+                      }}
+                    />
                   </div>
                 </div>
               }
@@ -984,7 +998,13 @@ const AttributeLabel = ({ labelItem, deleteItem }) => {
 
               <div className='flex-1 pl-5'>
                 <p className='text-overline2'>
-                  {labelItem?.required ? "true" : "false"}
+                  <Checkbox
+                    checked={labelItem?.required}
+                    style={{
+                      color: Colors.brand.secondary,
+                      padding: "0",
+                    }}
+                  />
                 </p>
               </div>
             </div>
@@ -1266,7 +1286,13 @@ const ColumnLabel = ({
 
                 <div className='flex-1 pl-5'>
                   <p className='text-overline2'>
-                    {columnLabelItem?.required ? "true" : "false"}
+                    <Checkbox
+                      checked={columnLabelItem?.required}
+                      style={{
+                        color: Colors.brand.secondary,
+                        padding: "0",
+                      }}
+                    />
                   </p>
                 </div>
               </div>

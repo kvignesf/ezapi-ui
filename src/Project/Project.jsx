@@ -94,7 +94,7 @@ const Project = () => {
       if (operationState?.isModified) {
         saveProject();
       }
-    }, 8000);
+    }, 6500);
     return () => clearInterval(interval);
   }, []);
 
@@ -111,6 +111,22 @@ const Project = () => {
       history.goBack();
     }
   }, [projectDetails]);
+
+  useEffect(() => {
+    if (
+      isSyncOperationSuccess &&
+      dialog?.show &&
+      dialog?.type === "save-project-warning"
+    ) {
+      handleCloseDialog();
+
+      resetSyncOperationMutation();
+
+      if (dialog?.data === "with-nav") {
+        navigateBack();
+      }
+    }
+  }, [isSyncOperationSuccess]);
 
   const resetProjectState = () => {
     resetTableState();
@@ -142,7 +158,17 @@ const Project = () => {
   };
 
   const publishProject = () => {
-    publish({ projectId });
+    const { loadable: operationAtomLoadable } = getRecoilValueInfo(
+      operationAtomWithMiddleware
+    );
+    const operationState = operationAtomLoadable?.contents;
+
+    if (operationState?.isModified) {
+      console.log("here3");
+      showSaveProjectWarning("without-nav");
+    } else {
+      publish({ projectId });
+    }
   };
 
   const closePublishProjectSuccess = () => {
@@ -155,6 +181,7 @@ const Project = () => {
   };
 
   const showSaveProjectWarning = (navigationFlag) => {
+    console.log("here4");
     setDialog({
       show: true,
       type: "save-project-warning",
@@ -174,21 +201,7 @@ const Project = () => {
     history.goBack();
   };
 
-  if (
-    isSyncOperationSuccess &&
-    dialog?.show &&
-    dialog?.type === "save-project-warning"
-  ) {
-    resetSyncOperationMutation();
-
-    setDialog({
-      show: false,
-      type: null,
-      data: null,
-    });
-
-    navigateBack();
-  }
+  console.log("dialog", dialog);
 
   return (
     <>
@@ -438,6 +451,7 @@ const Project = () => {
                     if (!operationState?.isModified) {
                       resetOperationState();
                     } else {
+                      console.log("here1");
                       showSaveProjectWarning("without-nav");
                     }
                   } else if (index !== operationState.operationIndex) {
@@ -450,6 +464,7 @@ const Project = () => {
 
                       setOperationState(cloned);
                     } else {
+                      console.log("here2");
                       showSaveProjectWarning("without-nav");
                     }
                   }
