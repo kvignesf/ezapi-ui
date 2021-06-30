@@ -7,6 +7,7 @@ import { useFilePicker } from "use-file-picker";
 import _ from "lodash";
 import CloseIcon from "@material-ui/icons/Close";
 import Scrollbar from "react-smooth-scrollbar";
+import * as Yup from "yup";
 
 import projectAtom from "./projectAtom";
 import { PrimaryButton } from "../shared/components/AppButton";
@@ -147,7 +148,9 @@ const ProjectDetails = ({
           initialValues={{
             name: projectDetails?.name ?? "",
           }}
-          validationSchema={apiNameSchema("API name is required")}
+          validationSchema={Yup.object().shape({
+            name: apiNameSchema("Name is required"),
+          })}
           innerRef={formRef}
         >
           {({ errors, touched }) => (

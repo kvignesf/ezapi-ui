@@ -47,7 +47,7 @@ const RenameProject = ({ project, onClose }) => {
         initialValues={{
           name: project?.projectName ?? "",
         }}
-        validationSchema={apiNameSchema}
+        validationSchema={apiNameSchema("Project Name is required")}
         onSubmit={handleNext}
       >
         {({ errors, touched }) => (

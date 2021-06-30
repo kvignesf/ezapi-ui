@@ -13,6 +13,7 @@ import {
   PrimaryButton,
 } from "../../../shared/components/AppButton";
 import { operationAtomWithMiddleware } from "../../../shared/utils";
+import apiNameSchema from "../../../shared/schemas/apiNameSchema";
 
 const ChangeTableName = ({ labelItem, request, responseCode, onClose }) => {
   const formRef = useRef(null);
@@ -92,12 +93,7 @@ const ChangeTableName = ({ labelItem, request, responseCode, onClose }) => {
             name: labelItem?.name ?? "",
           }}
           validationSchema={Yup.object().shape({
-            name: Yup.string()
-              .required("Please fill this field")
-              .matches(
-                `^(?=[a-zA-Z0-9-_]*$)`,
-                "Only - and _ are allowed as special characters"
-              ),
+            name: apiNameSchema("Table Name is required"),
           })}
           innerRef={formRef}
           onSubmit={onTableNameUpdate}

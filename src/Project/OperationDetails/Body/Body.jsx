@@ -43,6 +43,7 @@ import { useGetSubSchema, useGetTableData } from "./requestBodyQueries";
 import DragAndDropMessage from "../../../shared/components/DragAndDropMessage";
 import ChangeTableName from "./ChangeTableName";
 import ChangeColumnName from "../ChangeColumnName";
+import { useExpandedIds } from "./utils";
 
 const Body = ({ request = true, responseCode, projectType = "schema" }) => {
   let [operationData, setOperationDetails] = useRecoilState(
@@ -50,6 +51,7 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
   );
   const { height, width } = useWindowSize();
   const { fetch: fetchParentName } = useGetParentName();
+  const { getExandedIds, setExpandedIds } = useExpandedIds([]);
 
   const itemDropped = (item) => {
     if (
@@ -116,6 +118,8 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
     );
   };
 
+  console.log("getExandedIds()", getExandedIds());
+
   return (
     <DropArea onItemDropped={itemDropped}>
       <div className='h-full flex flex-col'>
@@ -164,6 +168,11 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
               <TreeView
                 defaultCollapseIcon={<ExpandMoreIcon />}
                 defaultExpandIcon={<ChevronRightIcon />}
+                expanded={getExandedIds() ?? []}
+                onNodeToggle={(event, nodeIds) => {
+                  console.log("event", event, nodeIds);
+                  setExpandedIds(nodeIds.map((item) => item.toString()));
+                }}
               >
                 {operationData?.operationRequest?.body.map((item) => {
                   let clonedRef;
@@ -214,6 +223,10 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
               <TreeView
                 defaultCollapseIcon={<ExpandMoreIcon />}
                 defaultExpandIcon={<ChevronRightIcon />}
+                expanded={getExandedIds() ?? []}
+                onNodeToggle={(event, nodeIds) => {
+                  setExpandedIds(nodeIds.map((item) => item.toString()));
+                }}
               >
                 {getResponseData(operationData)?.body.map((item) => {
                   let clonedRef;
@@ -652,10 +665,12 @@ const BodyItem = ({ request = true, responseCode, itemRef }) => {
     );
   }
 
+  console.log("treeIndex", treeIndex);
+
   return (
     <TreeItem
       key={treeIndex++}
-      nodeId={treeIndex++}
+      nodeId={itemRef?.sourceName}
       label={
         isDatabase(bodyItem) ? (
           <DatabaseLabel

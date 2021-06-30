@@ -10,6 +10,7 @@ import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import { ErrorMessage, Field, Form, Formik } from "formik";
 import _ from "lodash";
 import { useParams } from "react-router-dom";
+import * as Yup from "yup";
 
 import AppIcon from "../../../shared/components/AppIcon";
 import {
@@ -40,10 +41,10 @@ const OperationType = [
     id: "patch",
     name: "PATCH",
   },
-  {
-    id: "trace",
-    name: "TRACE",
-  },
+  // {
+  //   id: "trace",
+  //   name: "TRACE",
+  // },
   {
     id: "head",
     name: "HEAD",

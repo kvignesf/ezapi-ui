@@ -3,6 +3,7 @@ import CloseIcon from "@material-ui/icons/Close";
 import { CircularProgress, TextField } from "@material-ui/core";
 import { ErrorMessage, Field, Form, Formik } from "formik";
 import _ from "lodash";
+import * as Yup from "yup";
 
 import AppIcon from "../../../shared/components/AppIcon";
 import {
@@ -74,7 +75,9 @@ const AddOrEditPath = ({
         initialValues={{
           name: pathName ?? "",
         }}
-        validationSchema={apiNameSchema("Path name is required")}
+        validationSchema={Yup.object().shape({
+          name: apiNameSchema("Path Name is required"),
+        })}
         onSubmit={handleSubmit}
       >
         {({ errors, touched }) => (

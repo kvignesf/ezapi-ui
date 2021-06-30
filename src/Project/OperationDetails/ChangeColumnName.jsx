@@ -10,6 +10,7 @@ import operationAtom from "../operationAtom";
 import AppIcon from "../../shared/components/AppIcon";
 import { TextButton, PrimaryButton } from "../../shared/components/AppButton";
 import { isDatabase } from "../../shared/utils";
+import apiNameSchema from "../../shared/schemas/apiNameSchema";
 
 const ChangeColumnName = ({ labelItem, renameColumn, onClose }) => {
   const formRef = useRef(null);
@@ -46,12 +47,7 @@ const ChangeColumnName = ({ labelItem, renameColumn, onClose }) => {
             name: labelItem?.name ?? "",
           }}
           validationSchema={Yup.object().shape({
-            name: Yup.string()
-              .required("Please fill this field")
-              .matches(
-                `^(?=[a-zA-Z0-9-_]*$)`,
-                "Only - and _ are allowed as special characters"
-              ),
+            name: apiNameSchema("Column Name is required"),
           })}
           innerRef={formRef}
           onSubmit={onTableNameUpdate}
