@@ -164,7 +164,6 @@ const Project = () => {
     const operationState = operationAtomLoadable?.contents;
 
     if (operationState?.isModified) {
-      console.log("here3");
       showSaveProjectWarning("without-nav");
     } else {
       publish({ projectId });
@@ -181,7 +180,6 @@ const Project = () => {
   };
 
   const showSaveProjectWarning = (navigationFlag) => {
-    console.log("here4");
     setDialog({
       show: true,
       type: "save-project-warning",
@@ -200,8 +198,6 @@ const Project = () => {
   const navigateBack = () => {
     history.goBack();
   };
-
-  console.log("dialog", dialog);
 
   return (
     <>
@@ -451,7 +447,6 @@ const Project = () => {
                     if (!operationState?.isModified) {
                       resetOperationState();
                     } else {
-                      console.log("here1");
                       showSaveProjectWarning("without-nav");
                     }
                   } else if (index !== operationState.operationIndex) {
@@ -464,7 +459,6 @@ const Project = () => {
 
                       setOperationState(cloned);
                     } else {
-                      console.log("here2");
                       showSaveProjectWarning("without-nav");
                     }
                   }
