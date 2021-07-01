@@ -13,6 +13,7 @@ import Constants from "./constants";
 import schemaAtom from "./atom/schemaAtom";
 import tableAtom from "./atom/tableAtom";
 import operationAtom, { defaultState } from "../Project/operationAtom";
+import { UserRoleContext, useUserRole } from "../Project/UserRoleContext";
 
 export const isEmailValid = (email) => {
   const re =
@@ -609,3 +610,15 @@ export const operationAtomWithMiddleware = selector({
     set(operationAtom, clonedNewValue);
   },
 });
+
+export const canEdit = (role) => {
+  return role === "admin";
+};
+
+export const useCanEdit = () => {
+  const role = useUserRole();
+
+  return () => {
+    return canEdit(role);
+  };
+};

@@ -13,6 +13,7 @@ import Colors from "../../shared/colors";
 import AddOrEditPath from "./AddOrEditPath";
 import AddOrEditOperation from "./AddOrEditOperation";
 import DeletePath from "./DeletePath";
+import { useCanEdit } from "../../shared/utils";
 
 const PathTreeItem = ({
   nodeId,
@@ -28,6 +29,7 @@ const PathTreeItem = ({
     data: null,
     type: null,
   });
+  const canEdit = useCanEdit();
 
   const handleMenuClick = (event) => {
     event?.preventDefault();
@@ -39,24 +41,31 @@ const PathTreeItem = ({
     event?.preventDefault();
     event?.stopPropagation();
     resetSelectedOperation();
-    setDialog({
-      show: true,
-      type: "add-operation",
-    });
+
+    if (canEdit()) {
+      setDialog({
+        show: true,
+        type: "add-operation",
+      });
+    }
   };
 
   const handleEditClick = () => {
-    setDialog({
-      show: true,
-      type: "edit-path",
-    });
+    if (canEdit()) {
+      setDialog({
+        show: true,
+        type: "edit-path",
+      });
+    }
   };
 
   const handleDeleteClick = () => {
-    setDialog({
-      show: true,
-      type: "delete-path",
-    });
+    if (canEdit()) {
+      setDialog({
+        show: true,
+        type: "delete-path",
+      });
+    }
   };
 
   const handleCloseDialog = () => {
@@ -78,7 +87,7 @@ const PathTreeItem = ({
           style: { borderRadius: 8 },
         }}
       >
-        {dialog?.type === "add-operation" && (
+        {dialog?.type === "add-operation" && canEdit() && (
           <AddOrEditOperation
             onClose={handleCloseDialog}
             title='Add Operation'
@@ -88,7 +97,7 @@ const PathTreeItem = ({
           />
         )}
 
-        {dialog?.type === "edit-path" && (
+        {dialog?.type === "edit-path" && canEdit() && (
           <AddOrEditPath
             onClose={handleCloseDialog}
             title='Edit Path'
@@ -97,7 +106,7 @@ const PathTreeItem = ({
           />
         )}
 
-        {dialog?.type === "delete-path" && (
+        {dialog?.type === "delete-path" && canEdit() && (
           <DeletePath
             resourceId={resourceId}
             onClose={handleCloseDialog}
@@ -121,7 +130,7 @@ const PathTreeItem = ({
                   </p>
                 </div>
 
-                {isHovering && (
+                {isHovering && canEdit() && (
                   <div>
                     <AppIcon
                       onClick={handleAddOperationClick}
@@ -137,7 +146,7 @@ const PathTreeItem = ({
                   </div>
                 )}
 
-                {isHovering && (
+                {isHovering && canEdit() && (
                   <div>
                     <AppIcon onClick={handleMenuClick}>
                       <MoreVertIcon
@@ -150,42 +159,44 @@ const PathTreeItem = ({
                   </div>
                 )}
 
-                <Menu
-                  id='resources-menu'
-                  getContentAnchorEl={null}
-                  anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-                  transformOrigin={{ vertical: "top", horizontal: "center" }}
-                  anchorEl={menuAnchor}
-                  keepMounted
-                  open={Boolean(menuAnchor)}
-                  onClose={(event) => {
-                    event?.preventDefault();
-                    setMenuAnchor(null);
-                  }}
-                  TransitionComponent={Fade}
-                  style={{ borderRadius: "1rem", zIndex: "100" }}
-                >
-                  <MenuItem
-                    onClick={(event) => {
+                {canEdit() && (
+                  <Menu
+                    id='resources-menu'
+                    getContentAnchorEl={null}
+                    anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+                    transformOrigin={{ vertical: "top", horizontal: "center" }}
+                    anchorEl={menuAnchor}
+                    keepMounted
+                    open={Boolean(menuAnchor)}
+                    onClose={(event) => {
                       event?.preventDefault();
                       setMenuAnchor(null);
-                      handleEditClick();
                     }}
+                    TransitionComponent={Fade}
+                    style={{ borderRadius: "1rem", zIndex: "100" }}
                   >
-                    Edit
-                  </MenuItem>
+                    <MenuItem
+                      onClick={(event) => {
+                        event?.preventDefault();
+                        setMenuAnchor(null);
+                        handleEditClick();
+                      }}
+                    >
+                      Edit
+                    </MenuItem>
 
-                  <MenuItem
-                    onClick={(event) => {
-                      event?.preventDefault();
-                      setMenuAnchor(null);
-                      handleDeleteClick();
-                    }}
-                    style={{ color: Colors.accent.red }}
-                  >
-                    Delete
-                  </MenuItem>
-                </Menu>
+                    <MenuItem
+                      onClick={(event) => {
+                        event?.preventDefault();
+                        setMenuAnchor(null);
+                        handleDeleteClick();
+                      }}
+                      style={{ color: Colors.accent.red }}
+                    >
+                      Delete
+                    </MenuItem>
+                  </Menu>
+                )}
               </div>
             }
           >
@@ -195,12 +206,14 @@ const PathTreeItem = ({
               <div className='my-1 ml-1 flex flex-row items-center'>
                 <p className='text-overline3 text-neutral-gray3 mr-1'>
                   This path is empty.
-                  <span
-                    className='text-overline3 text-brand-secondary cursor-pointer ml-1 hover:opacity-80'
-                    onClick={handleAddOperationClick}
-                  >
-                    Add Operation
-                  </span>
+                  {canEdit() && (
+                    <span
+                      className='text-overline3 text-brand-secondary cursor-pointer ml-1 hover:opacity-80'
+                      onClick={handleAddOperationClick}
+                    >
+                      Add Operation
+                    </span>
+                  )}
                 </p>
               </div>
             )}

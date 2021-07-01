@@ -17,6 +17,7 @@ import {
   isObject,
   isPartialMatch,
   isSchema,
+  useCanEdit,
 } from "../../shared/utils";
 import AttributeDetails from "../AttributeDetails/AttributeDetails";
 import SchemaDetails from "../SchemaDetails/SchemaDetails";
@@ -37,18 +38,21 @@ const DraggableSchemaMatchItem = ({ index, item, ...rest }) => {
     }),
     [item]
   );
+  const canEdit = useCanEdit();
 
   const showDetailsDialog = () => {
-    if (isSchema(item)) {
-      setDialog({
-        show: true,
-        type: "show-schema-details",
-      });
-    } else if (isAttribute(item)) {
-      setDialog({
-        show: true,
-        type: "show-attribute-details",
-      });
+    if (canEdit()) {
+      if (isSchema(item)) {
+        setDialog({
+          show: true,
+          type: "show-schema-details",
+        });
+      } else if (isAttribute(item)) {
+        setDialog({
+          show: true,
+          type: "show-attribute-details",
+        });
+      }
     }
   };
 
@@ -62,20 +66,20 @@ const DraggableSchemaMatchItem = ({ index, item, ...rest }) => {
   return (
     <>
       <Drawer anchor={"right"} open={dialog?.show} onClose={handleCloseDialog}>
-        {dialog?.type === "show-attribute-details" && (
+        {dialog?.type === "show-attribute-details" && canEdit() && (
           <AttributeDetails attribute={item} onClose={handleCloseDialog} />
         )}
-        {dialog?.type === "show-schema-details" && (
+        {dialog?.type === "show-schema-details" && canEdit() && (
           <SchemaDetails schema={item} onClose={handleCloseDialog} />
         )}
       </Drawer>
 
       <div
-        ref={drag}
+        ref={canEdit() ? drag : null}
         style={{
           opacity: isDragging ? 0.5 : 1,
           cursor:
-            isArray(item) || isSchema(item) || isObject(item)
+            (isArray(item) || isSchema(item) || isObject(item)) && canEdit()
               ? "pointer"
               : null,
         }}
@@ -88,7 +92,8 @@ const DraggableSchemaMatchItem = ({ index, item, ...rest }) => {
               "cursor-move":
                 (isSchema(item) || isAttribute(item)) &&
                 !isArray(item) &&
-                !isObject(item),
+                !isObject(item) &&
+                canEdit(),
             })}
             style={{ height: "1.25rem" }}
           />
@@ -113,7 +118,8 @@ const DraggableSchemaMatchItem = ({ index, item, ...rest }) => {
             "bg-brand-green": isFullMatch(item),
             "bg-score-yellow": isPartialMatch(item),
             "bg-score-red": isNoMatch(item),
-            "cursor-pointer": isAttribute(item),
+            "cursor-pointer":
+              (isAttribute(item) || isSchema(item)) && canEdit(),
           })}
           onClick={(e) => {
             e.preventDefault();

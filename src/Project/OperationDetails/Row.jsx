@@ -18,7 +18,7 @@ import useDoubleClick from "use-double-click";
 
 import AppIcon from "../../shared/components/AppIcon";
 import Colors from "../../shared/colors";
-import { isAttribute, isColumn } from "../../shared/utils";
+import { isAttribute, isColumn, useCanEdit } from "../../shared/utils";
 import ChangeColumnName from "./ChangeColumnName";
 
 const Row = ({
@@ -37,6 +37,7 @@ const Row = ({
     data: null,
   });
   const nameRef = useRef();
+  const canEdit = useCanEdit();
 
   useDoubleClick({
     onSingleClick: (e) => {},
@@ -44,7 +45,7 @@ const Row = ({
       e?.preventDefault();
       e?.stopPropagation();
 
-      if (isColumn(row)) {
+      if (isColumn(row) && canEdit()) {
         showColumnNameChangeDialog();
       }
     },
@@ -53,10 +54,12 @@ const Row = ({
   });
 
   const showColumnNameChangeDialog = () => {
-    setDialog({
-      show: true,
-      type: "rename-column",
-    });
+    if (canEdit()) {
+      setDialog({
+        show: true,
+        type: "rename-column",
+      });
+    }
   };
 
   const handleOptionsClick = (event) => {
@@ -82,7 +85,7 @@ const Row = ({
         }}
         disableBackdropClick
       >
-        {dialog?.type === "rename-column" && (
+        {dialog?.type === "rename-column" && canEdit() && (
           <ChangeColumnName
             labelItem={row}
             renameColumn={(column, name) => {
@@ -100,13 +103,17 @@ const Row = ({
           e?.preventDefault();
           e?.stopPropagation();
 
-          setHovering(true);
+          if (canEdit()) {
+            setHovering(true);
+          }
         }}
         onMouseLeave={(e) => {
           e?.preventDefault();
           e?.stopPropagation();
 
-          setHovering(false);
+          if (canEdit()) {
+            setHovering(false);
+          }
         }}
       >
         <TableCell
@@ -148,13 +155,16 @@ const Row = ({
                   helperText={<ErrorMessage name='description' />}
                   onKeyUp={(e) => {
                     const { value } = e.target;
-                    onDescriptionUpdate(row, value);
+                    if (canEdit()) {
+                      onDescriptionUpdate(row, value);
+                    }
                   }}
                   inputProps={{
                     style: {
                       height: "6px",
                     },
                   }}
+                  disabled={!canEdit()}
                   as={TextField}
                 />
               </Form>
@@ -166,7 +176,9 @@ const Row = ({
           <Checkbox
             checked={row?.required}
             onChange={(event) => {
-              onRequiredUpdate(row, event?.target?.checked ?? false);
+              if (canEdit()) {
+                onRequiredUpdate(row, event?.target?.checked ?? false);
+              }
             }}
             style={{
               color: Colors.brand.secondary,
@@ -205,13 +217,16 @@ const Row = ({
                     helperText={<ErrorMessage name='possibleValues' />}
                     onKeyUp={(e) => {
                       const { value } = e.target;
-                      onPossibleValuesUpdate(row, value);
+                      if (canEdit()) {
+                        onPossibleValuesUpdate(row, value);
+                      }
                     }}
                     inputProps={{
                       style: {
                         height: "6px",
                       },
                     }}
+                    disabled={!canEdit()}
                     as={TextField}
                   />
                 </Form>
@@ -224,7 +239,7 @@ const Row = ({
           align='right'
           style={{ width: "20px", padding: "0px", paddingRight: "16px" }}
         >
-          {isHovering ? (
+          {isHovering && canEdit() ? (
             <>
               <AppIcon
                 style={{ padding: "0px" }}

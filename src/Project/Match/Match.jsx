@@ -10,7 +10,7 @@ import Schema from "./Schema";
 import schemaAtom from "../../shared/atom/schemaAtom";
 import AppIcon from "../../shared/components/AppIcon";
 import classNames from "classnames";
-import { isArray } from "../../shared/utils";
+import { isArray, useCanEdit } from "../../shared/utils";
 import TabLabel from "../../shared/components/TabLabel";
 import Parameters from "./Parameters/Parameters";
 import Colors from "../../shared/colors";
@@ -29,11 +29,12 @@ const Match = ({ projectType, ...props }) => {
     type: null,
     data: null,
   });
+  const canEdit = useCanEdit();
 
   useEffect(() => {
     if (projectType === "schema" || projectType === "both") {
       setTab("schema");
-    } else if(projectType === 'db'){
+    } else if (projectType === "db") {
       setTab("db");
     } else {
       setTab("param");
@@ -41,10 +42,12 @@ const Match = ({ projectType, ...props }) => {
   }, [projectType]);
 
   const showAddParameterDialog = () => {
-    setDialog({
-      show: true,
-      type: "add-parameter",
-    });
+    if (canEdit()) {
+      setDialog({
+        show: true,
+        type: "add-parameter",
+      });
+    }
   };
 
   const handleCloseDialog = () => {
@@ -66,7 +69,7 @@ const Match = ({ projectType, ...props }) => {
         }}
         disableBackdropClick
       >
-        {dialog?.type === "add-parameter" && (
+        {dialog?.type === "add-parameter" && canEdit() && (
           <AddOrEditParameter onClose={handleCloseDialog} />
         )}
       </Dialog>
@@ -222,7 +225,7 @@ const Match = ({ projectType, ...props }) => {
                 style={{ outline: "none", border: "none" }}
                 value={"param"}
               />
-              {(projectType === "db") && (
+              {projectType === "db" && (
                 <Tab
                   label={<TabLabel label={"Database"} />}
                   style={{ outline: "none", border: "none" }}
@@ -233,7 +236,7 @@ const Match = ({ projectType, ...props }) => {
           )}
         </div>
 
-        {currentTab === "param" && (
+        {currentTab === "param" && canEdit() && (
           <div
             className='flex flex-row items-center cursor-pointer hover:opacity-80 mr-4 border-1 rounded-md border-brand-secondary px-2 py-2'
             onClick={(e) => {

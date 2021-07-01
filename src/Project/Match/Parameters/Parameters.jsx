@@ -17,6 +17,7 @@ import EmptyParameters from "../../../static/images/empty-parameters.svg";
 import { OutlineButton } from "../../../shared/components/AppButton";
 import AppIcon from "../../../shared/components/AppIcon";
 import Colors from "../../../shared/colors";
+import { useCanEdit } from "../../../shared/utils";
 import AddOrEditParameter from "./AddOrEditParameter/AddOrEditParameter";
 import { useGetParameters } from "./parametersQuery";
 import operationAtom from "../../operationAtom";
@@ -40,6 +41,7 @@ const Parameters = () => {
     data: null,
   });
   const operationState = useRecoilValue(operationAtomWithMiddleware);
+  const canEdit = useCanEdit();
 
   const showAddParameterDialog = () => {
     setDialog({
@@ -67,7 +69,7 @@ const Parameters = () => {
         }}
         disableBackdropClick
       >
-        {dialog?.type === "add-parameter" && (
+        {dialog?.type === "add-parameter" && canEdit() && (
           <AddOrEditParameter onClose={handleCloseDialog} />
         )}
       </Dialog>
@@ -148,31 +150,33 @@ const Parameters = () => {
                   You don’t have any parameter
                 </p>
 
-                <OutlineButton
-                  style={{
-                    borderColor: Colors.brand.secondary,
-                    borderWidth: "1px",
-                  }}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
+                {canEdit() && (
+                  <OutlineButton
+                    style={{
+                      borderColor: Colors.brand.secondary,
+                      borderWidth: "1px",
+                    }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
 
-                    showAddParameterDialog();
-                  }}
-                >
-                  <div className='flex flex-row items-center'>
-                    <AppIcon
-                      size='20px'
-                      color={Colors.brand.secondary}
-                      style={{ marginRight: "0.5rem" }}
-                    >
-                      <AddIcon style={{ fontSize: "20px" }} />
-                    </AppIcon>
-                    <p className='text-overline2 text-brand-secondary'>
-                      Add Parameter
-                    </p>
-                  </div>
-                </OutlineButton>
+                      showAddParameterDialog();
+                    }}
+                  >
+                    <div className='flex flex-row items-center'>
+                      <AppIcon
+                        size='20px'
+                        color={Colors.brand.secondary}
+                        style={{ marginRight: "0.5rem" }}
+                      >
+                        <AddIcon style={{ fontSize: "20px" }} />
+                      </AppIcon>
+                      <p className='text-overline2 text-brand-secondary'>
+                        Add Parameter
+                      </p>
+                    </div>
+                  </OutlineButton>
+                )}
               </div>
             )
           )}
@@ -200,19 +204,24 @@ const ParamRow = ({ param }) => {
     type: null,
     data: null,
   });
+  const canEdit = useCanEdit();
 
   const showEditParameterDialog = () => {
-    setDialog({
-      show: true,
-      type: "edit-parameter",
-    });
+    if (canEdit()) {
+      setDialog({
+        show: true,
+        type: "edit-parameter",
+      });
+    }
   };
 
   const showDeleteParameterDialog = () => {
-    setDialog({
-      show: true,
-      type: "delete-parameter",
-    });
+    if (canEdit()) {
+      setDialog({
+        show: true,
+        type: "delete-parameter",
+      });
+    }
   };
 
   const handleCloseDialog = () => {
@@ -224,10 +233,10 @@ const ParamRow = ({ param }) => {
 
   return (
     <div
-      ref={drag}
+      ref={canEdit() ? drag : null}
       style={{
         opacity: isDragging ? 0.5 : 1,
-        cursor: "pointer",
+        cursor: canEdit() ? "pointer" : "default",
       }}
     >
       <>
@@ -241,11 +250,11 @@ const ParamRow = ({ param }) => {
           }}
           disableBackdropClick
         >
-          {dialog?.type === "edit-parameter" && (
+          {dialog?.type === "edit-parameter" && canEdit() && (
             <AddOrEditParameter onClose={handleCloseDialog} parameter={param} />
           )}
 
-          {dialog?.type === "delete-parameter" && (
+          {dialog?.type === "delete-parameter" && canEdit() && (
             <DeleteParameter onClose={handleCloseDialog} parameter={param} />
           )}
         </Dialog>
@@ -256,13 +265,17 @@ const ParamRow = ({ param }) => {
             e?.preventDefault();
             e?.stopPropagation();
 
-            setHovering(true);
+            if (canEdit()) {
+              setHovering(true);
+            }
           }}
           onMouseLeave={(e) => {
             e?.preventDefault();
             e?.stopPropagation();
 
-            setHovering(false);
+            if (canEdit()) {
+              setHovering(false);
+            }
           }}
           className='bg-white mb-1 rounded-md flex flex-row p-1 py-1 items-center'
         >
@@ -288,7 +301,7 @@ const ParamRow = ({ param }) => {
           </p>
 
           <div className='w-8 h-8'>
-            {isHovering ? (
+            {isHovering && canEdit() ? (
               <AppIcon
                 style={{ padding: "0px" }}
                 onClick={(e) => {
@@ -307,37 +320,39 @@ const ParamRow = ({ param }) => {
             )}
           </div>
 
-          <Menu
-            id='param-menu'
-            anchorEl={menuAnchorEl}
-            keepMounted
-            open={Boolean(menuAnchorEl)}
-            onClose={() => {
-              setMenuAnchorEl(null);
-            }}
-            TransitionComponent={Fade}
-            style={{ borderRadius: "1rem", zIndex: "100" }}
-          >
-            <MenuItem
-              onClick={() => {
+          {canEdit() && (
+            <Menu
+              id='param-menu'
+              anchorEl={menuAnchorEl}
+              keepMounted
+              open={Boolean(menuAnchorEl)}
+              onClose={() => {
                 setMenuAnchorEl(null);
-
-                showEditParameterDialog();
               }}
+              TransitionComponent={Fade}
+              style={{ borderRadius: "1rem", zIndex: "100" }}
             >
-              Edit
-            </MenuItem>
-            <MenuItem
-              onClick={() => {
-                setMenuAnchorEl(null);
+              <MenuItem
+                onClick={() => {
+                  setMenuAnchorEl(null);
 
-                showDeleteParameterDialog();
-              }}
-              style={{ color: Colors.accent.red }}
-            >
-              Delete
-            </MenuItem>
-          </Menu>
+                  showEditParameterDialog();
+                }}
+              >
+                Edit
+              </MenuItem>
+              <MenuItem
+                onClick={() => {
+                  setMenuAnchorEl(null);
+
+                  showDeleteParameterDialog();
+                }}
+                style={{ color: Colors.accent.red }}
+              >
+                Delete
+              </MenuItem>
+            </Menu>
+          )}
         </div>
       </>
     </div>

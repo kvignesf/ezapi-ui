@@ -17,6 +17,7 @@ import {
   isDatabase,
   isObject,
   isSchema,
+  useCanEdit,
 } from "../../../shared/utils";
 
 const DraggableDatabaseItem = ({ index, item, section, ...rest }) => {
@@ -35,6 +36,7 @@ const DraggableDatabaseItem = ({ index, item, section, ...rest }) => {
     }),
     [item]
   );
+  const canEdit = useCanEdit();
 
   return (
     <>
@@ -48,10 +50,10 @@ const DraggableDatabaseItem = ({ index, item, section, ...rest }) => {
       </Drawer> */}
 
       <div
-        ref={drag}
+        ref={canEdit() ? drag : null}
         style={{
           opacity: isDragging ? 0.5 : 1,
-          cursor: isDatabase(item) ? "pointer" : null,
+          cursor: isDatabase(item) && canEdit() ? "pointer" : null,
         }}
         className='p-2 mb-2 rounded-md bg-white flex flex-row items-center'
         {...rest}
@@ -63,7 +65,8 @@ const DraggableDatabaseItem = ({ index, item, section, ...rest }) => {
                 (isDatabase(item) || isColumn(item)) &&
                 !isArray(item) &&
                 !isSchema(item) &&
-                !isObject(item),
+                !isObject(item) &&
+                canEdit(),
             })}
             style={{ height: "1.25rem" }}
           />

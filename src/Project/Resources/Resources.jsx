@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import TreeView from "@material-ui/lab/TreeView";
 import { makeStyles } from "@material-ui/core/styles";
 import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
@@ -18,7 +18,9 @@ import { PrimaryButton } from "../../shared/components/AppButton";
 import LoaderWithMessage from "../../shared/components/LoaderWithMessage";
 import ErrorWithMessage from "../../shared/components/ErrorWithMessage";
 import Colors from "../../shared/colors";
+import { useCanEdit } from "../../shared/utils";
 import { useGetResources } from "./resourcesQuery";
+import { UserRoleContext, useUserRole } from "../UserRoleContext";
 
 const useStyles = makeStyles({
   root: {
@@ -49,12 +51,15 @@ const Resources = ({
     type: null,
     data: null,
   });
+  const canEdit = useCanEdit();
 
   const showAddResourceDialog = () => {
-    setDialog({
-      show: true,
-      type: "add-resource",
-    });
+    if (canEdit()) {
+      setDialog({
+        show: true,
+        type: "add-resource",
+      });
+    }
   };
 
   const handleCloseDialog = () => {
@@ -101,7 +106,7 @@ const Resources = ({
         }}
         disableBackdropClick
       >
-        {dialog?.type === "add-resource" && (
+        {dialog?.type === "add-resource" && canEdit() && (
           <AddOrEditResource
             title='Create Resource'
             onClose={handleCloseDialog}
@@ -118,12 +123,14 @@ const Resources = ({
           <CircularProgress size='16px' className='mr-2' />
         )}
 
-        <AppIcon
-          style={{ padding: "0", margin: "0" }}
-          onClick={showAddResourceDialog}
-        >
-          <AddIcon style={{ fontSize: "18px", color: "black" }} />
-        </AppIcon>
+        {canEdit() && (
+          <AppIcon
+            style={{ padding: "0", margin: "0" }}
+            onClick={showAddResourceDialog}
+          >
+            <AddIcon style={{ fontSize: "18px", color: "black" }} />
+          </AppIcon>
+        )}
       </div>
 
       {!_.isEmpty(resources) ? (
@@ -221,9 +228,11 @@ const Resources = ({
 
           <p className='text-overline2 mb-5'>You don’t have any resource</p>
 
-          <PrimaryButton onClick={showAddResourceDialog}>
-            Create Resource
-          </PrimaryButton>
+          {canEdit() && (
+            <PrimaryButton onClick={showAddResourceDialog}>
+              Create Resource
+            </PrimaryButton>
+          )}
         </div>
       )}
     </div>

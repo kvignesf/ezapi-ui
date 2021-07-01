@@ -34,6 +34,7 @@ import {
   isColumn,
   useGetParentName,
   operationAtomWithMiddleware,
+  useCanEdit,
 } from "../../../shared/utils";
 import AppIcon from "../../../shared/components/AppIcon";
 import AttributeIcon from "../../../static/images/attribute.svg";
@@ -294,6 +295,7 @@ const BodyItem = ({ request = true, responseCode, itemRef }) => {
     data: tableData,
     mutate: getTable,
   } = useGetTableData();
+  const canEdit = useCanEdit();
 
   useEffect(() => {
     if (subSchemaData) {
@@ -337,7 +339,8 @@ const BodyItem = ({ request = true, responseCode, itemRef }) => {
         isAttribute(item) ||
         isDatabase(item)) &&
       !isArray(item) &&
-      !isObject(item)
+      !isObject(item) &&
+      canEdit()
     ) {
       setOperationDetails((operationDetails) => {
         if (request) {
@@ -382,7 +385,7 @@ const BodyItem = ({ request = true, responseCode, itemRef }) => {
   };
 
   const deleteColumnOfTable = (column, table) => {
-    if (isColumn(column) && isDatabase(table)) {
+    if (isColumn(column) && isDatabase(table) && canEdit()) {
       setOperationDetails((operationDetails) => {
         if (request) {
           const newOperationDetails = _.cloneDeep(operationDetails);
@@ -453,150 +456,59 @@ const BodyItem = ({ request = true, responseCode, itemRef }) => {
   };
 
   const renameColumn = (column, name) => {
-    setOperationDetails((operationDetails) => {
-      if (request) {
-        const newOperationDetails = _.cloneDeep(operationDetails);
+    if (canEdit()) {
+      setOperationDetails((operationDetails) => {
+        if (request) {
+          const newOperationDetails = _.cloneDeep(operationDetails);
 
-        // Get column index
-        const columnIndex = newOperationDetails.operationRequest.body.findIndex(
-          (bodyItem) => column?.sourceName === bodyItem?.sourceName
-        );
-
-        if (columnIndex !== -1) {
-          // Clone column
-          const clonedColumn = _.cloneDeep(
-            newOperationDetails.operationRequest.body[columnIndex]
-          );
-
-          // Set updated name to column
-          clonedColumn.name = name;
-
-          // Set cloned column to body
-          newOperationDetails.operationRequest.body[columnIndex] = clonedColumn;
-
-          return newOperationDetails;
-        }
-      } else {
-        const responseIndex = operationDetails?.operationResponse?.findIndex(
-          (item) => item.responseCode === responseCode
-        );
-
-        if (responseIndex !== -1) {
-          const clonedOperationDetails = _.cloneDeep(operationDetails);
-          const clonedResponseData = _.cloneDeep(
-            operationDetails?.operationResponse[responseIndex]
-          );
-
-          // Get column
-          const columnIndex = clonedResponseData?.body?.findIndex(
-            (bodyItem) => column?.sourceName === bodyItem?.sourceName
-          );
+          // Get column index
+          const columnIndex =
+            newOperationDetails.operationRequest.body.findIndex(
+              (bodyItem) => column?.sourceName === bodyItem?.sourceName
+            );
 
           if (columnIndex !== -1) {
             // Clone column
             const clonedColumn = _.cloneDeep(
-              clonedResponseData?.body[columnIndex]
+              newOperationDetails.operationRequest.body[columnIndex]
             );
 
             // Set updated name to column
             clonedColumn.name = name;
 
             // Set cloned column to body
-            clonedResponseData.body[columnIndex] = clonedColumn;
+            newOperationDetails.operationRequest.body[columnIndex] =
+              clonedColumn;
+
+            return newOperationDetails;
           }
-
-          clonedOperationDetails.operationResponse[responseIndex] =
-            clonedResponseData;
-
-          return clonedOperationDetails;
-        }
-      }
-
-      return operationDetails;
-    });
-  };
-
-  const renameColumnOfTable = (column, table, name) => {
-    setOperationDetails((operationDetails) => {
-      if (request) {
-        const newOperationDetails = _.cloneDeep(operationDetails);
-
-        // Get parent table index
-        const parentTableIndex =
-          newOperationDetails.operationRequest.body.findIndex(
-            (bodyItem) =>
-              isDatabase(bodyItem) && table?.sourceName === bodyItem?.sourceName
+        } else {
+          const responseIndex = operationDetails?.operationResponse?.findIndex(
+            (item) => item.responseCode === responseCode
           );
 
-        if (parentTableIndex !== -1) {
-          // Clone parent table
-          const clonedParentTable = _.cloneDeep(
-            newOperationDetails.operationRequest.body[parentTableIndex]
-          );
-
-          // Get column
-          const columnIndex = clonedParentTable?.selectedColumns?.findIndex(
-            (columnItem) => column?.sourceName === columnItem?.sourceName
-          );
-
-          if (columnIndex !== -1) {
-            // Clone column
-            const clonedColumn = _.cloneDeep(
-              clonedParentTable.selectedColumns[columnIndex]
-            );
-
-            // Set updated name to column
-            clonedColumn.name = name;
-
-            // Set cloned column to table
-            clonedParentTable.selectedColumns[columnIndex] = clonedColumn;
-
-            // Set table to operations body
-            newOperationDetails.operationRequest.body[parentTableIndex] =
-              clonedParentTable;
-          }
-
-          return newOperationDetails;
-        }
-      } else {
-        const responseIndex = operationDetails?.operationResponse?.findIndex(
-          (item) => item.responseCode === responseCode
-        );
-
-        if (responseIndex !== -1) {
-          const responseData =
-            operationDetails?.operationResponse[responseIndex];
-          const clonedOperationDetails = _.cloneDeep(operationDetails);
-          const clonedResponseData = _.cloneDeep(responseData);
-
-          const tableIndex = responseData?.body?.findIndex(
-            (body) => body?.sourceName === table?.sourceName
-          );
-
-          if (tableIndex !== -1) {
-            const clonedTableData = _.cloneDeep(
-              clonedResponseData.body[tableIndex]
+          if (responseIndex !== -1) {
+            const clonedOperationDetails = _.cloneDeep(operationDetails);
+            const clonedResponseData = _.cloneDeep(
+              operationDetails?.operationResponse[responseIndex]
             );
 
             // Get column
-            const columnIndex = clonedTableData?.selectedColumns?.findIndex(
-              (columnItem) => column?.sourceName === columnItem?.sourceName
+            const columnIndex = clonedResponseData?.body?.findIndex(
+              (bodyItem) => column?.sourceName === bodyItem?.sourceName
             );
 
             if (columnIndex !== -1) {
               // Clone column
               const clonedColumn = _.cloneDeep(
-                clonedTableData.selectedColumns[columnIndex]
+                clonedResponseData?.body[columnIndex]
               );
 
               // Set updated name to column
               clonedColumn.name = name;
 
-              // Set cloned column to table
-              clonedTableData.selectedColumns[columnIndex] = clonedColumn;
-
-              // Set table to response data body
-              clonedResponseData.body[tableIndex] = clonedTableData;
+              // Set cloned column to body
+              clonedResponseData.body[columnIndex] = clonedColumn;
             }
 
             clonedOperationDetails.operationResponse[responseIndex] =
@@ -605,10 +517,108 @@ const BodyItem = ({ request = true, responseCode, itemRef }) => {
             return clonedOperationDetails;
           }
         }
-      }
 
-      return operationDetails;
-    });
+        return operationDetails;
+      });
+    }
+  };
+
+  const renameColumnOfTable = (column, table, name) => {
+    if (canEdit()) {
+      setOperationDetails((operationDetails) => {
+        if (request) {
+          const newOperationDetails = _.cloneDeep(operationDetails);
+
+          // Get parent table index
+          const parentTableIndex =
+            newOperationDetails.operationRequest.body.findIndex(
+              (bodyItem) =>
+                isDatabase(bodyItem) &&
+                table?.sourceName === bodyItem?.sourceName
+            );
+
+          if (parentTableIndex !== -1) {
+            // Clone parent table
+            const clonedParentTable = _.cloneDeep(
+              newOperationDetails.operationRequest.body[parentTableIndex]
+            );
+
+            // Get column
+            const columnIndex = clonedParentTable?.selectedColumns?.findIndex(
+              (columnItem) => column?.sourceName === columnItem?.sourceName
+            );
+
+            if (columnIndex !== -1) {
+              // Clone column
+              const clonedColumn = _.cloneDeep(
+                clonedParentTable.selectedColumns[columnIndex]
+              );
+
+              // Set updated name to column
+              clonedColumn.name = name;
+
+              // Set cloned column to table
+              clonedParentTable.selectedColumns[columnIndex] = clonedColumn;
+
+              // Set table to operations body
+              newOperationDetails.operationRequest.body[parentTableIndex] =
+                clonedParentTable;
+            }
+
+            return newOperationDetails;
+          }
+        } else {
+          const responseIndex = operationDetails?.operationResponse?.findIndex(
+            (item) => item.responseCode === responseCode
+          );
+
+          if (responseIndex !== -1) {
+            const responseData =
+              operationDetails?.operationResponse[responseIndex];
+            const clonedOperationDetails = _.cloneDeep(operationDetails);
+            const clonedResponseData = _.cloneDeep(responseData);
+
+            const tableIndex = responseData?.body?.findIndex(
+              (body) => body?.sourceName === table?.sourceName
+            );
+
+            if (tableIndex !== -1) {
+              const clonedTableData = _.cloneDeep(
+                clonedResponseData.body[tableIndex]
+              );
+
+              // Get column
+              const columnIndex = clonedTableData?.selectedColumns?.findIndex(
+                (columnItem) => column?.sourceName === columnItem?.sourceName
+              );
+
+              if (columnIndex !== -1) {
+                // Clone column
+                const clonedColumn = _.cloneDeep(
+                  clonedTableData.selectedColumns[columnIndex]
+                );
+
+                // Set updated name to column
+                clonedColumn.name = name;
+
+                // Set cloned column to table
+                clonedTableData.selectedColumns[columnIndex] = clonedColumn;
+
+                // Set table to response data body
+                clonedResponseData.body[tableIndex] = clonedTableData;
+              }
+
+              clonedOperationDetails.operationResponse[responseIndex] =
+                clonedResponseData;
+
+              return clonedOperationDetails;
+            }
+          }
+        }
+
+        return operationDetails;
+      });
+    }
   };
 
   const getSchemaData = (schemaRef) => {
@@ -782,6 +792,7 @@ const BodySubTreeItems = ({ currentRef: some }) => {
     reset: resetSubSchemaData,
     variables: subSchemaRequest,
   } = useGetSubSchema();
+  const canEdit = useCanEdit();
 
   useEffect(() => {
     if (subSchemaData) {
@@ -929,6 +940,8 @@ const BodySubTreeItems = ({ currentRef: some }) => {
 };
 
 const SchemaLabel = ({ labelItem, isLoading, deleteItem }) => {
+  const canEdit = useCanEdit();
+
   return (
     <ReactHoverObserver>
       {({ isHovering }) => {
@@ -955,7 +968,7 @@ const SchemaLabel = ({ labelItem, isLoading, deleteItem }) => {
               )}
             </div>
 
-            {isHovering && (
+            {isHovering && canEdit() && (
               <AppIcon
                 onClick={(ev) => {
                   ev?.preventDefault();
@@ -975,6 +988,8 @@ const SchemaLabel = ({ labelItem, isLoading, deleteItem }) => {
 };
 
 const AttributeLabel = ({ labelItem, deleteItem }) => {
+  const canEdit = useCanEdit();
+
   return (
     <ReactHoverObserver>
       {({ isHovering }) => {
@@ -1010,7 +1025,7 @@ const AttributeLabel = ({ labelItem, deleteItem }) => {
             </div>
 
             <div className='w-6'>
-              {isHovering && (
+              {isHovering && canEdit() && (
                 <AppIcon
                   onClick={(ev) => {
                     ev?.preventDefault();
@@ -1043,6 +1058,7 @@ const DatabaseLabel = ({
     data: null,
   });
   const nameRef = useRef();
+  const canEdit = useCanEdit();
 
   useDoubleClick({
     onSingleClick: (e) => {},
@@ -1050,17 +1066,21 @@ const DatabaseLabel = ({
       e?.preventDefault();
       e?.stopPropagation();
 
-      showTableNameChangeDialog();
+      if (canEdit()) {
+        showTableNameChangeDialog();
+      }
     },
     ref: nameRef,
     latency: 275,
   });
 
   const showTableNameChangeDialog = () => {
-    setDialog({
-      show: true,
-      type: "rename-table",
-    });
+    if (canEdit()) {
+      setDialog({
+        show: true,
+        type: "rename-table",
+      });
+    }
   };
 
   const handleOptionsClick = (event) => {
@@ -1089,7 +1109,7 @@ const DatabaseLabel = ({
               }}
               disableBackdropClick
             >
-              {dialog?.type === "rename-table" && (
+              {dialog?.type === "rename-table" && canEdit() && (
                 <ChangeTableName
                   labelItem={tableLabelItem}
                   request={request}
@@ -1125,7 +1145,7 @@ const DatabaseLabel = ({
               </div>
 
               <div className='w-6'>
-                {isHovering && (
+                {isHovering && canEdit() && (
                   <>
                     <AppIcon
                       onClick={(ev) => {
@@ -1197,6 +1217,7 @@ const ColumnLabel = ({
     data: null,
   });
   const nameRef = useRef();
+  const canEdit = useCanEdit();
 
   useDoubleClick({
     onSingleClick: (e) => {},
@@ -1204,17 +1225,21 @@ const ColumnLabel = ({
       e?.preventDefault();
       e?.stopPropagation();
 
-      showColumnNameChangeDialog();
+      if (canEdit()) {
+        showColumnNameChangeDialog();
+      }
     },
     ref: nameRef,
     latency: 275,
   });
 
   const showColumnNameChangeDialog = () => {
-    setDialog({
-      show: true,
-      type: "rename-column",
-    });
+    if (canEdit()) {
+      setDialog({
+        show: true,
+        type: "rename-column",
+      });
+    }
   };
 
   const handleOptionsClick = (event) => {
@@ -1243,7 +1268,7 @@ const ColumnLabel = ({
               }}
               disableBackdropClick
             >
-              {dialog?.type === "rename-column" && (
+              {dialog?.type === "rename-column" && canEdit() && (
                 <ChangeColumnName
                   labelItem={columnLabelItem}
                   request={request}
@@ -1298,7 +1323,7 @@ const ColumnLabel = ({
               </div>
 
               <div className='w-6'>
-                {isHovering && (
+                {isHovering && canEdit() && (
                   <>
                     <AppIcon
                       onClick={(ev) => {

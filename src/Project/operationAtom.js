@@ -18,6 +18,7 @@ export const defaultState = {
   operationResponse: [
     {
       responseCode: Constants.mandatoryResponseCode,
+      description: null,
       headers: [],
       body: [],
     },

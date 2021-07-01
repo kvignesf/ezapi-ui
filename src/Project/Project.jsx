@@ -21,7 +21,12 @@ import AppIcon from "../shared/components/AppIcon";
 import { useFetchProjectDetails } from "./projectQueries";
 import { OutlineButton, PrimaryButton } from "../shared/components/AppButton";
 import InitialsAvatar from "../shared/components/InitialsAvatar";
-import { getFirstName, getLastName } from "../shared/storage";
+import {
+  getFirstName,
+  getLastName,
+  getUserId,
+  getEmailId,
+} from "../shared/storage";
 import AddOrEditResource from "./Resources/AddOrEditResource";
 import Resources from "./Resources/Resources";
 import Match from "./Match";
@@ -33,6 +38,7 @@ import {
   generateSyncOperationRequestRequest,
   generateSyncOperationResponseRequest,
   operationAtomWithMiddleware,
+  canEdit,
 } from "../shared/utils";
 import tableAtom from "../shared/atom/tableAtom";
 import schemaAtom from "../shared/atom/schemaAtom";
@@ -40,7 +46,9 @@ import operationAtom from "./operationAtom";
 import Colors from "../shared/colors";
 import routes from "../shared/routes";
 import { useLogout } from "../shared/query/authQueries";
-import SaveProjectWarning from "./SaveProjectWarning";
+import SaveOperationWarning from "./SaveOperationWarning";
+import OperationErrorsDialog from "./OperationErrorsDialog";
+import UserRoleProvider from "./UserRoleContext";
 
 const Project = () => {
   const { id: projectId } = useParams();
@@ -83,20 +91,23 @@ const Project = () => {
     data: null,
   });
   const getRecoilValueInfo = useGetRecoilValueInfo_UNSTABLE();
+  const [userRole, setRole] = useState(null);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      const { loadable: operationAtomLoadable } = getRecoilValueInfo(
-        operationAtomWithMiddleware
-      );
-      const operationState = operationAtomLoadable?.contents;
+    if (canEdit(userRole)) {
+      const interval = setInterval(() => {
+        const { loadable: operationAtomLoadable } = getRecoilValueInfo(
+          operationAtomWithMiddleware
+        );
+        const operationState = operationAtomLoadable?.contents;
 
-      if (operationState?.isModified) {
-        saveProject();
-      }
-    }, 6500);
-    return () => clearInterval(interval);
-  }, []);
+        if (operationState?.isModified) {
+          saveProject();
+        }
+      }, 6500);
+      return () => clearInterval(interval);
+    }
+  }, [userRole]);
 
   useEffect(() => {
     resetProjectState();
@@ -104,19 +115,40 @@ const Project = () => {
 
   useEffect(() => {
     if (
-      projectDetails &&
-      projectDetails?.status !== "IN_PROGRESS" &&
-      projectDetails?.status !== "COMPLETE"
+      projectDetails?.status === "IN_PROGRESS" &&
+      projectDetails?.status === "COMPLETE"
     ) {
+      return;
+    }
+
+    // Get user role
+    if (projectDetails?.members && !_.isEmpty(projectDetails?.members)) {
+      const userEmail = getEmailId();
+      const currentUserDetails = projectDetails?.members?.find(
+        (member) => member?.email === userEmail
+      );
+
+      if (currentUserDetails?.role === "admin") {
+        setRole(currentUserDetails?.role);
+        return;
+      }
+    }
+
+    history.goBack();
+  }, [projectDetails]);
+
+  useEffect(() => {
+    if (projectDetailsError?.message === "no_access") {
+      // No access
       history.goBack();
     }
-  }, [projectDetails]);
+  }, [projectDetailsError]);
 
   useEffect(() => {
     if (
       isSyncOperationSuccess &&
       dialog?.show &&
-      dialog?.type === "save-project-warning"
+      dialog?.type === "save-operation-warning"
     ) {
       handleCloseDialog();
 
@@ -135,38 +167,69 @@ const Project = () => {
   };
 
   const saveProject = () => {
+    if (canEdit(userRole)) {
+      const { loadable: operationAtomLoadable } = getRecoilValueInfo(
+        operationAtomWithMiddleware
+      );
+      const operationState = operationAtomLoadable?.contents;
+
+      const saveRequestApiRequest = generateSyncOperationRequestRequest(
+        operationState?.operationRequest
+      );
+      const saveResponseApiRequest = generateSyncOperationResponseRequest(
+        operationState?.operationResponse
+      );
+
+      syncOperation({
+        projectId,
+        operationId: operationState?.operation?.operationId,
+        pathId: operationState?.path?.pathId,
+        resourceId: operationState?.resource?.resourceId,
+        requestData: saveRequestApiRequest,
+        responseData: saveResponseApiRequest,
+      });
+    }
+  };
+
+  const fetchOperationErrors = () => {
     const { loadable: operationAtomLoadable } = getRecoilValueInfo(
       operationAtomWithMiddleware
     );
     const operationState = operationAtomLoadable?.contents;
 
-    const saveRequestApiRequest = generateSyncOperationRequestRequest(
-      operationState?.operationRequest
-    );
-    const saveResponseApiRequest = generateSyncOperationResponseRequest(
-      operationState?.operationResponse
-    );
+    const errors = [];
 
-    syncOperation({
-      projectId,
-      operationId: operationState?.operation?.operationId,
-      pathId: operationState?.path?.pathId,
-      resourceId: operationState?.resource?.resourceId,
-      requestData: saveRequestApiRequest,
-      responseData: saveResponseApiRequest,
-    });
+    // 200 Response should have response body section
+    const response200 = operationState?.operationResponse?.find(
+      (response) => response?.responseCode === 200
+    );
+    if (!response200?.body || _.isEmpty(response200?.body)) {
+      errors.push("200 response must include a body section");
+    }
+    if (!response200?.description || _.isEmpty(response200?.description)) {
+      errors.push("200 response must include suitable description");
+    }
+
+    return errors;
   };
 
   const publishProject = () => {
-    const { loadable: operationAtomLoadable } = getRecoilValueInfo(
-      operationAtomWithMiddleware
-    );
-    const operationState = operationAtomLoadable?.contents;
+    if (canEdit(userRole)) {
+      const errors = fetchOperationErrors();
+      if (errors && !_.isEmpty(errors)) {
+        showOperationErrorsDialog(errors);
+      } else {
+        const { loadable: operationAtomLoadable } = getRecoilValueInfo(
+          operationAtomWithMiddleware
+        );
+        const operationState = operationAtomLoadable?.contents;
 
-    if (operationState?.isModified) {
-      showSaveProjectWarning("without-nav");
-    } else {
-      publish({ projectId });
+        if (operationState?.isModified) {
+          showSaveOperationWarning("without-nav");
+        } else {
+          publish({ projectId });
+        }
+      }
     }
   };
 
@@ -179,12 +242,22 @@ const Project = () => {
     setProfilemenuAnchorEl(event?.currentTarget);
   };
 
-  const showSaveProjectWarning = (navigationFlag) => {
+  const showSaveOperationWarning = (navigationFlag) => {
     setDialog({
       show: true,
-      type: "save-project-warning",
+      type: "save-operation-warning",
       data: navigationFlag,
     });
+  };
+
+  const showOperationErrorsDialog = (errors) => {
+    if (errors && !_.isEmpty(errors)) {
+      setDialog({
+        show: true,
+        type: "operation-errors",
+        data: errors,
+      });
+    }
   };
 
   const handleCloseDialog = () => {
@@ -200,300 +273,317 @@ const Project = () => {
   };
 
   return (
-    <>
-      <Dialog
-        aria-labelledby='save-operation-dialog'
-        open={isPublishingProject || publishProjectData || dialog?.show}
-        fullWidth
-        PaperProps={{
-          style: { borderRadius: 8 },
-        }}
-        disableBackdropClick
-      >
-        {(isPublishingProject || isLoggingOut) && (
-          <div className='p-6'>
-            <div className='w-full flex flex-row items-center'>
-              <p className='text-overline mr-3'>
-                {isPublishingProject
-                  ? "Publishing project"
-                  : isLoggingOut
-                  ? "Logging out"
-                  : null}
-              </p>
-              <CircularProgress style={{ width: "20px", height: "20px" }} />
+    <UserRoleProvider role={userRole}>
+      <>
+        <Dialog
+          aria-labelledby='save-operation-dialog'
+          open={isPublishingProject || publishProjectData || dialog?.show}
+          fullWidth
+          PaperProps={{
+            style: { borderRadius: 8 },
+          }}
+          disableBackdropClick
+        >
+          {(isPublishingProject || isLoggingOut) && (
+            <div className='p-6'>
+              <div className='w-full flex flex-row items-center'>
+                <p className='text-overline mr-3'>
+                  {isPublishingProject
+                    ? "Publishing project"
+                    : isLoggingOut
+                    ? "Logging out"
+                    : null}
+                </p>
+                <CircularProgress style={{ width: "20px", height: "20px" }} />
+              </div>
             </div>
-          </div>
-        )}
-
-        {(publishProjectData || publishProjectError) && (
-          <div>
-            <div className='p-4 flex flex-row justify-between border-b-1'>
-              <p className='text-subtitle2'>
-                {publishProjectData?.success
-                  ? "Publish Successful"
-                  : "Publish Failure"}
-              </p>
-              <AppIcon
-                onClick={(e) => {
-                  e?.preventDefault();
-                  e?.stopPropagation();
-
-                  if (publishProjectData?.success) {
-                    closePublishProjectSuccess();
-                  } else {
-                    resetPublishMutation();
-                  }
-                }}
-              >
-                <CloseIcon />
-              </AppIcon>
-            </div>
-            <div className='p-4 py-6'>
-              {publishProjectData?.success ? (
-                <p className='text-overline2'>{`Project ${projectDetails?.projectName} successfully published. You can now download the specs and artifacts.`}</p>
-              ) : (
-                <p className='text-overline2'>{publishProjectData?.message}</p>
-              )}
-
-              {publishProjectError && (
-                <p className='text-overline2'>{publishProjectError?.message}</p>
-              )}
-            </div>
-            <div className='p-4 border-t-1 flex flex-row justify-end'>
-              <PrimaryButton
-                onClick={(e) => {
-                  e?.preventDefault();
-                  e?.stopPropagation();
-
-                  if (publishProjectData?.success) {
-                    closePublishProjectSuccess();
-                  } else {
-                    resetPublishMutation();
-                  }
-                }}
-              >
-                Okay
-              </PrimaryButton>
-            </div>
-          </div>
-        )}
-
-        {!isSyncingOperation &&
-          dialog?.show &&
-          dialog?.type === "save-project-warning" && (
-            <SaveProjectWarning
-              onClose={handleCloseDialog}
-              navigateBack={() => {
-                handleCloseDialog();
-
-                resetProjectState();
-
-                if (dialog?.data === "with-nav") {
-                  navigateBack();
-                }
-              }}
-              saveProject={() => {
-                handleCloseDialog();
-                saveProject();
-              }}
-            />
           )}
-      </Dialog>
 
-      <DndProvider backend={HTML5Backend}>
-        <header className='px-2 border-b-2 flex flex-row items-center bg-white'>
-          <div className='flex flex-row py-2 items-center'>
-            <AppIcon
-              style={{ marginRight: "1rem" }}
-              onClick={(event) => {
-                event?.preventDefault();
-                event?.stopPropagation();
-
-                if (!operationState?.isModified) {
-                  resetProjectState();
-                  navigateBack();
-                } else {
-                  showSaveProjectWarning("with-nav");
-                }
-              }}
-            >
-              <ArrowBackIcon />
-            </AppIcon>
-
-            <p className='text-overline1'>{projectDetails?.projectName}</p>
-
-            <div className='ml-4'>
-              {!isSyncingOperation ? (
+          {(publishProjectData || publishProjectError) && (
+            <div>
+              <div className='p-4 flex flex-row justify-between border-b-1'>
+                <p className='text-subtitle2'>
+                  {publishProjectData?.success
+                    ? "Publish Successful"
+                    : "Publish Failure"}
+                </p>
                 <AppIcon
                   onClick={(e) => {
                     e?.preventDefault();
                     e?.stopPropagation();
 
-                    saveProject();
+                    if (publishProjectData?.success) {
+                      closePublishProjectSuccess();
+                    } else {
+                      resetPublishMutation();
+                    }
                   }}
                 >
-                  <CloudUploadIcon style={{ color: "lightblue" }} />
+                  <CloseIcon />
                 </AppIcon>
-              ) : (
-                <div className='flex flex-row items-center'>
-                  <CircularProgress
-                    style={{
-                      width: "18px",
-                      height: "18px",
-                      marginRight: "0.5rem",
-                    }}
-                  />
+              </div>
+              <div className='p-4 py-6'>
+                {publishProjectData?.success ? (
+                  <p className='text-overline2'>{`Project ${projectDetails?.projectName} successfully published. You can now download the specs and artifacts.`}</p>
+                ) : (
+                  <p className='text-overline2'>
+                    {publishProjectData?.message}
+                  </p>
+                )}
 
-                  <p className='text-overline2 opacity-60'>Saving ...</p>
-                </div>
-              )}
-            </div>
-          </div>
+                {publishProjectError && (
+                  <p className='text-overline2'>
+                    {publishProjectError?.message}
+                  </p>
+                )}
+              </div>
+              <div className='p-4 border-t-1 flex flex-row justify-end'>
+                <PrimaryButton
+                  onClick={(e) => {
+                    e?.preventDefault();
+                    e?.stopPropagation();
 
-          <div className='flex justify-center flex-1'>
-            <Tabs
-              value={currentTab}
-              onChange={(_, index) => {}}
-              aria-label='add project tabs'
-              indicatorColor='primary'
-              textColor='primary'
-            >
-              <Tab
-                label={<TabLabel label={"Design"} />}
-                style={{ outline: "none", border: "none" }}
-              />
-
-              <Tab
-                label={<TabLabel label={"Visualize"} />}
-                style={{ outline: "none", border: "none" }}
-                disabled
-              />
-            </Tabs>
-          </div>
-
-          <div className='flex flex-row py-2'>
-            <OutlineButton classes='mr-3'>Invite</OutlineButton>
-
-            <PrimaryButton
-              classes='mr-3'
-              onClick={(e) => {
-                e?.preventDefault();
-                e?.stopPropagation();
-
-                publishProject();
-              }}
-            >
-              Publish
-            </PrimaryButton>
-
-            <div>
-              <InitialsAvatar
-                firstName={firstName}
-                lastName={lastName}
-                className='cursor-pointer'
-                onClick={(e) => {
-                  e?.preventDefault();
-                  e?.stopPropagation();
-
-                  handleProfileMenuClick(e);
-                }}
-              />
-
-              <Menu
-                id='profile-menu'
-                anchorEl={profileMenuAnchorEl}
-                keepMounted
-                open={Boolean(profileMenuAnchorEl)}
-                onClose={() => {
-                  setProfilemenuAnchorEl(null);
-                }}
-                TransitionComponent={Fade}
-                style={{ borderRadius: "1rem", zIndex: "100" }}
-              >
-                <MenuItem
-                  onClick={() => {
-                    setProfilemenuAnchorEl(null);
-                    logout();
+                    if (publishProjectData?.success) {
+                      closePublishProjectSuccess();
+                    } else {
+                      resetPublishMutation();
+                    }
                   }}
-                  style={{ color: Colors.accent.red }}
                 >
-                  Logout
-                </MenuItem>
-              </Menu>
+                  Okay
+                </PrimaryButton>
+              </div>
             </div>
-          </div>
-        </header>
+          )}
 
-        {currentTab === 0 && (
-          <div
-            className='flex flex-row'
-            style={{ height: `calc(100vh - 60px)` }}
-          >
-            <section
-              className='w-1/5 border-r-2 h-full'
-              style={{ minWidth: "220px", maxWidth: "300px" }}
-            >
-              <Resources
-                className='h-full flex flex-col'
-                projectId={projectId}
-                selectedIndex={operationState.operationIndex}
-                onOperationSelect={(index, resource, path, operation) => {
-                  if (
-                    index === null &&
-                    resource === null &&
-                    path === null &&
-                    operation === null
-                  ) {
-                    if (!operationState?.isModified) {
-                      resetOperationState();
-                    } else {
-                      showSaveProjectWarning("without-nav");
-                    }
-                  } else if (index !== operationState.operationIndex) {
-                    if (!operationState?.isModified) {
-                      const cloned = _.cloneDeep(operationState);
-                      cloned.operation = operation;
-                      cloned.resource = resource;
-                      cloned.path = path;
-                      cloned.operationIndex = index;
+          {!isSyncingOperation &&
+            dialog?.show &&
+            dialog?.type === "save-operation-warning" && (
+              <SaveOperationWarning
+                onClose={handleCloseDialog}
+                navigateBack={() => {
+                  handleCloseDialog();
 
-                      setOperationState(cloned);
-                    } else {
-                      showSaveProjectWarning("without-nav");
-                    }
+                  resetProjectState();
+
+                  if (dialog?.data === "with-nav") {
+                    navigateBack();
                   }
                 }}
+                saveProject={() => {
+                  handleCloseDialog();
+                  saveProject();
+                }}
               />
-            </section>
+            )}
 
-            <section className='w-full flex flex-col'>
-              <div
-                className={classNames(`overflow-hidden`, {
-                  "h-1/2": operationState.operationIndex,
-                  "h-full": !operationState.operationIndex,
-                })}
+          {dialog?.show && dialog?.type === "operation-errors" && (
+            <OperationErrorsDialog
+              onClose={handleCloseDialog}
+              errors={dialog?.data}
+            />
+          )}
+        </Dialog>
+
+        <DndProvider backend={HTML5Backend}>
+          <header className='px-2 border-b-2 flex flex-row items-center bg-white'>
+            <div className='flex flex-row py-2 items-center'>
+              <AppIcon
+                style={{ marginRight: "1rem" }}
+                onClick={(event) => {
+                  event?.preventDefault();
+                  event?.stopPropagation();
+
+                  if (!operationState?.isModified) {
+                    resetProjectState();
+                    navigateBack();
+                  } else {
+                    showSaveOperationWarning("with-nav");
+                  }
+                }}
               >
-                <Match projectType={projectDetails?.projectType} />
-              </div>
+                <ArrowBackIcon />
+              </AppIcon>
 
-              {operationState.resource &&
-                operationState.path &&
-                operationState.operation && (
-                  <div
-                    className={classNames({
-                      "h-1/2": operationState.operationIndex !== null,
-                    })}
+              <p className='text-overline1'>{projectDetails?.projectName}</p>
+
+              <div className='ml-4'>
+                {!isSyncingOperation ? (
+                  <AppIcon
+                    onClick={(e) => {
+                      e?.preventDefault();
+                      e?.stopPropagation();
+
+                      saveProject();
+                    }}
                   >
-                    <OperationDetails
-                      projectType={projectDetails?.projectType}
+                    <CloudUploadIcon style={{ color: "lightblue" }} />
+                  </AppIcon>
+                ) : (
+                  <div className='flex flex-row items-center'>
+                    <CircularProgress
+                      style={{
+                        width: "18px",
+                        height: "18px",
+                        marginRight: "0.5rem",
+                      }}
                     />
+
+                    <p className='text-overline2 opacity-60'>Saving ...</p>
                   </div>
                 )}
-            </section>
-          </div>
-        )}
-      </DndProvider>
-    </>
+              </div>
+            </div>
+
+            <div className='flex justify-center flex-1'>
+              <Tabs
+                value={currentTab}
+                onChange={(_, index) => {}}
+                aria-label='add project tabs'
+                indicatorColor='primary'
+                textColor='primary'
+              >
+                <Tab
+                  label={<TabLabel label={"Design"} />}
+                  style={{ outline: "none", border: "none" }}
+                />
+
+                <Tab
+                  label={<TabLabel label={"Visualize"} />}
+                  style={{ outline: "none", border: "none" }}
+                  disabled
+                />
+              </Tabs>
+            </div>
+
+            <div className='flex flex-row py-2'>
+              {canEdit(userRole) && (
+                <OutlineButton classes='mr-3'>Invite</OutlineButton>
+              )}
+
+              {canEdit(userRole) && (
+                <PrimaryButton
+                  classes='mr-3'
+                  onClick={(e) => {
+                    e?.preventDefault();
+                    e?.stopPropagation();
+
+                    publishProject();
+                  }}
+                >
+                  Publish
+                </PrimaryButton>
+              )}
+
+              <div>
+                <InitialsAvatar
+                  firstName={firstName}
+                  lastName={lastName}
+                  className='cursor-pointer'
+                  onClick={(e) => {
+                    e?.preventDefault();
+                    e?.stopPropagation();
+
+                    handleProfileMenuClick(e);
+                  }}
+                />
+
+                <Menu
+                  id='profile-menu'
+                  anchorEl={profileMenuAnchorEl}
+                  keepMounted
+                  open={Boolean(profileMenuAnchorEl)}
+                  onClose={() => {
+                    setProfilemenuAnchorEl(null);
+                  }}
+                  TransitionComponent={Fade}
+                  style={{ borderRadius: "1rem", zIndex: "100" }}
+                >
+                  <MenuItem
+                    onClick={() => {
+                      setProfilemenuAnchorEl(null);
+                      logout();
+                    }}
+                    style={{ color: Colors.accent.red }}
+                  >
+                    Logout
+                  </MenuItem>
+                </Menu>
+              </div>
+            </div>
+          </header>
+
+          {currentTab === 0 && (
+            <div
+              className='flex flex-row'
+              style={{ height: `calc(100vh - 60px)` }}
+            >
+              <section
+                className='w-1/5 border-r-2 h-full'
+                style={{ minWidth: "220px", maxWidth: "300px" }}
+              >
+                <Resources
+                  className='h-full flex flex-col'
+                  projectId={projectId}
+                  selectedIndex={operationState.operationIndex}
+                  onOperationSelect={(index, resource, path, operation) => {
+                    if (
+                      index === null &&
+                      resource === null &&
+                      path === null &&
+                      operation === null
+                    ) {
+                      if (!operationState?.isModified) {
+                        resetOperationState();
+                      } else {
+                        showSaveOperationWarning("without-nav");
+                      }
+                    } else if (index !== operationState.operationIndex) {
+                      if (!operationState?.isModified) {
+                        const cloned = _.cloneDeep(operationState);
+                        cloned.operation = operation;
+                        cloned.resource = resource;
+                        cloned.path = path;
+                        cloned.operationIndex = index;
+
+                        setOperationState(cloned);
+                      } else {
+                        showSaveOperationWarning("without-nav");
+                      }
+                    }
+                  }}
+                />
+              </section>
+
+              <section className='w-full flex flex-col'>
+                <div
+                  className={classNames(`overflow-hidden`, {
+                    "h-1/2": operationState.operationIndex,
+                    "h-full": !operationState.operationIndex,
+                  })}
+                >
+                  <Match projectType={projectDetails?.projectType} />
+                </div>
+
+                {operationState.resource &&
+                  operationState.path &&
+                  operationState.operation && (
+                    <div
+                      className={classNames({
+                        "h-1/2": operationState.operationIndex !== null,
+                      })}
+                    >
+                      <OperationDetails
+                        projectType={projectDetails?.projectType}
+                      />
+                    </div>
+                  )}
+              </section>
+            </div>
+          )}
+        </DndProvider>
+      </>
+    </UserRoleProvider>
   );
 };
 

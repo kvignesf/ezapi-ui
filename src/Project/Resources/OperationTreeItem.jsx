@@ -11,6 +11,7 @@ import Colors from "../../shared/colors";
 import AddOrEditOperation from "./AddOrEditOperation";
 import AddOrEditPath from "./AddOrEditPath";
 import DeleteOperation from "./DeleteOperation";
+import { useCanEdit } from "../../shared/utils";
 
 const OperationTreeItem = ({
   nodeId,
@@ -27,6 +28,7 @@ const OperationTreeItem = ({
     data: null,
     type: null,
   });
+  const canEdit = useCanEdit();
 
   const handleMenuClick = (event) => {
     event?.preventDefault();
@@ -36,18 +38,23 @@ const OperationTreeItem = ({
 
   const handleEditClick = () => {
     resetSelectedOperation();
-    setDialog({
-      show: true,
-      type: "edit-operation",
-    });
+
+    if (canEdit()) {
+      setDialog({
+        show: true,
+        type: "edit-operation",
+      });
+    }
   };
 
   const handleDeleteClick = () => {
     resetSelectedOperation();
-    setDialog({
-      show: true,
-      type: "delete-operation",
-    });
+    if (canEdit()) {
+      setDialog({
+        show: true,
+        type: "delete-operation",
+      });
+    }
   };
 
   const handleCloseDialog = (event) => {
@@ -71,7 +78,7 @@ const OperationTreeItem = ({
           style: { borderRadius: 8 },
         }}
       >
-        {dialog?.type === "edit-operation" && (
+        {dialog?.type === "edit-operation" && canEdit() && (
           <AddOrEditOperation
             onClose={handleCloseDialog}
             title='Edit Operation'
@@ -81,7 +88,7 @@ const OperationTreeItem = ({
           />
         )}
 
-        {dialog?.type === "delete-operation" && (
+        {dialog?.type === "delete-operation" && canEdit() && (
           <DeleteOperation
             onClose={handleCloseDialog}
             pathId={pathId}
@@ -105,7 +112,7 @@ const OperationTreeItem = ({
                   </p>
                 </div>
 
-                {isHovering && (
+                {isHovering && canEdit() && (
                   <div>
                     <AppIcon onClick={handleMenuClick}>
                       <MoreVertIcon
@@ -118,45 +125,47 @@ const OperationTreeItem = ({
                   </div>
                 )}
 
-                <Menu
-                  id='resources-menu'
-                  getContentAnchorEl={null}
-                  anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-                  transformOrigin={{ vertical: "top", horizontal: "center" }}
-                  anchorEl={menuAnchor}
-                  keepMounted
-                  open={Boolean(menuAnchor)}
-                  onClose={(event) => {
-                    event?.preventDefault();
-                    event?.stopPropagation();
-                    setMenuAnchor(null);
-                  }}
-                  TransitionComponent={Fade}
-                  style={{ borderRadius: "1rem", zIndex: "100" }}
-                >
-                  <MenuItem
-                    onClick={(event) => {
+                {canEdit() && (
+                  <Menu
+                    id='resources-menu'
+                    getContentAnchorEl={null}
+                    anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+                    transformOrigin={{ vertical: "top", horizontal: "center" }}
+                    anchorEl={menuAnchor}
+                    keepMounted
+                    open={Boolean(menuAnchor)}
+                    onClose={(event) => {
                       event?.preventDefault();
                       event?.stopPropagation();
                       setMenuAnchor(null);
-                      handleEditClick();
                     }}
+                    TransitionComponent={Fade}
+                    style={{ borderRadius: "1rem", zIndex: "100" }}
                   >
-                    Edit
-                  </MenuItem>
+                    <MenuItem
+                      onClick={(event) => {
+                        event?.preventDefault();
+                        event?.stopPropagation();
+                        setMenuAnchor(null);
+                        handleEditClick();
+                      }}
+                    >
+                      Edit
+                    </MenuItem>
 
-                  <MenuItem
-                    onClick={(event) => {
-                      event?.preventDefault();
-                      event?.stopPropagation();
-                      setMenuAnchor(null);
-                      handleDeleteClick();
-                    }}
-                    style={{ color: Colors.accent.red }}
-                  >
-                    Delete
-                  </MenuItem>
-                </Menu>
+                    <MenuItem
+                      onClick={(event) => {
+                        event?.preventDefault();
+                        event?.stopPropagation();
+                        setMenuAnchor(null);
+                        handleDeleteClick();
+                      }}
+                      style={{ color: Colors.accent.red }}
+                    >
+                      Delete
+                    </MenuItem>
+                  </Menu>
+                )}
               </div>
             }
           />

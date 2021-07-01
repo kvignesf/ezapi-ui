@@ -14,6 +14,7 @@ import Colors from "../../shared/colors";
 import AddOrEditPath from "./AddOrEditPath";
 import AddOrEditResource from "./AddOrEditResource";
 import DeleteResource from "./DeleteResource";
+import { useCanEdit } from "../../shared/utils";
 
 const ResourceTreeItem = ({
   nodeId,
@@ -28,6 +29,7 @@ const ResourceTreeItem = ({
     data: null,
     type: null,
   });
+  const canEdit = useCanEdit();
 
   const handleMenuClick = (event) => {
     event?.preventDefault();
@@ -40,26 +42,32 @@ const ResourceTreeItem = ({
     event?.stopPropagation();
     resetSelectedOperation();
 
-    setDialog({
-      show: true,
-      type: "add-path",
-    });
+    if (canEdit()) {
+      setDialog({
+        show: true,
+        type: "add-path",
+      });
+    }
   };
 
   const handleEditClick = () => {
     resetSelectedOperation();
-    setDialog({
-      show: true,
-      type: "edit-resource",
-    });
+    if (canEdit()) {
+      setDialog({
+        show: true,
+        type: "edit-resource",
+      });
+    }
   };
 
   const handleDeleteClick = () => {
     resetSelectedOperation();
-    setDialog({
-      show: true,
-      type: "delete-resource",
-    });
+    if (canEdit()) {
+      setDialog({
+        show: true,
+        type: "delete-resource",
+      });
+    }
   };
 
   const handleCloseDialog = () => {
@@ -81,7 +89,7 @@ const ResourceTreeItem = ({
           style: { borderRadius: 8 },
         }}
       >
-        {dialog?.type === "add-path" && (
+        {dialog?.type === "add-path" && canEdit() && (
           <AddOrEditPath
             onClose={handleCloseDialog}
             title='Add Path'
@@ -90,7 +98,7 @@ const ResourceTreeItem = ({
           />
         )}
 
-        {dialog?.type === "edit-resource" && (
+        {dialog?.type === "edit-resource" && canEdit() && (
           <AddOrEditResource
             onClose={handleCloseDialog}
             title='Edit Resource'
@@ -98,7 +106,7 @@ const ResourceTreeItem = ({
           />
         )}
 
-        {dialog?.type === "delete-resource" && (
+        {dialog?.type === "delete-resource" && canEdit() && (
           <DeleteResource onClose={handleCloseDialog} resource={resource} />
         )}
       </Dialog>
@@ -120,7 +128,7 @@ const ResourceTreeItem = ({
                   </p>
                 </div>
 
-                {isHovering && (
+                {isHovering && canEdit() && (
                   <div>
                     <AppIcon
                       onClick={handleAddPathClick}
@@ -136,7 +144,7 @@ const ResourceTreeItem = ({
                   </div>
                 )}
 
-                {isHovering && (
+                {isHovering && canEdit() && (
                   <div>
                     <AppIcon onClick={handleMenuClick}>
                       <MoreVertIcon
@@ -149,42 +157,44 @@ const ResourceTreeItem = ({
                   </div>
                 )}
 
-                <Menu
-                  id='path-menu'
-                  getContentAnchorEl={null}
-                  anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-                  transformOrigin={{ vertical: "top", horizontal: "center" }}
-                  anchorEl={menuAnchor}
-                  keepMounted
-                  open={Boolean(menuAnchor)}
-                  onClose={(event) => {
-                    event?.preventDefault();
-                    setMenuAnchor(null);
-                  }}
-                  TransitionComponent={Fade}
-                  style={{ borderRadius: "1rem", zIndex: "100" }}
-                >
-                  <MenuItem
-                    onClick={(event) => {
+                {canEdit() && (
+                  <Menu
+                    id='path-menu'
+                    getContentAnchorEl={null}
+                    anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+                    transformOrigin={{ vertical: "top", horizontal: "center" }}
+                    anchorEl={menuAnchor}
+                    keepMounted
+                    open={Boolean(menuAnchor)}
+                    onClose={(event) => {
                       event?.preventDefault();
                       setMenuAnchor(null);
-                      handleEditClick();
                     }}
+                    TransitionComponent={Fade}
+                    style={{ borderRadius: "1rem", zIndex: "100" }}
                   >
-                    Edit
-                  </MenuItem>
+                    <MenuItem
+                      onClick={(event) => {
+                        event?.preventDefault();
+                        setMenuAnchor(null);
+                        handleEditClick();
+                      }}
+                    >
+                      Edit
+                    </MenuItem>
 
-                  <MenuItem
-                    onClick={(event) => {
-                      event?.preventDefault();
-                      setMenuAnchor(null);
-                      handleDeleteClick();
-                    }}
-                    style={{ color: Colors.accent.red }}
-                  >
-                    Delete
-                  </MenuItem>
-                </Menu>
+                    <MenuItem
+                      onClick={(event) => {
+                        event?.preventDefault();
+                        setMenuAnchor(null);
+                        handleDeleteClick();
+                      }}
+                      style={{ color: Colors.accent.red }}
+                    >
+                      Delete
+                    </MenuItem>
+                  </Menu>
+                )}
               </div>
             }
           >
@@ -194,12 +204,14 @@ const ResourceTreeItem = ({
               <div className='my-1 ml-1 flex flex-row items-center'>
                 <p className='text-overline3 text-neutral-gray3 mr-1'>
                   This resource is empty.
-                  <span
-                    className='text-overline3 text-brand-secondary cursor-pointer ml-1 hover:opacity-80'
-                    onClick={handleAddPathClick}
-                  >
-                    Add Path
-                  </span>
+                  {canEdit() && (
+                    <span
+                      className='text-overline3 text-brand-secondary cursor-pointer ml-1 hover:opacity-80'
+                      onClick={handleAddPathClick}
+                    >
+                      Add Path
+                    </span>
+                  )}
                 </p>
               </div>
             )}

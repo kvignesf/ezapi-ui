@@ -8,7 +8,7 @@ import classNames from "classnames";
 import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
 import Fade from "@material-ui/core/Fade";
-import { CircularProgress, Dialog } from "@material-ui/core";
+import { CircularProgress, Dialog, Tooltip } from "@material-ui/core";
 import { useHistory } from "react-router";
 
 import Dashboard from "../Dashboard";
@@ -147,24 +147,26 @@ const ProjectRow = ({
         {project?.status?.toLowerCase() === "complete" &&
           project?.publishStatus?.SpecGeneration?.success &&
           !isDownloadingSpecs && (
-            <div
-              style={{
-                width: "32px",
-                height: "32px",
-              }}
-            >
-              <img
-                src={Logo}
-                alt='ezapi logo'
-                className='cursor-pointer'
-                onClick={(e) => {
-                  e?.preventDefault();
-                  e?.stopPropagation();
-
-                  onDownloadSpecs();
+            <Tooltip title='Download Specs'>
+              <div
+                style={{
+                  width: "32px",
+                  height: "32px",
                 }}
-              />
-            </div>
+              >
+                <img
+                  src={Logo}
+                  alt='ezapi logo'
+                  className='cursor-pointer'
+                  onClick={(e) => {
+                    e?.preventDefault();
+                    e?.stopPropagation();
+
+                    onDownloadSpecs();
+                  }}
+                />
+              </div>
+            </Tooltip>
           )}
 
         {isDownloadingSpecs && (
@@ -185,7 +187,9 @@ const ProjectRow = ({
                 onDownloadArtifact();
               }}
             >
-              <SystemUpdateAltIcon />
+              <Tooltip title='Download Artefacts'>
+                <SystemUpdateAltIcon />
+              </Tooltip>
             </AppIcon>
           )}
 

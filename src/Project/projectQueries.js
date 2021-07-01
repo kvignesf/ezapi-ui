@@ -12,6 +12,9 @@ const fetchProjectDetails = async ({ queryKey }) => {
       const { data } = await client.get(`${endpoint.project}/${projectId}`);
       return data;
     } catch (error) {
+      if (error?.response?.status === 404) {
+        throw Error("no_access");
+      }
       throw getApiError(error);
     }
   }
