@@ -284,7 +284,6 @@ const AddResponseCode = () => {
         keepMounted
         open={Boolean(profileMenuAnchorEl)}
         onClose={() => {
-          console.log("sd11");
           setProfilemenuAnchorEl(null);
         }}
         TransitionComponent={Fade}
@@ -442,7 +441,6 @@ const ResponseCodeItem = ({ index, code, selectedCode, onChange }) => {
               e.preventDefault();
               e.stopPropagation();
 
-              console.log("meme");
               setProfilemenuAnchorEl(e?.currentTarget);
             }}
           >
