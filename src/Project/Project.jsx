@@ -32,7 +32,7 @@ import Resources from "./Resources/Resources";
 import Match from "./Match";
 import OperationDetails from "./OperationDetails";
 import { useSyncOperation } from "../shared/query/operationDetailsQuery";
-import { usePublishProject } from "./projectQueries";
+import { useSubmitProject } from "./projectQueries";
 import TabLabel from "../shared/components/TabLabel";
 import {
   generateSyncOperationRequestRequest,
@@ -49,6 +49,9 @@ import { useLogout } from "../shared/query/authQueries";
 import SaveOperationWarning from "./SaveOperationWarning";
 import OperationErrorsDialog from "./OperationErrorsDialog";
 import UserRoleProvider from "./UserRoleContext";
+import PublishProjectMessage from "./PublishProjectMessage";
+import VerifyProjectError from "./VerifyProjectError";
+import ProjectVerificationErrors from "./ProjectVerificationErrors";
 
 const Project = () => {
   const { id: projectId } = useParams();
@@ -73,13 +76,23 @@ const Project = () => {
     reset: resetSyncOperationMutation,
   } = useSyncOperation();
   const {
-    isLoading: isPublishingProject,
-    isSuccess: isPublishProjectSuccess,
-    data: publishProjectData,
-    error: publishProjectError,
-    mutate: publish,
-    reset: resetPublishMutation,
-  } = usePublishProject();
+    verifyProjectMutation: {
+      isLoading: isVerifyingProject,
+      isSuccess: isVerifyProjectSuccess,
+      data: verifyProjectData,
+      error: verifyProjectError,
+      mutate: verify,
+      reset: resetVerifyMutation,
+    },
+    publishProjectMutation: {
+      isLoading: isPublishingProject,
+      isSuccess: isPublishProjectSuccess,
+      data: publishProjectData,
+      error: publishProjectError,
+      mutate: publish,
+      reset: resetPublishMutation,
+    },
+  } = useSubmitProject(projectId);
   const resetSchemaState = useResetRecoilState(schemaAtom);
   const resetTableState = useResetRecoilState(tableAtom);
   const resetOperationState = useResetRecoilState(operationAtomWithMiddleware);
@@ -191,50 +204,24 @@ const Project = () => {
     }
   };
 
-  const fetchOperationErrors = () => {
-    const { loadable: operationAtomLoadable } = getRecoilValueInfo(
-      operationAtomWithMiddleware
-    );
-    const operationState = operationAtomLoadable?.contents;
-
-    const errors = [];
-
-    // 200 Response should have response body section
-    const response200 = operationState?.operationResponse?.find(
-      (response) => response?.responseCode === 200
-    );
-    if (!response200?.body || _.isEmpty(response200?.body)) {
-      errors.push("200 response must include a body section");
-    }
-    if (!response200?.description || _.isEmpty(response200?.description)) {
-      errors.push("200 response must include suitable description");
-    }
-
-    return errors;
-  };
-
-  const publishProject = () => {
+  const submitProject = () => {
     if (canEdit(userRole)) {
-      const errors = fetchOperationErrors();
-      if (errors && !_.isEmpty(errors)) {
-        showOperationErrorsDialog(errors);
-      } else {
-        const { loadable: operationAtomLoadable } = getRecoilValueInfo(
-          operationAtomWithMiddleware
-        );
-        const operationState = operationAtomLoadable?.contents;
+      const { loadable: operationAtomLoadable } = getRecoilValueInfo(
+        operationAtomWithMiddleware
+      );
+      const operationState = operationAtomLoadable?.contents;
 
-        if (operationState?.isModified) {
-          showSaveOperationWarning("without-nav");
-        } else {
-          publish({ projectId });
-        }
+      if (operationState?.isModified) {
+        showSaveOperationWarning("without-nav");
+      } else {
+        verify({ projectId });
       }
     }
   };
 
   const closePublishProjectSuccess = () => {
     resetPublishMutation();
+    resetVerifyMutation();
     history.goBack();
   };
 
@@ -250,16 +237,6 @@ const Project = () => {
     });
   };
 
-  const showOperationErrorsDialog = (errors) => {
-    if (errors && !_.isEmpty(errors)) {
-      setDialog({
-        show: true,
-        type: "operation-errors",
-        data: errors,
-      });
-    }
-  };
-
   const handleCloseDialog = () => {
     setDialog({
       show: false,
@@ -272,19 +249,36 @@ const Project = () => {
     history.goBack();
   };
 
+  const resetSubmitProjectMutation = () => {
+    resetPublishMutation();
+    resetVerifyMutation();
+  };
+
+  const isProjectHavingErrors = () =>
+    isVerifyProjectSuccess &&
+    verifyProjectData?.response &&
+    !_.isEmpty(verifyProjectData?.response);
+
   return (
     <UserRoleProvider role={userRole}>
       <>
         <Dialog
           aria-labelledby='save-operation-dialog'
-          open={isPublishingProject || publishProjectData || dialog?.show}
+          open={
+            isPublishingProject ||
+            isVerifyingProject ||
+            publishProjectData ||
+            verifyProjectError ||
+            isProjectHavingErrors() ||
+            dialog?.show
+          }
           fullWidth
           PaperProps={{
             style: { borderRadius: 8 },
           }}
           disableBackdropClick
         >
-          {(isPublishingProject || isLoggingOut) && (
+          {(isPublishingProject || isVerifyingProject || isLoggingOut) && (
             <div className='p-6'>
               <div className='w-full flex flex-row items-center'>
                 <p className='text-overline mr-3'>
@@ -292,6 +286,8 @@ const Project = () => {
                     ? "Publishing project"
                     : isLoggingOut
                     ? "Logging out"
+                    : isVerifyingProject
+                    ? "Verifying Project"
                     : null}
                 </p>
                 <CircularProgress style={{ width: "20px", height: "20px" }} />
@@ -299,61 +295,31 @@ const Project = () => {
             </div>
           )}
 
+          {verifyProjectError && (
+            <VerifyProjectError
+              error={verifyProjectError}
+              onClose={resetSubmitProjectMutation}
+              onRetry={() => {
+                verify({ projectId });
+              }}
+            />
+          )}
+
+          {isProjectHavingErrors() && (
+            <ProjectVerificationErrors
+              errors={verifyProjectData?.response}
+              onClose={resetSubmitProjectMutation}
+            />
+          )}
+
           {(publishProjectData || publishProjectError) && (
-            <div>
-              <div className='p-4 flex flex-row justify-between border-b-1'>
-                <p className='text-subtitle2'>
-                  {publishProjectData?.success
-                    ? "Publish Successful"
-                    : "Publish Failure"}
-                </p>
-                <AppIcon
-                  onClick={(e) => {
-                    e?.preventDefault();
-                    e?.stopPropagation();
-
-                    if (publishProjectData?.success) {
-                      closePublishProjectSuccess();
-                    } else {
-                      resetPublishMutation();
-                    }
-                  }}
-                >
-                  <CloseIcon />
-                </AppIcon>
-              </div>
-              <div className='p-4 py-6'>
-                {publishProjectData?.success ? (
-                  <p className='text-overline2'>{`Project ${projectDetails?.projectName} successfully published. You can now download the specs and artifacts.`}</p>
-                ) : (
-                  <p className='text-overline2'>
-                    {publishProjectData?.message}
-                  </p>
-                )}
-
-                {publishProjectError && (
-                  <p className='text-overline2'>
-                    {publishProjectError?.message}
-                  </p>
-                )}
-              </div>
-              <div className='p-4 border-t-1 flex flex-row justify-end'>
-                <PrimaryButton
-                  onClick={(e) => {
-                    e?.preventDefault();
-                    e?.stopPropagation();
-
-                    if (publishProjectData?.success) {
-                      closePublishProjectSuccess();
-                    } else {
-                      resetPublishMutation();
-                    }
-                  }}
-                >
-                  Okay
-                </PrimaryButton>
-              </div>
-            </div>
+            <PublishProjectMessage
+              publishProjectData={publishProjectData}
+              publishProjectData={publishProjectError}
+              closeSuccessMessage={closePublishProjectSuccess}
+              resetMutationState={resetSubmitProjectMutation}
+              projectName={projectDetails?.projectName}
+            />
           )}
 
           {!isSyncingOperation &&
@@ -376,13 +342,6 @@ const Project = () => {
                 }}
               />
             )}
-
-          {dialog?.show && dialog?.type === "operation-errors" && (
-            <OperationErrorsDialog
-              onClose={handleCloseDialog}
-              errors={dialog?.data}
-            />
-          )}
         </Dialog>
 
         <DndProvider backend={HTML5Backend}>
@@ -468,7 +427,7 @@ const Project = () => {
                     e?.preventDefault();
                     e?.stopPropagation();
 
-                    publishProject();
+                    submitProject();
                   }}
                 >
                   Publish

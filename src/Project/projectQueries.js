@@ -1,3 +1,4 @@
+import _ from "lodash";
 import { useMutation, useQuery } from "react-query";
 
 import client, { endpoint } from "../shared/network/client";
@@ -32,6 +33,17 @@ export const useFetchProjectDetails = (projectId, options = {}) => {
   return query;
 };
 
+const verifyProject = async ({ projectId }) => {
+  try {
+    const { data } = await client.post(endpoint.projectId, {
+      projectId,
+    });
+    return data;
+  } catch (error) {
+    throw getApiError(error);
+  }
+};
+
 const publishProject = async ({ projectId }) => {
   try {
     const { data } = await client.post(endpoint.publishProject, {
@@ -43,8 +55,16 @@ const publishProject = async ({ projectId }) => {
   }
 };
 
-export const usePublishProject = () => {
-  const mutation = useMutation(publishProject);
+export const useSubmitProject = (projectId) => {
+  const publishProjectMutation = useMutation(publishProject);
 
-  return mutation;
+  const verifyProjectMutation = useMutation(verifyProject, {
+    onSuccess: (data) => {
+      if (!data?.response || _.isEmpty(data?.response)) {
+        publishProjectMutation.mutate({ projectId });
+      }
+    },
+  });
+
+  return { verifyProjectMutation, publishProjectMutation };
 };

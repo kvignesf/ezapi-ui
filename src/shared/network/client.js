@@ -28,6 +28,7 @@ export const endpoint = Object.freeze({
   saveAttributeMatch: "/overrideAttrMatch",
   saveSchemaMatch: "/overrideSchemaMatch",
   publishProject: "/publish",
+  verifyProject: "/verify",
   downloadSpec: "/download_spec",
   downloadArtifact: "/download_apiops",
 });
