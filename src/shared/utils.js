@@ -362,7 +362,7 @@ export const generateSyncOperationResponseRequest = (operationResponse) => {
   request = operationResponse?.map((reponseData) => {
     let responseObject = {
       status_code: reponseData?.responseCode,
-      description: "Description",
+      description: reponseData?.description,
       links: [],
       headers: [],
       content: [],
@@ -421,7 +421,14 @@ export const generateSyncOperationResponseRequest = (operationResponse) => {
  * @return {[object]} [object] Operation Response in the local state format.
  */
 export const parseGetOperationResponseResponse = (operationResponse) => {
-  let response = [];
+  let response = [
+    {
+      responseCode: Constants.mandatoryResponse.code,
+      description: Constants.mandatoryResponse.description,
+      headers: [],
+      body: [],
+    },
+  ];
 
   if (!operationResponse || _.isEmpty(operationResponse)) {
     return response;
@@ -430,11 +437,13 @@ export const parseGetOperationResponseResponse = (operationResponse) => {
   response = operationResponse?.map((responseData) => {
     let responseObj = {
       responseCode: null,
+      description: null,
       headers: [],
       body: [],
     };
 
     responseObj.responseCode = parseInt(responseData.status_code);
+    responseObj.description = responseData.description;
 
     responseObj.headers = responseData?.headers?.map((header) => {
       const headerName = Object.keys(header)[0];

@@ -37,13 +37,13 @@ const MembersImages = ({ project, ...rest }) => {
 
   return (
     <div className='flex flex-row cursor-pointer' {...rest}>
-      {_.isEmpty(project?.invites) && loggedInUserId === project?.author ? (
+      {_.isEmpty(project?.members) && loggedInUserId === project?.author ? (
         <p className='capitalize text-brand-secondary text-overline2'>
           Invite Collaborators
         </p>
       ) : null}
 
-      {project?.invites?.map((member, index) => {
+      {project?.members?.map((member, index) => {
         if (index < 3) {
           let firstName, lastName;
 
@@ -77,9 +77,9 @@ const MembersImages = ({ project, ...rest }) => {
         return null;
       })}
 
-      {project?.invites?.length > 3 ? (
+      {project?.members?.length > 3 ? (
         <p className='text-overline2 self-center ml-2'>
-          + {project?.invites?.length - 3} more
+          + {project?.members?.length - 3} more
         </p>
       ) : null}
     </div>
@@ -343,7 +343,7 @@ const Content = ({ showCreateProjectDialog }) => {
           <ModifyCollaborators
             projectId={dialog?.data?.projectId}
             onClose={handleCloseDialog}
-            invitedCollaborators={dialog?.data?.invites}
+            invitedCollaborators={dialog?.data?.members}
           />
         )}
 

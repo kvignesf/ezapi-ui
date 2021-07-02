@@ -114,27 +114,27 @@ const Project = () => {
   }, [projectId]);
 
   useEffect(() => {
-    if (
-      projectDetails?.status === "IN_PROGRESS" &&
-      projectDetails?.status === "COMPLETE"
-    ) {
-      return;
-    }
+    if (projectDetails) {
+      if (
+        projectDetails?.status === "IN_PROGRESS" &&
+        projectDetails?.status === "COMPLETE"
+      ) {
+        return;
+      }
 
-    // Get user role
-    if (projectDetails?.members && !_.isEmpty(projectDetails?.members)) {
-      const userEmail = getEmailId();
-      const currentUserDetails = projectDetails?.members?.find(
-        (member) => member?.email === userEmail
-      );
+      // Get user role
+      if (projectDetails?.members && !_.isEmpty(projectDetails?.members)) {
+        const userEmail = getEmailId();
+        const currentUserDetails = projectDetails?.members?.find(
+          (member) => member?.email === userEmail
+        );
 
-      if (currentUserDetails?.role === "admin") {
         setRole(currentUserDetails?.role);
         return;
       }
-    }
 
-    history.goBack();
+      history.goBack();
+    }
   }, [projectDetails]);
 
   useEffect(() => {

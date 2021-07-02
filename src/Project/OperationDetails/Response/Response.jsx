@@ -1,7 +1,12 @@
-import React, { useEffect, useState } from "react";
-import { Fade, Tab, Tabs } from "@material-ui/core";
-import { useRecoilValue, useRecoilState } from "recoil";
-import _ from "lodash";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
+import { Fade, Tab, Tabs, TextField } from "@material-ui/core";
+import {
+  useRecoilState,
+  useRecoilValue,
+  useGetRecoilValueInfo_UNSTABLE,
+  useSetRecoilState,
+} from "recoil";
+import _, { debounce } from "lodash";
 import AddIcon from "@material-ui/icons/Add";
 import MoreVertIcon from "@material-ui/icons/MoreVert";
 import { Menu, MenuItem } from "@material-ui/core/index";
@@ -15,7 +20,7 @@ import AppIcon from "../../../shared/components/AppIcon";
 import Colors from "../../../shared/colors";
 import classNames from "classnames";
 import Constants from "../../../shared/constants";
-import { operationAtomWithMiddleware } from "../../../shared/utils";
+import { operationAtomWithMiddleware, useCanEdit } from "../../../shared/utils";
 
 const Response = ({
   getDetailsMutation: {
@@ -27,13 +32,32 @@ const Response = ({
 }) => {
   const operationState = useRecoilValue(operationAtomWithMiddleware);
   const [selectedResponseCode, setSelectedResponseCode] = useState(
-    operationState?.operationResponse[0]?.responseCode ??
-      Constants.mandatoryResponseCode
+    operationState?.operationResponse[0]?.responseCode ?? 200
   );
+  const canEdit = useCanEdit();
+  const getRecoilValueInfo = useGetRecoilValueInfo_UNSTABLE();
 
   const changeResponseCode = (value) => {
     setSelectedResponseCode(value);
   };
+
+  const getSelectedResponse = () => {
+    const { loadable: operationAtomLoadable } = getRecoilValueInfo(
+      operationAtomWithMiddleware
+    );
+    const operationState = operationAtomLoadable?.contents;
+
+    const response = operationState?.operationResponse?.find(
+      (item) => item.responseCode === selectedResponseCode
+    );
+
+    return response;
+  };
+
+  const selectedReponse = useMemo(
+    () => getSelectedResponse(),
+    [selectedResponseCode, operationState]
+  );
 
   if (isLoadingOperationResponse) {
     return (
@@ -45,18 +69,84 @@ const Response = ({
 
   return (
     <div className='h-full'>
-      <div className='flex flex-row w-min mb-2 m-3'>
-        <ResponseCodeSelection
-          onChange={changeResponseCode}
-          selectedCode={selectedResponseCode}
-        />
+      <div className='flex flex-row items-center justify-between'>
+        <div className='flex flex-row w-min mb-2 m-3'>
+          <ResponseCodeSelection
+            onChange={changeResponseCode}
+            selectedCode={selectedResponseCode}
+          />
 
-        <AddResponseCode />
+          {canEdit() && <AddResponseCode />}
+        </div>
+
+        <Description
+          value={selectedReponse?.description}
+          selectedResponseCode={selectedResponseCode}
+        />
       </div>
 
       <ResponseContent
         selectedCode={selectedResponseCode}
         projectType={projectType}
+      />
+    </div>
+  );
+};
+
+const Description = ({ value, selectedResponseCode }) => {
+  const canEdit = useCanEdit();
+  const setOperationDetails = useSetRecoilState(operationAtomWithMiddleware);
+
+  const onDescriptionUpdate = useCallback(
+    debounce((value) => {
+      if (canEdit()) {
+        setOperationDetails((operationDetails) => {
+          const clonedOperationDetails = _.cloneDeep(operationDetails);
+          const responseIndex = operationDetails?.operationResponse?.findIndex(
+            (item) => item.responseCode === selectedResponseCode
+          );
+
+          if (responseIndex >= 0) {
+            const responseData =
+              operationDetails?.operationResponse[responseIndex];
+            const clonedResponseData = _.cloneDeep(responseData);
+
+            clonedResponseData.description = value;
+
+            clonedOperationDetails.operationResponse[responseIndex] =
+              clonedResponseData;
+
+            return clonedOperationDetails;
+          }
+
+          return operationDetails;
+        });
+      }
+    }, 300),
+    [selectedResponseCode]
+  );
+
+  return (
+    <div className='flex flex-col mr-2'>
+      <p className='text-overline2 mb-1'>Status Message</p>
+
+      <TextField
+        key={`${selectedResponseCode}`}
+        variant='outlined'
+        defaultValue={value ?? ""}
+        disabled={!canEdit()}
+        onKeyUp={(e) => {
+          if (canEdit()) {
+            const { value } = e.target;
+
+            onDescriptionUpdate(value);
+          }
+        }}
+        inputProps={{
+          style: {
+            padding: "0.5rem",
+          },
+        }}
       />
     </div>
   );
@@ -133,21 +223,37 @@ const AddResponseCode = () => {
     operationAtomWithMiddleware
   );
 
-  const getAvailableResponseCodes = () => {
-    return _.difference(
-      Constants.allResponseCodes,
-      operationState?.operationResponse?.map((item) => {
-        return item.responseCode;
-      }) ?? []
-    );
+  const _getAvailableResponseCodes = () => {
+    const clonedAllResponse = _.cloneDeep(Constants.allResponses);
+
+    for (
+      let index = 0;
+      index < operationState?.operationResponse?.length;
+      index++
+    ) {
+      const element = operationState?.operationResponse[index];
+
+      _.remove(
+        clonedAllResponse,
+        (item) => item?.code === element?.responseCode
+      );
+    }
+
+    return clonedAllResponse;
   };
 
-  const onAdd = (code) => {
+  const availableResponseCodes = useMemo(
+    () => _getAvailableResponseCodes(),
+    [operationState]
+  );
+
+  const onAdd = (response) => {
     setOperationState((operationState) => {
       const clonedOperationState = _.cloneDeep(operationState);
 
       clonedOperationState.operationResponse.push({
-        responseCode: code,
+        responseCode: response?.code,
+        description: response?.description,
         headers: [],
         body: [],
       });
@@ -155,6 +261,10 @@ const AddResponseCode = () => {
       return clonedOperationState;
     });
   };
+
+  if (_.isEmpty(availableResponseCodes)) {
+    return null;
+  }
 
   return (
     <div className='p-1 pl-2 pr-2  flex flex-row items-center rounded-r-md border-2'>
@@ -169,17 +279,18 @@ const AddResponseCode = () => {
       </AppIcon>
 
       <Menu
-        id='edit-response-code-menu'
+        id='add-response-code-menu'
         anchorEl={profileMenuAnchorEl}
         keepMounted
         open={Boolean(profileMenuAnchorEl)}
         onClose={() => {
+          console.log("sd11");
           setProfilemenuAnchorEl(null);
         }}
         TransitionComponent={Fade}
         style={{ borderRadius: "1rem", zIndex: "100" }}
       >
-        {getAvailableResponseCodes().map((code) => {
+        {availableResponseCodes.map((response) => {
           return (
             <MenuItem
               onClick={(e) => {
@@ -187,10 +298,10 @@ const AddResponseCode = () => {
                 e.stopPropagation();
                 setProfilemenuAnchorEl(null);
 
-                onAdd(code);
+                onAdd(response);
               }}
             >
-              {code}
+              {response?.code}
             </MenuItem>
           );
         })}
@@ -200,12 +311,11 @@ const AddResponseCode = () => {
 };
 
 const ResponseCodeSelection = ({ selectedCode, onChange }) => {
-  const [profileMenuAnchorEl, setProfilemenuAnchorEl] = useState(null);
   const [operationState, setOperationState] = useRecoilState(
     operationAtomWithMiddleware
   );
 
-  const getResponseCodes = () => {
+  const _getResponseCodes = () => {
     return (
       operationState?.operationResponse?.map((item) => {
         return item?.responseCode;
@@ -213,8 +323,67 @@ const ResponseCodeSelection = ({ selectedCode, onChange }) => {
     );
   };
 
+  const responseCodes = useMemo(() => _getResponseCodes(), [operationState]);
+
+  return (
+    <>
+      {responseCodes?.map((code, index) => {
+        return (
+          <ResponseCodeItem
+            selectedCode={selectedCode}
+            code={code}
+            index={index}
+            onChange={onChange}
+          />
+        );
+      })}
+    </>
+  );
+};
+
+const ResponseCodeItem = ({ index, code, selectedCode, onChange }) => {
+  const [profileMenuAnchorEl, setProfilemenuAnchorEl] = useState(null);
+  const [operationState, setOperationState] = useRecoilState(
+    operationAtomWithMiddleware
+  );
+  const canEdit = useCanEdit();
+
+  const _getResponseCodes = () => {
+    return (
+      operationState?.operationResponse?.map((item) => {
+        return item?.responseCode;
+      }) ?? []
+    );
+  };
+
+  const responseCodes = useMemo(() => _getResponseCodes(), [operationState]);
+
+  const _getAvailableResponseCodes = () => {
+    const clonedAllResponse = _.cloneDeep(Constants.allResponses);
+
+    for (
+      let index = 0;
+      index < operationState?.operationResponse?.length;
+      index++
+    ) {
+      const element = operationState?.operationResponse[index];
+
+      _.remove(
+        clonedAllResponse,
+        (item) => item?.code === element?.responseCode
+      );
+    }
+
+    return clonedAllResponse;
+  };
+
+  const availableResponseCodes = useMemo(
+    () => _getAvailableResponseCodes(),
+    [operationState]
+  );
+
   const onDelete = (code) => {
-    if (code !== Constants.mandatoryResponseCode) {
+    if (code !== Constants.mandatoryResponse.code) {
       setOperationState((operationState) => {
         const clonedOperationState = _.cloneDeep(operationState);
         const itemIndex = clonedOperationState.operationResponse.findIndex(
@@ -233,78 +402,79 @@ const ResponseCodeSelection = ({ selectedCode, onChange }) => {
   };
 
   return (
-    <>
-      {getResponseCodes()?.map((code, index) => {
-        return (
-          <div
-            className={classNames(
-              "p-1 pl-2 pr-2 flex flex-row items-center cursor-pointer",
-              {
-                "rounded-l-md": index === 0,
+    <div
+      className={classNames(
+        "p-1 pl-2 pr-2 flex flex-row items-center cursor-pointer border-r-0",
+        {
+          "rounded-l-md": index === 0,
 
-                "bg-brand-primary": code === selectedCode,
-                "border-2": code !== selectedCode,
-              },
-              "border-r-0"
-            )}
+          "bg-brand-primary": code === selectedCode,
+          "border-2": code !== selectedCode,
+
+          "rounded-r-md border-r-2":
+            index === responseCodes?.length - 1 &&
+            availableResponseCodes?.length === 0,
+
+          "rounded-r-md border-r-2":
+            index === responseCodes?.length - 1 && !canEdit(),
+        }
+      )}
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        onChange(code);
+      }}
+    >
+      <p
+        className={classNames("text-overline2", {
+          "text-white": code === selectedCode,
+          "text-neutral-gray4": code !== selectedCode,
+        })}
+      >
+        {code}
+      </p>
+
+      {code !== Constants.mandatoryResponse.code && code === selectedCode && (
+        <div className='ml-1 flex flex-row items-center'>
+          <AppIcon
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
 
-              onChange(code);
+              console.log("meme");
+              setProfilemenuAnchorEl(e?.currentTarget);
             }}
           >
-            <p
-              className={classNames("text-overline2", {
-                "text-white": code === selectedCode,
-                "text-neutral-gray4": code !== selectedCode,
-              })}
+            <MoreVertIcon style={{ fontSize: "18px", color: "white" }} />
+          </AppIcon>
+
+          <Menu
+            id='edit-response-code-menu'
+            anchorEl={profileMenuAnchorEl}
+            keepMounted
+            open={Boolean(profileMenuAnchorEl)}
+            onClose={() => {
+              setProfilemenuAnchorEl(null);
+            }}
+            TransitionComponent={Fade}
+            style={{ borderRadius: "1rem", zIndex: "100" }}
+          >
+            <MenuItem
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setProfilemenuAnchorEl(null);
+
+                onDelete(code);
+              }}
             >
-              {code}
-            </p>
-
-            {code !== Constants.mandatoryResponseCode && code === selectedCode && (
-              <div
-                className='ml-1 flex flex-row items-center'
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setProfilemenuAnchorEl(e?.currentTarget);
-                }}
-              >
-                <AppIcon>
-                  <MoreVertIcon style={{ fontSize: "18px", color: "white" }} />
-                </AppIcon>
-
-                <Menu
-                  id='edit-response-code-menu'
-                  anchorEl={profileMenuAnchorEl}
-                  keepMounted
-                  open={Boolean(profileMenuAnchorEl)}
-                  onClose={() => {
-                    setProfilemenuAnchorEl(null);
-                  }}
-                  TransitionComponent={Fade}
-                  style={{ borderRadius: "1rem", zIndex: "100" }}
-                >
-                  <MenuItem
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      setProfilemenuAnchorEl(null);
-
-                      onDelete(code);
-                    }}
-                  >
-                    <p className='text-accent-red'>Delete</p>
-                  </MenuItem>
-                </Menu>
-              </div>
-            )}
-          </div>
-        );
-      })}
-    </>
+              <p className='text-accent-red'>Delete</p>
+            </MenuItem>
+          </Menu>
+        </div>
+      )}
+    </div>
   );
 };
 
