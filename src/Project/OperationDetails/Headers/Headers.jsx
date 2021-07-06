@@ -1,5 +1,5 @@
 import React, { useEffect, useCallback } from "react";
-import { useRecoilState } from "recoil";
+import { useGetRecoilValueInfo_UNSTABLE, useRecoilState } from "recoil";
 import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
 import TableCell from "@material-ui/core/TableCell";
@@ -34,6 +34,7 @@ const Headers = ({ request = true, responseCode }) => {
   const { height, width } = useWindowSize();
   const { fetch: fetchParentName } = useGetParentName();
   const { fetch: fetchFullPath } = useGetFullPath();
+  const getRecoilValueInfo = useGetRecoilValueInfo_UNSTABLE();
 
   const itemDropped = (item) => {
     if (
@@ -305,6 +306,45 @@ const Headers = ({ request = true, responseCode }) => {
     });
   };
 
+  const isNameTaken = (item, name) => {
+    const { loadable: operationAtom } = getRecoilValueInfo(
+      operationAtomWithMiddleware
+    );
+    const operationDetails = operationAtom?.contents;
+    let nameExists = false;
+
+    if (request) {
+      let foundItemIndex = operationDetails.operationRequest.headers.findIndex(
+        (x) => {
+          return x?.name === name && x?.sourceName !== item?.sourceName;
+        }
+      );
+
+      if (foundItemIndex !== -1) {
+        nameExists = true;
+      }
+    } else {
+      const responseIndex = getResponseIndex(operationDetails);
+
+      if (responseIndex !== -1) {
+        let foundItemIndex = operationDetails.operationResponse[
+          responseIndex
+        ].headers.findIndex((x) => {
+          console.log("x.name", x.name);
+          return x?.name === name && x?.sourceName !== item?.sourceName;
+        });
+
+        console.log("foundItemIndex", foundItemIndex);
+
+        if (foundItemIndex !== -1) {
+          return true;
+        }
+      }
+    }
+
+    return nameExists;
+  };
+
   const onRequiredUpdate = (item, value) => {
     setOperationDetails((operationDetails) => {
       if (request) {
@@ -420,6 +460,7 @@ const Headers = ({ request = true, responseCode }) => {
                     onNameUpdate={(item, name) => {
                       onNameUpdate(item, name);
                     }}
+                    isNameTaken={isNameTaken}
                   />
                 );
               })}
@@ -446,6 +487,7 @@ const Headers = ({ request = true, responseCode }) => {
                     onNameUpdate={(item, name) => {
                       onNameUpdate(item, name);
                     }}
+                    isNameTaken={isNameTaken}
                   />
                 );
               })}

@@ -1,5 +1,5 @@
-import React, { useRef } from "react";
-import { useSetRecoilState } from "recoil";
+import React, { useRef, useState } from "react";
+import { useGetRecoilValueInfo_UNSTABLE, useSetRecoilState } from "recoil";
 import _ from "lodash";
 import { Field, ErrorMessage, Form, Formik } from "formik";
 import { TextField } from "@material-ui/core";
@@ -18,8 +18,49 @@ import apiNameSchema from "../../../shared/schemas/apiNameSchema";
 const ChangeTableName = ({ labelItem, request, responseCode, onClose }) => {
   const formRef = useRef(null);
   const setOperationDetails = useSetRecoilState(operationAtomWithMiddleware);
+  const getRecoilValueInfo = useGetRecoilValueInfo_UNSTABLE();
+  const [error, setError] = useState(null);
+
+  const isNameAlreadyExisting = (name) => {
+    const { loadable: operationAtom } = getRecoilValueInfo(
+      operationAtomWithMiddleware
+    );
+    const operationDetails = operationAtom?.contents;
+
+    let nameExists = false;
+
+    if (request) {
+      const index = operationDetails.operationRequest.body.findIndex(
+        (x) => x?.name === name && x?.sourceName !== labelItem?.sourceName
+      );
+      if (index !== -1) {
+        nameExists = true;
+      }
+    } else {
+      const responseIndex = operationDetails?.operationResponse?.findIndex(
+        (item) => item.responseCode === responseCode
+      );
+      const responseData = operationDetails?.operationResponse[responseIndex];
+
+      const existingBodyIndex = responseData?.body?.findIndex(
+        (body) => body.name === name
+      );
+
+      if (existingBodyIndex >= 0 && responseData && responseIndex >= 0) {
+        nameExists = true;
+      }
+    }
+
+    return nameExists;
+  };
 
   const onTableNameUpdate = ({ name }) => {
+    if (isNameAlreadyExisting(name)) {
+      setError("Table/Column with this name already exists.");
+
+      return;
+    }
+
     setOperationDetails((operationDetails) => {
       if (request) {
         const index = operationDetails.operationRequest.body.findIndex(
@@ -108,6 +149,11 @@ const ChangeTableName = ({ labelItem, request, responseCode, onClose }) => {
                 variant='outlined'
                 error={touched.name && Boolean(errors.name)}
                 helperText={<ErrorMessage name='name' />}
+                onKeyUp={(event) => {
+                  if (error) {
+                    setError(null);
+                  }
+                }}
                 inputProps={{
                   style: {
                     height: "6px",
@@ -119,6 +165,10 @@ const ChangeTableName = ({ labelItem, request, responseCode, onClose }) => {
           )}
         </Formik>
       </div>
+
+      {error && (
+        <p className='text-overline2 text-accent-red m-4 mt-0'>{error}</p>
+      )}
 
       <div className='border-t-1 p-4 flex flex-row justify-end'>
         <TextButton

@@ -667,9 +667,11 @@ export const useCanEdit = () => {
 
 export const isItemSame = (item1, item2, fullPath) => {
   if (isAttribute(item1)) {
-    return item1.parentName === fullPath;
+    return item1.parentName === fullPath && item1.name === item2.name;
   } else if (isColumn(item1)) {
-    return item1.tableName === fullPath;
+    return (
+      item1.tableName === fullPath && item1.sourceName === item2.sourceName
+    );
   } else {
     return item1.name === item2.name;
   }

@@ -231,6 +231,27 @@ const PathParams = ({ request = true }) => {
     });
   };
 
+  const isNameTaken = (item, name) => {
+    const { loadable: operationAtom } = getRecoilValueInfo(
+      operationAtomWithMiddleware
+    );
+    const operationDetails = operationAtom?.contents;
+    let nameExists = false;
+
+    if (request) {
+      let foundItemIndex =
+        operationDetails.operationRequest.pathParams.findIndex((x) => {
+          return x?.name === name && x?.sourceName !== item?.sourceName;
+        });
+
+      if (foundItemIndex !== -1) {
+        nameExists = true;
+      }
+    }
+
+    return nameExists;
+  };
+
   return (
     <DropArea
       onItemDropped={(item) => {
@@ -282,6 +303,7 @@ const PathParams = ({ request = true }) => {
                       onNameUpdate={(item, name) => {
                         onNameUpdate(item, name);
                       }}
+                      isNameTaken={isNameTaken}
                     />
                   );
                 })}
@@ -302,6 +324,7 @@ const PathParams = ({ request = true }) => {
                       onRequiredUpdate={(item, value) => {
                         // onRequiredUpdate(item, value);
                       }}
+                      isNameTaken={isNameTaken}
                     />
                   );
                 })}

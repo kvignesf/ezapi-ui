@@ -1,5 +1,5 @@
 import React, { useCallback } from "react";
-import { useRecoilState } from "recoil";
+import { useGetRecoilValueInfo_UNSTABLE, useRecoilState } from "recoil";
 import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
 import TableCell from "@material-ui/core/TableCell";
@@ -33,6 +33,7 @@ const FormData = ({ request = true }) => {
   const { height, width } = useWindowSize();
   const { fetch: fetchParentName } = useGetParentName();
   const { fetch: fetchFullPath } = useGetFullPath();
+  const getRecoilValueInfo = useGetRecoilValueInfo_UNSTABLE();
 
   const itemDropped = (item) => {
     if (
@@ -232,6 +233,25 @@ const FormData = ({ request = true }) => {
     });
   };
 
+  const isNameTaken = (item, name) => {
+    const { loadable: operationAtom } = getRecoilValueInfo(
+      operationAtomWithMiddleware
+    );
+    const operationDetails = operationAtom?.contents;
+    let nameExists = false;
+
+    if (request) {
+      let foundItemIndex = operationDetails.operationRequest.formData.findIndex(
+        (x) => x?.name === name && x?.sourceName !== item?.sourceName
+      );
+
+      if (foundItemIndex !== -1) {
+        nameExists = true;
+      }
+    }
+    return nameExists;
+  };
+
   return (
     <DropArea onItemDropped={itemDropped}>
       <TableContainer
@@ -278,6 +298,9 @@ const FormData = ({ request = true }) => {
                     onNameUpdate={(item, name) => {
                       onNameUpdate(item, name);
                     }}
+                    isNameTaken={(name) => {
+                      return isNameTaken(name);
+                    }}
                   />
                 );
               })}
@@ -297,6 +320,9 @@ const FormData = ({ request = true }) => {
                       }}
                       onRequiredUpdate={(item, value) => {
                         onRequiredUpdate(item, value);
+                      }}
+                      isNameTaken={(name) => {
+                        return isNameTaken(name);
                       }}
                     />
                   );

@@ -39,6 +39,7 @@ const QueryParams = ({ request = true }) => {
   const { height, width } = useWindowSize();
   const { fetch: fetchParentName } = useGetParentName();
   const { fetch: fetchFullPath } = useGetFullPath();
+  const getRecoilValueInfo = useGetRecoilValueInfo_UNSTABLE();
 
   const itemDropped = (item) => {
     if (
@@ -213,6 +214,26 @@ const QueryParams = ({ request = true }) => {
     });
   };
 
+  const isNameTaken = (item, name) => {
+    const { loadable: operationAtom } = getRecoilValueInfo(
+      operationAtomWithMiddleware
+    );
+    const operationDetails = operationAtom?.contents;
+    let nameExists = false;
+
+    if (request) {
+      let foundItemIndex =
+        operationDetails.operationRequest.queryParams.findIndex(
+          (x) => x?.name === name && x?.sourceName !== item?.sourceName
+        );
+
+      if (foundItemIndex !== -1) {
+        nameExists = true;
+      }
+    }
+    return nameExists;
+  };
+
   const onRequiredUpdate = (item, value) => {
     setOperationDetails((operationDetails) => {
       let foundItem = operationDetails.operationRequest.queryParams.find(
@@ -284,6 +305,7 @@ const QueryParams = ({ request = true }) => {
                       onNameUpdate={(item, name) => {
                         onNameUpdate(item, name);
                       }}
+                      isNameTaken={isNameTaken}
                     />
                   );
                 })}
@@ -305,6 +327,7 @@ const QueryParams = ({ request = true }) => {
                         onRequiredUpdate={(item, value) => {
                           onRequiredUpdate(item, value);
                         }}
+                        isNameTaken={isNameTaken}
                       />
                     );
                   }

@@ -1,5 +1,9 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { useRecoilState, useSetRecoilState } from "recoil";
+import {
+  useGetRecoilValueInfo_UNSTABLE,
+  useRecoilState,
+  useSetRecoilState,
+} from "recoil";
 import { CircularProgress } from "@material-ui/core";
 import _ from "lodash";
 import debounce from "lodash.debounce";
@@ -311,6 +315,7 @@ const BodyItem = ({ request = true, responseCode, itemRef }) => {
     mutate: getTable,
   } = useGetTableData();
   const canEdit = useCanEdit();
+  const getRecoilValueInfo = useGetRecoilValueInfo_UNSTABLE();
 
   useEffect(() => {
     if (subSchemaData) {
@@ -538,6 +543,52 @@ const BodyItem = ({ request = true, responseCode, itemRef }) => {
     }
   };
 
+  const isNameTaken = (item, name) => {
+    if (canEdit()) {
+      const { loadable: operationAtom } = getRecoilValueInfo(
+        operationAtomWithMiddleware
+      );
+      const operationDetails = operationAtom?.contents;
+
+      if (request) {
+        const newOperationDetails = _.cloneDeep(operationDetails);
+
+        // Get column index
+        const columnIndex = newOperationDetails.operationRequest.body.findIndex(
+          (bodyItem) =>
+            bodyItem?.name === name && bodyItem?.sourceName !== item?.sourceName
+        );
+
+        if (columnIndex !== -1) {
+          return true;
+        }
+      } else {
+        const responseIndex = operationDetails?.operationResponse?.findIndex(
+          (item) => item.responseCode === responseCode
+        );
+
+        if (responseIndex !== -1) {
+          // Get column
+          const columnIndex = operationDetails?.operationResponse[
+            responseIndex
+          ]?.body?.findIndex(
+            (bodyItem) =>
+              bodyItem?.name === name &&
+              bodyItem?.sourceName !== item?.sourceName
+          );
+
+          if (columnIndex !== -1) {
+            return true;
+          }
+        }
+      }
+
+      return false;
+    }
+
+    return false;
+  };
+
   const renameColumnOfTable = (column, table, name) => {
     if (canEdit()) {
       setOperationDetails((operationDetails) => {
@@ -636,6 +687,72 @@ const BodyItem = ({ request = true, responseCode, itemRef }) => {
     }
   };
 
+  const isColumnNameTakenOfTable = (column, table, name) => {
+    if (canEdit()) {
+      const { loadable: operationAtom } = getRecoilValueInfo(
+        operationAtomWithMiddleware
+      );
+      const operationDetails = operationAtom?.contents;
+
+      if (request) {
+        const newOperationDetails = _.cloneDeep(operationDetails);
+
+        // Get parent table index
+        const parentTableIndex =
+          newOperationDetails.operationRequest.body.findIndex(
+            (bodyItem) =>
+              isDatabase(bodyItem) && table?.sourceName === bodyItem?.sourceName
+          );
+
+        if (parentTableIndex !== -1) {
+          // Get column
+          const columnIndex = newOperationDetails.operationRequest.body[
+            parentTableIndex
+          ]?.selectedColumns?.findIndex((columnItem) => {
+            return (
+              columnItem?.name === name &&
+              columnItem?.sourceName !== column?.sourceName
+            );
+          });
+
+          if (columnIndex !== -1) {
+            return true;
+          }
+        }
+      } else {
+        const responseIndex = operationDetails?.operationResponse?.findIndex(
+          (item) => item.responseCode === responseCode
+        );
+
+        if (responseIndex !== -1) {
+          const responseData =
+            operationDetails?.operationResponse[responseIndex];
+
+          const tableIndex = responseData?.body?.findIndex(
+            (body) => body?.sourceName === table?.sourceName
+          );
+
+          if (tableIndex !== -1) {
+            // Get column
+            const columnIndex = responseData.body[
+              tableIndex
+            ]?.selectedColumns?.findIndex(
+              (columnItem) =>
+                columnItem?.name === name &&
+                columnItem?.sourceName !== column?.sourceName
+            );
+
+            if (columnIndex !== -1) {
+              return true;
+            }
+          }
+        }
+      }
+    }
+
+    return false;
+  };
+
   const getSchemaData = (schemaRef) => {
     if (!isLoadingSubSchema && _.isEmpty(schemaRef.data)) {
       getSubSchema({
@@ -683,6 +800,7 @@ const BodyItem = ({ request = true, responseCode, itemRef }) => {
         columnLabelItem={bodyItem}
         deleteColumn={deleteItem}
         renameColumn={renameColumn}
+        isNameTaken={isNameTaken}
         request={request}
         responseCode={responseCode}
       />
@@ -787,6 +905,9 @@ const BodyItem = ({ request = true, responseCode, itemRef }) => {
                 renameColumnOfTable(column, bodyItem, name)
               }
               request={request}
+              isNameTaken={(column, value) => {
+                return isColumnNameTakenOfTable(column, bodyItem, value);
+              }}
               responseCode={responseCode}
             />
           );
@@ -1224,6 +1345,7 @@ const ColumnLabel = ({
   responseCode,
   deleteColumn,
   renameColumn,
+  isNameTaken,
 }) => {
   const [optionsMenuAnchorEl, setOptionsMenuAnchorEl] = useState(false);
   const [dialog, setDialog] = useState({
@@ -1293,6 +1415,7 @@ const ColumnLabel = ({
 
                     handleCloseDialog();
                   }}
+                  isNameTaken={isNameTaken}
                   onClose={handleCloseDialog}
                 />
               )}

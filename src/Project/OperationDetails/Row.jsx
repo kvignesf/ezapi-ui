@@ -28,6 +28,7 @@ const Row = ({
   onPossibleValuesUpdate,
   onRequiredUpdate,
   onNameUpdate,
+  isNameTaken,
 }) => {
   const [isHovering, setHovering] = useState(false);
   const [optionsMenuAnchorEl, setOptionsMenuAnchorEl] = useState(false);
@@ -92,6 +93,7 @@ const Row = ({
               handleCloseDialog();
               onNameUpdate(column, name);
             }}
+            isNameTaken={isNameTaken}
             onClose={handleCloseDialog}
           />
         )}
