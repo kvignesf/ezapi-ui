@@ -31,6 +31,7 @@ export const endpoint = Object.freeze({
   verifyProject: "/verify",
   downloadSpec: "/download_spec",
   downloadArtifact: "/download_apiops",
+  downloadCodegen: "/download_codegen",
 });
 
 const client = axios.create({

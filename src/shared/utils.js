@@ -621,7 +621,7 @@ export const operationAtomWithMiddleware = selector({
 });
 
 export const canEdit = (role) => {
-  return role === "admin";
+  return role?.toLowerCase() === "admin";
 };
 
 export const useCanEdit = () => {

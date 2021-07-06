@@ -156,3 +156,39 @@ export const useDownloadArtifacts = () => {
 
   return mutation;
 };
+
+const downloadCodegen = async ({ projectId }) => {
+  try {
+    const osName = getOs();
+
+    const { data } = await client.post(
+      endpoint.downloadCodegen,
+      {
+        projectId,
+      },
+      {
+        timeout: 480000,
+      }
+    );
+    return data;
+  } catch (error) {
+    throw getApiError(error);
+  }
+};
+
+export const useDownloadCodegen = () => {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation(downloadCodegen, {
+    onSuccess: (data) => {
+      if (data?.downloadUrl && !_.isEmpty(data?.downloadUrl)) {
+        const link = data?.downloadUrl;
+
+        const filename = link.substring(link.lastIndexOf("/") + 1);
+        saveAs(link, filename);
+      }
+    },
+  });
+
+  return mutation;
+};

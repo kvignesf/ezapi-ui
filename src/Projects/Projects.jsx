@@ -10,6 +10,7 @@ import MenuItem from "@material-ui/core/MenuItem";
 import Fade from "@material-ui/core/Fade";
 import { CircularProgress, Dialog, Tooltip } from "@material-ui/core";
 import { useHistory } from "react-router";
+import CodeIcon from "@material-ui/icons/Code";
 
 import Dashboard from "../Dashboard";
 import AppIcon from "../shared/components/AppIcon";
@@ -22,6 +23,7 @@ import RenameProject from "./RenameProject/RenameProject";
 import DeleteProject from "./DeleteProject/DeleteProject";
 import {
   useDownloadArtifacts,
+  useDownloadCodegen,
   useDownloadSpecs,
   useGetProjects,
 } from "./projectQueries";
@@ -101,6 +103,8 @@ const ProjectRow = ({
     useDownloadSpecs();
   const { isLoading: isDownloadingArtifacts, mutate: downloadArtifacts } =
     useDownloadArtifacts();
+  const { isLoading: isDownloadingCodegen, mutate: downloadCodegen } =
+    useDownloadCodegen();
 
   const handleOnOptionsClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -112,6 +116,10 @@ const ProjectRow = ({
 
   const onDownloadArtifact = () => {
     downloadArtifacts({ projectId: project?.projectId });
+  };
+
+  const onDownloadCodegen = () => {
+    downloadCodegen({ projectId: project?.projectId });
   };
 
   return (
@@ -142,7 +150,28 @@ const ProjectRow = ({
       <td>
         <p className='text-overline2'>{project?.status}</p>
       </td>
-      <td>
+      <td align='center'>
+        {/* Codegen download */}
+        {project?.codegen && !isDownloadingCodegen && (
+          <AppIcon
+            onClick={(e) => {
+              e?.preventDefault();
+              e?.stopPropagation();
+
+              onDownloadCodegen();
+            }}
+          >
+            <Tooltip title='Download Codegen'>
+              <CodeIcon />
+            </Tooltip>
+          </AppIcon>
+        )}
+
+        {isDownloadingCodegen && (
+          <CircularProgress style={{ width: "24px", height: "24px" }} />
+        )}
+      </td>
+      <td align='center'>
         {/* Spec download */}
         {project?.status?.toLowerCase() === "complete" &&
           project?.publishStatus?.SpecGeneration?.success &&
@@ -364,6 +393,7 @@ const Content = ({ showCreateProjectDialog }) => {
             <th className='w-1/4'>LAST ACTIVITY</th>
             <th className='w-1/5'>STATUS</th>
             <th className=''></th>
+            <th className='w-1/5'></th>
             <th className='w-1/5'></th>
             <th className='rounded-tr-md rounded-br-md'>
               {isFetchingProjectsBg && <CircularProgress size='20px' />}
