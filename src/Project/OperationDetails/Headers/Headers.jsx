@@ -330,11 +330,8 @@ const Headers = ({ request = true, responseCode }) => {
         let foundItemIndex = operationDetails.operationResponse[
           responseIndex
         ].headers.findIndex((x) => {
-          console.log("x.name", x.name);
           return x?.name === name && x?.sourceName !== item?.sourceName;
         });
-
-        console.log("foundItemIndex", foundItemIndex);
 
         if (foundItemIndex !== -1) {
           return true;
