@@ -20,6 +20,8 @@ import {
   isColumn,
   useGetParentName,
   operationAtomWithMiddleware,
+  useGetFullPath,
+  isItemSame,
 } from "../../../shared/utils";
 import DragAndDropMessage from "../../../shared/components/DragAndDropMessage";
 import Row from "../Row";
@@ -33,6 +35,7 @@ const PathParams = ({ request = true }) => {
   const { height, width } = useWindowSize();
   const getRecoilValueInfo = useGetRecoilValueInfo_UNSTABLE();
   const { fetch: fetchParentName } = useGetParentName();
+  const { fetch: fetchFullPath } = useGetFullPath();
 
   const itemDropped = (item) => {
     if (
@@ -42,10 +45,12 @@ const PathParams = ({ request = true }) => {
       !isObject(item)
     ) {
       setOperationDetails((operationDetails) => {
+        const path = fetchFullPath(item);
+
         if (request) {
           if (
-            !operationDetails.operationRequest.pathParams.find(
-              (x) => x.name === item.name
+            !operationDetails.operationRequest.pathParams.find((x) =>
+              isItemSame(x, item, path)
             )
           ) {
             const newOperationDetails = _.cloneDeep(operationDetails);
@@ -53,6 +58,7 @@ const PathParams = ({ request = true }) => {
 
             if (isAttribute(item)) {
               clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
+              clonedItem.parentName = path ?? "/";
             } else if (isColumn(item)) {
               clonedItem.tableName = fetchParentName(clonedItem) ?? "global";
             }
@@ -72,6 +78,7 @@ const PathParams = ({ request = true }) => {
 
             if (isAttribute(item)) {
               clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
+              clonedItem.parentName = path ?? "/";
             } else if (isColumn(item)) {
               clonedItem.tableName = fetchParentName(clonedItem) ?? "global";
             }
@@ -311,7 +318,7 @@ const PathParams = ({ request = true }) => {
 
       {!request && _.isEmpty(operationDetails?.operationResponse?.pathParams) && (
         <div className='border-dashed p-3 bg-neutral-gray7 rounded-md border-2 m-2 flex flex-row justify-center'>
-          <DragAndDropMessage isAttributeAllowed />
+          <DragAndDropMessage isColumnAllowed />
         </div>
       )}
     </DropArea>

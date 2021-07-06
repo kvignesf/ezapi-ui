@@ -3,18 +3,36 @@ import React from "react";
 const DragAndDropMessage = ({
   isAttributeAllowed = false,
   isSchemaAllowed = false,
+  isTableAllowed = false,
+  isColumnAllowed = false,
 }) => {
-  return (
-    <p className='text-overline3'>
-      <span>Drag and Drop </span>
-      {isSchemaAllowed && <span className='text-brand-primary'>Schema </span>}
-      {isAttributeAllowed && isSchemaAllowed && <span>and </span>}
-      {isAttributeAllowed && (
-        <span className='text-brand-secondary'>Attribute </span>
-      )}
-      here
-    </p>
-  );
+  if (isAttributeAllowed || isSchemaAllowed) {
+    return (
+      <p className='text-overline3'>
+        <span>Drag and Drop </span>
+        {isSchemaAllowed && <span className='text-brand-primary'>Schema </span>}
+        {isAttributeAllowed && isSchemaAllowed && <span>and </span>}
+        {isAttributeAllowed && (
+          <span className='text-brand-secondary'>Attribute </span>
+        )}
+        here
+      </p>
+    );
+  }
+
+  if (isTableAllowed || isColumnAllowed) {
+    return (
+      <p className='text-overline3'>
+        <span>Drag and Drop </span>
+        {isSchemaAllowed && <span className='text-brand-primary'>Table </span>}
+        {isAttributeAllowed && isSchemaAllowed && <span>and </span>}
+        {isAttributeAllowed && (
+          <span className='text-brand-secondary'>Column </span>
+        )}
+        here
+      </p>
+    );
+  }
 };
 
 export default DragAndDropMessage;

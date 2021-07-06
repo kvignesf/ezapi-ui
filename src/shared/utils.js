@@ -544,6 +544,39 @@ export const useGetParentName = () => {
   };
 };
 
+export const useGetFullPath = () => {
+  const getRecoilValueInfo = useGetRecoilValueInfo_UNSTABLE();
+  const fetch = (object) => {
+    if (isAttribute(object)) {
+      const { loadable: schemaAtomLoadable } = getRecoilValueInfo(schemaAtom);
+      const schemaDetails = schemaAtomLoadable?.contents;
+
+      if (
+        schemaDetails &&
+        schemaDetails?.selected &&
+        !_.isEmpty(schemaDetails?.selected)
+      ) {
+        const path = schemaDetails?.selected?.reduce((acc, curr) => {
+          if (_.isEmpty(acc)) {
+            return "/" + curr?.name;
+          }
+          return acc + "/" + curr?.name;
+        }, "");
+
+        return path;
+      }
+
+      return null;
+    } else if (isColumn(object)) {
+      return object?.tableName;
+    }
+  };
+
+  return {
+    fetch,
+  };
+};
+
 /**
  * Returns the OS name which is running this webapp.
  *
@@ -630,4 +663,14 @@ export const useCanEdit = () => {
   return () => {
     return canEdit(role);
   };
+};
+
+export const isItemSame = (item1, item2, fullPath) => {
+  if (isAttribute(item1)) {
+    return item1.parentName === fullPath;
+  } else if (isColumn(item1)) {
+    return item1.tableName === fullPath;
+  } else {
+    return item1.name === item2.name;
+  }
 };

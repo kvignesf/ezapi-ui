@@ -35,6 +35,8 @@ import {
   useGetParentName,
   operationAtomWithMiddleware,
   useCanEdit,
+  useGetFullPath,
+  isItemSame,
 } from "../../../shared/utils";
 import AppIcon from "../../../shared/components/AppIcon";
 import AttributeIcon from "../../../static/images/attribute.svg";
@@ -53,8 +55,9 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
     operationAtomWithMiddleware
   );
   const { height, width } = useWindowSize();
-  const { fetch: fetchParentName } = useGetParentName();
   const { getExandedIds, setExpandedIds } = useExpandedIds([]);
+  const { fetch: fetchParentName } = useGetParentName();
+  const { fetch: fetchFullPath } = useGetFullPath();
 
   const itemDropped = (item) => {
     if (
@@ -66,16 +69,23 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
       !isArray(item)
     ) {
       setOperationDetails((operationDetails) => {
+        const path = fetchFullPath(item);
+
         if (request) {
           if (
-            !operationDetails.operationRequest.body.find(
-              (x) => x.name === item.name
+            !operationDetails.operationRequest.body.find((x) =>
+              isItemSame(x, item, path)
             )
           ) {
             const newOperationDetails = _.cloneDeep(operationDetails);
             const clonedItem = _.cloneDeep(item);
 
-            clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
+            if (isAttribute(item)) {
+              clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
+              clonedItem.parentName = path ?? "/";
+            } else if (isColumn(item)) {
+              clonedItem.tableName = fetchParentName(clonedItem) ?? "global";
+            }
 
             newOperationDetails.operationRequest.body.push(clonedItem);
 
@@ -85,8 +95,8 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
           const responseData = getResponseData(operationDetails);
           const responseIndex = getResponseIndex(operationDetails);
 
-          const existingBodyIndex = responseData?.body?.findIndex(
-            (body) => body.name === item.name
+          const existingBodyIndex = responseData?.body?.findIndex((x) =>
+            isItemSame(x, item, path)
           );
 
           if (existingBodyIndex === -1 && responseData && responseIndex >= 0) {
@@ -94,7 +104,12 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
             const clonedResponseData = _.cloneDeep(responseData);
             const clonedItem = _.cloneDeep(item);
 
-            clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
+            if (isAttribute(item)) {
+              clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
+              clonedItem.parentName = path ?? "/";
+            } else if (isColumn(item)) {
+              clonedItem.tableName = fetchParentName(clonedItem) ?? "global";
+            }
 
             clonedResponseData.body.push(clonedItem);
 
@@ -261,13 +276,13 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
 
         {request && _.isEmpty(operationData?.operationRequest?.body) && (
           <div className='border-dashed p-3 bg-neutral-gray7 rounded-md border-2 m-2 flex flex-row justify-center'>
-            <DragAndDropMessage isSchemaAllowed />
+            <DragAndDropMessage isSchemaAllowed isAttributeAllowed />
           </div>
         )}
 
         {!request && _.isEmpty(getResponseData(operationData)?.body) && (
           <div className='border-dashed p-3 bg-neutral-gray7 rounded-md border-2 m-2 flex flex-row justify-center'>
-            <DragAndDropMessage isSchemaAllowed />
+            <DragAndDropMessage isTableAllowed isColumnAllowed />
           </div>
         )}
       </div>

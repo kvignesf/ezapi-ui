@@ -20,6 +20,9 @@ import {
   useParentSchemaNameFetcher,
   isColumn,
   operationAtomWithMiddleware,
+  useGetParentName,
+  useGetFullPath,
+  isItemSame,
 } from "../../../shared/utils";
 import DragAndDropMessage from "../../../shared/components/DragAndDropMessage";
 import Row from "../Row";
@@ -29,6 +32,8 @@ const Headers = ({ request = true, responseCode }) => {
     operationAtomWithMiddleware
   );
   const { height, width } = useWindowSize();
+  const { fetch: fetchParentName } = useGetParentName();
+  const { fetch: fetchFullPath } = useGetFullPath();
 
   const itemDropped = (item) => {
     if (
@@ -38,14 +43,23 @@ const Headers = ({ request = true, responseCode }) => {
       !isObject(item)
     ) {
       setOperationDetails((operationDetails) => {
+        const path = fetchFullPath(item);
+
         if (request) {
           if (
-            !operationDetails.operationRequest.headers.find(
-              (x) => x.name === item.name
+            !operationDetails.operationRequest.headers.find((x) =>
+              isItemSame(x, item, path)
             )
           ) {
             const newOperationDetails = _.cloneDeep(operationDetails);
             const clonedItem = _.cloneDeep(item);
+
+            if (isAttribute(item)) {
+              clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
+              clonedItem.parentName = path ?? "/";
+            } else if (isColumn(item)) {
+              clonedItem.tableName = fetchParentName(clonedItem) ?? "global";
+            }
 
             newOperationDetails.operationRequest.headers.push(clonedItem);
 
@@ -56,8 +70,8 @@ const Headers = ({ request = true, responseCode }) => {
           const responseData = getResponseData(operationDetails);
           const responseIndex = getResponseIndex(operationDetails);
 
-          const existingHeaderIndex = responseData?.headers?.findIndex(
-            (header) => header.name === item.name
+          const existingHeaderIndex = responseData?.headers?.findIndex((x) =>
+            isItemSame(x, item, path)
           );
 
           if (
@@ -68,6 +82,13 @@ const Headers = ({ request = true, responseCode }) => {
             const clonedOperationDetails = _.cloneDeep(operationDetails);
             const clonedResponseData = _.cloneDeep(responseData);
             const clonedItem = _.cloneDeep(item);
+
+            if (isAttribute(item)) {
+              clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
+              clonedItem.parentName = path ?? "/";
+            } else if (isColumn(item)) {
+              clonedItem.tableName = fetchParentName(clonedItem) ?? "global";
+            }
 
             clonedResponseData.headers.push(clonedItem);
 
@@ -441,7 +462,7 @@ const Headers = ({ request = true, responseCode }) => {
 
       {!request && _.isEmpty(getResponseData(operationData)?.headers) && (
         <div className='border-dashed p-3 bg-neutral-gray7 rounded-md border-2 m-2 flex flex-row justify-center'>
-          <DragAndDropMessage isAttributeAllowed />
+          <DragAndDropMessage isColumnAllowed />
         </div>
       )}
     </DropArea>

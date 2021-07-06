@@ -19,6 +19,9 @@ import {
   isObject,
   isColumn,
   operationAtomWithMiddleware,
+  useGetFullPath,
+  useGetParentName,
+  isItemSame,
 } from "../../../shared/utils";
 import DragAndDropMessage from "../../../shared/components/DragAndDropMessage";
 import Row from "../Row";
@@ -28,6 +31,8 @@ const FormData = ({ request = true }) => {
     operationAtomWithMiddleware
   );
   const { height, width } = useWindowSize();
+  const { fetch: fetchParentName } = useGetParentName();
+  const { fetch: fetchFullPath } = useGetFullPath();
 
   const itemDropped = (item) => {
     if (
@@ -37,14 +42,23 @@ const FormData = ({ request = true }) => {
       !isObject(item)
     ) {
       setOperationDetails((operationDetails) => {
+        const path = fetchFullPath(item);
+
         if (request) {
           if (
-            !operationDetails.operationRequest.formData.find(
-              (x) => x.name === item.name
+            !operationDetails.operationRequest.formData.find((x) =>
+              isItemSame(x, item, path)
             )
           ) {
             const newOperationDetails = _.cloneDeep(operationDetails);
             const clonedItem = _.cloneDeep(item);
+
+            if (isAttribute(item)) {
+              clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
+              clonedItem.parentName = path ?? "/";
+            } else if (isColumn(item)) {
+              clonedItem.tableName = fetchParentName(clonedItem) ?? "global";
+            }
 
             newOperationDetails.operationRequest.formData.push(clonedItem);
 
@@ -53,12 +67,19 @@ const FormData = ({ request = true }) => {
           return operationDetails;
         } else {
           if (
-            !operationDetails.operationResponse.formData.find(
-              (x) => x.name === item.name
+            !operationDetails.operationResponse.formData.find((x) =>
+              isItemSame(x, item, path)
             )
           ) {
             const newOperationDetails = _.cloneDeep(operationDetails);
             const clonedItem = _.cloneDeep(item);
+
+            if (isAttribute(item)) {
+              clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
+              clonedItem.parentName = path ?? "/";
+            } else if (isColumn(item)) {
+              clonedItem.tableName = fetchParentName(clonedItem) ?? "global";
+            }
 
             newOperationDetails.operationResponse.formData.push(clonedItem);
 
@@ -293,7 +314,7 @@ const FormData = ({ request = true }) => {
 
       {!request && _.isEmpty(operationDetails?.operationResponse?.formData) && (
         <div className='border-dashed p-3 bg-neutral-gray7 rounded-md border-2 m-2 flex flex-row justify-center'>
-          <DragAndDropMessage isAttributeAllowed />
+          <DragAndDropMessage isColumnAllowed />
         </div>
       )}
     </DropArea>

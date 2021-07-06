@@ -23,6 +23,9 @@ import {
   useParentSchemaNameFetcher,
   isColumn,
   operationAtomWithMiddleware,
+  useGetParentName,
+  useGetFullPath,
+  isItemSame,
 } from "../../../shared/utils";
 import AppIcon from "../../../shared/components/AppIcon";
 import DragAndDropMessage from "../../../shared/components/DragAndDropMessage";
@@ -34,6 +37,8 @@ const QueryParams = ({ request = true }) => {
     operationAtomWithMiddleware
   );
   const { height, width } = useWindowSize();
+  const { fetch: fetchParentName } = useGetParentName();
+  const { fetch: fetchFullPath } = useGetFullPath();
 
   const itemDropped = (item) => {
     if (
@@ -43,14 +48,23 @@ const QueryParams = ({ request = true }) => {
       !isObject(item)
     ) {
       setOperationDetails((operationDetails) => {
+        const path = fetchFullPath(item);
+
         if (request) {
           if (
-            !operationDetails.operationRequest.queryParams.find(
-              (x) => x.name === item.name
+            !operationDetails.operationRequest.queryParams.find((x) =>
+              isItemSame(x, item, path)
             )
           ) {
             const newOperationDetails = _.cloneDeep(operationDetails);
             const clonedItem = _.cloneDeep(item);
+
+            if (isAttribute(item)) {
+              clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
+              clonedItem.parentName = path ?? "/";
+            } else if (isColumn(item)) {
+              clonedItem.tableName = fetchParentName(clonedItem) ?? "global";
+            }
 
             newOperationDetails.operationRequest.queryParams.push(clonedItem);
 
@@ -58,12 +72,19 @@ const QueryParams = ({ request = true }) => {
           }
         } else {
           if (
-            !operationDetails.operationResponse.queryParams.find(
-              (x) => x.name === item.name
+            !operationDetails.operationResponse.queryParams.find((x) =>
+              isItemSame(x, item, path)
             )
           ) {
             const newOperationDetails = _.cloneDeep(operationDetails);
             const clonedItem = _.cloneDeep(item);
+
+            if (isAttribute(item)) {
+              clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
+              clonedItem.parentName = path ?? "/";
+            } else if (isColumn(item)) {
+              clonedItem.tableName = fetchParentName(clonedItem) ?? "global";
+            }
 
             newOperationDetails.operationResponse.queryParams.push(clonedItem);
 
@@ -301,7 +322,7 @@ const QueryParams = ({ request = true }) => {
 
       {!request && _.isEmpty(operationDetails?.operationResponse?.queryParams) && (
         <div className='border-dashed p-3 bg-neutral-gray7 rounded-md border-2 m-2 flex flex-row justify-center'>
-          <DragAndDropMessage isAttributeAllowed />
+          <DragAndDropMessage isColumnAllowed />
         </div>
       )}
     </DropArea>
