@@ -109,6 +109,7 @@ const Project = () => {
   useEffect(() => {
     if (canEdit(userRole)) {
       const interval = setInterval(() => {
+        console.log("checking");
         const { loadable: operationAtomLoadable } = getRecoilValueInfo(
           operationAtomWithMiddleware
         );
@@ -307,7 +308,7 @@ const Project = () => {
 
           {isProjectHavingErrors() && (
             <ProjectVerificationErrors
-              errors={verifyProjectData?.response}
+              response={verifyProjectData?.response}
               onClose={resetSubmitProjectMutation}
             />
           )}

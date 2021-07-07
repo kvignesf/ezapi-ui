@@ -61,49 +61,49 @@ const OperationDetails = ({
     }
   }, [operationState?.operationIndex]);
 
-  useEffect(() => {
-    if (getOperationMutation?.data?.getResponseApiData) {
-      const operationData = getOperationMutation?.data?.getResponseApiData;
+  // useEffect(() => {
+  //   if (getOperationMutation?.data?.getResponseApiData) {
+  //     const operationData = getOperationMutation?.data?.getResponseApiData;
 
-      setOperationState((operationState) => {
-        const clonedOperationState = _.cloneDeep(operationState);
-        let parsedOperationResponse = parseGetOperationResponseResponse(
-          operationData?.responseBody
-        );
+  //     setOperationState((operationState) => {
+  //       const clonedOperationState = _.cloneDeep(operationState);
+  //       let parsedOperationResponse = parseGetOperationResponseResponse(
+  //         operationData?.responseBody
+  //       );
 
-        if (!parsedOperationResponse || _.isEmpty(parsedOperationResponse)) {
-          parsedOperationResponse = [
-            {
-              responseCode: Constants.mandatoryResponseCode,
-              headers: [],
-              body: [],
-            },
-          ];
-        }
+  //       if (!parsedOperationResponse || _.isEmpty(parsedOperationResponse)) {
+  //         parsedOperationResponse = [
+  //           {
+  //             responseCode: Constants.mandatoryResponseCode,
+  //             headers: [],
+  //             body: [],
+  //           },
+  //         ];
+  //       }
 
-        clonedOperationState.operationResponse = parsedOperationResponse;
+  //       clonedOperationState.operationResponse = parsedOperationResponse;
 
-        return clonedOperationState;
-      });
-    }
-  }, [getOperationMutation?.data?.getResponseApiData]);
+  //       return clonedOperationState;
+  //     });
+  //   }
+  // }, [getOperationMutation?.data?.getResponseApiData]);
 
-  useEffect(() => {
-    if (getOperationMutation?.data?.getRequestApiData) {
-      const operationData = getOperationMutation?.data?.getRequestApiData;
+  // useEffect(() => {
+  //   if (getOperationMutation?.data?.getRequestApiData) {
+  //     const operationData = getOperationMutation?.data?.getRequestApiData;
 
-      setOperationState((operationState) => {
-        const clonedOperationState = _.cloneDeep(operationState);
-        const parsedOperationRequest = parseGetOperationRequestResponse(
-          operationData?.requestBody
-        );
+  //     setOperationState((operationState) => {
+  //       const clonedOperationState = _.cloneDeep(operationState);
+  //       const parsedOperationRequest = parseGetOperationRequestResponse(
+  //         operationData?.requestBody
+  //       );
 
-        clonedOperationState.operationRequest = parsedOperationRequest;
+  //       clonedOperationState.operationRequest = parsedOperationRequest;
 
-        return clonedOperationState;
-      });
-    }
-  }, [getOperationMutation?.data?.getRequestApiData]);
+  //       return clonedOperationState;
+  //     });
+  //   }
+  // }, [getOperationMutation?.data?.getRequestApiData]);
 
   if (getOperationMutation?.isLoading) {
     return (

@@ -17,6 +17,7 @@ import {
   isNoMatch,
   isPartialMatch,
   isSchema,
+  useCanEdit,
 } from "../../shared/utils";
 import {
   useSaveAttrRecommendations,
@@ -77,6 +78,7 @@ const AttributeDetails = ({ attribute, onClose }) => {
     mutate: saveAttrDetails,
     reset: resetSaveAttrDetails,
   } = useSaveAttrRecommendations();
+  const canEdit = useCanEdit();
 
   useEffect(() => {
     fetchTables({ projectId });
@@ -121,15 +123,17 @@ const AttributeDetails = ({ attribute, onClose }) => {
   };
 
   const saveAttributeData = (selectedTable, selectedAttribute) => {
-    saveAttrDetails({
-      projectId,
-      schema: getParentSchema()?.name,
-      schemaAttribute: attribute?.name,
-      level: attributeData?.level,
-      path: attributeData?.path,
-      tableName: selectedTable ?? table?.table,
-      tableAttribute: selectedAttribute ?? column?.name,
-    });
+    if (canEdit()) {
+      saveAttrDetails({
+        projectId,
+        schema: getParentSchema()?.name,
+        schemaAttribute: attribute?.name,
+        level: attributeData?.level,
+        path: attributeData?.path,
+        tableName: selectedTable ?? table?.table,
+        tableAttribute: selectedAttribute ?? column?.name,
+      });
+    }
   };
 
   const getColumns = (tableName) => {
@@ -202,6 +206,7 @@ const AttributeDetails = ({ attribute, onClose }) => {
                       labelId='demo-simple-select-label'
                       id='table-select'
                       value={table}
+                      disabled={!canEdit()}
                       variant='outlined'
                       onChange={({ target: { value } }) => {
                         resetSaveAttrDetails();
@@ -226,6 +231,7 @@ const AttributeDetails = ({ attribute, onClose }) => {
                       id='column-select'
                       value={column}
                       variant='outlined'
+                      disabled={!canEdit()}
                       onChange={({ target: { value } }) => {
                         resetSaveAttrDetails();
                         setColumn(value);
@@ -306,7 +312,7 @@ const AttributeDetails = ({ attribute, onClose }) => {
                                   Applied
                                 </p>
                               </div>
-                            ) : (
+                            ) : canEdit() ? (
                               <div
                                 className='bg-brand-secondary p-1 px-3 rounded-sm cursor-pointer hover:opacity-90'
                                 onClick={(e) => {
@@ -323,7 +329,7 @@ const AttributeDetails = ({ attribute, onClose }) => {
                                   Apply
                                 </p>
                               </div>
-                            )}
+                            ) : null}
                           </div>
                         );
                       })}
@@ -384,16 +390,18 @@ const AttributeDetails = ({ attribute, onClose }) => {
         >
           Cancel
         </TextButton>
-        <PrimaryButton
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
+        {canEdit() && (
+          <PrimaryButton
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
 
-            saveAttributeData(table, column);
-          }}
-        >
-          Save
-        </PrimaryButton>
+              saveAttributeData(table, column);
+            }}
+          >
+            Save
+          </PrimaryButton>
+        )}
       </div>
     </div>
   );

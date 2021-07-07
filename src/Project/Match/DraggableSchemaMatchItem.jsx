@@ -41,18 +41,16 @@ const DraggableSchemaMatchItem = ({ index, item, ...rest }) => {
   const canEdit = useCanEdit();
 
   const showDetailsDialog = () => {
-    if (canEdit()) {
-      if (isSchema(item)) {
-        setDialog({
-          show: true,
-          type: "show-schema-details",
-        });
-      } else if (isAttribute(item)) {
-        setDialog({
-          show: true,
-          type: "show-attribute-details",
-        });
-      }
+    if (isSchema(item)) {
+      setDialog({
+        show: true,
+        type: "show-schema-details",
+      });
+    } else if (isAttribute(item)) {
+      setDialog({
+        show: true,
+        type: "show-attribute-details",
+      });
     }
   };
 
@@ -66,10 +64,10 @@ const DraggableSchemaMatchItem = ({ index, item, ...rest }) => {
   return (
     <>
       <Drawer anchor={"right"} open={dialog?.show} onClose={handleCloseDialog}>
-        {dialog?.type === "show-attribute-details" && canEdit() && (
+        {dialog?.type === "show-attribute-details" && (
           <AttributeDetails attribute={item} onClose={handleCloseDialog} />
         )}
-        {dialog?.type === "show-schema-details" && canEdit() && (
+        {dialog?.type === "show-schema-details" && (
           <SchemaDetails schema={item} onClose={handleCloseDialog} />
         )}
       </Drawer>
@@ -118,8 +116,7 @@ const DraggableSchemaMatchItem = ({ index, item, ...rest }) => {
             "bg-brand-green": isFullMatch(item),
             "bg-score-yellow": isPartialMatch(item),
             "bg-score-red": isNoMatch(item),
-            "cursor-pointer":
-              (isAttribute(item) || isSchema(item)) && canEdit(),
+            "cursor-pointer": isAttribute(item) || isSchema(item),
           })}
           onClick={(e) => {
             e.preventDefault();

@@ -25,7 +25,7 @@ import {
   useGetSchemaRecommendations,
   useSaveSchemaRecommendations,
 } from "./schemaRecommendationQuery";
-import { isFullMatch } from "../../shared/utils";
+import { isFullMatch, useCanEdit } from "../../shared/utils";
 
 const SchemaDetails = ({ schema, onClose }) => {
   const history = useHistory();
@@ -49,6 +49,7 @@ const SchemaDetails = ({ schema, onClose }) => {
     mutate: saveSchemaMatchData,
     reset: resetSaveSchemaMutation,
   } = useSaveSchemaRecommendations();
+  const canEdit = useCanEdit();
 
   useEffect(() => {
     if (schema && schema?.name) {
@@ -83,24 +84,26 @@ const SchemaDetails = ({ schema, onClose }) => {
   };
 
   const saveSchema = () => {
-    const attributesWithOverrides = schemaData
-      ?.filter(
-        (attribute) =>
-          attribute?.overridenMatch && !_.isEmpty(attribute?.overridenMatch)
-      )
-      ?.map((overridenAttribute) => {
-        const clonedOverridenAttribute = _.cloneDeep(overridenAttribute);
+    if (canEdit()) {
+      const attributesWithOverrides = schemaData
+        ?.filter(
+          (attribute) =>
+            attribute?.overridenMatch && !_.isEmpty(attribute?.overridenMatch)
+        )
+        ?.map((overridenAttribute) => {
+          const clonedOverridenAttribute = _.cloneDeep(overridenAttribute);
 
-        delete clonedOverridenAttribute["recommendations"];
+          delete clonedOverridenAttribute["recommendations"];
 
-        return clonedOverridenAttribute;
+          return clonedOverridenAttribute;
+        });
+
+      saveSchemaMatchData({
+        projectId,
+        schema: schema?.name,
+        attributesWithOverrides: attributesWithOverrides ?? [],
       });
-
-    saveSchemaMatchData({
-      projectId,
-      schema: schema?.name,
-      attributesWithOverrides: attributesWithOverrides ?? [],
-    });
+    }
   };
 
   if (isSavingSchemaSuccess) {
@@ -215,16 +218,18 @@ const SchemaDetails = ({ schema, onClose }) => {
         >
           Cancel
         </TextButton>
-        <PrimaryButton
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
+        {canEdit() && (
+          <PrimaryButton
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
 
-            saveSchema();
-          }}
-        >
-          Save
-        </PrimaryButton>
+              saveSchema();
+            }}
+          >
+            Save
+          </PrimaryButton>
+        )}
       </div>
     </div>
   );
@@ -237,6 +242,7 @@ const SchemaDetailsRow = ({
 }) => {
   const [table, setTable] = useState(null); // table name
   const [column, setColumn] = useState(null); // column name
+  const canEdit = useCanEdit();
 
   useEffect(() => {
     if (
@@ -343,6 +349,7 @@ const SchemaDetailsRow = ({
           id={`${attribute?.name}-table`}
           value={table}
           variant='outlined'
+          disabled={!canEdit()}
           onChange={(event) => {
             const value = event?.target?.value;
 
@@ -402,6 +409,7 @@ const SchemaDetailsRow = ({
           labelId={`${attribute?.name}-column`}
           id={`${attribute?.name}-column`}
           value={column}
+          disabled={!canEdit()}
           variant='outlined'
           onChange={({ target: { value } }) => {
             modifyColumnData(value);

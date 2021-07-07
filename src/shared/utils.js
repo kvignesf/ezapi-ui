@@ -28,9 +28,6 @@ export const isUserLoggedIn = () => {
 };
 
 export const getApiError = (error) => {
-  console.log("Error", error);
-  console.log("Error Response", error?.response);
-
   const url = error?.config?.url;
 
   if (error?.response?.status === 400) {
@@ -617,19 +614,6 @@ export const operationAtomWithMiddleware = selector({
 
     if (previousValue === defaultState) {
       // Initial data loading up
-      clonedNewValue.isModified = false;
-    } else if (
-      _.isEqual(previousValue?.operationRequest, defaultState?.operationRequest)
-    ) {
-      // Loading up request data
-      clonedNewValue.isModified = false;
-    } else if (
-      _.isEqual(
-        previousValue?.operationResponse,
-        defaultState?.operationResponse
-      )
-    ) {
-      // Loading up response data
       clonedNewValue.isModified = false;
     } else if (!clonedNewValue?.operation || !clonedNewValue?.operationIndex) {
       // Resetting atom state

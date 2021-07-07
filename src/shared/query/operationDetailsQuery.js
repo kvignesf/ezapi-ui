@@ -1,9 +1,16 @@
 import _ from "lodash";
 import { useMutation } from "react-query";
 import { useSetRecoilState, useGetRecoilValueInfo_UNSTABLE } from "recoil";
+import operationAtom from "../../Project/operationAtom";
+import Constants from "../constants";
 
 import client from "../network/client";
-import { getApiError, operationAtomWithMiddleware } from "../utils";
+import {
+  getApiError,
+  operationAtomWithMiddleware,
+  parseGetOperationRequestResponse,
+  parseGetOperationResponseResponse,
+} from "../utils";
 
 const syncOperation = async ({
   projectId,
@@ -85,8 +92,47 @@ const getOperation = async ({ projectId, resourceId, pathId, operationId }) => {
 };
 
 export const useGetOperation = () => {
+  const setOperationState = useSetRecoilState(operationAtom);
+
   const mutation = useMutation(getOperation, {
-    onSuccess: (data) => {},
+    onSuccess: (data) => {
+      if (data?.getRequestApiData) {
+        setOperationState((operationState) => {
+          const clonedOperationState = _.cloneDeep(operationState);
+          const parsedOperationRequest = parseGetOperationRequestResponse(
+            data?.getRequestApiData?.requestBody
+          );
+
+          clonedOperationState.operationRequest = parsedOperationRequest;
+
+          return clonedOperationState;
+        });
+      }
+
+      if (data?.getResponseApiData) {
+        setOperationState((operationState) => {
+          const clonedOperationState = _.cloneDeep(operationState);
+
+          let parsedOperationResponse = parseGetOperationResponseResponse(
+            data?.getResponseApiData?.responseBody
+          );
+
+          if (!parsedOperationResponse || _.isEmpty(parsedOperationResponse)) {
+            parsedOperationResponse = [
+              {
+                responseCode: Constants.mandatoryResponseCode,
+                headers: [],
+                body: [],
+              },
+            ];
+          }
+
+          clonedOperationState.operationResponse = parsedOperationResponse;
+
+          return clonedOperationState;
+        });
+      }
+    },
   });
 
   return mutation;

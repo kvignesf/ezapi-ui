@@ -881,7 +881,8 @@ const BodyItem = ({ request = true, responseCode, itemRef }) => {
 
                     <div className='flex-1'>
                       <Checkbox
-                        checked={ref?.required ?? false}
+                        // checked={ref?.required ?? false}
+                        checked={true}
                         style={{
                           color: Colors.brand.secondary,
                           padding: "0",
@@ -1058,7 +1059,8 @@ const BodySubTreeItems = ({ currentRef: some }) => {
 
                   <div className='flex-1'>
                     <Checkbox
-                      checked={ref?.required}
+                      // checked={ref?.required}
+                      checked={true}
                       style={{
                         color: Colors.brand.secondary,
                         padding: "0",
@@ -1150,7 +1152,8 @@ const AttributeLabel = ({ labelItem, deleteItem }) => {
               <div className='flex-1 pl-5'>
                 <p className='text-overline2'>
                   <Checkbox
-                    checked={labelItem?.required}
+                    // checked={labelItem?.required}
+                    checked={true}
                     style={{
                       color: Colors.brand.secondary,
                       padding: "0",
@@ -1450,7 +1453,8 @@ const ColumnLabel = ({
                 <div className='flex-1 pl-5'>
                   <p className='text-overline2'>
                     <Checkbox
-                      checked={columnLabelItem?.required}
+                      // checked={columnLabelItem?.required}
+                      checked={true}
                       style={{
                         color: Colors.brand.secondary,
                         padding: "0",

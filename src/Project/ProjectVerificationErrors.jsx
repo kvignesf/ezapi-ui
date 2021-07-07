@@ -37,10 +37,12 @@ const ProjectVerificationErrors = ({ onClose, response }) => {
           <div className='max-h-96'>
             {response?.map((responseItem) => {
               return (
-                <div>
+                <div className='mb-2'>
+                  <p className='text-overline1 mb-1'>{`/${responseItem?.resource_name}/${responseItem?.path_name}/${responseItem?.operation_name}`}</p>
+
                   {responseItem?.errors?.map((errorMessage) => {
                     return (
-                      <p className='text-overline3 mb-1'>{`- ${errorMessage}`}</p>
+                      <p className='text-overline2 mb-1 text-accent-red'>{`- ${errorMessage}`}</p>
                     );
                   })}
                 </div>

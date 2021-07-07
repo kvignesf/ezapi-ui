@@ -35,7 +35,7 @@ export const useFetchProjectDetails = (projectId, options = {}) => {
 
 const verifyProject = async ({ projectId }) => {
   try {
-    const { data } = await client.post(endpoint.projectId, {
+    const { data } = await client.post(endpoint.verifyProject, {
       projectId,
     });
     return data;
