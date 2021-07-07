@@ -109,7 +109,6 @@ const Project = () => {
   useEffect(() => {
     if (canEdit(userRole)) {
       const interval = setInterval(() => {
-        console.log("checking");
         const { loadable: operationAtomLoadable } = getRecoilValueInfo(
           operationAtomWithMiddleware
         );
@@ -316,7 +315,7 @@ const Project = () => {
           {(publishProjectData || publishProjectError) && (
             <PublishProjectMessage
               publishProjectData={publishProjectData}
-              publishProjectData={publishProjectError}
+              publishProjectError={publishProjectError}
               closeSuccessMessage={closePublishProjectSuccess}
               resetMutationState={resetSubmitProjectMutation}
               projectName={projectDetails?.projectName}

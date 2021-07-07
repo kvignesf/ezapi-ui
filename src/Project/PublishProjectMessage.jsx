@@ -11,7 +11,6 @@ const PublishProjectMessage = ({
   closeSuccessMessage,
   projectName,
 }) => {
-  console.log("publishProjectData", publishProjectData);
   return (
     <div>
       <div className='p-4 flex flex-row justify-between border-b-1'>
