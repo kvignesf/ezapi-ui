@@ -382,21 +382,23 @@ const ResponseCodeItem = ({ index, code, selectedCode, onChange }) => {
   );
 
   const onDelete = (code) => {
-    if (code !== Constants.mandatoryResponse.code) {
-      setOperationState((operationState) => {
-        const clonedOperationState = _.cloneDeep(operationState);
-        const itemIndex = clonedOperationState.operationResponse.findIndex(
-          (item) => item.responseCode === code
-        );
+    if (canEdit()) {
+      if (code !== Constants.mandatoryResponse.code) {
+        setOperationState((operationState) => {
+          const clonedOperationState = _.cloneDeep(operationState);
+          const itemIndex = clonedOperationState.operationResponse.findIndex(
+            (item) => item.responseCode === code
+          );
 
-        if (itemIndex >= 0) {
-          clonedOperationState.operationResponse.splice(itemIndex, 1);
+          if (itemIndex >= 0) {
+            clonedOperationState.operationResponse.splice(itemIndex, 1);
 
-          onChange(clonedOperationState.operationResponse[0].responseCode);
-        }
+            onChange(clonedOperationState.operationResponse[0].responseCode);
+          }
 
-        return clonedOperationState;
-      });
+          return clonedOperationState;
+        });
+      }
     }
   };
 
@@ -434,44 +436,46 @@ const ResponseCodeItem = ({ index, code, selectedCode, onChange }) => {
         {code}
       </p>
 
-      {code !== Constants.mandatoryResponse.code && code === selectedCode && (
-        <div className='ml-1 flex flex-row items-center'>
-          <AppIcon
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-
-              setProfilemenuAnchorEl(e?.currentTarget);
-            }}
-          >
-            <MoreVertIcon style={{ fontSize: "18px", color: "white" }} />
-          </AppIcon>
-
-          <Menu
-            id='edit-response-code-menu'
-            anchorEl={profileMenuAnchorEl}
-            keepMounted
-            open={Boolean(profileMenuAnchorEl)}
-            onClose={() => {
-              setProfilemenuAnchorEl(null);
-            }}
-            TransitionComponent={Fade}
-            style={{ borderRadius: "1rem", zIndex: "100" }}
-          >
-            <MenuItem
+      {code !== Constants.mandatoryResponse.code &&
+        code === selectedCode &&
+        canEdit() && (
+          <div className='ml-1 flex flex-row items-center'>
+            <AppIcon
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                setProfilemenuAnchorEl(null);
 
-                onDelete(code);
+                setProfilemenuAnchorEl(e?.currentTarget);
               }}
             >
-              <p className='text-accent-red'>Delete</p>
-            </MenuItem>
-          </Menu>
-        </div>
-      )}
+              <MoreVertIcon style={{ fontSize: "18px", color: "white" }} />
+            </AppIcon>
+
+            <Menu
+              id='edit-response-code-menu'
+              anchorEl={profileMenuAnchorEl}
+              keepMounted
+              open={Boolean(profileMenuAnchorEl)}
+              onClose={() => {
+                setProfilemenuAnchorEl(null);
+              }}
+              TransitionComponent={Fade}
+              style={{ borderRadius: "1rem", zIndex: "100" }}
+            >
+              <MenuItem
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setProfilemenuAnchorEl(null);
+
+                  onDelete(code);
+                }}
+              >
+                <p className='text-accent-red'>Delete</p>
+              </MenuItem>
+            </Menu>
+          </div>
+        )}
     </div>
   );
 };
