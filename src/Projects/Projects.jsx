@@ -152,20 +152,31 @@ const ProjectRow = ({
       </td>
       <td align='center'>
         {/* Codegen download */}
-        {project?.codegen && !isDownloadingCodegen && (
-          <AppIcon
-            onClick={(e) => {
-              e?.preventDefault();
-              e?.stopPropagation();
+        {project?.status?.toLowerCase() === "complete" &&
+          !isDownloadingCodegen && (
+            <AppIcon
+              onClick={(e) => {
+                e?.preventDefault();
+                e?.stopPropagation();
 
-              onDownloadCodegen();
-            }}
-          >
-            <Tooltip title='Download Codegen'>
-              <CodeIcon />
-            </Tooltip>
-          </AppIcon>
-        )}
+                if (project?.codegen) {
+                  onDownloadCodegen();
+                }
+              }}
+            >
+              <Tooltip
+                title={
+                  project?.codegen ? "Download Codegen" : "Preparing Codegen"
+                }
+                className={classNames({
+                  "opacity-50 cursor-default": !project?.codegen,
+                  "cursor-pointer": project?.codegen,
+                })}
+              >
+                <CodeIcon />
+              </Tooltip>
+            </AppIcon>
+          )}
 
         {isDownloadingCodegen && (
           <CircularProgress style={{ width: "24px", height: "24px" }} />
