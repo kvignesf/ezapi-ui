@@ -22,9 +22,10 @@ const NoMatch = ({ items, onItemClick }) => {
         <Scrollbar>
           <div
             style={{
-              height: !operationState?.operationIndex
-                ? `calc(100vh - 180px)`
-                : null,
+              height:
+                !operationState?.operationIndex && items?.length > 0
+                  ? `calc(100vh - 180px)`
+                  : null,
               maxHeight: operationState?.operationIndex
                 ? `calc(50vh - 150px)`
                 : null,
