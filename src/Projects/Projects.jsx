@@ -33,12 +33,19 @@ import LoaderWithMessage from "../shared/components/LoaderWithMessage";
 import { getUserId } from "../shared/storage";
 import routes, { generateRoute } from "../shared/routes";
 import Logo from "../static/images/logo/svg.svg";
+import { useCanEdit } from "../shared/utils";
 
 const MembersImages = ({ project, ...rest }) => {
   const loggedInUserId = getUserId();
+  const userId = getUserId();
 
   return (
-    <div className='flex flex-row cursor-pointer' {...rest}>
+    <div
+      className={classNames("flex flex-row", {
+        "cursor-pointer": project?.author === userId,
+      })}
+      {...rest}
+    >
       {_.isEmpty(project?.members) && loggedInUserId === project?.author ? (
         <p className='capitalize text-brand-secondary text-overline2'>
           Invite Collaborators

@@ -69,8 +69,8 @@ const Response = ({
 
   return (
     <div className='h-full'>
-      <div className='flex flex-row items-center justify-between'>
-        <div className='flex flex-row w-min mb-2 m-3'>
+      <div className='flex flex-row items-center'>
+        <div className='flex flex-row w-min mb-2 m-3 mr-6'>
           <ResponseCodeSelection
             onChange={changeResponseCode}
             selectedCode={selectedResponseCode}
@@ -127,8 +127,8 @@ const Description = ({ value, selectedResponseCode }) => {
   );
 
   return (
-    <div className='flex flex-col mr-2'>
-      <p className='text-overline2 mb-1'>Status Message</p>
+    <div className='flex flex-row mr-2 items-center'>
+      <p className='text-overline2 mr-2'>Status Message</p>
 
       <TextField
         key={`${selectedResponseCode}`}
