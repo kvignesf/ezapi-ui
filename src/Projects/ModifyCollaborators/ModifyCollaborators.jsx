@@ -28,7 +28,7 @@ const ExistingCollaborator = ({ projectId, collab, handleDeletedCollab }) => {
 
   useEffect(() => {
     if (isProjectUpdated) {
-      handleDeletedCollab(updateProjectData?.project?.invites);
+      handleDeletedCollab(updateProjectData?.project?.members);
     }
   }, [isProjectUpdated]);
 
@@ -139,6 +139,7 @@ const ModifyCollaborators = ({ projectId, invitedCollaborators, onClose }) => {
   };
 
   const handleDeletedCollab = (updatedCollabs) => {
+    console.log("updatedCollabs", updatedCollabs);
     setUpdatedInvitedCollabs(updatedCollabs);
     setUpdated(true);
   };

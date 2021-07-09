@@ -61,7 +61,7 @@ const ProjectVerificationErrors = ({ onClose, response }) => {
             onClose();
           }}
         >
-          Okay
+          OK
         </PrimaryButton>
       </div>
     </div>

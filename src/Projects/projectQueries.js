@@ -148,7 +148,8 @@ export const useDownloadArtifacts = () => {
       if (data?.downloadUrl && !_.isEmpty(data?.downloadUrl)) {
         const link = data?.downloadUrl;
 
-        const filename = link.substring(link.lastIndexOf("/") + 1);
+        // const filename = link.substring(link.lastIndexOf("/") + 1);
+        const filename = "project_artifacts";
         saveAs(link, filename);
       }
     },
@@ -184,7 +185,8 @@ export const useDownloadCodegen = () => {
       if (data?.downloadUrl && !_.isEmpty(data?.downloadUrl)) {
         const link = data?.downloadUrl;
 
-        const filename = link.substring(link.lastIndexOf("/") + 1);
+        // const filename = link.substring(link.lastIndexOf("/") + 1);
+        const filename = "project_codegen";
         saveAs(link, filename);
       }
     },

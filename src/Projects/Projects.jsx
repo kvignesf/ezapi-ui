@@ -227,7 +227,7 @@ const ProjectRow = ({
                 onDownloadArtifact();
               }}
             >
-              <Tooltip title='Download Artefacts'>
+              <Tooltip title='Download Artifacts'>
                 <SystemUpdateAltIcon />
               </Tooltip>
             </AppIcon>
@@ -366,6 +366,8 @@ const Content = ({ showCreateProjectDialog }) => {
   if (isFetchingProjects) {
     return <LoaderWithMessage message={"Fetching Projects"} />;
   }
+
+  console.log('dialog?.type === "members"');
 
   return (
     <div className='p-3 h-full'>

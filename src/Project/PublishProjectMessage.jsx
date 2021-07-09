@@ -58,7 +58,7 @@ const PublishProjectMessage = ({
             }
           }}
         >
-          Okay
+          OK
         </PrimaryButton>
       </div>
     </div>
