@@ -70,7 +70,7 @@ const Response = ({
   return (
     <div className='h-full'>
       <div className='flex flex-row items-center'>
-        <div className='flex flex-row w-min mb-2 m-3 mr-6'>
+        <div className='flex flex-row w-min mb-2 m-3 mr-10'>
           <ResponseCodeSelection
             onChange={changeResponseCode}
             selectedCode={selectedResponseCode}
@@ -79,10 +79,12 @@ const Response = ({
           {canEdit() && <AddResponseCode />}
         </div>
 
-        <Description
-          value={selectedReponse?.description}
-          selectedResponseCode={selectedResponseCode}
-        />
+        <div className=''>
+          <Description
+            value={selectedReponse?.description}
+            selectedResponseCode={selectedResponseCode}
+          />
+        </div>
       </div>
 
       <ResponseContent
