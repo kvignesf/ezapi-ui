@@ -56,12 +56,12 @@ const MembersImages = ({ project, ...rest }) => {
         if (index < 3) {
           let firstName, lastName;
 
-          if (member?.userData?.firstName) {
-            firstName = member?.userData?.firstName;
+          if (member?.user_data?.firstName) {
+            firstName = member?.user_data?.firstName;
           }
 
-          if (member?.userData?.lastName) {
-            lastName = member?.userData?.lastName;
+          if (member?.user_data?.lastName) {
+            lastName = member?.user_data?.lastName;
           }
 
           if (!firstName || _.isEmpty(firstName)) {
