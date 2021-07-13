@@ -34,12 +34,12 @@ const ExistingCollaborator = ({ projectId, collab, handleDeletedCollab }) => {
 
   let firstName, lastName;
 
-  if (collab?.userData?.firstName) {
-    firstName = collab?.userData?.firstName;
+  if (collab?.user_data?.firstName) {
+    firstName = collab?.user_data?.firstName;
   }
 
-  if (collab?.userData?.lastName) {
-    lastName = collab?.userData?.lastName;
+  if (collab?.user_data?.lastName) {
+    lastName = collab?.user_data?.lastName;
   }
 
   if (!firstName || _.isEmpty(firstName)) {
@@ -67,7 +67,7 @@ const ExistingCollaborator = ({ projectId, collab, handleDeletedCollab }) => {
 
       <div className='flex flex-col w-full'>
         <p className='text-mediumLabel capitalize'>
-          {collab?.userData?.firstName} {collab?.userData?.lastName}{" "}
+          {collab?.user_data?.firstName} {collab?.user_data?.lastName}{" "}
           {loggedInUserEmail === collab?.email ? " (you)" : ""}
         </p>
 
