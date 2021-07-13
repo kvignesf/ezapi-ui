@@ -67,7 +67,7 @@ const ExistingCollaborator = ({ projectId, collab, handleDeletedCollab }) => {
 
       <div className='flex flex-col w-full'>
         <p className='text-mediumLabel capitalize'>
-          {collab?.user_data?.firstName} {collab?.user_data?.lastName}{" "}
+          {firstName} {lastName}
           {loggedInUserEmail === collab?.email ? " (you)" : ""}
         </p>
 
