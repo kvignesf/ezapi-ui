@@ -11,6 +11,7 @@ import Fade from "@material-ui/core/Fade";
 import { CircularProgress, Dialog, Tooltip } from "@material-ui/core";
 import { useHistory } from "react-router";
 import CodeIcon from "@material-ui/icons/Code";
+import ReplayIcon from "@material-ui/icons/Replay";
 
 import Dashboard from "../Dashboard";
 import AppIcon from "../shared/components/AppIcon";
@@ -313,6 +314,7 @@ const Content = ({ showCreateProjectDialog }) => {
     isLoading: isFetchingProjects,
     error: fetchProjectsError,
     isFetching: isFetchingProjectsBg,
+    refetch: refetchProjects,
   } = useGetProjects();
   const [dialog, setDialog] = useState({
     show: false,
@@ -416,7 +418,25 @@ const Content = ({ showCreateProjectDialog }) => {
             <th className='w-1/5'></th>
             <th className='w-1/5'></th>
             <th className='rounded-tr-md rounded-br-md'>
-              {isFetchingProjectsBg && <CircularProgress size='20px' />}
+              {isFetchingProjectsBg ? (
+                <CircularProgress size='20px' />
+              ) : (
+                <Tooltip title='Refresh list'>
+                  <ReplayIcon
+                    style={{
+                      width: "20px",
+                      height: "20px",
+                      color: Colors.brand.primary,
+                      cursor: "pointer",
+                    }}
+                    onClick={(e) => {
+                      e?.preventDefault();
+                      e?.stopPropagation();
+                      refetchProjects();
+                    }}
+                  />
+                </Tooltip>
+              )}
             </th>
           </tr>
 
