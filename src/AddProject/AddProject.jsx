@@ -149,14 +149,15 @@ const AddProject = ({ onClose }) => {
   };
 
   if (
-    (isProjectDetailsUploadSuccess &&
-      _.isEmpty(projectDetails?.specs) &&
-      _.isEmpty(projectDetails?.dbs)) ||
-    (uploadSpecsSuccess && _.isEmpty(projectDetails?.dbs)) ||
-    (uploadDbsSuccess && _.isEmpty(projectDetails?.specs)) ||
-    (matchAiSuccess &&
-      !_.isEmpty(projectDetails?.specs) &&
-      !_.isEmpty(projectDetails?.dbs))
+    // (isProjectDetailsUploadSuccess &&
+    //   _.isEmpty(projectDetails?.specs) &&
+    //   _.isEmpty(projectDetails?.dbs)) ||
+    isProjectDetailsUploadSuccess &&
+    ((uploadSpecsSuccess && _.isEmpty(projectDetails?.dbs)) ||
+      (uploadDbsSuccess && _.isEmpty(projectDetails?.specs)) ||
+      (matchAiSuccess &&
+        !_.isEmpty(projectDetails?.specs) &&
+        !_.isEmpty(projectDetails?.dbs)))
   ) {
     onClose();
     return null;

@@ -177,12 +177,13 @@ const ProjectRow = ({
                 title={
                   project?.codegen ? "Download Codegen" : "Preparing Codegen"
                 }
-                className={classNames({
-                  "opacity-50 cursor-default": !project?.codegen,
-                  "cursor-pointer": project?.codegen,
-                })}
               >
-                <CodeIcon />
+                <CodeIcon
+                  className={classNames({
+                    "opacity-50 cursor-default": !project?.codegen,
+                    "cursor-pointer text-brand-primary": project?.codegen,
+                  })}
+                />
               </Tooltip>
             </AppIcon>
           )}
@@ -376,8 +377,6 @@ const Content = ({ showCreateProjectDialog }) => {
   if (isFetchingProjects) {
     return <LoaderWithMessage message={"Fetching Projects"} />;
   }
-
-  console.log('dialog?.type === "members"');
 
   return (
     <div className='p-3 h-full'>
