@@ -161,6 +161,7 @@ const ProjectRow = ({
       <td align='center'>
         {/* Codegen download */}
         {project?.status?.toLowerCase() === "complete" &&
+          project?.projectType?.toLowerCase() !== "schema" &&
           !isDownloadingCodegen && (
             <AppIcon
               onClick={(e) => {
