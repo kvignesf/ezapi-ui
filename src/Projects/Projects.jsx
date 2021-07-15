@@ -159,96 +159,102 @@ const ProjectRow = ({
         <p className='text-overline2'>{project?.status}</p>
       </td>
       <td align='center'>
-        {/* Codegen download */}
-        {project?.status?.toLowerCase() === "complete" &&
-          project?.projectType?.toLowerCase() !== "schema" &&
-          !isDownloadingCodegen && (
-            <AppIcon
-              onClick={(e) => {
-                e?.preventDefault();
-                e?.stopPropagation();
-
-                if (project?.codegen) {
-                  onDownloadCodegen();
-                }
-              }}
-            >
-              <Tooltip
-                title={
-                  project?.codegen ? "Download Codegen" : "Preparing Codegen"
-                }
-              >
-                <CodeIcon
-                  className={classNames({
-                    "opacity-50 cursor-default": !project?.codegen,
-                    "cursor-pointer text-brand-primary": project?.codegen,
-                  })}
-                />
-              </Tooltip>
-            </AppIcon>
-          )}
-
-        {isDownloadingCodegen && (
-          <CircularProgress style={{ width: "24px", height: "24px" }} />
-        )}
-      </td>
-      <td align='center'>
-        {/* Spec download */}
-        {project?.status?.toLowerCase() === "complete" &&
-          project?.publishStatus?.SpecGeneration?.success &&
-          !isDownloadingSpecs && (
-            <Tooltip title='Download Specs'>
-              <div
-                style={{
-                  width: "32px",
-                  height: "32px",
-                }}
-              >
-                <img
-                  src={Logo}
-                  alt='ezapi logo'
-                  className='cursor-pointer'
+        <div className='flex flex-row items-center gap-2'>
+          {/* Codegen download */}
+          <div className='w-8'>
+            {project?.status?.toLowerCase() === "complete" &&
+              project?.projectType?.toLowerCase() !== "schema" &&
+              !isDownloadingCodegen && (
+                <AppIcon
                   onClick={(e) => {
                     e?.preventDefault();
                     e?.stopPropagation();
 
-                    onDownloadSpecs();
+                    if (project?.codegen) {
+                      onDownloadCodegen();
+                    }
                   }}
-                />
-              </div>
-            </Tooltip>
-          )}
+                >
+                  <Tooltip
+                    title={
+                      project?.codegen
+                        ? "Download Codegen"
+                        : "Preparing Codegen"
+                    }
+                  >
+                    <CodeIcon
+                      className={classNames({
+                        "opacity-50 cursor-default": !project?.codegen,
+                        "cursor-pointer text-brand-primary": project?.codegen,
+                      })}
+                    />
+                  </Tooltip>
+                </AppIcon>
+              )}
 
-        {isDownloadingSpecs && (
-          <CircularProgress style={{ width: "24px", height: "24px" }} />
-        )}
-      </td>
-      <td align='center'>
-        {/* Artefact download */}
-        {project?.status?.toLowerCase() === "complete" &&
-          project?.publishStatus?.SankyGeneration?.success &&
-          project?.publishStatus?.ArtefactGeneration?.success &&
-          !isDownloadingArtifacts && (
-            <AppIcon
-              onClick={(e) => {
-                e?.preventDefault();
-                e?.stopPropagation();
+            {isDownloadingCodegen && (
+              <CircularProgress style={{ width: "24px", height: "24px" }} />
+            )}
+          </div>
 
-                onDownloadArtifact();
-              }}
-            >
-              <Tooltip title='Download Artifacts'>
-                <SystemUpdateAltIcon />
+          {/* Spec download */}
+          {project?.status?.toLowerCase() === "complete" &&
+            project?.publishStatus?.SpecGeneration?.success &&
+            !isDownloadingSpecs && (
+              <Tooltip title='Download Specs'>
+                <div
+                  style={{
+                    width: "32px",
+                    height: "32px",
+                  }}
+                >
+                  <img
+                    src={Logo}
+                    alt='ezapi logo'
+                    className='cursor-pointer'
+                    onClick={(e) => {
+                      e?.preventDefault();
+                      e?.stopPropagation();
+
+                      onDownloadSpecs();
+                    }}
+                  />
+                </div>
               </Tooltip>
-            </AppIcon>
+            )}
+
+          {isDownloadingSpecs && (
+            <CircularProgress style={{ width: "24px", height: "24px" }} />
           )}
 
-        {isDownloadingArtifacts && (
-          <CircularProgress style={{ width: "24px", height: "24px" }} />
-        )}
+          {/* Artefact download */}
+          {project?.status?.toLowerCase() === "complete" &&
+            project?.publishStatus?.SankyGeneration?.success &&
+            project?.publishStatus?.ArtefactGeneration?.success &&
+            !isDownloadingArtifacts && (
+              <AppIcon
+                onClick={(e) => {
+                  e?.preventDefault();
+                  e?.stopPropagation();
+
+                  onDownloadArtifact();
+                }}
+              >
+                <Tooltip title='Download Artifacts'>
+                  <SystemUpdateAltIcon
+                    style={{ color: Colors.brand.primary }}
+                  />
+                </Tooltip>
+              </AppIcon>
+            )}
+
+          {isDownloadingArtifacts && (
+            <CircularProgress style={{ width: "24px", height: "24px" }} />
+          )}
+        </div>
       </td>
 
-      <td align='right'>
+      <td align='center'>
         <AppIcon onClick={handleOnOptionsClick}>
           <MoreVertIcon />
         </AppIcon>
@@ -410,14 +416,14 @@ const Content = ({ showCreateProjectDialog }) => {
       {projects && !_.isEmpty(projects) && (
         <table className='w-full'>
           <tr className='mr-16 bg-neutral-gray6 w-full text-left text-neutral-gray4 text-mediumLabel'>
-            <th className='p-2 w-1/4 rounded-tl-md rounded-bl-md'>NAME</th>
-            <th className='w-1/4'>MEMBERS</th>
-            <th className='w-1/4'>LAST ACTIVITY</th>
-            <th className='w-1/5'>STATUS</th>
-            <th className=''></th>
-            <th className='w-1/5'></th>
-            <th className='w-1/5'></th>
-            <th className='rounded-tr-md rounded-br-md'>
+            <th className='p-2 w-1/5 rounded-tl-md rounded-bl-md'>
+              API PROJECT
+            </th>
+            <th className=''>COLLABORATORS</th>
+            <th className=''>LAST ACTIVITY</th>
+            <th className=''>STATUS</th>
+            <th className=''>ARTIFACTS</th>
+            <th className='rounded-tr-md rounded-br-md text-center'>
               {isFetchingProjectsBg ? (
                 <CircularProgress size='20px' />
               ) : (

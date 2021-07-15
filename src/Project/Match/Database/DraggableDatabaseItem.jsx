@@ -84,13 +84,13 @@ const DraggableDatabaseItem = ({ index, item, section, ...rest }) => {
           {item?.name}
         </p>
 
-        <div
+        {/* <div
           className={classNames("w-12 max-w-3 h-6 rounded-sm", {
             "bg-brand-green": section === "1",
             "bg-score-yellow": section === "2",
             "bg-score-red": section === "3",
           })}
-        />
+        /> */}
       </div>
     </>
   );
