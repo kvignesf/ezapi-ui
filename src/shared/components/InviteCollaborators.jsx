@@ -20,20 +20,24 @@ const InviteCollaborators = ({
       <ChipInput
         defaultValue={collaborators}
         dataSource={collaborators}
-        onChange={(chips) => handleChange(chips)}
-        onBeforeAdd={(chip) => {
-          if (!chip || _.isEmpty(chip)) {
+        onChange={(emails) => {
+          const trimmedEmails = emails?.map((email) => email?.trim());
+
+          handleChange(trimmedEmails);
+        }}
+        onBeforeAdd={(email) => {
+          if (!email || _.isEmpty(email)) {
             setError(null);
             return false;
           }
 
-          const result = isEmailValid(chip);
+          const result = isEmailValid(email?.trim());
 
           if (result) {
             setError(null);
             return result;
           } else {
-            setError("Enter valid email");
+            setError("Seems like email entered is invalid");
           }
         }}
         blurBehavior='add'

@@ -17,7 +17,7 @@ import Dashboard from "../Dashboard";
 import AppIcon from "../shared/components/AppIcon";
 import AddProject from "../AddProject";
 import InviteCollaborators from "../shared/components/InviteCollaborators";
-import ModifyCollaborators from "./ModifyCollaborators/ModifyCollaborators";
+import ModifyCollaborators from "../ModifyCollaborators/ModifyCollaborators";
 import InitialsAvatar from "../shared/components/InitialsAvatar";
 import Colors from "../shared/colors";
 import RenameProject from "./RenameProject/RenameProject";

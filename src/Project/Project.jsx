@@ -1,7 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useHistory, useParams } from "react-router";
 import ArrowBackIcon from "@material-ui/icons/ArrowBack";
-import { CircularProgress, Dialog, Tab, Tabs } from "@material-ui/core";
+import {
+  CircularProgress,
+  Dialog,
+  Tab,
+  Tabs,
+  Tooltip,
+} from "@material-ui/core";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import {
@@ -52,6 +58,7 @@ import UserRoleProvider from "./UserRoleContext";
 import PublishProjectMessage from "./PublishProjectMessage";
 import VerifyProjectError from "./VerifyProjectError";
 import ProjectVerificationErrors from "./ProjectVerificationErrors";
+import ModifyCollaborators from "../ModifyCollaborators/ModifyCollaborators";
 
 const Project = () => {
   const { id: projectId } = useParams();
@@ -259,6 +266,26 @@ const Project = () => {
     verifyProjectData?.response &&
     !_.isEmpty(verifyProjectData?.response);
 
+  const handleInviteClick = () => {
+    if (canEdit(userRole)) {
+      setDialog({
+        show: true,
+        type: "members",
+      });
+    }
+  };
+
+  const isOperationSelected = () => {
+    return (
+      operationState?.operationIndex != null &&
+      operationState?.operation != null &&
+      operationState?.resource != null &&
+      operationState?.path != null
+    );
+  };
+
+  console.log("isOperationSelected", isOperationSelected());
+
   return (
     <UserRoleProvider role={userRole}>
       <>
@@ -342,6 +369,14 @@ const Project = () => {
                 }}
               />
             )}
+
+          {dialog?.type === "members" && (
+            <ModifyCollaborators
+              projectId={projectId}
+              onClose={handleCloseDialog}
+              invitedCollaborators={projectDetails?.members}
+            />
+          )}
         </Dialog>
 
         <DndProvider backend={HTML5Backend}>
@@ -366,32 +401,36 @@ const Project = () => {
 
               <p className='text-overline1'>{projectDetails?.projectName}</p>
 
-              <div className='ml-4'>
-                {!isSyncingOperation ? (
-                  <AppIcon
-                    onClick={(e) => {
-                      e?.preventDefault();
-                      e?.stopPropagation();
+              {canEdit(userRole) && isOperationSelected() && (
+                <div className='ml-4'>
+                  {!isSyncingOperation ? (
+                    <AppIcon
+                      onClick={(e) => {
+                        e?.preventDefault();
+                        e?.stopPropagation();
 
-                      saveProject();
-                    }}
-                  >
-                    <CloudUploadIcon style={{ color: "lightblue" }} />
-                  </AppIcon>
-                ) : (
-                  <div className='flex flex-row items-center'>
-                    <CircularProgress
-                      style={{
-                        width: "18px",
-                        height: "18px",
-                        marginRight: "0.5rem",
+                        saveProject();
                       }}
-                    />
+                    >
+                      <Tooltip title='Save changes'>
+                        <CloudUploadIcon style={{ color: "lightblue" }} />
+                      </Tooltip>
+                    </AppIcon>
+                  ) : (
+                    <div className='flex flex-row items-center'>
+                      <CircularProgress
+                        style={{
+                          width: "18px",
+                          height: "18px",
+                          marginRight: "0.5rem",
+                        }}
+                      />
 
-                    <p className='text-overline2 opacity-60'>Saving ...</p>
-                  </div>
-                )}
-              </div>
+                      <p className='text-overline2 opacity-60'>Saving ...</p>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className='flex justify-center flex-1'>
@@ -417,7 +456,9 @@ const Project = () => {
 
             <div className='flex flex-row py-2'>
               {canEdit(userRole) && (
-                <OutlineButton classes='mr-3'>Invite</OutlineButton>
+                <OutlineButton classes='mr-3' onClick={handleInviteClick}>
+                  Invite
+                </OutlineButton>
               )}
 
               {canEdit(userRole) && (

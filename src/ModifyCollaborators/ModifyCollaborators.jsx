@@ -6,14 +6,17 @@ import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
 import Fade from "@material-ui/core/Fade";
 
-import AppIcon from "../../shared/components/AppIcon";
-import Colors from "../../shared/colors";
-import InviteCollaborators from "../../shared/components/InviteCollaborators";
-import { PrimaryButton } from "../../shared/components/AppButton";
-import InitialsAvatar from "../../shared/components/InitialsAvatar";
-import { useUpdateProject, useInviteCollaborator } from "../projectQueries";
+import AppIcon from "../shared/components/AppIcon";
+import Colors from "../shared/colors";
+import InviteCollaborators from "../shared/components/InviteCollaborators";
+import { PrimaryButton } from "../shared/components/AppButton";
+import InitialsAvatar from "../shared/components/InitialsAvatar";
+import {
+  useUpdateProject,
+  useInviteCollaborator,
+} from "../Projects/projectQueries";
 import { CircularProgress } from "@material-ui/core";
-import { getEmailId } from "../../shared/storage";
+import { getEmailId } from "../shared/storage";
 
 const ExistingCollaborator = ({ projectId, collab, handleDeletedCollab }) => {
   const [anchorEl, setAnchorEl] = React.useState(null);
