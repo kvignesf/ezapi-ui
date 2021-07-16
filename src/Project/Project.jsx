@@ -135,13 +135,6 @@ const Project = () => {
 
   useEffect(() => {
     if (projectDetails) {
-      if (
-        projectDetails?.status === "IN_PROGRESS" &&
-        projectDetails?.status === "COMPLETE"
-      ) {
-        return;
-      }
-
       // Get user role
       if (projectDetails?.members && !_.isEmpty(projectDetails?.members)) {
         const userEmail = getEmailId();
@@ -150,17 +143,21 @@ const Project = () => {
         );
 
         setRole(currentUserDetails?.role);
-        return;
       }
 
-      history.goBack();
+      if (
+        projectDetails?.status?.toLowerCase() !== "in_progress" &&
+        projectDetails?.status?.toLowerCase() !== "complete"
+      ) {
+        navigateBack();
+      }
     }
   }, [projectDetails]);
 
   useEffect(() => {
-    if (projectDetailsError?.message === "no_access") {
+    if (projectDetailsError?.message?.toLowerCase() === "no_access") {
       // No access
-      history.goBack();
+      navigateBack();
     }
   }, [projectDetailsError]);
 
@@ -283,8 +280,6 @@ const Project = () => {
       operationState?.path != null
     );
   };
-
-  console.log("isOperationSelected", isOperationSelected());
 
   return (
     <UserRoleProvider role={userRole}>

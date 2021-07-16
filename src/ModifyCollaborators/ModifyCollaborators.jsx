@@ -142,7 +142,6 @@ const ModifyCollaborators = ({ projectId, invitedCollaborators, onClose }) => {
   };
 
   const handleDeletedCollab = (updatedCollabs) => {
-    console.log("updatedCollabs", updatedCollabs);
     setUpdatedInvitedCollabs(updatedCollabs);
     setUpdated(true);
   };
