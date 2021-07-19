@@ -11,6 +11,7 @@ import AppIcon from "../../shared/components/AppIcon";
 import { TextButton, PrimaryButton } from "../../shared/components/AppButton";
 import { isDatabase } from "../../shared/utils";
 import apiNameSchema from "../../shared/schemas/apiNameSchema";
+import EnterKeyCaptureInput from "../../shared/components/EnterKeyCaptureInput";
 
 const ChangeColumnName = ({
   labelItem,
@@ -64,6 +65,8 @@ const ChangeColumnName = ({
         >
           {({ errors, touched }) => (
             <Form>
+              <EnterKeyCaptureInput />
+
               <Field
                 id='name'
                 name='name'

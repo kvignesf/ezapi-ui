@@ -12,6 +12,7 @@ import {
 } from "../../../shared/components/AppButton";
 import apiNameSchema from "../../../shared/schemas/apiNameSchema";
 import { useAddResource, useEditResource } from "./resourceQuery";
+import EnterKeyCaptureInput from "../../../shared/components/EnterKeyCaptureInput";
 
 const AddOrEditResource = ({
   projectId,
@@ -77,9 +78,11 @@ const AddOrEditResource = ({
         })}
         onSubmit={handleSubmit}
       >
-        {({ errors, touched }) => (
+        {({ errors, touched, submitForm }) => (
           <>
             <Form>
+              <EnterKeyCaptureInput />
+
               <div className='mb-4 px-4'>
                 <Field
                   id='name'
@@ -120,7 +123,7 @@ const AddOrEditResource = ({
                     >
                       Cancel
                     </TextButton>
-                    <PrimaryButton type='submit'>Done</PrimaryButton>
+                    <PrimaryButton onClick={submitForm}>Done</PrimaryButton>
                   </>
                 ) : (
                   <CircularProgress size='24px' />

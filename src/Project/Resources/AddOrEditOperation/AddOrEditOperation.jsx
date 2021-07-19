@@ -19,6 +19,7 @@ import {
 } from "../../../shared/components/AppButton";
 import operationSchema from "./operationSchema";
 import { useAddOperation, useEditOperation } from "./operationQuery";
+import EnterKeyCaptureInput from "../../../shared/components/EnterKeyCaptureInput";
 
 const OperationType = [
   {
@@ -180,6 +181,8 @@ const AddOrEditOperation = ({
         {({ errors, touched }) => (
           <>
             <Form>
+              <EnterKeyCaptureInput />
+
               <div className='m-4 p-4 rounded-md bg-neutral-gray7'>
                 <div className='flex flex-row mb-3'>
                   <div className='mr-5'>

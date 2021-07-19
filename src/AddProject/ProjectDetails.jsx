@@ -13,6 +13,7 @@ import projectAtom from "./projectAtom";
 import { PrimaryButton } from "../shared/components/AppButton";
 import AppIcon from "../shared/components/AppIcon";
 import apiNameSchema from "../shared/schemas/apiNameSchema";
+import EnterKeyCaptureInput from "../shared/components/EnterKeyCaptureInput";
 
 const ProjectDetails = ({
   formRef,

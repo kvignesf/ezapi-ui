@@ -12,6 +12,7 @@ import {
 } from "../../../shared/components/AppButton";
 import apiNameSchema from "../../../shared/schemas/apiNameSchema";
 import { useAddPath, useEditPath } from "./pathQuery";
+import EnterKeyCaptureInput from "../../../shared/components/EnterKeyCaptureInput";
 
 const AddOrEditPath = ({
   title,
@@ -83,6 +84,8 @@ const AddOrEditPath = ({
         {({ errors, touched }) => (
           <>
             <Form>
+              <EnterKeyCaptureInput />
+
               <div className='mb-4 px-4'>
                 <Field
                   id='name'

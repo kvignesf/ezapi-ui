@@ -7,6 +7,7 @@ import AppIcon from "../../shared/components/AppIcon";
 import { PrimaryButton, TextButton } from "../../shared/components/AppButton";
 import { useUpdateProject } from "../projectQueries";
 import apiNameSchema from "../../shared/schemas/apiNameSchema";
+import EnterKeyCaptureInput from "../../shared/components/EnterKeyCaptureInput";
 
 const RenameProject = ({ project, onClose }) => {
   const {
@@ -53,6 +54,8 @@ const RenameProject = ({ project, onClose }) => {
         {({ errors, touched }) => (
           <>
             <Form>
+              <EnterKeyCaptureInput />
+
               <div className='mb-4 px-4'>
                 <Field
                   id='name'

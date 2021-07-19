@@ -14,6 +14,7 @@ import {
 } from "../../../shared/components/AppButton";
 import { operationAtomWithMiddleware } from "../../../shared/utils";
 import apiNameSchema from "../../../shared/schemas/apiNameSchema";
+import EnterKeyCaptureInput from "../../../shared/components/EnterKeyCaptureInput";
 
 const ChangeTableName = ({ labelItem, request, responseCode, onClose }) => {
   const formRef = useRef(null);
@@ -141,6 +142,8 @@ const ChangeTableName = ({ labelItem, request, responseCode, onClose }) => {
         >
           {({ errors, touched }) => (
             <Form>
+              <EnterKeyCaptureInput />
+
               <Field
                 id='name'
                 name='name'
