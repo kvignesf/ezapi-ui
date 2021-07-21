@@ -16,7 +16,7 @@ include:
     - 'reactuicitest.yml'
     - 'reactuicistage.yaml'
     - 'reactuiciprod.yaml'
-    - 'deploy-reactui-test-1.yaml'
+    - 'deploy-reactui-test-2.yaml'
     - 'deploy-reactui-demo-1.yaml'
     - 'deploy-reactui-instance-1.yaml'
 stages:
@@ -24,7 +24,7 @@ stages:
   - build-test
   - build-stage
   - build-prod 
-  - deploy-test1
+  - deploy-test2
   - deploy-demo1
   - deploy-instance1
 Sast-Whitesource:
@@ -46,10 +46,10 @@ build-prod:
   extends: .build-prod
   only:
     - master    
-deploy-test1:
-  stage: deploy-test1
+deploy-test2:
+  stage: deploy-test2
   image: alpine  
-  extends: .deploy-test1
+  extends: .deploy-test2
   only: 
     - test    
 deploy-demo1:  
