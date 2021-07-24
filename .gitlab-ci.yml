@@ -24,7 +24,7 @@ stages:
   - build-test
   - build-stage
   - build-prod 
-  - deploy-test2
+  - deploy-test1
   - deploy-demo1
   - deploy-instance1
 Sast-Whitesource:
