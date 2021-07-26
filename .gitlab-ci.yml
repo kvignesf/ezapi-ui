@@ -1,23 +1,46 @@
 image: node:alpine
+before_script:
+  - 'echo \REACT_APP_API_URL\ = \"$APIURL\">> .env.test'
+  - 'echo \REACT_APP_LINKEDIN_CLIENT_ID\ = \"$LINKEDINCLIENTID\">> .env.test'
+  -  cat .env.test
+  - 'echo \REACT_APP_API_URL\ = \"$SAPIURL\">> .env.stage'
+  - 'echo \REACT_APP_LINKEDIN_CLIENT_ID\ = \"$SLINKEDINCLIENTID\">> .env.stage'
+  -  cat .env.stage  
+  - 'echo \REACT_APP_API_URL\ = \"$PAPIURL\">> .env.prod'
+  - 'echo \REACT_APP_LINKEDIN_CLIENT_ID\ = \"$PLINKEDINCLIENTID\">> .env.prod'
+  -  cat .env.prod
 include:
   project: 'ezapi_poc/infra_poc'
   file: 
-    - 'reactuicidev.yaml'
+    - 'sast-whitesource-reactui.yaml'
+    - 'reactuicitest.yml'
+    - 'reactuicistage.yaml'
     - 'reactuiciprod.yaml'
-    - 'deploy-reactui-test-1.yaml'
+    - 'deploy-react-test-1.yaml'
     - 'deploy-reactui-demo-1.yaml'
     - 'deploy-reactui-instance-1.yaml'
 stages:
-  - build-dev
+  - Sast-Whitesource
+  - build-test
+  - build-stage
   - build-prod 
   - deploy-test1
   - deploy-demo1
-  - deploy-instance1 
-build-dev:
-  stage: build-dev 
-  extends: .build-dev
-  except:
-    - master
+  - deploy-instance1
+Sast-Whitesource:
+  stage: Sast-Whitesource 
+  image: ubuntu:18.04
+  extends: .sast-whitesource
+build-stage:
+  stage: build-stage 
+  extends: .build-stage
+  only:
+    - stage
+build-test:
+  stage: build-test 
+  extends: .build-test
+  only:
+    - test    
 build-prod:
   stage: build-prod
   extends: .build-prod
