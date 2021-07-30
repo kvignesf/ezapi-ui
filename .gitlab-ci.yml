@@ -31,6 +31,8 @@ Sast-Whitesource:
   stage: Sast-Whitesource 
   image: ubuntu:18.04
   extends: .sast-whitesource
+  only:
+    - test
 build-stage:
   stage: build-stage 
   extends: .build-stage
