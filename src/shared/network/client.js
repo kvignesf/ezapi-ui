@@ -3,7 +3,10 @@ import axios from "axios";
 import { getAccessToken, setAccessToken, clearSession } from "../storage";
 import routes from "../routes";
 
-const baseUrl = "https://test-1.ezapi.ai/node";
+//const baseUrl = "https://test-1.ezapi.ai/node";
+//const baseUrl = "http://localhost:7744/";
+//console.log("env", process.env.REACT_APP_API_URL)
+const baseUrl = process.env.REACT_APP_API_URL;
 
 export const endpoint = Object.freeze({
   login: "/auth",

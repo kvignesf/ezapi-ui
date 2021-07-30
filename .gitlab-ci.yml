@@ -32,7 +32,7 @@ Sast-Whitesource:
   image: ubuntu:18.04
   extends: .sast-whitesource
   only:
-    - master
+    - test
 build-stage:
   stage: build-stage 
   extends: .build-stage
