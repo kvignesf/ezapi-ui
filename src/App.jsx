@@ -40,8 +40,6 @@ const App = () => {
         <MuiThemeProvider theme={theme}>
           <SnackbarProvider>
             <BrowserRouter>
-              <CookieConsentPopup />
-
               <Switch>
                 {/* Login route */}
                 <Route exact path={routes.signIn}>
