@@ -16,7 +16,7 @@ include:
     - 'reactuicitest.yml'
     - 'reactuicistage.yaml'
     - 'reactuiciprod.yaml'
-    - 'deploy-reactui-test-1.yaml'
+    - 'deploy-react-test-1.yaml'
     - 'deploy-reactui-demo-1.yaml'
     - 'deploy-reactui-instance-1.yaml'
 stages:
@@ -31,6 +31,8 @@ Sast-Whitesource:
   stage: Sast-Whitesource 
   image: ubuntu:18.04
   extends: .sast-whitesource
+  only:
+    - test
 build-stage:
   stage: build-stage 
   extends: .build-stage
