@@ -2,6 +2,7 @@ import { QueryClient } from "react-query";
 
 export const queries = {
   projects: "projects",
+  products: "products",
   resources: "resources",
   project: "project",
   schemas: "schemas",

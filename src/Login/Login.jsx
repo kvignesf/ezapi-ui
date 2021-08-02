@@ -51,12 +51,12 @@ const Login = () => {
 
   return (
     <div className='h-screen flex justify-center items-center'>
-      <Card className='w-1/3 flex flex-col justify-center items-center p-5'>
+      <Card className='w-1/2 max-w-sm flex flex-col justify-center items-center p-5'>
         <img
           src={Logo}
           alt='ezapi logo'
-          style={{ width: "125px", height: "125px" }}
-          className='mb-4'
+          className='mb-4 p-3'
+          style={{ maxWidth: "128px" }}
         />
 
         {!isLoggingIn && (
@@ -73,6 +73,7 @@ const Login = () => {
                 src={linkedin}
                 alt='Log in with Linked In'
                 style={{ maxWidth: "180px" }}
+                className='w-full'
               />
             </LinkedIn>
           </div>

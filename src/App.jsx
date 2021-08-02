@@ -16,6 +16,10 @@ import Projects from "./Projects";
 import Landing from "./Landing";
 import { isUserLoggedIn, DebugObserver } from "./shared/utils";
 import Project from "./Project";
+import PublishProject from "./PublishProject/PublishProject";
+import { loadStripe } from "@stripe/stripe-js";
+import { Elements } from "@stripe/react-stripe-js";
+import CookieConsentPopup from "./CookieConsent";
 
 const theme = createMuiTheme({
   palette: {
@@ -25,13 +29,19 @@ const theme = createMuiTheme({
   },
 });
 
+const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_KEY);
+
 const App = () => {
+  const isAuthenticated = () => isUserLoggedIn();
+
   return (
     <RecoilRoot>
       <QueryClientProvider client={queryClient}>
         <MuiThemeProvider theme={theme}>
           <SnackbarProvider>
             <BrowserRouter>
+              <CookieConsentPopup />
+
               <Switch>
                 {/* Login route */}
                 <Route exact path={routes.signIn}>
@@ -47,6 +57,29 @@ const App = () => {
                   exact
                   path={routes.projects}
                   component={Projects}
+                />
+
+                <Route
+                  exact
+                  path={routes.publish}
+                  render={(props) => {
+                    return (
+                      <>
+                        {isAuthenticated() ? (
+                          <Elements stripe={stripePromise}>
+                            <PublishProject />
+                          </Elements>
+                        ) : (
+                          <Redirect
+                            to={{
+                              pathname: routes.signIn,
+                              state: { from: props.location },
+                            }}
+                          />
+                        )}
+                      </>
+                    );
+                  }}
                 />
 
                 <PrivateRoute exact path={routes.project} component={Project} />

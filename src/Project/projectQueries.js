@@ -68,3 +68,19 @@ export const useSubmitProject = (projectId) => {
 
   return { verifyProjectMutation, publishProjectMutation };
 };
+
+export const usePublishProject = () => {
+  const publishProjectMutation = useMutation(publishProject, {
+    onSuccess: (data) => {},
+  });
+
+  return publishProjectMutation;
+};
+
+export const useVerifyProject = () => {
+  const verifyProjectMutation = useMutation(verifyProject, {
+    onSuccess: (data) => {},
+  });
+
+  return verifyProjectMutation;
+};
