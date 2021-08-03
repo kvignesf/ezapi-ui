@@ -3,7 +3,8 @@ import axios from "axios";
 import { getAccessToken, setAccessToken, clearSession } from "../storage";
 import routes from "../routes";
 
-const baseUrl = process.env.REACT_APP_API_URL;
+// const baseUrl = process.env.REACT_APP_API_URL + "/node";
+const baseUrl = "https://test-1.ezapi.ai/node";
 
 export const endpoint = Object.freeze({
   login: "/auth",
@@ -46,15 +47,20 @@ const client = axios.create({
 });
 
 // Setting token for requests
-client.interceptors.request.use((request) => {
-  const accessToken = getAccessToken();
-  const url = request.url;
+client.interceptors.request.use(
+  (request) => {
+    const accessToken = getAccessToken();
+    const url = request.url;
 
-  if (accessToken && url && url !== endpoint.login) {
-    request.headers["Authorization"] = `Bearer ${accessToken}`;
+    if (accessToken && url && url !== endpoint.login) {
+      request.headers["Authorization"] = `Bearer ${accessToken}`;
+    }
+    return request;
+  },
+  (err) => {
+    return Promise.reject(err);
   }
-  return request;
-});
+);
 
 const navigateToSignin = () => {
   clearSession();
@@ -62,13 +68,20 @@ const navigateToSignin = () => {
 };
 
 // Intercepting error responses
-client.interceptors.response.use(null, (err) => {
-  const error = err?.response;
+client.interceptors.response.use(
+  (response) => {
+    return response;
+  },
+  (err) => {
+    const error = err?.response;
 
-  // Logout if 401
-  if (error?.status === 401) {
-    navigateToSignin();
+    // Logout if 401
+    if (error?.status === 401) {
+      navigateToSignin();
+    }
+
+    return Promise.reject(err);
   }
-});
+);
 
 export default client;
