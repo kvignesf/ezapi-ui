@@ -1,0 +1,1526 @@
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import {
+  useGetRecoilValueInfo_UNSTABLE,
+  useRecoilState,
+  useSetRecoilState,
+} from "recoil";
+import { CircularProgress } from "@material-ui/core";
+import _ from "lodash";
+import debounce from "lodash.debounce";
+import DeleteIcon from "@material-ui/icons/Delete";
+import TreeView from "@material-ui/lab/TreeView";
+import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
+import ChevronRightIcon from "@material-ui/icons/ChevronRight";
+import TreeItem from "@material-ui/lab/TreeItem";
+import Scrollbar from "react-smooth-scrollbar";
+import ReactHoverObserver from "react-hover-observer";
+import { useParams } from "react-router";
+import MoreVertIcon from "@material-ui/icons/MoreVert";
+import {
+  Dialog,
+  Fade,
+  makeStyles,
+  Menu,
+  MenuItem,
+} from "@material-ui/core/index";
+import useDoubleClick from "use-double-click";
+import { Checkbox } from "@material-ui/core";
+
+import DropArea from "../DropArea";
+import operationAtom from "../../operationAtom";
+import {
+  isAttribute,
+  isSchema,
+  isArray,
+  useWindowSize,
+  isObject,
+  isDatabase,
+  isColumn,
+  useGetParentName,
+  operationAtomWithMiddleware,
+  useCanEdit,
+  useGetFullPath,
+  isItemSame,
+} from "../../../shared/utils";
+import AppIcon from "../../../shared/components/AppIcon";
+import AttributeIcon from "../../../static/images/attribute.svg";
+import SchemaIcon from "../../../static/images/schema-icon.svg";
+import ColumnIcon from "../../../static/images/column-icon.svg";
+import TableIcon from "../../../static/images/table-icon.svg";
+import { useGetSubSchema, useGetTableData } from "./requestBodyQueries";
+import DragAndDropMessage from "../../../shared/components/DragAndDropMessage";
+import ChangeTableName from "./ChangeTableName";
+import ChangeColumnName from "../ChangeColumnName";
+import { useExpandedIds } from "./utils";
+import Colors from "../../../shared/colors";
+
+const Body = ({ request = true, responseCode, projectType = "schema" }) => {
+  let [operationData, setOperationDetails] = useRecoilState(
+    operationAtomWithMiddleware
+  );
+  const { height, width } = useWindowSize();
+  const { getExandedIds, setExpandedIds } = useExpandedIds([]);
+  const { fetch: fetchParentName } = useGetParentName();
+  const { fetch: fetchFullPath } = useGetFullPath();
+
+  const itemDropped = (item) => {
+    if (
+      (isSchema(item) ||
+        isDatabase(item) ||
+        isAttribute(item) ||
+        isColumn(item)) &&
+      !isObject(item) &&
+      !isArray(item)
+    ) {
+      setOperationDetails((operationDetails) => {
+        const path = fetchFullPath(item);
+
+        if (request) {
+          if (
+            !operationDetails.operationRequest.body.find((x) =>
+              isItemSame(x, item, path)
+            )
+          ) {
+            const newOperationDetails = _.cloneDeep(operationDetails);
+            const clonedItem = _.cloneDeep(item);
+
+            if (isAttribute(item)) {
+              clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
+              clonedItem.parentName = path ?? "/";
+            } else if (isColumn(item)) {
+              clonedItem.tableName = fetchParentName(clonedItem) ?? "global";
+            }
+
+            newOperationDetails.operationRequest.body.push(clonedItem);
+
+            return newOperationDetails;
+          }
+        } else {
+          const responseData = getResponseData(operationDetails);
+          const responseIndex = getResponseIndex(operationDetails);
+
+          const existingBodyIndex = responseData?.body?.findIndex((x) =>
+            isItemSame(x, item, path)
+          );
+
+          if (existingBodyIndex === -1 && responseData && responseIndex >= 0) {
+            const clonedOperationDetails = _.cloneDeep(operationDetails);
+            const clonedResponseData = _.cloneDeep(responseData);
+            const clonedItem = _.cloneDeep(item);
+
+            if (isAttribute(item)) {
+              clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
+              clonedItem.parentName = path ?? "/";
+            } else if (isColumn(item)) {
+              clonedItem.tableName = fetchParentName(clonedItem) ?? "global";
+            }
+
+            clonedResponseData.body.push(clonedItem);
+
+            clonedOperationDetails.operationResponse[responseIndex] =
+              clonedResponseData;
+
+            return clonedOperationDetails;
+          }
+        }
+        return operationDetails;
+      });
+    }
+  };
+
+  const getResponseData = (operation) => {
+    return operation?.operationResponse?.find(
+      (item) => item.responseCode === responseCode
+    );
+  };
+
+  const getResponseIndex = (operation) => {
+    return operation?.operationResponse?.findIndex(
+      (item) => item.responseCode === responseCode
+    );
+  };
+
+  return (
+    <DropArea onItemDropped={itemDropped}>
+      <div className='h-full flex flex-col'>
+        <div className='flex flex-row p-2 border-t-2 border-b-2 bg-neutral-gray8 mb-1/2'>
+          <p className='w-1/3 ml-3 text-overline2 text-neutral-gray4 uppercase font-bold'>
+            {projectType === "schema" || projectType === "both"
+              ? "Schema/Attribute"
+              : projectType === "db"
+              ? "Table/Column"
+              : "-"}
+          </p>
+          {projectType === "db" && (
+            <p
+              className='w-1/3 text-overline2 uppercase text-neutral-gray4 font-bold'
+              style={{ marginLeft: "28px" }}
+            >
+              Schema/Attribute
+            </p>
+          )}
+          <p
+            className='w-1/3 text-overline2 uppercase text-neutral-gray4 font-bold'
+            style={{ marginLeft: "28px" }}
+          >
+            Data Type
+          </p>
+          <p className='w-1/3 text-overline2 uppercase text-neutral-gray4 font-bold'>
+            Required
+          </p>
+        </div>
+
+        {request && !_.isEmpty(operationData?.operationRequest?.body) && (
+          <div className='h-full flex-1'>
+            <Scrollbar
+              alwaysShowTracks={true}
+              style={{
+                maxHeight:
+                  height > 790
+                    ? "26vh"
+                    : height > 770
+                    ? "22vh"
+                    : height > 600
+                    ? "18vh"
+                    : "13vh",
+              }}
+            >
+              <TreeView
+                defaultCollapseIcon={<ExpandMoreIcon />}
+                defaultExpandIcon={<ChevronRightIcon />}
+                expanded={getExandedIds() ?? []}
+                onNodeToggle={(event, nodeIds) => {
+                  setExpandedIds(nodeIds);
+                }}
+              >
+                {operationData?.operationRequest?.body.map((item) => {
+                  let clonedRef;
+
+                  if (isSchema(item)) {
+                    clonedRef = _.cloneDeep(item);
+
+                    if (!clonedRef.hasOwnProperty("data")) {
+                      clonedRef["data"] = [];
+                    }
+                  } else if (isDatabase(item)) {
+                    clonedRef = _.cloneDeep(item);
+
+                    if (!clonedRef.hasOwnProperty("selectedColumns")) {
+                      clonedRef["selectedColumns"] = [];
+                    }
+                  }
+
+                  return (
+                    <BodyItem
+                      key={item.name}
+                      itemRef={clonedRef ?? item}
+                      request={request}
+                      responseCode={responseCode}
+                    />
+                  );
+                })}
+              </TreeView>
+            </Scrollbar>
+          </div>
+        )}
+
+        {!request && !_.isEmpty(getResponseData(operationData)?.body) && (
+          <div className='h-full flex-1'>
+            <Scrollbar
+              alwaysShowTracks={true}
+              style={{
+                maxHeight:
+                  height > 790
+                    ? "26vh"
+                    : height > 770
+                    ? "22vh"
+                    : height > 600
+                    ? "18vh"
+                    : "13vh",
+              }}
+            >
+              <TreeView
+                defaultCollapseIcon={<ExpandMoreIcon />}
+                defaultExpandIcon={<ChevronRightIcon />}
+                expanded={getExandedIds() ?? []}
+                onNodeToggle={(event, nodeIds) => {
+                  setExpandedIds(nodeIds);
+                }}
+              >
+                {getResponseData(operationData)?.body.map((item) => {
+                  let clonedRef;
+
+                  if (isSchema(item)) {
+                    clonedRef = _.cloneDeep(item);
+
+                    if (!clonedRef.hasOwnProperty("data")) {
+                      clonedRef["data"] = [];
+                    }
+                  } else if (isDatabase(item)) {
+                    clonedRef = _.cloneDeep(item);
+
+                    if (!clonedRef.hasOwnProperty("selectedColumns")) {
+                      clonedRef["selectedColumns"] = [];
+                    }
+                  }
+
+                  return (
+                    <BodyItem
+                      key={item.name}
+                      itemRef={clonedRef ?? item}
+                      request={request}
+                      responseCode={responseCode}
+                    />
+                  );
+                })}
+              </TreeView>
+            </Scrollbar>
+          </div>
+        )}
+
+        {request && _.isEmpty(operationData?.operationRequest?.body) && (
+          <div className='border-dashed p-3 bg-neutral-gray7 rounded-md border-2 m-2 flex flex-row justify-center'>
+            <DragAndDropMessage isSchemaAllowed isAttributeAllowed />
+          </div>
+        )}
+
+        {!request && _.isEmpty(getResponseData(operationData)?.body) && (
+          <div className='border-dashed p-3 bg-neutral-gray7 rounded-md border-2 m-2 flex flex-row justify-center'>
+            <DragAndDropMessage isTableAllowed isColumnAllowed />
+          </div>
+        )}
+      </div>
+    </DropArea>
+  );
+};
+
+let treeIndex = 1;
+
+// This can either be a schema or table
+const BodyItem = ({ request = true, responseCode, itemRef }) => {
+  const [bodyItem, setItem] = useState(itemRef);
+  const setOperationDetails = useSetRecoilState(operationAtomWithMiddleware);
+  const { id: projectId } = useParams();
+  const {
+    isLoading: isLoadingSubSchema,
+    error: getSubSchemasError,
+    data: subSchemaData,
+    mutate: getSubSchema,
+    reset: resetSubSchemaData,
+    variables: subSchemaRequest,
+  } = useGetSubSchema();
+  const {
+    isLoading: isLoadingTableData,
+    data: tableData,
+    mutate: getTable,
+  } = useGetTableData();
+  const canEdit = useCanEdit();
+  const getRecoilValueInfo = useGetRecoilValueInfo_UNSTABLE();
+
+  useEffect(() => {
+    if (subSchemaData) {
+      let itemsToConsider = [];
+
+      if (
+        subSchemaData?.nSchemaArray &&
+        !_.isEmpty(subSchemaData?.nSchemaArray)
+      ) {
+        itemsToConsider = subSchemaData?.nSchemaArray[0].data;
+      } else if (subSchemaData?.data && !_.isEmpty(subSchemaData?.data)) {
+        itemsToConsider = subSchemaData?.data;
+      }
+
+      if (isSchema(bodyItem) || isArray(bodyItem) || isObject(bodyItem)) {
+        for (let index = 0; index < itemsToConsider.length; index++) {
+          const element = itemsToConsider[index];
+          bodyItem.data.push(element);
+        }
+        const clonedClonedRef = _.cloneDeep(bodyItem);
+
+        setItem(clonedClonedRef);
+      }
+    }
+  }, [subSchemaData]);
+
+  useEffect(() => {
+    if (tableData) {
+      setItem(tableData);
+    }
+  }, [tableData]);
+
+  useEffect(() => {
+    setItem(itemRef);
+  }, [itemRef]);
+
+  const deleteItem = (item) => {
+    if (
+      (isSchema(item) ||
+        isColumn(item) ||
+        isAttribute(item) ||
+        isDatabase(item)) &&
+      !isArray(item) &&
+      !isObject(item) &&
+      canEdit()
+    ) {
+      setOperationDetails((operationDetails) => {
+        if (request) {
+          const index = operationDetails.operationRequest.body.findIndex(
+            (x) => x?.sourceName === item?.sourceName
+          );
+          if (index !== -1) {
+            const newOperationDetails = _.cloneDeep(operationDetails);
+
+            newOperationDetails.operationRequest.body.splice(index, 1);
+
+            return newOperationDetails;
+          }
+        } else {
+          const responseData = operationDetails?.operationResponse?.find(
+            (item) => item.responseCode === responseCode
+          );
+          const responseIndex = operationDetails?.operationResponse?.findIndex(
+            (item) => item.responseCode === responseCode
+          );
+
+          const existingBodyIndex = responseData?.body?.findIndex(
+            (body) => body?.sourceName === item?.sourceName
+          );
+
+          if (existingBodyIndex >= 0 && responseData && responseIndex >= 0) {
+            const clonedOperationDetails = _.cloneDeep(operationDetails);
+            const clonedResponseData = _.cloneDeep(responseData);
+
+            clonedResponseData.body.splice(existingBodyIndex, 1);
+
+            clonedOperationDetails.operationResponse[responseIndex] =
+              clonedResponseData;
+
+            return clonedOperationDetails;
+          }
+        }
+
+        return operationDetails;
+      });
+    }
+  };
+
+  const deleteColumnOfTable = (column, table) => {
+    if (isColumn(column) && isDatabase(table) && canEdit()) {
+      setOperationDetails((operationDetails) => {
+        if (request) {
+          const newOperationDetails = _.cloneDeep(operationDetails);
+
+          const tableIndex =
+            newOperationDetails.operationRequest.body.findIndex(
+              (x) => isDatabase(x) && x?.sourceName === table?.sourceName
+            );
+
+          if (tableIndex !== -1) {
+            const clonedTable = _.cloneDeep(
+              newOperationDetails.operationRequest.body[tableIndex]
+            );
+
+            const columnIndex =
+              clonedTable?.selectedColumns?.findIndex(
+                (x) => isColumn(x) && x?.sourceName === column?.sourceName
+              ) ?? -1;
+
+            if (columnIndex !== -1) {
+              clonedTable.selectedColumns.splice(columnIndex, 1);
+            }
+
+            newOperationDetails.operationRequest.body[tableIndex] = clonedTable;
+
+            return newOperationDetails;
+          }
+        } else {
+          const responseData = operationDetails?.operationResponse?.find(
+            (item) => item.responseCode === responseCode
+          );
+          const responseIndex = operationDetails?.operationResponse?.findIndex(
+            (item) => item.responseCode === responseCode
+          );
+
+          const tableIndex = responseData?.body?.findIndex(
+            (body) => body?.sourceName === table?.sourceName
+          );
+
+          if (tableIndex >= 0 && responseData && responseIndex >= 0) {
+            const clonedOperationDetails = _.cloneDeep(operationDetails);
+            const clonedResponseData = _.cloneDeep(responseData);
+            const clonedTable = _.cloneDeep(
+              clonedResponseData.body[tableIndex]
+            );
+
+            const columnIndex =
+              clonedTable?.selectedColumns?.findIndex(
+                (x) => isColumn(x) && x?.sourceName === column?.sourceName
+              ) ?? -1;
+
+            if (columnIndex !== -1) {
+              clonedTable.selectedColumns.splice(columnIndex, 1);
+            }
+
+            clonedResponseData.body[tableIndex] = clonedTable;
+
+            clonedOperationDetails.operationResponse[responseIndex] =
+              clonedResponseData;
+
+            return clonedOperationDetails;
+          }
+        }
+
+        return operationDetails;
+      });
+    }
+  };
+
+  const renameColumn = (column, name) => {
+    if (canEdit()) {
+      setOperationDetails((operationDetails) => {
+        if (request) {
+          const newOperationDetails = _.cloneDeep(operationDetails);
+
+          // Get column index
+          const columnIndex =
+            newOperationDetails.operationRequest.body.findIndex(
+              (bodyItem) => column?.sourceName === bodyItem?.sourceName
+            );
+
+          if (columnIndex !== -1) {
+            // Clone column
+            const clonedColumn = _.cloneDeep(
+              newOperationDetails.operationRequest.body[columnIndex]
+            );
+
+            // Set updated name to column
+            clonedColumn.name = name;
+
+            // Set cloned column to body
+            newOperationDetails.operationRequest.body[columnIndex] =
+              clonedColumn;
+
+            return newOperationDetails;
+          }
+        } else {
+          const responseIndex = operationDetails?.operationResponse?.findIndex(
+            (item) => item.responseCode === responseCode
+          );
+
+          if (responseIndex !== -1) {
+            const clonedOperationDetails = _.cloneDeep(operationDetails);
+            const clonedResponseData = _.cloneDeep(
+              operationDetails?.operationResponse[responseIndex]
+            );
+
+            // Get column
+            const columnIndex = clonedResponseData?.body?.findIndex(
+              (bodyItem) => column?.sourceName === bodyItem?.sourceName
+            );
+
+            if (columnIndex !== -1) {
+              // Clone column
+              const clonedColumn = _.cloneDeep(
+                clonedResponseData?.body[columnIndex]
+              );
+
+              // Set updated name to column
+              clonedColumn.name = name;
+
+              // Set cloned column to body
+              clonedResponseData.body[columnIndex] = clonedColumn;
+            }
+
+            clonedOperationDetails.operationResponse[responseIndex] =
+              clonedResponseData;
+
+            return clonedOperationDetails;
+          }
+        }
+
+        return operationDetails;
+      });
+    }
+  };
+
+  const isNameTaken = (item, name) => {
+    if (canEdit()) {
+      const { loadable: operationAtom } = getRecoilValueInfo(
+        operationAtomWithMiddleware
+      );
+      const operationDetails = operationAtom?.contents;
+
+      if (request) {
+        const newOperationDetails = _.cloneDeep(operationDetails);
+
+        // Get column index
+        const columnIndex = newOperationDetails.operationRequest.body.findIndex(
+          (bodyItem) =>
+            bodyItem?.name === name && bodyItem?.sourceName !== item?.sourceName
+        );
+
+        if (columnIndex !== -1) {
+          return true;
+        }
+      } else {
+        const responseIndex = operationDetails?.operationResponse?.findIndex(
+          (item) => item.responseCode === responseCode
+        );
+
+        if (responseIndex !== -1) {
+          // Get column
+          const columnIndex = operationDetails?.operationResponse[
+            responseIndex
+          ]?.body?.findIndex(
+            (bodyItem) =>
+              bodyItem?.name === name &&
+              bodyItem?.sourceName !== item?.sourceName
+          );
+
+          if (columnIndex !== -1) {
+            return true;
+          }
+        }
+      }
+
+      return false;
+    }
+
+    return false;
+  };
+
+  const renameColumnOfTable = (column, table, name) => {
+    if (canEdit()) {
+      setOperationDetails((operationDetails) => {
+        if (request) {
+          const newOperationDetails = _.cloneDeep(operationDetails);
+
+          // Get parent table index
+          const parentTableIndex =
+            newOperationDetails.operationRequest.body.findIndex(
+              (bodyItem) =>
+                isDatabase(bodyItem) &&
+                table?.sourceName === bodyItem?.sourceName
+            );
+
+          if (parentTableIndex !== -1) {
+            // Clone parent table
+            const clonedParentTable = _.cloneDeep(
+              newOperationDetails.operationRequest.body[parentTableIndex]
+            );
+
+            // Get column
+            const columnIndex = clonedParentTable?.selectedColumns?.findIndex(
+              (columnItem) => column?.sourceName === columnItem?.sourceName
+            );
+
+            if (columnIndex !== -1) {
+              // Clone column
+              const clonedColumn = _.cloneDeep(
+                clonedParentTable.selectedColumns[columnIndex]
+              );
+
+              // Set updated name to column
+              clonedColumn.name = name;
+
+              // Set cloned column to table
+              clonedParentTable.selectedColumns[columnIndex] = clonedColumn;
+
+              // Set table to operations body
+              newOperationDetails.operationRequest.body[parentTableIndex] =
+                clonedParentTable;
+            }
+
+            return newOperationDetails;
+          }
+        } else {
+          const responseIndex = operationDetails?.operationResponse?.findIndex(
+            (item) => item.responseCode === responseCode
+          );
+
+          if (responseIndex !== -1) {
+            const responseData =
+              operationDetails?.operationResponse[responseIndex];
+            const clonedOperationDetails = _.cloneDeep(operationDetails);
+            const clonedResponseData = _.cloneDeep(responseData);
+
+            const tableIndex = responseData?.body?.findIndex(
+              (body) => body?.sourceName === table?.sourceName
+            );
+
+            if (tableIndex !== -1) {
+              const clonedTableData = _.cloneDeep(
+                clonedResponseData.body[tableIndex]
+              );
+
+              // Get column
+              const columnIndex = clonedTableData?.selectedColumns?.findIndex(
+                (columnItem) => column?.sourceName === columnItem?.sourceName
+              );
+
+              if (columnIndex !== -1) {
+                // Clone column
+                const clonedColumn = _.cloneDeep(
+                  clonedTableData.selectedColumns[columnIndex]
+                );
+
+                // Set updated name to column
+                clonedColumn.name = name;
+
+                // Set cloned column to table
+                clonedTableData.selectedColumns[columnIndex] = clonedColumn;
+
+                // Set table to response data body
+                clonedResponseData.body[tableIndex] = clonedTableData;
+              }
+
+              clonedOperationDetails.operationResponse[responseIndex] =
+                clonedResponseData;
+
+              return clonedOperationDetails;
+            }
+          }
+        }
+
+        return operationDetails;
+      });
+    }
+  };
+
+  const isColumnNameTakenOfTable = (column, table, name) => {
+    if (canEdit()) {
+      const { loadable: operationAtom } = getRecoilValueInfo(
+        operationAtomWithMiddleware
+      );
+      const operationDetails = operationAtom?.contents;
+
+      if (request) {
+        const newOperationDetails = _.cloneDeep(operationDetails);
+
+        // Get parent table index
+        const parentTableIndex =
+          newOperationDetails.operationRequest.body.findIndex(
+            (bodyItem) =>
+              isDatabase(bodyItem) && table?.sourceName === bodyItem?.sourceName
+          );
+
+        if (parentTableIndex !== -1) {
+          // Get column
+          const columnIndex = newOperationDetails.operationRequest.body[
+            parentTableIndex
+          ]?.selectedColumns?.findIndex((columnItem) => {
+            return (
+              columnItem?.name === name &&
+              columnItem?.sourceName !== column?.sourceName
+            );
+          });
+
+          if (columnIndex !== -1) {
+            return true;
+          }
+        }
+      } else {
+        const responseIndex = operationDetails?.operationResponse?.findIndex(
+          (item) => item.responseCode === responseCode
+        );
+
+        if (responseIndex !== -1) {
+          const responseData =
+            operationDetails?.operationResponse[responseIndex];
+
+          const tableIndex = responseData?.body?.findIndex(
+            (body) => body?.sourceName === table?.sourceName
+          );
+
+          if (tableIndex !== -1) {
+            // Get column
+            const columnIndex = responseData.body[
+              tableIndex
+            ]?.selectedColumns?.findIndex(
+              (columnItem) =>
+                columnItem?.name === name &&
+                columnItem?.sourceName !== column?.sourceName
+            );
+
+            if (columnIndex !== -1) {
+              return true;
+            }
+          }
+        }
+      }
+    }
+
+    return false;
+  };
+
+  const getSchemaData = (schemaRef) => {
+    if (!isLoadingSubSchema && _.isEmpty(schemaRef.data)) {
+      getSubSchema({
+        projectId,
+        name: schemaRef?.name,
+        type: schemaRef?.type,
+        ref: schemaRef?.ref,
+      });
+    }
+  };
+
+  const getTableData = (tableRef) => {
+    if (!isLoadingTableData && _.isEmpty(tableRef.selectedColumns)) {
+      getTable({
+        projectId,
+        ref: tableRef?.name,
+      });
+    }
+  };
+
+  const onItemClick = () => {
+    if (isDatabase(bodyItem)) {
+      if (!bodyItem?.selectedColumns || _.isEmpty(bodyItem?.selectedColumns)) {
+        getTableData(bodyItem);
+      }
+    } else if (isSchema(bodyItem)) {
+      getSchemaData(bodyItem);
+    }
+  };
+
+  if (isAttribute(bodyItem)) {
+    return (
+      <AttributeLabel
+        labelItem={bodyItem}
+        deleteItem={deleteItem}
+        request={request}
+        responseCode={responseCode}
+      />
+    );
+  }
+
+  if (isColumn(bodyItem)) {
+    return (
+      <ColumnLabel
+        columnLabelItem={bodyItem}
+        deleteColumn={deleteItem}
+        renameColumn={renameColumn}
+        isNameTaken={isNameTaken}
+        request={request}
+        responseCode={responseCode}
+      />
+    );
+  }
+
+  return (
+    <TreeItem
+      key={bodyItem?.payloadId ?? bodyItem?.name ?? treeIndex++}
+      nodeId={bodyItem?.payloadId ?? bodyItem?.name ?? treeIndex++}
+      label={
+        isDatabase(bodyItem) ? (
+          <DatabaseLabel
+            tableLabelItem={bodyItem}
+            deleteItem={deleteItem}
+            request={request}
+            responseCode={responseCode}
+          />
+        ) : isSchema(bodyItem) ? (
+          <SchemaLabel
+            labelItem={bodyItem}
+            deleteItem={deleteItem}
+            isLoading={isLoadingSubSchema}
+            request={request}
+            responseCode={responseCode}
+          />
+        ) : null
+      }
+      onLabelClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        onItemClick();
+      }}
+      onIconClick={(e) => {
+        onItemClick();
+      }}
+    >
+      {isSchema(bodyItem) &&
+        bodyItem?.data?.map((ref) => {
+          // Sub schema/array/object
+          if (isSchema(ref) || isArray(ref) || isObject(ref)) {
+            const clonedRef = _.cloneDeep(ref);
+
+            if (!clonedRef.hasOwnProperty("data")) {
+              clonedRef["data"] = [];
+            }
+
+            if (!clonedRef.hasOwnProperty("isLoaded")) {
+              clonedRef["isLoaded"] = false;
+            }
+
+            return <BodySubTreeItems currentRef={clonedRef} />;
+          } else if (isAttribute(ref)) {
+            return (
+              <TreeItem
+                key={ref?.payloadId ?? ref?.name ?? treeIndex++}
+                nodeId={ref?.payloadId ?? ref?.name ?? treeIndex++}
+                label={
+                  <div className='flex flex-row p-1 justify-between items-center border-b-2'>
+                    <div className='flex flex-row items-center justify-start flex-1'>
+                      <img
+                        src={AttributeIcon}
+                        alt='ezapi logo'
+                        className='bg-white mr-2'
+                        style={{
+                          height: "24px",
+                          width: "24px",
+                        }}
+                      />
+
+                      <p className='text-overline2'>{ref?.name}</p>
+                    </div>
+
+                    <div className='flex-1'>
+                      <p>{ref?.type}</p>
+                    </div>
+
+                    <div className='flex-1'>
+                      <Checkbox
+                        // checked={ref?.required ?? false}
+                        checked={true}
+                        style={{
+                          color: Colors.brand.secondary,
+                          padding: "0",
+                        }}
+                      />
+                    </div>
+                  </div>
+                }
+              />
+            );
+          }
+        })}
+
+      {isDatabase(bodyItem) &&
+        bodyItem?.selectedColumns?.map((ref) => {
+          return (
+            <ColumnLabel
+              columnLabelItem={ref}
+              deleteColumn={(column) => deleteColumnOfTable(column, bodyItem)}
+              renameColumn={(column, name) =>
+                renameColumnOfTable(column, bodyItem, name)
+              }
+              request={request}
+              isNameTaken={(column, value) => {
+                return isColumnNameTakenOfTable(column, bodyItem, value);
+              }}
+              responseCode={responseCode}
+            />
+          );
+        })}
+    </TreeItem>
+  );
+};
+
+// This is shown only for arrays, schemas, objects of a parent schema
+const BodySubTreeItems = ({ currentRef: some }) => {
+  const [currentRef, setCurrentRef] = useState(some);
+  const { id: projectId } = useParams();
+  const {
+    isLoading: isLoadingSubSchema,
+    error: getSubSchemasError,
+    data: subSchemaData,
+    mutate: getSubSchema,
+    reset: resetSubSchemaData,
+    variables: subSchemaRequest,
+  } = useGetSubSchema();
+  const canEdit = useCanEdit();
+
+  useEffect(() => {
+    if (subSchemaData) {
+      let itemsToConsider = [];
+
+      if (
+        subSchemaData?.nSchemaArray &&
+        !_.isEmpty(subSchemaData?.nSchemaArray)
+      ) {
+        itemsToConsider = subSchemaData?.nSchemaArray;
+      } else if (subSchemaData?.data && !_.isEmpty(subSchemaData?.data)) {
+        itemsToConsider = subSchemaData?.data;
+      }
+
+      if (isSchema(currentRef) || isArray(currentRef) || isObject(currentRef)) {
+        currentRef.isLoaded = true;
+
+        for (let index = 0; index < itemsToConsider.length; index++) {
+          const element = itemsToConsider[index];
+          currentRef.data.push(element);
+        }
+        const clonedClonedRef = _.cloneDeep(currentRef);
+
+        setCurrentRef(clonedClonedRef);
+      }
+    }
+  }, [subSchemaData]);
+
+  const getSubschemaData = (subSchemaRef) => {
+    if (
+      !isLoadingSubSchema &&
+      !subSchemaRef.isLoaded &&
+      _.isEmpty(subSchemaRef.data) &&
+      !subSchemaRef?.is_child
+    ) {
+      getSubSchema({
+        projectId,
+        name: subSchemaRef?.name,
+        type: subSchemaRef?.type,
+        ref: subSchemaRef?.ref,
+      });
+    }
+  };
+
+  return (
+    <TreeItem
+      key={currentRef?.payloadId ?? currentRef?.name ?? treeIndex++}
+      nodeId={currentRef?.payloadId ?? currentRef?.name ?? treeIndex++}
+      label={
+        <div className='flex flex-row p-1 justify-between border-b-2'>
+          <div className='flex flex-row items-center justify-center'>
+            <img
+              src={SchemaIcon}
+              alt='ezapi logo'
+              className='bg-white mr-2'
+              style={{
+                height: "24px",
+                width: "24px",
+              }}
+            />
+
+            <div className='flex flex-row justify-between w-full items-center'>
+              <p className='text-overline2 mr-4'>
+                {currentRef?.name}
+                {isArray(currentRef) && " [ ]"}
+              </p>
+
+              {isLoadingSubSchema && subSchemaRequest.ref === currentRef?.ref && (
+                <CircularProgress
+                  style={{
+                    width: "1.25rem",
+                    height: "1.25rem",
+                  }}
+                />
+              )}
+            </div>
+          </div>
+        </div>
+      }
+      onLabelClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        getSubschemaData(currentRef);
+      }}
+      onIconClick={(e) => {
+        getSubschemaData(currentRef);
+      }}
+    >
+      {currentRef.data.map((ref) => {
+        if (isSchema(ref) || isArray(ref) || isObject(ref)) {
+          const clonedRef = _.cloneDeep(ref);
+
+          if (!clonedRef.hasOwnProperty("data")) {
+            clonedRef["data"] = [];
+          }
+
+          if (!clonedRef.hasOwnProperty("isLoaded")) {
+            clonedRef["isLoaded"] = false;
+          }
+
+          return <BodySubTreeItems currentRef={clonedRef} />;
+        } else if (isAttribute(ref)) {
+          return (
+            <TreeItem
+              key={ref?.payloadId ?? ref?.name ?? treeIndex++}
+              nodeId={ref?.payloadId ?? ref?.name ?? treeIndex++}
+              label={
+                <div className='flex flex-row justify-between items-center p-1 border-b-2'>
+                  <div className='flex flex-row items-center justify-start flex-1'>
+                    <img
+                      src={AttributeIcon}
+                      alt='ezapi logo'
+                      className='bg-white mr-2'
+                      style={{
+                        height: "24px",
+                        width: "24px",
+                      }}
+                    />
+
+                    <p className='text-overline2 '>{ref?.name}</p>
+                  </div>
+
+                  <div className='flex-1'>
+                    <p>{ref?.type}</p>
+                  </div>
+
+                  <div className='flex-1'>
+                    <Checkbox
+                      // checked={ref?.required}
+                      checked={true}
+                      style={{
+                        color: Colors.brand.secondary,
+                        padding: "0",
+                      }}
+                    />
+                  </div>
+                </div>
+              }
+            />
+          );
+        }
+      })}
+    </TreeItem>
+  );
+};
+
+const SchemaLabel = ({ labelItem, isLoading, deleteItem }) => {
+  const canEdit = useCanEdit();
+
+  return (
+    <ReactHoverObserver>
+      {({ isHovering }) => {
+        return (
+          <div className='flex flex-row p-1 justify-between items-center border-b-2'>
+            <div className='flex flex-row items-center justify-start w-1/3'>
+              <img
+                src={SchemaIcon}
+                alt='ezapi logo'
+                className='bg-white mr-4'
+                style={{ height: "24px", width: "24px" }}
+              />
+
+              <p className='text-overline2'>{labelItem?.name}</p>
+
+              {isLoading && (
+                <CircularProgress
+                  style={{
+                    marginLeft: "0.5rem",
+                    width: "20px",
+                    height: "20px",
+                  }}
+                />
+              )}
+            </div>
+
+            {isHovering && canEdit() && (
+              <AppIcon
+                onClick={(ev) => {
+                  ev?.preventDefault();
+                  ev?.stopPropagation();
+
+                  deleteItem(labelItem);
+                }}
+              >
+                <DeleteIcon />
+              </AppIcon>
+            )}
+          </div>
+        );
+      }}
+    </ReactHoverObserver>
+  );
+};
+
+const AttributeLabel = ({ labelItem, deleteItem }) => {
+  const canEdit = useCanEdit();
+
+  return (
+    <ReactHoverObserver>
+      {({ isHovering }) => {
+        return (
+          <div className='flex flex-row p-1 h-8 justify-between items-center border-b-2 ml-6 hover:bg-neutral-gray8'>
+            <div className='flex flex-row items-center justify-start flex-1'>
+              <div className='flex-1 flex flex-row'>
+                <img
+                  src={AttributeIcon}
+                  alt='ezapi logo'
+                  className='bg-white mr-4'
+                  style={{ height: "24px", width: "24px" }}
+                />
+
+                <p className='text-overline2'>{labelItem?.name}</p>
+              </div>
+
+              <div className='flex-1 pl-10'>
+                <p className='text-overline2'>{labelItem?.type}</p>
+              </div>
+
+              <div className='flex-1 pl-5'>
+                <p className='text-overline2'>
+                  <Checkbox
+                    // checked={labelItem?.required}
+                    checked={true}
+                    style={{
+                      color: Colors.brand.secondary,
+                      padding: "0",
+                    }}
+                  />
+                </p>
+              </div>
+            </div>
+
+            <div className='w-6'>
+              {isHovering && canEdit() && (
+                <AppIcon
+                  onClick={(ev) => {
+                    ev?.preventDefault();
+                    ev?.stopPropagation();
+
+                    deleteItem(labelItem);
+                  }}
+                >
+                  <DeleteIcon />
+                </AppIcon>
+              )}
+            </div>
+          </div>
+        );
+      }}
+    </ReactHoverObserver>
+  );
+};
+
+const DatabaseLabel = ({
+  tableLabelItem,
+  request,
+  responseCode,
+  deleteItem,
+}) => {
+  const [optionsMenuAnchorEl, setOptionsMenuAnchorEl] = useState(false);
+  const [dialog, setDialog] = useState({
+    show: false,
+    type: null,
+    data: null,
+  });
+  const nameRef = useRef();
+  const canEdit = useCanEdit();
+
+  useDoubleClick({
+    onSingleClick: (e) => {},
+    onDoubleClick: (e) => {
+      e?.preventDefault();
+      e?.stopPropagation();
+
+      if (canEdit()) {
+        showTableNameChangeDialog();
+      }
+    },
+    ref: nameRef,
+    latency: 275,
+  });
+
+  const showTableNameChangeDialog = () => {
+    if (canEdit()) {
+      setDialog({
+        show: true,
+        type: "rename-table",
+      });
+    }
+  };
+
+  const handleOptionsClick = (event) => {
+    setOptionsMenuAnchorEl(event?.currentTarget);
+  };
+
+  const handleCloseDialog = () => {
+    setDialog({
+      show: false,
+      data: null,
+    });
+  };
+
+  return (
+    <ReactHoverObserver>
+      {({ isHovering }) => {
+        return (
+          <>
+            <Dialog
+              onClose={handleCloseDialog}
+              aria-labelledby='dashboard-dialog'
+              open={dialog?.show ?? false}
+              fullWidth
+              PaperProps={{
+                style: { borderRadius: 8 },
+              }}
+              disableBackdropClick
+            >
+              {dialog?.type === "rename-table" && canEdit() && (
+                <ChangeTableName
+                  labelItem={tableLabelItem}
+                  request={request}
+                  responseCode={responseCode}
+                  onClose={handleCloseDialog}
+                />
+              )}
+            </Dialog>
+
+            <div className='flex flex-row p-1 justify-between items-center border-b-2 h-8'>
+              <div className='flex flex-row items-center justify-start w-full '>
+                <div className='flex flex-row items-center justify-start  w-1/4'>
+                  <img
+                    src={TableIcon}
+                    alt='ezapi logo'
+                    className='bg-white mr-4'
+                    style={{ height: "24px", width: "24px" }}
+                  />
+
+                  {tableLabelItem?.sourceName &&
+                  !_.isEmpty(tableLabelItem?.sourceName) ? (
+                    <p className='text-overline2'>
+                      {tableLabelItem?.sourceName}
+                    </p>
+                  ) : null}
+                </div>
+
+                {tableLabelItem?.name && !_.isEmpty(tableLabelItem?.name) ? (
+                  <p className='text-overline2 ml-4 select-none' ref={nameRef}>
+                    {tableLabelItem?.name}
+                  </p>
+                ) : null}
+              </div>
+
+              <div className='w-6'>
+                {isHovering && canEdit() && (
+                  <>
+                    <AppIcon
+                      onClick={(ev) => {
+                        ev?.preventDefault();
+                        ev?.stopPropagation();
+
+                        handleOptionsClick(ev);
+                      }}
+                    >
+                      <MoreVertIcon style={{ fontSize: "24px" }} />
+                    </AppIcon>
+
+                    <Menu
+                      id='table-menu'
+                      anchorEl={optionsMenuAnchorEl}
+                      keepMounted
+                      open={Boolean(optionsMenuAnchorEl)}
+                      onClose={() => {
+                        setOptionsMenuAnchorEl(null);
+                      }}
+                      TransitionComponent={Fade}
+                      style={{ borderRadius: "1rem", zIndex: "100" }}
+                    >
+                      <MenuItem
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setOptionsMenuAnchorEl(null);
+
+                          showTableNameChangeDialog();
+                        }}
+                      >
+                        <p className='text-overline2'>Rename</p>
+                      </MenuItem>
+                      <MenuItem
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setOptionsMenuAnchorEl(null);
+
+                          deleteItem(tableLabelItem);
+                        }}
+                      >
+                        <p className='text-overline2 text-accent-red'>Delete</p>
+                      </MenuItem>
+                    </Menu>
+                  </>
+                )}
+              </div>
+            </div>
+          </>
+        );
+      }}
+    </ReactHoverObserver>
+  );
+};
+
+const ColumnLabel = ({
+  columnLabelItem,
+  request,
+  responseCode,
+  deleteColumn,
+  renameColumn,
+  isNameTaken,
+}) => {
+  const [optionsMenuAnchorEl, setOptionsMenuAnchorEl] = useState(false);
+  const [dialog, setDialog] = useState({
+    show: false,
+    type: null,
+    data: null,
+  });
+  const nameRef = useRef();
+  const canEdit = useCanEdit();
+
+  useDoubleClick({
+    onSingleClick: (e) => {},
+    onDoubleClick: (e) => {
+      e?.preventDefault();
+      e?.stopPropagation();
+
+      if (canEdit()) {
+        showColumnNameChangeDialog();
+      }
+    },
+    ref: nameRef,
+    latency: 275,
+  });
+
+  const showColumnNameChangeDialog = () => {
+    if (canEdit()) {
+      setDialog({
+        show: true,
+        type: "rename-column",
+      });
+    }
+  };
+
+  const handleOptionsClick = (event) => {
+    setOptionsMenuAnchorEl(event?.currentTarget);
+  };
+
+  const handleCloseDialog = () => {
+    setDialog({
+      show: false,
+      data: null,
+    });
+  };
+
+  return (
+    <ReactHoverObserver>
+      {({ isHovering }) => {
+        return (
+          <>
+            <Dialog
+              onClose={handleCloseDialog}
+              aria-labelledby='column-dialog'
+              open={dialog?.show ?? false}
+              fullWidth
+              PaperProps={{
+                style: { borderRadius: 8 },
+              }}
+              disableBackdropClick
+            >
+              {dialog?.type === "rename-column" && canEdit() && (
+                <ChangeColumnName
+                  labelItem={columnLabelItem}
+                  request={request}
+                  responseCode={responseCode}
+                  renameColumn={(column, value) => {
+                    renameColumn(column, value);
+
+                    handleCloseDialog();
+                  }}
+                  isNameTaken={isNameTaken}
+                  onClose={handleCloseDialog}
+                />
+              )}
+            </Dialog>
+
+            <div className='flex flex-row p-1 h-8 justify-between items-center border-b-2 ml-6 hover:bg-neutral-gray8'>
+              <div className='flex flex-row items-center justify-start flex-1'>
+                <div className='flex-1 flex flex-row'>
+                  <img
+                    src={ColumnIcon}
+                    alt='ezapi logo'
+                    className='bg-white mr-4'
+                    style={{ height: "24px", width: "24px" }}
+                  />
+
+                  <p className='text-overline2'>
+                    {columnLabelItem?.sourceName}
+                  </p>
+                </div>
+
+                <div
+                  className='flex-1 pl-10 cursor-pointer select-none'
+                  ref={nameRef}
+                >
+                  <p className='text-overline2'>{columnLabelItem?.name}</p>
+                </div>
+
+                <div className='flex-1 pl-10'>
+                  <p className='text-overline2'>{columnLabelItem?.type}</p>
+                </div>
+
+                <div className='flex-1 pl-5'>
+                  <p className='text-overline2'>
+                    <Checkbox
+                      // checked={columnLabelItem?.required}
+                      checked={true}
+                      style={{
+                        color: Colors.brand.secondary,
+                        padding: "0",
+                      }}
+                    />
+                  </p>
+                </div>
+              </div>
+
+              <div className='w-6'>
+                {isHovering && canEdit() && (
+                  <>
+                    <AppIcon
+                      onClick={(ev) => {
+                        ev?.preventDefault();
+                        ev?.stopPropagation();
+
+                        handleOptionsClick(ev);
+                      }}
+                    >
+                      <MoreVertIcon />
+                    </AppIcon>
+
+                    <Menu
+                      id='table-menu'
+                      anchorEl={optionsMenuAnchorEl}
+                      keepMounted
+                      open={Boolean(optionsMenuAnchorEl)}
+                      onClose={() => {
+                        setOptionsMenuAnchorEl(null);
+                      }}
+                      TransitionComponent={Fade}
+                      style={{ borderRadius: "1rem", zIndex: "100" }}
+                    >
+                      <MenuItem
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setOptionsMenuAnchorEl(null);
+
+                          showColumnNameChangeDialog();
+                        }}
+                      >
+                        <p className='text-overline2'>Rename</p>
+                      </MenuItem>
+                      <MenuItem
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setOptionsMenuAnchorEl(null);
+
+                          deleteColumn(columnLabelItem);
+                        }}
+                      >
+                        <p className='text-overline2 text-accent-red'>Delete</p>
+                      </MenuItem>
+                    </Menu>
+                  </>
+                )}
+              </div>
+            </div>
+          </>
+        );
+      }}
+    </ReactHoverObserver>
+  );
+};
+
+export default Body;
