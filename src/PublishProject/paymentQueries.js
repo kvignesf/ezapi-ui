@@ -1,3 +1,4 @@
+import { useStripe } from "@stripe/react-stripe-js";
 import _ from "lodash";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useHistory } from "react-router-dom";
@@ -27,12 +28,12 @@ export const useGetProducts = (options = {}) => {
   return query;
 };
 
-const makePayment = async ({ projectId, productId, token }) => {
+const initiatePayment = async ({ projectId, productId, billingDetails }) => {
   try {
-    const { data } = await client.post(endpoint.payment, {
+    const { data } = await client.post(endpoint.initiatePayment, {
       projectId,
       productId,
-      token,
+      billingDetails,
     });
     return data;
   } catch (error) {
@@ -40,6 +41,41 @@ const makePayment = async ({ projectId, productId, token }) => {
   }
 };
 
-export const useMakePayment = () => {
-  return useMutation(makePayment);
+export const useInitiatePayment = () => {
+  return useMutation(initiatePayment);
+};
+
+const confirmPayment = async ({ card, billingDetails, secret, stripe }) => {
+  try {
+    const result = await stripe.confirmCardPayment(secret, {
+      payment_method: {
+        card: card,
+        billing_details: billingDetails,
+      },
+    });
+
+    return result;
+    // .then(function (result) {
+    //   if (result.error) {
+    //     // Show error to your customer (e.g., insufficient funds)
+    //     console.log(result.error.message);
+    //   } else {
+    //     // The payment has been processed!
+    //     if (result.paymentIntent.status === "succeeded") {
+    //       // Show a success message to your customer
+    //       // There's a risk of the customer closing the window before callback
+    //       // execution. Set up a webhook or plugin to listen for the
+    //       // payment_intent.succeeded event that handles any business critical
+    //       // post-payment actions.
+    //     }
+    //   }
+    // });
+  } catch (error) {
+    console.log("error", error);
+    throw Error("Something went wrong during payment");
+  }
+};
+
+export const useConfirmPayment = () => {
+  return useMutation(confirmPayment);
 };

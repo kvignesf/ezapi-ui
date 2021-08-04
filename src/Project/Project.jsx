@@ -27,11 +27,7 @@ import AppIcon from "../shared/components/AppIcon";
 import { useFetchProjectDetails, useVerifyProject } from "./projectQueries";
 import { OutlineButton, PrimaryButton } from "../shared/components/AppButton";
 import InitialsAvatar from "../shared/components/InitialsAvatar";
-import {
-  getFirstName,
-  getLastName,
-  getEmailId,
-} from "../shared/storage";
+import { getFirstName, getLastName, getEmailId } from "../shared/storage";
 import AddOrEditResource from "./Resources/AddOrEditResource";
 import Resources from "./Resources/Resources";
 import Match from "./Match";

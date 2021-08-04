@@ -3,8 +3,7 @@ import axios from "axios";
 import { getAccessToken, setAccessToken, clearSession } from "../storage";
 import routes from "../routes";
 
-// const baseUrl = process.env.REACT_APP_API_URL + "/node";
-const baseUrl = "https://test-1.ezapi.ai/node";
+const baseUrl = process.env.REACT_APP_API_URL;
 
 export const endpoint = Object.freeze({
   login: "/auth",
@@ -37,6 +36,7 @@ export const endpoint = Object.freeze({
   // Payment
   products: "/products",
   payment: "/payment",
+  initiatePayment: "/initiate-order",
 });
 
 const client = axios.create({

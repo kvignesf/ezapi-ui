@@ -1,10 +1,12 @@
-import React from "react";
+import React, { useMemo, useState } from "react";
 import { QueryClientProvider } from "react-query";
 import { RecoilRoot, useRecoilValue } from "recoil";
 import { BrowserRouter, Route, Switch, Redirect } from "react-router-dom";
 import { LinkedInPopUp } from "react-linkedin-login-oauth2";
 import { MuiThemeProvider, createMuiTheme } from "@material-ui/core";
 import SnackbarProvider from "react-simple-snackbar";
+import { loadStripe } from "@stripe/stripe-js";
+import { Elements, ElementsConsumer } from "@stripe/react-stripe-js";
 
 import queryClient from "./shared/network/queryClient";
 import NotFound from "./shared/components/NotFound";
@@ -17,8 +19,6 @@ import Landing from "./Landing";
 import { isUserLoggedIn, DebugObserver } from "./shared/utils";
 import Project from "./Project";
 import PublishProject from "./PublishProject/PublishProject";
-import { loadStripe } from "@stripe/stripe-js";
-import { Elements } from "@stripe/react-stripe-js";
 import CookieConsentPopup from "./CookieConsent";
 
 const theme = createMuiTheme({
@@ -34,12 +34,16 @@ const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_KEY);
 const App = () => {
   const isAuthenticated = () => isUserLoggedIn();
 
+  console.log("stripePromise", stripePromise);
+
   return (
     <RecoilRoot>
       <QueryClientProvider client={queryClient}>
         <MuiThemeProvider theme={theme}>
           <SnackbarProvider>
             <BrowserRouter>
+              {/* <CookieConsentPopup /> */}
+
               <Switch>
                 {/* Login route */}
                 <Route exact path={routes.signIn}>

@@ -27,7 +27,13 @@ import { useCanEdit } from "../shared/utils";
 import { getFirstName, getLastName, getEmailId } from "../shared/storage";
 import Colors from "../shared/colors";
 import { useLogout } from "../shared/query/authQueries";
-import { useGetProducts, useMakePayment } from "./paymentQueries";
+import {
+  useConfirmPayment,
+  useGetProducts,
+  useInitiatePayment,
+  useMakePayment,
+} from "./paymentQueries";
+import { useFormik } from "formik";
 
 const PublishProject = () => {
   const { id: projectId } = useParams();
@@ -43,37 +49,66 @@ const PublishProject = () => {
     isLoading: isFetchingProducts,
     isFetching: isFetchingProductsBg,
     error: productsError,
-    data: products,
+    data: productsData,
   } = useGetProducts(projectId);
   const {
-    isLoading: isMakingPayment,
-    error: paymentError,
-    mutate: makePayment,
-  } = useMakePayment();
+    isLoading: isConfirmingPayment,
+    error: confirmPaymentError,
+    isSuccess: isConfirmPaymentSuccess,
+    data: confirmPaymentData,
+    mutate: confirmPayment,
+    reset: resetConfirmPayment,
+  } = useConfirmPayment();
+  const {
+    isLoading: isInitiatingPayment,
+    error: initiatePaymentError,
+    data: initiatePaymentData,
+    isSuccess: isInitiatePaymentSuccess,
+    mutate: initiatePayment,
+    reset: resetInitiatePayment,
+  } = useInitiatePayment();
   const [userRole, setRole] = useState(null);
   const firstName = getFirstName();
   const lastName = getLastName();
   const [profileMenuAnchorEl, setProfilemenuAnchorEl] = useState(false);
   const { isLoading: isLoggingOut, mutate: logout } = useLogout();
+  const [product, setProduct] = useState(null);
   const stripe = useStripe();
   const elements = useElements();
+  const formik = useFormik({
+    initialValues: {
+      name: "",
+      phone: "",
+      email: "",
+      address: "",
+    },
+    onSubmit: (values) => {
+      resetInitiatePayment();
+      resetConfirmPayment();
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    const { error, paymentMethod } = await stripe.createPaymentMethod({
-      type: "card",
-      card: elements.getElement(CardElement),
-      billing_details: {},
-    });
+      initiatePaymentProcess(values);
+    },
+  });
 
-    if (paymentMethod && !error) {
-      makePayment({
-        projectId,
-        productId: 1,
-        token: paymentMethod,
+  useEffect(() => {
+    if (
+      isInitiatePaymentSuccess &&
+      !_.isEmpty(initiatePaymentData?.clientSecret)
+    ) {
+      confirmPayment({
+        secret: initiatePaymentData?.clientSecret,
+        card: elements.getElement(CardElement),
+        billingDetails: formik?.values,
+        stripe,
       });
     }
-  };
+  }, [isInitiatePaymentSuccess, initiatePaymentData]);
+
+  useEffect(() => {
+    if (productsData?.products && !_.isEmpty(productsData?.products)) {
+      setProduct(productsData?.products[0]);
+    }
+  }, [productsData]);
 
   useEffect(() => {
     if (projectDetails) {
@@ -95,6 +130,21 @@ const PublishProject = () => {
       }
     }
   }, [projectDetails]);
+
+  const initiatePaymentProcess = ({ name, phone, email, address }) => {
+    if (product) {
+      initiatePayment({
+        projectId,
+        productId: product?.productId,
+        billingDetails: {
+          name,
+          phone,
+          email,
+          address,
+        },
+      });
+    }
+  };
 
   const navigateBack = () => {
     history.goBack();
@@ -179,50 +229,117 @@ const PublishProject = () => {
         <ErrorWithMessage message='Failed to fetch payment details' />
       )}
 
-      {isMakingPayment && <LoaderWithMessage message='Making payment' />}
+      {productsData?.products && !_.isEmpty(productsData?.products) && (
+        <div className='container p-4 flex flex-row justify-evenly'>
+          <div className='flex flex-col'>
+            <p className='mb-4'>Choose a product</p>
 
-      {!isMakingPayment &&
-        products?.products &&
-        !_.isEmpty(products?.products) && (
-          <div className='container p-4 flex flex-row justify-evenly'>
-            <div className='flex flex-col'>
-              <p className='mb-4'>Choose a product</p>
+            {productsData?.products.map((product) => {
+              return (
+                <p key={product?.productId}>
+                  {product?.name} - {product?.price} ({product?.currency})
+                </p>
+              );
+            })}
+          </div>
 
-              {products?.products.map((product) => {
-                return (
-                  <p key={product?.productId}>
-                    {product?.name} - {product?.price} ({product?.currency})
-                  </p>
-                );
-              })}
-            </div>
+          <div className='w-full flex flex-col'>
+            <form
+              onSubmit={formik.handleSubmit}
+              className='flex flex-col items-start'
+            >
+              <label htmlFor='name'>Name</label>
+              <input
+                id='name'
+                type='text'
+                name='name'
+                onChange={formik.handleChange}
+                value={formik.values.name}
+                disabled={isInitiatingPayment || isConfirmingPayment}
+                required
+                className='mb-3 border-1'
+              />
 
-            <div className='w-full flex flex-col'>
-              <form
-                onSubmit={handleSubmit}
-                className='flex flex-col items-start'
-              >
-                <label className='mb-3'>
-                  Name:
-                  <input type='text' name='name' required />
-                </label>
-                <label className='mb-3'>
-                  Phone:
-                  <input type='text' name='phone' required />
-                </label>
-                <label className='mb-3'>
-                  Email:
-                  <input type='text' name='email' required />
-                </label>
+              <label htmlFor='phone'>Phone</label>
+              <input
+                id='phone'
+                type='text'
+                name='phone'
+                onChange={formik.handleChange}
+                value={formik.values.phone}
+                disabled={isInitiatingPayment || isConfirmingPayment}
+                required
+                className='mb-3 border-1'
+              />
 
-                <CardElement className='w-1/2 mb-3' />
-                <button type='submit' disabled={!stripe}>
+              <label htmlFor='email'>Email</label>
+              <input
+                id='email'
+                type='email'
+                name='email'
+                onChange={formik.handleChange}
+                value={formik.values.email}
+                disabled={isInitiatingPayment || isConfirmingPayment}
+                required
+                className='mb-3 border-1'
+              />
+
+              <label htmlFor='address'>Billing Address</label>
+              <input
+                id='address'
+                type='text'
+                name='address'
+                onChange={formik.handleChange}
+                value={formik.values.address}
+                disabled={isInitiatingPayment || isConfirmingPayment}
+                required
+                className='mb-3 border-1'
+              />
+
+              <CardElement
+                className='w-1/2 mb-3 mt-6 border-1'
+                disabled={isInitiatingPayment || isConfirmingPayment}
+              />
+
+              {!isInitiatingPayment && !isConfirmingPayment && (
+                <button
+                  type='submit'
+                  disabled={!stripe}
+                  className='mb-4 border-1'
+                >
                   Pay
                 </button>
-              </form>
-            </div>
+              )}
+
+              <p className='mt-4 mb-3'>Status - </p>
+
+              {isInitiatingPayment && <p>Initiating payment</p>}
+
+              {initiatePaymentError && (
+                <p>
+                  Failed to initiate payment - {initiatePaymentError?.message}
+                </p>
+              )}
+
+              {isConfirmingPayment && <p>Confirming payment</p>}
+
+              {confirmPaymentError && (
+                <p>
+                  Failed while confirming payment -
+                  {confirmPaymentError?.message}
+                </p>
+              )}
+
+              {isConfirmPaymentSuccess && !confirmPaymentData?.error && (
+                <p>Payment confirmed successfully</p>
+              )}
+              {isConfirmPaymentSuccess && confirmPaymentData?.error && (
+                <p>Payment failed - {confirmPaymentData?.error?.message}</p>
+              )}
+            </form>
           </div>
-        )}
+        </div>
+      )}
     </div>
   );
 };
