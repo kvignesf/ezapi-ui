@@ -29,7 +29,7 @@ const theme = createMuiTheme({
   },
 });
 
-// const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_KEY);
+const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_KEY);
 
 const App = () => {
   const isAuthenticated = () => isUserLoggedIn();
@@ -59,7 +59,7 @@ const App = () => {
                   component={Projects}
                 />
 
-                {/* <Route
+                <Route
                   exact
                   path={routes.publish}
                   render={(props) => {
@@ -80,7 +80,7 @@ const App = () => {
                       </>
                     );
                   }}
-                /> */}
+                />
 
                 <PrivateRoute exact path={routes.project} component={Project} />
 
