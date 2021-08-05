@@ -24,10 +24,15 @@ import CloseIcon from "@material-ui/icons/Close";
 import { Fade, Menu, MenuItem } from "@material-ui/core/index";
 
 import AppIcon from "../shared/components/AppIcon";
-import { useFetchProjectDetails, useVerifyProject } from "./projectQueries";
+import { useFetchProjectDetails } from "./projectQueries";
 import { OutlineButton, PrimaryButton } from "../shared/components/AppButton";
 import InitialsAvatar from "../shared/components/InitialsAvatar";
-import { getFirstName, getLastName, getEmailId } from "../shared/storage";
+import {
+  getFirstName,
+  getLastName,
+  getUserId,
+  getEmailId,
+} from "../shared/storage";
 import AddOrEditResource from "./Resources/AddOrEditResource";
 import Resources from "./Resources/Resources";
 import Match from "./Match";
@@ -45,7 +50,7 @@ import tableAtom from "../shared/atom/tableAtom";
 import schemaAtom from "../shared/atom/schemaAtom";
 import operationAtom from "./operationAtom";
 import Colors from "../shared/colors";
-import routes, { generateRoute } from "../shared/routes";
+import routes from "../shared/routes";
 import { useLogout } from "../shared/query/authQueries";
 import SaveOperationWarning from "./SaveOperationWarning";
 import OperationErrorsDialog from "./OperationErrorsDialog";
@@ -78,13 +83,23 @@ const Project = () => {
     reset: resetSyncOperationMutation,
   } = useSyncOperation();
   const {
-    isLoading: isVerifyingProject,
-    isSuccess: isVerifyProjectSuccess,
-    data: verifyProjectData,
-    error: verifyProjectError,
-    mutate: verify,
-    reset: resetVerifyMutation,
-  } = useVerifyProject();
+    verifyProjectMutation: {
+      isLoading: isVerifyingProject,
+      isSuccess: isVerifyProjectSuccess,
+      data: verifyProjectData,
+      error: verifyProjectError,
+      mutate: verify,
+      reset: resetVerifyMutation,
+    },
+    publishProjectMutation: {
+      isLoading: isPublishingProject,
+      isSuccess: isPublishProjectSuccess,
+      data: publishProjectData,
+      error: publishProjectError,
+      mutate: publish,
+      reset: resetPublishMutation,
+    },
+  } = useSubmitProject(projectId);
   const resetSchemaState = useResetRecoilState(schemaAtom);
   const resetTableState = useResetRecoilState(tableAtom);
   const resetOperationState = useResetRecoilState(operationAtomWithMiddleware);
@@ -208,11 +223,11 @@ const Project = () => {
     }
   };
 
-  // const closePublishProjectSuccess = () => {
-  //   resetPublishMutation();
-  //   resetVerifyMutation();
-  //   history.goBack();
-  // };
+  const closePublishProjectSuccess = () => {
+    resetPublishMutation();
+    resetVerifyMutation();
+    history.goBack();
+  };
 
   const handleProfileMenuClick = (event) => {
     setProfilemenuAnchorEl(event?.currentTarget);
@@ -239,7 +254,7 @@ const Project = () => {
   };
 
   const resetSubmitProjectMutation = () => {
-    // resetPublishMutation();
+    resetPublishMutation();
     resetVerifyMutation();
   };
 
@@ -266,18 +281,15 @@ const Project = () => {
     );
   };
 
-  if (isVerifyProjectSuccess) {
-    resetVerifyMutation();
-    history.push(generateRoute(routes.publish, projectId));
-  }
-
   return (
     <UserRoleProvider role={userRole}>
       <>
         <Dialog
           aria-labelledby='save-operation-dialog'
           open={
+            isPublishingProject ||
             isVerifyingProject ||
+            publishProjectData ||
             verifyProjectError ||
             isProjectHavingErrors() ||
             dialog?.show
@@ -288,11 +300,13 @@ const Project = () => {
           }}
           disableBackdropClick
         >
-          {(isVerifyingProject || isLoggingOut) && (
+          {(isPublishingProject || isVerifyingProject || isLoggingOut) && (
             <div className='p-6'>
               <div className='w-full flex flex-row items-center'>
                 <p className='text-overline mr-3'>
-                  {isLoggingOut
+                  {isPublishingProject
+                    ? "Publishing project"
+                    : isLoggingOut
                     ? "Logging out"
                     : isVerifyingProject
                     ? "Verifying Project"
@@ -320,7 +334,7 @@ const Project = () => {
             />
           )}
 
-          {/* {(publishProjectData || publishProjectError) && (
+          {(publishProjectData || publishProjectError) && (
             <PublishProjectMessage
               publishProjectData={publishProjectData}
               publishProjectError={publishProjectError}
@@ -328,7 +342,7 @@ const Project = () => {
               resetMutationState={resetSubmitProjectMutation}
               projectName={projectDetails?.projectName}
             />
-          )} */}
+          )}
 
           {!isSyncingOperation &&
             dialog?.show &&

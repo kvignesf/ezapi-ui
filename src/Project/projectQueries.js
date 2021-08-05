@@ -44,6 +44,14 @@ const verifyProject = async ({ projectId }) => {
   }
 };
 
+export const useVerifyProject = () => {
+  const verifyProjectMutation = useMutation(verifyProject, {
+    onSuccess: (data) => {},
+  });
+
+  return verifyProjectMutation;
+};
+
 const publishProject = async ({ projectId }) => {
   try {
     const { data } = await client.post(endpoint.publishProject, {
@@ -53,6 +61,14 @@ const publishProject = async ({ projectId }) => {
   } catch (error) {
     throw getApiError(error);
   }
+};
+
+export const usePublishProject = () => {
+  const publishProjectMutation = useMutation(publishProject, {
+    onSuccess: (data) => {},
+  });
+
+  return publishProjectMutation;
 };
 
 export const useSubmitProject = (projectId) => {
@@ -67,20 +83,4 @@ export const useSubmitProject = (projectId) => {
   });
 
   return { verifyProjectMutation, publishProjectMutation };
-};
-
-export const usePublishProject = () => {
-  const publishProjectMutation = useMutation(publishProject, {
-    onSuccess: (data) => {},
-  });
-
-  return publishProjectMutation;
-};
-
-export const useVerifyProject = () => {
-  const verifyProjectMutation = useMutation(verifyProject, {
-    onSuccess: (data) => {},
-  });
-
-  return verifyProjectMutation;
 };
