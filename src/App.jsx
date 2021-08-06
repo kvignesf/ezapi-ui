@@ -18,8 +18,9 @@ import Projects from "./Projects";
 import Landing from "./Landing";
 import { isUserLoggedIn, DebugObserver } from "./shared/utils";
 import Project from "./Project";
-import PublishProject from "./PublishProject/PublishProject";
+import ProjectPayment from "./ProjectPayment/ProjectPayment";
 import CookieConsentPopup from "./CookieConsent";
+import Orders from "./Orders/Orders";
 
 const theme = createMuiTheme({
   palette: {
@@ -59,15 +60,17 @@ const App = () => {
                   component={Projects}
                 />
 
+                <PrivateRoute exact path={routes.orders} component={Orders} />
+
                 <Route
                   exact
-                  path={routes.publish}
+                  path={routes.payment}
                   render={(props) => {
                     return (
                       <>
                         {isAuthenticated() ? (
                           <Elements stripe={stripePromise}>
-                            <PublishProject />
+                            <ProjectPayment />
                           </Elements>
                         ) : (
                           <Redirect

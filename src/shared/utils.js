@@ -35,6 +35,10 @@ export const getApiError = (error) => {
       return new Error("Failed to get the user details, please try again.");
     }
 
+    if (url && url === endpoint.publishProject) {
+      return error;
+    }
+
     return new Error("Invalid data provided, please check and retry");
   } else if (url && !_.isEmpty(url) && url.includes("/uploads")) {
     return new Error(error?.response?.data?.aiResponse?.message);
@@ -659,4 +663,10 @@ export const isItemSame = (item1, item2, fullPath) => {
   } else {
     return item1.name === item2.name;
   }
+};
+
+export const isFreePublishesExhausted = (publishProjectError) => {
+  return (
+    publishProjectError?.response?.data?.errorType === "FREE_PROJECTS_EXHAUSTED"
+  );
 };

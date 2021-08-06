@@ -24,10 +24,15 @@ import CloseIcon from "@material-ui/icons/Close";
 import { Fade, Menu, MenuItem } from "@material-ui/core/index";
 
 import AppIcon from "../shared/components/AppIcon";
-import { useFetchProjectDetails, useVerifyProject } from "./projectQueries";
+import { useFetchProjectDetails } from "./projectQueries";
 import { OutlineButton, PrimaryButton } from "../shared/components/AppButton";
 import InitialsAvatar from "../shared/components/InitialsAvatar";
-import { getFirstName, getLastName, getEmailId } from "../shared/storage";
+import {
+  getFirstName,
+  getLastName,
+  getUserId,
+  getEmailId,
+} from "../shared/storage";
 import AddOrEditResource from "./Resources/AddOrEditResource";
 import Resources from "./Resources/Resources";
 import Match from "./Match";
@@ -78,13 +83,23 @@ const Project = () => {
     reset: resetSyncOperationMutation,
   } = useSyncOperation();
   const {
-    isLoading: isVerifyingProject,
-    isSuccess: isVerifyProjectSuccess,
-    data: verifyProjectData,
-    error: verifyProjectError,
-    mutate: verify,
-    reset: resetVerifyMutation,
-  } = useVerifyProject();
+    verifyProjectMutation: {
+      isLoading: isVerifyingProject,
+      isSuccess: isVerifyProjectSuccess,
+      data: verifyProjectData,
+      error: verifyProjectError,
+      mutate: verify,
+      reset: resetVerifyMutation,
+    },
+    publishProjectMutation: {
+      isLoading: isPublishingProject,
+      isSuccess: isPublishProjectSuccess,
+      data: publishProjectData,
+      error: publishProjectError,
+      mutate: publish,
+      reset: resetPublishMutation,
+    },
+  } = useSubmitProject(projectId);
   const resetSchemaState = useResetRecoilState(schemaAtom);
   const resetTableState = useResetRecoilState(tableAtom);
   const resetOperationState = useResetRecoilState(operationAtomWithMiddleware);
@@ -203,16 +218,17 @@ const Project = () => {
       if (operationState?.isModified) {
         showSaveOperationWarning("without-nav");
       } else {
+        resetPublishMutation();
         verify({ projectId });
       }
     }
   };
 
-  // const closePublishProjectSuccess = () => {
-  //   resetPublishMutation();
-  //   resetVerifyMutation();
-  //   history.goBack();
-  // };
+  const closePublishProjectSuccess = () => {
+    resetPublishMutation();
+    resetVerifyMutation();
+    history.goBack();
+  };
 
   const handleProfileMenuClick = (event) => {
     setProfilemenuAnchorEl(event?.currentTarget);
@@ -239,7 +255,7 @@ const Project = () => {
   };
 
   const resetSubmitProjectMutation = () => {
-    // resetPublishMutation();
+    resetPublishMutation();
     resetVerifyMutation();
   };
 
@@ -266,10 +282,32 @@ const Project = () => {
     );
   };
 
-  if (isVerifyProjectSuccess) {
-    resetVerifyMutation();
-    history.push(generateRoute(routes.publish, projectId));
-  }
+  const isPublishLimitReached = () => {
+    return (
+      publishProjectError?.response?.data?.errorType === "PUBLISH_LIMIT_REACHED"
+    );
+  };
+
+  const isFreePublishesExhausted = () => {
+    return (
+      publishProjectError?.response?.data?.errorType ===
+      "FREE_PROJECTS_EXHAUSTED"
+    );
+  };
+
+  const getPublishButtonText = () => {
+    if (projectDetails?.publishCount === 0) {
+      return "Publish";
+    } else if (projectDetails?.publishCount > 0) {
+      return "Republish";
+    }
+
+    return "Publish";
+  };
+
+  const canShowPublishCountStatus = () => {
+    return projectDetails?.publishCount > 0 ?? false;
+  };
 
   return (
     <UserRoleProvider role={userRole}>
@@ -277,7 +315,10 @@ const Project = () => {
         <Dialog
           aria-labelledby='save-operation-dialog'
           open={
+            isPublishingProject ||
             isVerifyingProject ||
+            publishProjectData ||
+            publishProjectError ||
             verifyProjectError ||
             isProjectHavingErrors() ||
             dialog?.show
@@ -288,11 +329,13 @@ const Project = () => {
           }}
           disableBackdropClick
         >
-          {(isVerifyingProject || isLoggingOut) && (
+          {(isPublishingProject || isVerifyingProject || isLoggingOut) && (
             <div className='p-6'>
               <div className='w-full flex flex-row items-center'>
                 <p className='text-overline mr-3'>
-                  {isLoggingOut
+                  {isPublishingProject
+                    ? "Publishing project"
+                    : isLoggingOut
                     ? "Logging out"
                     : isVerifyingProject
                     ? "Verifying Project"
@@ -320,15 +363,33 @@ const Project = () => {
             />
           )}
 
-          {/* {(publishProjectData || publishProjectError) && (
+          {(publishProjectData || publishProjectError) && (
             <PublishProjectMessage
               publishProjectData={publishProjectData}
               publishProjectError={publishProjectError}
-              closeSuccessMessage={closePublishProjectSuccess}
-              resetMutationState={resetSubmitProjectMutation}
-              projectName={projectDetails?.projectName}
+              project={projectDetails}
+              onButtonClick={() => {
+                if (publishProjectData?.success) {
+                  closePublishProjectSuccess();
+                } else {
+                  resetSubmitProjectMutation();
+
+                  if (isFreePublishesExhausted()) {
+                    history.push(generateRoute(routes.payment, projectId));
+                  } else if (isPublishLimitReached()) {
+                    history.push(routes.contact);
+                  }
+                }
+              }}
+              onClose={() => {
+                if (publishProjectData?.success) {
+                  closePublishProjectSuccess();
+                } else {
+                  resetSubmitProjectMutation();
+                }
+              }}
             />
-          )} */}
+          )}
 
           {!isSyncingOperation &&
             dialog?.show &&
@@ -444,7 +505,7 @@ const Project = () => {
 
               {canEdit(userRole) && (
                 <PrimaryButton
-                  classes='mr-3'
+                  classes={canShowPublishCountStatus() ? "" : "mr-3"}
                   onClick={(e) => {
                     e?.preventDefault();
                     e?.stopPropagation();
@@ -452,8 +513,21 @@ const Project = () => {
                     submitProject();
                   }}
                 >
-                  Publish
+                  {getPublishButtonText()}
                 </PrimaryButton>
+              )}
+
+              {canShowPublishCountStatus() && (
+                <div
+                  className='flex flex-col py-1 px-3 border-1 border-l-0 border-brand-secondary mr-3 justify-center'
+                  style={{
+                    borderRadius: "4px",
+                    borderTopLeftRadius: "0px",
+                    borderBottomLeftRadius: "0px",
+                  }}
+                >
+                  <p className='text-overline2 text-brand-secondary text-center'>{`${projectDetails?.publishCount} / ${projectDetails?.publishLimit}`}</p>
+                </div>
               )}
 
               <div>

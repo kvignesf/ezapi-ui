@@ -28,6 +28,24 @@ export const useGetProducts = (options = {}) => {
   return query;
 };
 
+const getBasicProduct = async () => {
+  try {
+    const { data } = await client.get(`${endpoint.products}/basic`);
+    return data;
+  } catch (error) {
+    throw getApiError(error);
+  }
+};
+
+export const useGetBasicProduct = (options = {}) => {
+  const query = useQuery([queries.basicProduct], getBasicProduct, {
+    refetchOnWindowFocus: false,
+    ...options,
+  });
+
+  return query;
+};
+
 const initiatePayment = async ({ projectId, productId, billingDetails }) => {
   try {
     const { data } = await client.post(endpoint.initiatePayment, {

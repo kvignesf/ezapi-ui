@@ -37,6 +37,9 @@ export const endpoint = Object.freeze({
   products: "/products",
   payment: "/payment",
   initiatePayment: "/initiate-order",
+
+  // Orders
+  orders: "/orders",
 });
 
 const client = axios.create({

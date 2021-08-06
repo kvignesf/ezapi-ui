@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useHistory, useParams } from "react-router-dom";
 import _ from "lodash";
 import ArrowBackIcon from "@material-ui/icons/ArrowBack";
@@ -33,9 +33,11 @@ import {
   useInitiatePayment,
   useMakePayment,
 } from "./paymentQueries";
-import { useFormik } from "formik";
+import BillingDetailsForm from "./BillingDetailsForm";
+import CardDetailsForm from "./CardDetailsForm";
+import ProductDetails from "./ProductDetails";
 
-const PublishProject = () => {
+const ProjectPayment = () => {
   const { id: projectId } = useParams();
   const history = useHistory();
   const {
@@ -44,7 +46,9 @@ const PublishProject = () => {
     isSuccess: isProjectDetailsFetched,
     error: projectDetailsError,
     data: projectDetails,
-  } = useFetchProjectDetails(projectId, { refetchOnWindowFocus: false });
+  } = useFetchProjectDetails(projectId, {
+    refetchOnWindowFocus: false,
+  });
   const {
     isLoading: isFetchingProducts,
     isFetching: isFetchingProductsBg,
@@ -73,22 +77,10 @@ const PublishProject = () => {
   const [profileMenuAnchorEl, setProfilemenuAnchorEl] = useState(false);
   const { isLoading: isLoggingOut, mutate: logout } = useLogout();
   const [product, setProduct] = useState(null);
+  const billingDetailsRef = useRef();
+  const cardDetailsRef = useRef();
   const stripe = useStripe();
   const elements = useElements();
-  const formik = useFormik({
-    initialValues: {
-      name: "",
-      phone: "",
-      email: "",
-      address: "",
-    },
-    onSubmit: (values) => {
-      resetInitiatePayment();
-      resetConfirmPayment();
-
-      initiatePaymentProcess(values);
-    },
-  });
 
   useEffect(() => {
     if (
@@ -98,7 +90,8 @@ const PublishProject = () => {
       confirmPayment({
         secret: initiatePaymentData?.clientSecret,
         card: elements.getElement(CardElement),
-        billingDetails: formik?.values,
+        // billingDetails: billingDetailsRef?.current?.values,
+        billingDetails: {},
         stripe,
       });
     }
@@ -131,17 +124,19 @@ const PublishProject = () => {
     }
   }, [projectDetails]);
 
-  const initiatePaymentProcess = ({ name, phone, email, address }) => {
+  useEffect(() => {
+    if (projectDetailsError?.message?.toLowerCase() === "no_access") {
+      // No access
+      navigateBack();
+    }
+  }, [projectDetailsError]);
+
+  const initiatePaymentProcess = (billingDetails) => {
     if (product) {
       initiatePayment({
         projectId,
         productId: product?.productId,
-        billingDetails: {
-          name,
-          phone,
-          email,
-          address,
-        },
+        billingDetails,
       });
     }
   };
@@ -221,127 +216,47 @@ const PublishProject = () => {
         <ErrorWithMessage message='Failed to fetch project details' />
       )}
 
-      {isFetchingProducts && (
-        <LoaderWithMessage message='Loading payment details' />
-      )}
+      <div className='w-full flex flex-row p-12'>
+        <div className='flex-1 mr-6 px-6'>
+          <BillingDetailsForm
+            formRef={billingDetailsRef}
+            disabled={isInitiatingPayment || isConfirmingPayment}
+          />
 
-      {productsError && (
-        <ErrorWithMessage message='Failed to fetch payment details' />
-      )}
-
-      {productsData?.products && !_.isEmpty(productsData?.products) && (
-        <div className='container p-4 flex flex-row justify-evenly'>
-          <div className='flex flex-col'>
-            <p className='mb-4'>Choose a product</p>
-
-            {productsData?.products.map((product) => {
-              return (
-                <p key={product?.productId}>
-                  {product?.name} - {product?.price} ({product?.currency})
-                </p>
-              );
-            })}
-          </div>
-
-          <div className='w-full flex flex-col'>
-            <form
-              onSubmit={formik.handleSubmit}
-              className='flex flex-col items-start'
-            >
-              <label htmlFor='name'>Name</label>
-              <input
-                id='name'
-                type='text'
-                name='name'
-                onChange={formik.handleChange}
-                value={formik.values.name}
-                disabled={isInitiatingPayment || isConfirmingPayment}
-                required
-                className='mb-3 border-1'
-              />
-
-              <label htmlFor='phone'>Phone</label>
-              <input
-                id='phone'
-                type='text'
-                name='phone'
-                onChange={formik.handleChange}
-                value={formik.values.phone}
-                disabled={isInitiatingPayment || isConfirmingPayment}
-                required
-                className='mb-3 border-1'
-              />
-
-              <label htmlFor='email'>Email</label>
-              <input
-                id='email'
-                type='email'
-                name='email'
-                onChange={formik.handleChange}
-                value={formik.values.email}
-                disabled={isInitiatingPayment || isConfirmingPayment}
-                required
-                className='mb-3 border-1'
-              />
-
-              <label htmlFor='address'>Billing Address</label>
-              <input
-                id='address'
-                type='text'
-                name='address'
-                onChange={formik.handleChange}
-                value={formik.values.address}
-                disabled={isInitiatingPayment || isConfirmingPayment}
-                required
-                className='mb-3 border-1'
-              />
-
-              <CardElement
-                className='w-1/2 mb-3 mt-6 border-1'
-                disabled={isInitiatingPayment || isConfirmingPayment}
-              />
-
-              {!isInitiatingPayment && !isConfirmingPayment && (
-                <button
-                  type='submit'
-                  disabled={!stripe}
-                  className='mb-4 border-1'
-                >
-                  Pay
-                </button>
-              )}
-
-              <p className='mt-4 mb-3'>Status - </p>
-
-              {isInitiatingPayment && <p>Initiating payment</p>}
-
-              {initiatePaymentError && (
-                <p>
-                  Failed to initiate payment - {initiatePaymentError?.message}
-                </p>
-              )}
-
-              {isConfirmingPayment && <p>Confirming payment</p>}
-
-              {confirmPaymentError && (
-                <p>
-                  Failed while confirming payment -
-                  {confirmPaymentError?.message}
-                </p>
-              )}
-
-              {isConfirmPaymentSuccess && !confirmPaymentData?.error && (
-                <p>Payment confirmed successfully</p>
-              )}
-              {isConfirmPaymentSuccess && confirmPaymentData?.error && (
-                <p>Payment failed - {confirmPaymentData?.error?.message}</p>
-              )}
-            </form>
-          </div>
+          <CardDetailsForm
+            formRef={cardDetailsRef}
+            disabled={isInitiatingPayment || isConfirmingPayment}
+          />
         </div>
-      )}
+        <div className='flex-1'>
+          {
+            <ProductDetails
+              product={product}
+              disabled={
+                !billingDetailsRef?.current?.isValid ||
+                !cardDetailsRef?.current?.isValid ||
+                isInitiatingPayment ||
+                isConfirmingPayment ||
+                isLoggingOut
+              }
+              project={projectDetails}
+              onPurchaseClick={() => {
+                billingDetailsRef.current.handleSubmit();
+                cardDetailsRef.current.handleSubmit();
+
+                if (
+                  billingDetailsRef.current.isValid &&
+                  cardDetailsRef.current.isValid
+                ) {
+                  initiatePaymentProcess(billingDetailsRef.current.values);
+                }
+              }}
+            />
+          }
+        </div>
+      </div>
     </div>
   );
 };
 
-export default PublishProject;
+export default ProjectPayment;

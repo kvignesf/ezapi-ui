@@ -1,22 +1,62 @@
-import React from "react";
+import React, { useEffect } from "react";
 import CloseIcon from "@material-ui/icons/Close";
+import _ from "lodash";
+import { Link } from "react-router-dom";
 
 import AppIcon from "../shared/components/AppIcon";
-import { PrimaryButton } from "../shared/components/AppButton";
+import { PrimaryButton, TextButton } from "../shared/components/AppButton";
+import { useGetBasicProduct } from "../ProjectPayment/paymentQueries";
+import { CircularProgress } from "@material-ui/core";
 
 const PublishProjectMessage = ({
   publishProjectError,
   publishProjectData,
-  resetMutationState,
-  closeSuccessMessage,
-  projectName,
+  project,
+  onButtonClick,
+  onClose,
 }) => {
+  const {
+    isLoading: isLoadingBasicProduct,
+    isFetching: isLoadingBasicProductBg,
+    data: basicProductDetails,
+    error: getBasicProductError,
+    refetch: getBasicProductDetails,
+  } = useGetBasicProduct({
+    enabled: false,
+  });
+  const isHavingPublishErrors = () => {
+    return !_.isEmpty(publishProjectError?.response?.data?.errorType);
+  };
+
+  const isPublishLimitReached = () => {
+    return (
+      publishProjectError?.response?.data?.errorType === "PUBLISH_LIMIT_REACHED"
+    );
+  };
+
+  const isFreePublishesExhausted = () => {
+    return (
+      publishProjectError?.response?.data?.errorType ===
+      "FREE_PROJECTS_EXHAUSTED"
+    );
+  };
+
+  useEffect(() => {
+    if (project && isFreePublishesExhausted()) {
+      getBasicProductDetails();
+    }
+  }, [project]);
+
   return (
     <div>
       <div className='p-4 flex flex-row justify-between border-b-1'>
         <p className='text-subtitle2'>
           {publishProjectData?.success
             ? "Publish Successful"
+            : isFreePublishesExhausted()
+            ? "Upgrade Plan"
+            : isPublishLimitReached()
+            ? "Republish Limit Exceeded"
             : "Publish Failure"}
         </p>
         <AppIcon
@@ -24,11 +64,7 @@ const PublishProjectMessage = ({
             e?.preventDefault();
             e?.stopPropagation();
 
-            if (publishProjectData?.success) {
-              closeSuccessMessage();
-            } else {
-              resetMutationState();
-            }
+            onClose();
           }}
         >
           <CloseIcon />
@@ -36,30 +72,114 @@ const PublishProjectMessage = ({
       </div>
       <div className='p-4 py-6'>
         {publishProjectData?.success ? (
-          <p className='text-overline2'>{`Project ${projectName} successfully published. You can now download the specs and artifacts.`}</p>
+          <p className='text-overline2'>{`Project ${project?.projectName} successfully published. You can now download the specs and artifacts.`}</p>
         ) : (
           <p className='text-overline2'>{publishProjectData?.message}</p>
         )}
 
-        {publishProjectError && (
+        {publishProjectError && !isHavingPublishErrors() && (
           <p className='text-overline2'>{publishProjectError?.message}</p>
         )}
-      </div>
-      <div className='p-4 border-t-1 flex flex-row justify-end'>
-        <PrimaryButton
-          onClick={(e) => {
-            e?.preventDefault();
-            e?.stopPropagation();
 
-            if (publishProjectData?.success) {
-              closeSuccessMessage();
-            } else {
-              resetMutationState();
-            }
-          }}
-        >
-          OK
-        </PrimaryButton>
+        {publishProjectError && isPublishLimitReached() && (
+          <div>
+            <p className='text-overline3 uppercase mb-3'>
+              Republish Limit:
+              <span className='text-accent-red ml-2'>{`${project?.publishCount}/${project?.publishLimit}`}</span>
+            </p>
+            <p className='text-overline2'>
+              Republish limit exceeded for this project. If you want republish
+              again, please contact us and customise it.
+            </p>
+          </div>
+        )}
+
+        {publishProjectError && isFreePublishesExhausted() && (
+          <p className='text-overline2'>
+            You have reached your published project limit. You can still publish
+            this project by upgrading.
+          </p>
+        )}
+
+        {isFreePublishesExhausted() && (
+          <div className='mt-6'>
+            {isLoadingBasicProduct ||
+              (isLoadingBasicProductBg && (
+                <div className='flex flex-row'>
+                  <CircularProgress
+                    style={{
+                      width: "24px",
+                      height: "24px",
+                      marginRight: "0.5rem",
+                    }}
+                  />
+                  <p className='text-overline2'>Fetching basic plan details</p>
+                </div>
+              ))}
+
+            {getBasicProductError && (
+              <p className='text-overline2'>
+                Failed to load basic plan details
+              </p>
+            )}
+
+            {basicProductDetails && (
+              <p className='text-subtitle1'>
+                {`$${basicProductDetails?.price}`}
+                <span className='text-overline2 ml-2'>per project</span>
+              </p>
+            )}
+          </div>
+        )}
+      </div>
+
+      <div className='border-t-1 flex flex-row items-center p-4'>
+        {isFreePublishesExhausted() && (
+          <Link
+            to='/pricing'
+            target='_blank'
+            rel='noopener noreferrer'
+            className='text-overline2 text-brand-secondary hover:opacity-80'
+          >
+            Learn More
+          </Link>
+        )}
+
+        <div className='flex-1 flex flex-row justify-end'>
+          <TextButton
+            onClick={(e) => {
+              e?.preventDefault();
+              e?.stopPropagation();
+
+              onClose();
+            }}
+          >
+            Cancel
+          </TextButton>
+
+          {isPublishLimitReached() ? (
+            <Link
+              to='/contact'
+              target='_blank'
+              rel='noopener noreferrer'
+              className='text-overline2 text-white bg-brand-secondary p-2 px-3 hover:opacity-80'
+              style={{ borderRadius: "4px" }}
+            >
+              Contact Us
+            </Link>
+          ) : (
+            <PrimaryButton
+              onClick={(e) => {
+                e?.preventDefault();
+                e?.stopPropagation();
+
+                onButtonClick();
+              }}
+            >
+              {isFreePublishesExhausted() ? "Purchase" : "OK"}
+            </PrimaryButton>
+          )}
+        </div>
       </div>
     </div>
   );

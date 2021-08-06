@@ -16,6 +16,7 @@ import AddIcon from "@material-ui/icons/Add";
 import { useRecoilState } from "recoil";
 
 import Logo from "../static/images/logo/svg.svg";
+import { ReactComponent as OrderHistoryIcon } from "../static/images/order-history.svg";
 import Colors from "../shared/colors";
 import routes from "../shared/routes";
 import AppIcon from "../shared/components/AppIcon";
@@ -65,6 +66,8 @@ const Dashboard = ({ selectedIndex, children }) => {
         showAddProjectDialog();
       } else if (index === 1) {
         history.push(routes.projects);
+      } else if (index === 2) {
+        history.push(routes.orders);
       }
     }
   };
@@ -230,17 +233,49 @@ const Dashboard = ({ selectedIndex, children }) => {
                 <DashboardSharpIcon
                   className={`${classNames({
                     "text-brand-primary": selectedIndex === 1,
-                    "text-neutral-gray2": selectedIndex !== 1,
+                    "text-neutral-gray4": selectedIndex !== 1,
                   })}`}
                 />
               </ListItemIcon>
               <p
                 className={`text-overline2 ${classNames({
                   "text-brand-primary": selectedIndex === 1,
-                  "text-neutral-gray2": selectedIndex !== 1,
+                  "text-neutral-gray4": selectedIndex !== 1,
                 })}`}
               >
                 Dashboard
+              </p>
+            </ListItem>
+
+            <ListItem
+              button
+              selected={selectedIndex === 2}
+              onClick={() => {
+                handleSideMenuItemClick(2);
+              }}
+              style={{
+                padding: "1rem",
+              }}
+              className={selectedIndex === 2 ? styles.selectedItem : null}
+              classes={{ root: styles.root, selected: styles.selected }}
+              disableTouchRipple
+            >
+              <ListItemIcon style={{ minWidth: "0", marginRight: "1rem" }}>
+                <OrderHistoryIcon
+                  fill={
+                    selectedIndex === 2
+                      ? Colors.brand.primary
+                      : Colors.neutral.gray4
+                  }
+                />
+              </ListItemIcon>
+              <p
+                className={`text-overline2 ${classNames({
+                  "text-brand-primary": selectedIndex === 2,
+                  "text-neutral-gray4": selectedIndex !== 2,
+                })}`}
+              >
+                Order History
               </p>
             </ListItem>
           </List>
