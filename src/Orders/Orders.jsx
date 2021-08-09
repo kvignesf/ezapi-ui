@@ -8,6 +8,8 @@ import { useGetOrders } from "./ordersQueries";
 import EmptyLogo from "../static/images/empty-state.svg";
 import Colors from "../shared/colors";
 import OrderRow from "./OrderRow";
+import ErrorWithMessage from "../shared/components/ErrorWithMessage";
+import LoaderWithMessage from "../shared/components/LoaderWithMessage";
 
 const Content = () => {
   const {
@@ -17,6 +19,9 @@ const Content = () => {
     isFetching: isFetchingOrdersBg,
     refetch: refetchOrders,
   } = useGetOrders();
+
+  console.log("isFetchingOrders", isFetchingOrders);
+  console.log("isFetchingOrdersBg", isFetchingOrdersBg);
 
   return (
     <div className='p-3 h-full'>
@@ -47,13 +52,19 @@ const Content = () => {
         )}
       </Dialog> */}
 
+      {isFetchingOrders && <LoaderWithMessage message='Fetching orders' />}
+
+      {fetchOrdersError && <ErrorWithMessage message='Failed to load orders' />}
+
       {!_.isEmpty(ordersData?.orders) && (
         <table className='w-full'>
           <tr className='mr-16  bg-neutral-gray6 w-full text-left text-neutral-gray4 text-mediumLabel'>
             {/* <th className='p-2 rounded-tl-md rounded-bl-md uppercase'>
               Project Id
             </th> */}
-            <th className='uppercase'>Project Name</th>
+            <th className='p-2 rounded-tl-md rounded-bl-md uppercase'>
+              Project Name
+            </th>
             <th className='uppercase'>Product</th>
             <th className='uppercase'>Price</th>
             <th className='uppercase w-64'>Status</th>
