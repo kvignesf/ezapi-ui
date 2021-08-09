@@ -30,7 +30,7 @@ export const useGetProducts = (options = {}) => {
 
 const getBasicProduct = async () => {
   try {
-    const { data } = await client.get(`${endpoint.products}/basic`);
+    const { data } = await client.get(endpoint.basicProduct);
     return data;
   } catch (error) {
     throw getApiError(error);

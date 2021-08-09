@@ -144,7 +144,12 @@ const BillingDetailsForm = ({ disabled = false, formRef }) => {
               </div>
 
               <div className='mb-4'>
-                <p className='text-overline2 mb-2'>Address Line 2</p>
+                <p className='text-overline2 mb-2'>
+                  Address Line 2
+                  <span className='text-overline2 text-neutral-gray4 ml-1'>
+                    (optional)
+                  </span>
+                </p>
 
                 <Field
                   id='addressLine2'

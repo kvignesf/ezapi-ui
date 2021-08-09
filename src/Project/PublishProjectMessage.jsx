@@ -108,8 +108,8 @@ const PublishProjectMessage = ({
                 <div className='flex flex-row'>
                   <CircularProgress
                     style={{
-                      width: "24px",
-                      height: "24px",
+                      width: "20px",
+                      height: "20px",
                       marginRight: "0.5rem",
                     }}
                   />
@@ -123,12 +123,14 @@ const PublishProjectMessage = ({
               </p>
             )}
 
-            {basicProductDetails && (
-              <p className='text-subtitle1'>
-                {`$${basicProductDetails?.price}`}
-                <span className='text-overline2 ml-2'>per project</span>
-              </p>
-            )}
+            {basicProductDetails &&
+              !isLoadingBasicProduct &&
+              !isLoadingBasicProductBg && (
+                <p className='text-subtitle1'>
+                  {`$${basicProductDetails?.product?.price}`}
+                  <span className='text-overline2 ml-2'>per project</span>
+                </p>
+              )}
           </div>
         )}
       </div>

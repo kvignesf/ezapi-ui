@@ -49,14 +49,14 @@ const Content = () => {
 
       {!_.isEmpty(ordersData?.orders) && (
         <table className='w-full'>
-          <tr className='mr-16 bg-neutral-gray6 w-full text-left text-neutral-gray4 text-mediumLabel'>
-            <th className='p-2 w-64 rounded-tl-md rounded-bl-md uppercase'>
+          <tr className='mr-16  bg-neutral-gray6 w-full text-left text-neutral-gray4 text-mediumLabel'>
+            {/* <th className='p-2 rounded-tl-md rounded-bl-md uppercase'>
               Project Id
-            </th>
+            </th> */}
             <th className='uppercase'>Project Name</th>
             <th className='uppercase'>Product</th>
             <th className='uppercase'>Price</th>
-            <th className='uppercase'>Status</th>
+            <th className='uppercase w-64'>Status</th>
             <th className='uppercase'>Order Id</th>
             <th className='uppercase'>Order Date</th>
             <th className='rounded-tr-md rounded-br-md text-center'>

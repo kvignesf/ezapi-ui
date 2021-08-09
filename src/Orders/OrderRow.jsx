@@ -11,8 +11,8 @@ const OrderRow = ({ order }) => {
 
   return (
     <tr className='text-overline2'>
-      <td className='py-2'>{order?.projectId}</td>
-      <td>{order?.productName}</td>
+      {/* <td className='py-2'>{order?.projectData?.projectId}</td> */}
+      <td className='py-2'>{order?.projectData?.projectName}</td>
       <td>{order?.productName}</td>
       <td>${order?.productPrice}</td>
       <td>{order?.status}</td>

@@ -29,6 +29,7 @@ import Colors from "../shared/colors";
 import { useLogout } from "../shared/query/authQueries";
 import {
   useConfirmPayment,
+  useGetBasicProduct,
   useGetProducts,
   useInitiatePayment,
   useMakePayment,
@@ -36,6 +37,8 @@ import {
 import BillingDetailsForm from "./BillingDetailsForm";
 import CardDetailsForm from "./CardDetailsForm";
 import ProductDetails from "./ProductDetails";
+import PaymentStatusDialog from "./PaymentStatusDialog";
+import { PaymentStatus } from "./paymentUtils";
 
 const ProjectPayment = () => {
   const { id: projectId } = useParams();
@@ -49,20 +52,34 @@ const ProjectPayment = () => {
   } = useFetchProjectDetails(projectId, {
     refetchOnWindowFocus: false,
   });
+  // const {
+  //   isLoading: isFetchingProducts,
+  //   isFetching: isFetchingProductsBg,
+  //   error: productsError,
+  //   data: productsData,
+  // } = useGetProducts(projectId);
   const {
-    isLoading: isFetchingProducts,
-    isFetching: isFetchingProductsBg,
-    error: productsError,
-    data: productsData,
-  } = useGetProducts(projectId);
-  const {
-    isLoading: isConfirmingPayment,
-    error: confirmPaymentError,
-    isSuccess: isConfirmPaymentSuccess,
-    data: confirmPaymentData,
-    mutate: confirmPayment,
-    reset: resetConfirmPayment,
-  } = useConfirmPayment();
+    isLoading: isFetchingBasicProduct,
+    isFetching: isFetchingBasicProductBg,
+    error: getBasicProductError,
+    data: basicProductData,
+  } = useGetBasicProduct();
+  const initiatePaymentMutation = useInitiatePayment();
+  const confirmPaymentMutation = useConfirmPayment();
+  const [userRole, setRole] = useState(null);
+  const firstName = getFirstName();
+  const lastName = getLastName();
+  const [profileMenuAnchorEl, setProfilemenuAnchorEl] = useState(false);
+  const { isLoading: isLoggingOut, mutate: logout } = useLogout();
+  const [dialog, setDialog] = useState({
+    show: false,
+    data: null,
+    type: null,
+  });
+  const billingDetailsRef = useRef();
+  const cardDetailsRef = useRef();
+  const stripe = useStripe();
+  const elements = useElements();
   const {
     isLoading: isInitiatingPayment,
     error: initiatePaymentError,
@@ -70,17 +87,15 @@ const ProjectPayment = () => {
     isSuccess: isInitiatePaymentSuccess,
     mutate: initiatePayment,
     reset: resetInitiatePayment,
-  } = useInitiatePayment();
-  const [userRole, setRole] = useState(null);
-  const firstName = getFirstName();
-  const lastName = getLastName();
-  const [profileMenuAnchorEl, setProfilemenuAnchorEl] = useState(false);
-  const { isLoading: isLoggingOut, mutate: logout } = useLogout();
-  const [product, setProduct] = useState(null);
-  const billingDetailsRef = useRef();
-  const cardDetailsRef = useRef();
-  const stripe = useStripe();
-  const elements = useElements();
+  } = initiatePaymentMutation;
+  const {
+    isLoading: isConfirmingPayment,
+    error: confirmPaymentError,
+    isSuccess: isConfirmPaymentSuccess,
+    data: confirmPaymentData,
+    mutate: confirmPayment,
+    reset: resetConfirmPayment,
+  } = confirmPaymentMutation;
 
   useEffect(() => {
     if (
@@ -98,14 +113,8 @@ const ProjectPayment = () => {
   }, [isInitiatePaymentSuccess, initiatePaymentData]);
 
   useEffect(() => {
-    if (productsData?.products && !_.isEmpty(productsData?.products)) {
-      setProduct(productsData?.products[0]);
-    }
-  }, [productsData]);
-
-  useEffect(() => {
     if (projectDetails) {
-      // Get user role
+      // Fetch and set user role
       if (projectDetails?.members && !_.isEmpty(projectDetails?.members)) {
         const userEmail = getEmailId();
         const currentUserDetails = projectDetails?.members?.find(
@@ -115,30 +124,34 @@ const ProjectPayment = () => {
         setRole(currentUserDetails?.role);
       }
 
+      // Project is not valid state
       if (
         projectDetails?.status?.toLowerCase() !== "in_progress" &&
         projectDetails?.status?.toLowerCase() !== "complete"
       ) {
         navigateBack();
       }
+
+      // Cannot make payment
+      if (projectDetails?.projectBillingPlan?.toLowerCase() !== "none") {
+        navigateBack();
+      }
     }
   }, [projectDetails]);
 
   useEffect(() => {
+    // User no access
     if (projectDetailsError?.message?.toLowerCase() === "no_access") {
-      // No access
       navigateBack();
     }
   }, [projectDetailsError]);
 
   const initiatePaymentProcess = (billingDetails) => {
-    if (product) {
-      initiatePayment({
-        projectId,
-        productId: product?.productId,
-        billingDetails,
-      });
-    }
+    initiatePayment({
+      projectId,
+      productId: basicProductData?.productId,
+      billingDetails,
+    });
   };
 
   const navigateBack = () => {
@@ -149,8 +162,62 @@ const ProjectPayment = () => {
     setProfilemenuAnchorEl(event?.currentTarget);
   };
 
+  const handleCloseDialog = () => {
+    resetConfirmPayment();
+    resetInitiatePayment();
+
+    setDialog({
+      show: false,
+      type: null,
+      data: null,
+    });
+  };
+
+  const isPaymentSuccess = () => {
+    return (
+      isConfirmPaymentSuccess &&
+      confirmPaymentData?.paymentIntent?.status === "succeeded"
+    );
+  };
+
   return (
     <div>
+      <Dialog
+        aria-labelledby='payment-dialog'
+        open={
+          isInitiatingPayment ||
+          initiatePaymentError ||
+          isConfirmingPayment ||
+          confirmPaymentError ||
+          confirmPaymentData ||
+          isConfirmPaymentSuccess ||
+          dialog?.show
+        }
+        fullWidth
+        PaperProps={{
+          style: { borderRadius: 8 },
+        }}
+        disableBackdropClick
+      >
+        {
+          <PaymentStatusDialog
+            onClose={handleCloseDialog}
+            onButtonClick={() => {
+              if (isPaymentSuccess()) {
+                resetConfirmPayment();
+                resetInitiatePayment();
+
+                history.replace(`/projects/${projectId}`);
+              } else {
+                handleCloseDialog();
+              }
+            }}
+            initiatePaymentMutation={initiatePaymentMutation}
+            confirmPaymentMutation={confirmPaymentMutation}
+          />
+        }
+      </Dialog>
+
       <header className='px-2 border-b-2 flex flex-row justify-between items-center bg-white'>
         <div className='flex flex-row py-2 items-center'>
           <AppIcon
@@ -216,6 +283,15 @@ const ProjectPayment = () => {
         <ErrorWithMessage message='Failed to fetch project details' />
       )}
 
+      {isFetchingBasicProduct ||
+        (isFetchingBasicProductBg && (
+          <LoaderWithMessage message='Loading plan details' />
+        ))}
+
+      {getBasicProductError && (
+        <ErrorWithMessage message='Failed to fetch plan details' />
+      )}
+
       <div className='w-full flex flex-row p-12'>
         <div className='flex-1 mr-6 px-6'>
           <BillingDetailsForm
@@ -228,16 +304,13 @@ const ProjectPayment = () => {
             disabled={isInitiatingPayment || isConfirmingPayment}
           />
         </div>
-        <div className='flex-1'>
-          {
+
+        {basicProductData && (
+          <div className='flex-1'>
             <ProductDetails
-              product={product}
+              product={basicProductData?.product}
               disabled={
-                !billingDetailsRef?.current?.isValid ||
-                !cardDetailsRef?.current?.isValid ||
-                isInitiatingPayment ||
-                isConfirmingPayment ||
-                isLoggingOut
+                isInitiatingPayment || isConfirmingPayment || isLoggingOut
               }
               project={projectDetails}
               onPurchaseClick={() => {
@@ -246,14 +319,16 @@ const ProjectPayment = () => {
 
                 if (
                   billingDetailsRef.current.isValid &&
-                  cardDetailsRef.current.isValid
+                  cardDetailsRef.current.isValid &&
+                  billingDetailsRef?.current?.values?.fullName &&
+                  billingDetailsRef?.current?.values?.addressLine1
                 ) {
                   initiatePaymentProcess(billingDetailsRef.current.values);
                 }
               }}
             />
-          }
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );

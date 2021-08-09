@@ -34,7 +34,8 @@ export const endpoint = Object.freeze({
   downloadCodegen: "/download_codegen",
 
   // Payment
-  products: "/products",
+  products: "/product",
+  basicProduct: "/product/basic",
   payment: "/payment",
   initiatePayment: "/initiate-order",
 

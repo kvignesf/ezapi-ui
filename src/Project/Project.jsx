@@ -59,6 +59,7 @@ import PublishProjectMessage from "./PublishProjectMessage";
 import VerifyProjectError from "./VerifyProjectError";
 import ProjectVerificationErrors from "./ProjectVerificationErrors";
 import ModifyCollaborators from "../ModifyCollaborators/ModifyCollaborators";
+import RepublishInfo from "./RepublishInfo";
 
 const Project = () => {
   const { id: projectId } = useParams();
@@ -309,6 +310,14 @@ const Project = () => {
     return projectDetails?.publishCount > 0 ?? false;
   };
 
+  const showRepublishStatus = () => {
+    setDialog({
+      show: true,
+      type: "republish-status",
+      data: null,
+    });
+  };
+
   return (
     <UserRoleProvider role={userRole}>
       <>
@@ -419,6 +428,13 @@ const Project = () => {
               invitedCollaborators={projectDetails?.members}
             />
           )}
+
+          {dialog?.type === "republish-status" && (
+            <RepublishInfo
+              project={projectDetails}
+              onClose={handleCloseDialog}
+            />
+          )}
         </Dialog>
 
         <DndProvider backend={HTML5Backend}>
@@ -519,11 +535,17 @@ const Project = () => {
 
               {canShowPublishCountStatus() && (
                 <div
-                  className='flex flex-col py-1 px-3 border-1 border-l-0 border-brand-secondary mr-3 justify-center'
+                  className='flex flex-col py-1 px-3 border-1 border-l-0 border-brand-secondary mr-3 justify-center cursor-pointer'
                   style={{
                     borderRadius: "4px",
                     borderTopLeftRadius: "0px",
                     borderBottomLeftRadius: "0px",
+                  }}
+                  onClick={(e) => {
+                    e?.preventDefault();
+                    e?.stopPropagation();
+
+                    showRepublishStatus();
                   }}
                 >
                   <p className='text-overline2 text-brand-secondary text-center'>{`${projectDetails?.publishCount} / ${projectDetails?.publishLimit}`}</p>
