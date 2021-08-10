@@ -11,7 +11,7 @@ const ProductDetails = ({
   const { id: projectId } = useParams();
 
   return (
-    <div className='bg-brand-primarySubtle rounded-md p-8 mx-auto w-full max-w-md'>
+    <div className='bg-brand-primarySubtle rounded-md p-8 w-full max-w-md fixed ml-6'>
       <div className='flex flex-row mb-3 items-center'>
         <p className='text-overline2'>Project Name:</p>
         <p className='text-body2 ml-2'>{project?.projectName}</p>

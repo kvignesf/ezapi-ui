@@ -39,6 +39,10 @@ module.exports = {
         accent: {
           red: "#E53535",
           orange: "#FF8800",
+          green: "#05A660",
+          orangeSubtle: "#FFF8E5",
+          greenSubtle: "#E3FFF1",
+          redSubtle: "#FFE5E5",
         },
         score: {
           yellow: "#F1C232",
@@ -51,7 +55,9 @@ module.exports = {
     },
   },
   variants: {
-    extend: {},
+    extend: {
+      borderWidth: ["focus-within"],
+    },
   },
   plugins: [],
 };

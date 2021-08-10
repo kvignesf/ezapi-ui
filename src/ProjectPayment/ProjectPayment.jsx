@@ -292,18 +292,20 @@ const ProjectPayment = () => {
         <ErrorWithMessage message='Failed to fetch plan details' />
       )}
 
-      <div className='w-full flex flex-row p-12'>
-        <div className='flex-1 mr-6 px-6'>
-          <BillingDetailsForm
-            formRef={billingDetailsRef}
-            disabled={isInitiatingPayment || isConfirmingPayment}
-          />
+      <div className='w-full flex flex-row p-12 h-full'>
+        {basicProductData && (
+          <div className='flex-1 mr-6 px-6'>
+            <BillingDetailsForm
+              formRef={billingDetailsRef}
+              disabled={isInitiatingPayment || isConfirmingPayment}
+            />
 
-          <CardDetailsForm
-            formRef={cardDetailsRef}
-            disabled={isInitiatingPayment || isConfirmingPayment}
-          />
-        </div>
+            <CardDetailsForm
+              formRef={cardDetailsRef}
+              disabled={isInitiatingPayment || isConfirmingPayment}
+            />
+          </div>
+        )}
 
         {basicProductData && (
           <div className='flex-1'>

@@ -44,7 +44,11 @@ const PaymentStatusDialog = ({
     } else if (isPaymentSuccess()) {
       return "Payment successful";
     } else if (!isPaymentSuccess()) {
-      return confirmPaymentError?.error?.message;
+      return (
+        confirmPaymentData?.error?.message ??
+        confirmPaymentError?.message ??
+        "Something went wrong while making payment"
+      );
     }
 
     return "-";

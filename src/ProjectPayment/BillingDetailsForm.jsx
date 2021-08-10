@@ -4,9 +4,11 @@ import { MenuItem, Select, TextField } from "@material-ui/core";
 import countryList from "react-select-country-list";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
+import { CountryDropdown, RegionDropdown } from "react-country-region-selector";
 
 import billingDetailsSchema from "./billingDetailsSchema";
 import { PrimaryButton } from "../shared/components/AppButton";
+import classNames from "classnames";
 
 const BillingDetailsForm = ({ disabled = false, formRef }) => {
   return (
@@ -29,7 +31,7 @@ const BillingDetailsForm = ({ disabled = false, formRef }) => {
         validationSchema={billingDetailsSchema}
         innerRef={formRef}
       >
-        {({ values, errors, touched }) => {
+        {({ values, errors, touched, setFieldValue }) => {
           return (
             <Form>
               <div className='mb-4'>
@@ -84,29 +86,39 @@ const BillingDetailsForm = ({ disabled = false, formRef }) => {
               <div className='mb-4'>
                 <p className='text-overline2 mb-2'>Country</p>
 
-                <Field
-                  labelId='country-select-label'
-                  id='country'
-                  name='country'
-                  value={values.country}
-                  disabled={disabled}
-                  variant='outlined'
-                  error={touched.country && Boolean(errors.country)}
-                  helperText={<ErrorMessage name='country' />}
-                  style={{ width: "100%" }}
-                  defaultValue={"India"}
-                  as={Select}
+                <div
+                  className={classNames(
+                    "border-1 rounded-md p-3",
+                    {
+                      "border-accent-red":
+                        touched?.country && Boolean(errors?.country),
+                      "border-neutral-gray5": !(
+                        touched?.country && Boolean(errors?.country)
+                      ),
+                    },
+                    "focus-within:border-brand-primary focus-within:border-2"
+                  )}
                 >
-                  {countryList()
-                    .getData()
-                    ?.map((country) => {
-                      return (
-                        <MenuItem value={country?.label}>
-                          {country?.label}
-                        </MenuItem>
-                      );
-                    })}
-                </Field>
+                  <Field
+                    labelId='country-select-label'
+                    id='country'
+                    name='country'
+                    value={values.country}
+                    disabled={disabled}
+                    variant='outlined'
+                    error={touched.country && Boolean(errors.country)}
+                    helperText={<ErrorMessage name='country' />}
+                    style={{
+                      width: "100%",
+                    }}
+                    as={CountryDropdown}
+                    onChange={(v) => {
+                      setFieldValue("country", v);
+                    }}
+                    classes={"outline-none"}
+                    defaultOptionLabel=''
+                  />
+                </div>
                 {touched?.country && Boolean(errors?.country) && (
                   <p
                     className='py-1'
@@ -170,8 +182,8 @@ const BillingDetailsForm = ({ disabled = false, formRef }) => {
                 />
               </div>
 
-              <div className='flex flex-row mb-3'>
-                <div className='mr-3'>
+              <div className='flex flex-row mb-3 w-full'>
+                <div className='flex-1 mr-3'>
                   <p className='text-overline2 mb-2'>Zipcode</p>
 
                   <Field
@@ -193,7 +205,7 @@ const BillingDetailsForm = ({ disabled = false, formRef }) => {
                   />
                 </div>
 
-                <div className='mr-3'>
+                <div className='flex-1 mr-3'>
                   <p className='text-overline2 mb-2'>City</p>
 
                   <Field
@@ -215,26 +227,59 @@ const BillingDetailsForm = ({ disabled = false, formRef }) => {
                   />
                 </div>
 
-                <div className=''>
+                <div className='flex-1'>
                   <p className='text-overline2 mb-2'>State</p>
 
-                  <Field
-                    id='state'
-                    name='state'
-                    fullWidth
-                    color='primary'
-                    variant='outlined'
-                    disabled={disabled}
-                    error={touched.state && Boolean(errors.state)}
-                    helperText={<ErrorMessage name='state' />}
-                    onKeyUp={(e) => {}}
-                    inputProps={{
-                      style: {
-                        height: "6px",
+                  <div
+                    className={classNames(
+                      "border-1 rounded-md",
+                      {
+                        "border-accent-red":
+                          touched?.state && Boolean(errors?.state),
+                        "border-neutral-gray5": !(
+                          touched?.state && Boolean(errors?.state)
+                        ),
                       },
-                    }}
-                    as={TextField}
-                  />
+                      "focus-within:border-brand-primary focus-within:border-2"
+                    )}
+                    style={{ padding: "9px" }}
+                  >
+                    <Field
+                      id='state'
+                      name='state'
+                      fullWidth
+                      color='primary'
+                      variant='outlined'
+                      disabled={disabled}
+                      error={touched.state && Boolean(errors.state)}
+                      helperText={<ErrorMessage name='state' />}
+                      onKeyUp={(e) => {}}
+                      style={{
+                        width: "100%",
+                      }}
+                      value={values?.state}
+                      as={RegionDropdown}
+                      country={values?.country}
+                      onChange={(v) => {
+                        setFieldValue("state", v);
+                      }}
+                      classes={"outline-none"}
+                      defaultOptionLabel=''
+                      blankOptionLabel=''
+                    />
+                  </div>
+                  {touched?.state && Boolean(errors?.state) && (
+                    <p
+                      className='py-1'
+                      style={{
+                        fontSize: "0.75rem",
+                        marginLeft: "1rem",
+                        color: "#f44336",
+                      }}
+                    >
+                      {errors?.state}
+                    </p>
+                  )}
                 </div>
               </div>
 

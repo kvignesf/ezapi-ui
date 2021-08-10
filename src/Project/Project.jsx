@@ -252,7 +252,7 @@ const Project = () => {
   };
 
   const navigateBack = () => {
-    history.goBack();
+    history.replace(routes.projects);
   };
 
   const resetSubmitProjectMutation = () => {
