@@ -14,7 +14,7 @@ import Colors from "../../../../shared/colors";
 import _ from "lodash";
 
 const DeleteParameter = ({ parameter, onClose }) => {
-  const { id: projectId } = useParams();
+  const { projectId } = useParams();
   const {
     isLoading: isDeletingParameter,
     isSuccess: isDeleteSuccess,

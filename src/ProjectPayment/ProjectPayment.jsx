@@ -39,9 +39,88 @@ import CardDetailsForm from "./CardDetailsForm";
 import ProductDetails from "./ProductDetails";
 import PaymentStatusDialog from "./PaymentStatusDialog";
 import { PaymentStatus } from "./paymentUtils";
+import routes, { generateRoute } from "../shared/routes";
+import { useQueryClient } from "react-query";
+import { queries } from "../shared/network/queryClient";
+
+const Header = ({
+  projectDetails,
+  logoutMutation: { isLoading: isLoggingOut, mutate: logout },
+}) => {
+  const history = useHistory();
+  const firstName = getFirstName();
+  const lastName = getLastName();
+  const [profileMenuAnchorEl, setProfilemenuAnchorEl] = useState(false);
+
+  const navigateBack = () => {
+    history.goBack();
+  };
+
+  const handleProfileMenuClick = (event) => {
+    setProfilemenuAnchorEl(event?.currentTarget);
+  };
+
+  return (
+    <header className='px-2 border-b-2 flex flex-row justify-between items-center bg-white'>
+      <div className='flex flex-row py-2 items-center'>
+        <AppIcon
+          style={{ marginRight: "1rem" }}
+          onClick={(event) => {
+            event?.preventDefault();
+            event?.stopPropagation();
+
+            navigateBack();
+          }}
+        >
+          <ArrowBackIcon />
+        </AppIcon>
+
+        <p className='text-overline1'>{projectDetails?.projectName}</p>
+      </div>
+
+      <div className='flex flex-row py-2'>
+        <div>
+          <InitialsAvatar
+            firstName={firstName}
+            lastName={lastName}
+            className='cursor-pointer'
+            onClick={(e) => {
+              e?.preventDefault();
+              e?.stopPropagation();
+
+              handleProfileMenuClick(e);
+            }}
+          />
+
+          <Menu
+            id='profile-menu'
+            anchorEl={profileMenuAnchorEl}
+            keepMounted
+            open={Boolean(profileMenuAnchorEl)}
+            onClose={() => {
+              setProfilemenuAnchorEl(null);
+            }}
+            TransitionComponent={Fade}
+            style={{ borderRadius: "1rem", zIndex: "100" }}
+          >
+            <MenuItem
+              onClick={() => {
+                setProfilemenuAnchorEl(null);
+                logout();
+              }}
+              style={{ color: Colors.accent.red }}
+            >
+              Logout
+            </MenuItem>
+          </Menu>
+        </div>
+      </div>
+    </header>
+  );
+};
 
 const ProjectPayment = () => {
-  const { id: projectId } = useParams();
+  const { projectId, orderId } = useParams();
   const history = useHistory();
   const {
     isLoading: isFetchingProjectDetails,
@@ -52,6 +131,8 @@ const ProjectPayment = () => {
   } = useFetchProjectDetails(projectId, {
     refetchOnWindowFocus: false,
   });
+  const logoutMutation = useLogout();
+  const { isLoading: isLoggingOut, mutate: logout } = logoutMutation;
   // const {
   //   isLoading: isFetchingProducts,
   //   isFetching: isFetchingProductsBg,
@@ -67,10 +148,6 @@ const ProjectPayment = () => {
   const initiatePaymentMutation = useInitiatePayment();
   const confirmPaymentMutation = useConfirmPayment();
   const [userRole, setRole] = useState(null);
-  const firstName = getFirstName();
-  const lastName = getLastName();
-  const [profileMenuAnchorEl, setProfilemenuAnchorEl] = useState(false);
-  const { isLoading: isLoggingOut, mutate: logout } = useLogout();
   const [dialog, setDialog] = useState({
     show: false,
     data: null,
@@ -96,6 +173,7 @@ const ProjectPayment = () => {
     mutate: confirmPayment,
     reset: resetConfirmPayment,
   } = confirmPaymentMutation;
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     if (
@@ -105,8 +183,8 @@ const ProjectPayment = () => {
       confirmPayment({
         secret: initiatePaymentData?.clientSecret,
         card: elements.getElement(CardElement),
-        // billingDetails: billingDetailsRef?.current?.values,
-        billingDetails: {},
+        billingDetails: billingDetailsRef?.current?.values,
+        // billingDetails: {},
         stripe,
       });
     }
@@ -147,24 +225,37 @@ const ProjectPayment = () => {
   }, [projectDetailsError]);
 
   const initiatePaymentProcess = (billingDetails) => {
-    initiatePayment({
-      projectId,
-      productId: basicProductData?.product?.productId,
-      billingDetails,
-    });
+    if (_.isEmpty(initiatePaymentData?.clientSecret)) {
+      initiatePayment({
+        projectId,
+        productId: basicProductData?.product?.productId,
+        billingDetails,
+        orderId,
+      });
+    } else {
+      confirmPayment({
+        secret: initiatePaymentData?.clientSecret,
+        card: elements.getElement(CardElement),
+        billingDetails: billingDetailsRef?.current?.values,
+        stripe,
+      });
+    }
   };
 
   const navigateBack = () => {
     history.goBack();
   };
 
-  const handleProfileMenuClick = (event) => {
-    setProfilemenuAnchorEl(event?.currentTarget);
-  };
-
   const handleCloseDialog = () => {
     resetConfirmPayment();
-    resetInitiatePayment();
+
+    if (isPaymentSuccess()) {
+      resetInitiatePayment();
+      invalidateProject();
+      navigateBack();
+    } else if (initiatePaymentError) {
+      resetInitiatePayment();
+    }
 
     setDialog({
       show: false,
@@ -179,6 +270,62 @@ const ProjectPayment = () => {
       confirmPaymentData?.paymentIntent?.status === "succeeded"
     );
   };
+
+  const invalidateProject = () => {
+    queryClient.invalidateQueries(`${queries.projects}-${projectId}`);
+  };
+
+  if (isFetchingProjectDetails) {
+    return (
+      <div className='flex flex-col'>
+        <Header
+          projectDetails={projectDetails}
+          logoutMutation={logoutMutation}
+        />
+
+        <LoaderWithMessage message='Loading project details' />
+      </div>
+    );
+  }
+
+  if (projectDetailsError) {
+    return (
+      <div className='flex flex-col'>
+        <Header
+          projectDetails={projectDetails}
+          logoutMutation={logoutMutation}
+        />
+
+        <ErrorWithMessage message='Failed to fetch project details' />
+      </div>
+    );
+  }
+
+  if (isFetchingBasicProduct || isFetchingBasicProductBg) {
+    return (
+      <div className='flex flex-col'>
+        <Header
+          projectDetails={projectDetails}
+          logoutMutation={logoutMutation}
+        />
+
+        <LoaderWithMessage message='Loading plan details' />
+      </div>
+    );
+  }
+
+  if (getBasicProductError) {
+    return (
+      <div className='flex flex-col'>
+        <Header
+          projectDetails={projectDetails}
+          logoutMutation={logoutMutation}
+        />
+
+        <ErrorWithMessage message='Failed to fetch plan details' />
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -199,98 +346,24 @@ const ProjectPayment = () => {
         }}
         disableBackdropClick
       >
-        {
-          <PaymentStatusDialog
-            onClose={handleCloseDialog}
-            onButtonClick={() => {
-              if (isPaymentSuccess()) {
-                resetConfirmPayment();
-                resetInitiatePayment();
-
-                history.replace(`/projects/${projectId}`);
-              } else {
-                handleCloseDialog();
-              }
-            }}
-            initiatePaymentMutation={initiatePaymentMutation}
-            confirmPaymentMutation={confirmPaymentMutation}
-          />
-        }
+        <PaymentStatusDialog
+          onClose={handleCloseDialog}
+          onButtonClick={() => {
+            if (isPaymentSuccess()) {
+              resetConfirmPayment();
+              resetInitiatePayment();
+              invalidateProject();
+              navigateBack();
+            } else {
+              handleCloseDialog();
+            }
+          }}
+          initiatePaymentMutation={initiatePaymentMutation}
+          confirmPaymentMutation={confirmPaymentMutation}
+        />
       </Dialog>
 
-      <header className='px-2 border-b-2 flex flex-row justify-between items-center bg-white'>
-        <div className='flex flex-row py-2 items-center'>
-          <AppIcon
-            style={{ marginRight: "1rem" }}
-            onClick={(event) => {
-              event?.preventDefault();
-              event?.stopPropagation();
-
-              navigateBack();
-            }}
-          >
-            <ArrowBackIcon />
-          </AppIcon>
-
-          <p className='text-overline1'>{projectDetails?.projectName}</p>
-        </div>
-
-        <div className='flex flex-row py-2'>
-          <div>
-            <InitialsAvatar
-              firstName={firstName}
-              lastName={lastName}
-              className='cursor-pointer'
-              onClick={(e) => {
-                e?.preventDefault();
-                e?.stopPropagation();
-
-                handleProfileMenuClick(e);
-              }}
-            />
-
-            <Menu
-              id='profile-menu'
-              anchorEl={profileMenuAnchorEl}
-              keepMounted
-              open={Boolean(profileMenuAnchorEl)}
-              onClose={() => {
-                setProfilemenuAnchorEl(null);
-              }}
-              TransitionComponent={Fade}
-              style={{ borderRadius: "1rem", zIndex: "100" }}
-            >
-              <MenuItem
-                onClick={() => {
-                  setProfilemenuAnchorEl(null);
-                  logout();
-                }}
-                style={{ color: Colors.accent.red }}
-              >
-                Logout
-              </MenuItem>
-            </Menu>
-          </div>
-        </div>
-      </header>
-
-      {isFetchingProjectDetails ||
-        (isFetchingProjectDetailsBg && (
-          <LoaderWithMessage message='Loading project details' />
-        ))}
-
-      {projectDetailsError && (
-        <ErrorWithMessage message='Failed to fetch project details' />
-      )}
-
-      {isFetchingBasicProduct ||
-        (isFetchingBasicProductBg && (
-          <LoaderWithMessage message='Loading plan details' />
-        ))}
-
-      {getBasicProductError && (
-        <ErrorWithMessage message='Failed to fetch plan details' />
-      )}
+      <Header projectDetails={projectDetails} logoutMutation={logoutMutation} />
 
       <div className='w-full flex flex-row p-12 h-full'>
         {basicProductData && (

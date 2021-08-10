@@ -62,7 +62,7 @@ import ModifyCollaborators from "../ModifyCollaborators/ModifyCollaborators";
 import RepublishInfo from "./RepublishInfo";
 
 const Project = () => {
-  const { id: projectId } = useParams();
+  const { projectId } = useParams();
   const history = useHistory();
   const firstName = getFirstName();
   const lastName = getLastName();
@@ -253,6 +253,7 @@ const Project = () => {
 
   const navigateBack = () => {
     history.replace(routes.projects);
+    // history.goBack();
   };
 
   const resetSubmitProjectMutation = () => {

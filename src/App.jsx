@@ -63,8 +63,7 @@ const App = () => {
                 <PrivateRoute exact path={routes.orders} component={Orders} />
 
                 <Route
-                  exact
-                  path={routes.payment}
+                  path={routes.paymentForOrder}
                   render={(props) => {
                     return (
                       <>

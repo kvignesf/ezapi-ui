@@ -115,6 +115,7 @@ const BillingDetailsForm = ({ disabled = false, formRef }) => {
                     onChange={(v) => {
                       setFieldValue("country", v);
                     }}
+                    valueType='short'
                     classes={"outline-none"}
                     defaultOptionLabel=''
                   />
@@ -263,6 +264,7 @@ const BillingDetailsForm = ({ disabled = false, formRef }) => {
                       onChange={(v) => {
                         setFieldValue("state", v);
                       }}
+                      countryValueType='short'
                       classes={"outline-none"}
                       defaultOptionLabel=''
                       blankOptionLabel=''
@@ -332,8 +334,7 @@ const BillingDetailsForm = ({ disabled = false, formRef }) => {
                     }}
                     value={values?.phone}
                     country={"us"}
-                    // disabled={isLoading || isSuccess}
-                    // disableDropdown={isLoading || isSuccess}
+                    onChange={(phone) => setFieldValue("phone", phone)}
                     as={PhoneInput}
                   />
                 </div>

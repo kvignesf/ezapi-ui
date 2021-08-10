@@ -27,7 +27,7 @@ import { useDrag } from "react-dnd";
 import { operationAtomWithMiddleware } from "../../../shared/utils";
 
 const Parameters = () => {
-  const { id: projectId } = useParams();
+  const { projectId } = useParams();
   const {
     isLoading: isFetchingParameters,
     data: parameters,

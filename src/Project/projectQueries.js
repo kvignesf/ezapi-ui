@@ -23,7 +23,7 @@ const fetchProjectDetails = async ({ queryKey }) => {
 
 export const useFetchProjectDetails = (projectId, options = {}) => {
   const query = useQuery(
-    [queries.projects, { projectId }],
+    [`${queries.projects}-${projectId}`, { projectId }],
     fetchProjectDetails,
     {
       ...options,

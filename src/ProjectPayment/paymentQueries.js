@@ -1,7 +1,7 @@
 import { useStripe } from "@stripe/react-stripe-js";
 import _ from "lodash";
 import { useMutation, useQuery, useQueryClient } from "react-query";
-import { useHistory } from "react-router-dom";
+import { useHistory, useParams } from "react-router-dom";
 import { useRecoilValue } from "recoil";
 
 import client, { endpoint } from "../shared/network/client";
@@ -46,12 +46,12 @@ export const useGetBasicProduct = (options = {}) => {
   return query;
 };
 
-const initiatePayment = async ({ projectId, productId, billingDetails }) => {
+const initiatePayment = async ({ projectId, productId, orderId }) => {
   try {
     const { data } = await client.post(endpoint.initiatePayment, {
       projectId,
       productId,
-      billingDetails,
+      orderId,
     });
     return data;
   } catch (error) {
@@ -65,35 +65,51 @@ export const useInitiatePayment = () => {
 
 const confirmPayment = async ({ card, billingDetails, secret, stripe }) => {
   try {
+    // const { error, paymentMethod } = await stripe.createPaymentMethod({
+    //   type: "card",
+    //   card: card,
+    //   billing_details: {
+    //     address: {
+    //       city: billingDetails?.city,
+    //       country: billingDetails?.country,
+    //       line1: billingDetails?.addressLine1,
+    //       line2: billingDetails?.addressLine2,
+    //       state: billingDetails?.state,
+    //       postal_code: billingDetails?.zip,
+    //     },
+    //     email: billingDetails?.email,
+    //     phone: billingDetails?.phone,
+    //     name: billingDetails?.fullName,
+    //   },
+    // });
+
+    // if (paymentMethod) {
     const result = await stripe.confirmCardPayment(secret, {
       payment_method: {
+        type: "card",
         card: card,
-        billing_details: billingDetails,
       },
     });
 
     return result;
-    // .then(function (result) {
-    //   if (result.error) {
-    //     // Show error to your customer (e.g., insufficient funds)
-    //     console.log(result.error.message);
-    //   } else {
-    //     // The payment has been processed!
-    //     if (result.paymentIntent.status === "succeeded") {
-    //       // Show a success message to your customer
-    //       // There's a risk of the customer closing the window before callback
-    //       // execution. Set up a webhook or plugin to listen for the
-    //       // payment_intent.succeeded event that handles any business critical
-    //       // post-payment actions.
-    //     }
-    //   }
-    // });
+    // } else if (error) {
+    //   throw Error("Failed to confirm payment");
+    // }
+    // return null;
   } catch (error) {
-    console.log("error", error);
     throw Error("Something went wrong during payment");
   }
 };
 
 export const useConfirmPayment = () => {
-  return useMutation(confirmPayment);
+  const queryClient = useQueryClient();
+  const { projectId } = useParams();
+
+  return useMutation(confirmPayment, {
+    onSuccess: (data) => {
+      // if (data?.paymentIntent?.status?.toLowerCase() === "succeeded") {
+      //   queryClient.invalidateQueries(`${queries.projects}-${projectId}`);
+      // }
+    },
+  });
 };

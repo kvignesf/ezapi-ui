@@ -8,7 +8,7 @@ const ProductDetails = ({
   disabled = false,
   onPurchaseClick,
 }) => {
-  const { id: projectId } = useParams();
+  const { projectId } = useParams();
 
   return (
     <div className='bg-brand-primarySubtle rounded-md p-8 w-full max-w-md fixed ml-6'>

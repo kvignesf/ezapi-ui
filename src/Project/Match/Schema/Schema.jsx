@@ -19,7 +19,7 @@ import {
 } from "../../../shared/utils";
 
 const Schema = () => {
-  const { id: projectId } = useParams();
+  const { projectId } = useParams();
   const [schemaState, setSchemaState] = useRecoilState(schemaAtom);
   const [schemaData, setSchemaData] = useState(null);
   const {

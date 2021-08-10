@@ -3,8 +3,9 @@ const routes = Object.freeze({
   signIn: "/signin",
   projects: "/projects",
   orders: "/orders",
-  payment: "/projects/:id/payment",
-  project: "/projects/:id",
+  payment: "/projects/:projectId/payment",
+  paymentForOrder: "/projects/:projectId/payment/:orderId?",
+  project: "/projects/:projectId",
   privacy: "/privacy",
   contact: "/contact",
 });
