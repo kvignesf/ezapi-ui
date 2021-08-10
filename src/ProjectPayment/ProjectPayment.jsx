@@ -149,7 +149,7 @@ const ProjectPayment = () => {
   const initiatePaymentProcess = (billingDetails) => {
     initiatePayment({
       projectId,
-      productId: basicProductData?.productId,
+      productId: basicProductData?.product?.productId,
       billingDetails,
     });
   };
