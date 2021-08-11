@@ -65,37 +65,26 @@ export const useInitiatePayment = () => {
 
 const confirmPayment = async ({ card, billingDetails, secret, stripe }) => {
   try {
-    // const { error, paymentMethod } = await stripe.createPaymentMethod({
-    //   type: "card",
-    //   card: card,
-    //   billing_details: {
-    //     address: {
-    //       city: billingDetails?.city,
-    //       country: billingDetails?.country,
-    //       line1: billingDetails?.addressLine1,
-    //       line2: billingDetails?.addressLine2,
-    //       state: billingDetails?.state,
-    //       postal_code: billingDetails?.zip,
-    //     },
-    //     email: billingDetails?.email,
-    //     phone: billingDetails?.phone,
-    //     name: billingDetails?.fullName,
-    //   },
-    // });
-
-    // if (paymentMethod) {
     const result = await stripe.confirmCardPayment(secret, {
       payment_method: {
-        type: "card",
         card: card,
+        billing_details: {
+          address: {
+            city: billingDetails?.city,
+            country: billingDetails?.country,
+            line1: billingDetails?.addressLine1,
+            line2: billingDetails?.addressLine2,
+            state: billingDetails?.state,
+            postal_code: billingDetails?.zip,
+          },
+          email: billingDetails?.email,
+          phone: _.isEmpty(billingDetails?.phone) ? "-" : billingDetails?.phone,
+          name: billingDetails?.fullName,
+        },
       },
     });
 
     return result;
-    // } else if (error) {
-    //   throw Error("Failed to confirm payment");
-    // }
-    // return null;
   } catch (error) {
     throw Error("Something went wrong during payment");
   }

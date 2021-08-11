@@ -248,13 +248,14 @@ const ProjectPayment = () => {
   };
 
   const handleCloseDialog = () => {
+    resetConfirmPayment();
+
     if (isPaymentSuccess()) {
-      resetConfirmPayment();
       resetInitiatePayment();
       invalidateProject();
       navigateBack();
+      return;
     } else if (initiatePaymentError) {
-      resetConfirmPayment();
       resetInitiatePayment();
     }
 
