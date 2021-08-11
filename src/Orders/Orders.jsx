@@ -20,9 +20,6 @@ const Content = () => {
     refetch: refetchOrders,
   } = useGetOrders();
 
-  console.log("isFetchingOrders", isFetchingOrders);
-  console.log("isFetchingOrdersBg", isFetchingOrdersBg);
-
   return (
     <div className='p-3 h-full'>
       {/* <Dialog

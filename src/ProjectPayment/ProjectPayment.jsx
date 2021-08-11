@@ -351,7 +351,6 @@ const ProjectPayment = () => {
         <PaymentStatusDialog
           onClose={handleCloseDialog}
           onButtonClick={() => {
-            console.log("isPaymentSuccess()", isPaymentSuccess());
             if (isPaymentSuccess()) {
               resetConfirmPayment();
               resetInitiatePayment();
