@@ -67,7 +67,7 @@ const Content = () => {
             </th>
             <th className='uppercase'>Product</th>
             <th className='uppercase'>Price</th>
-            <th className='uppercase w-64'>Status</th>
+            <th className='uppercase w-64'>Payment Status</th>
             <th className='uppercase'>Order Id</th>
             <th className='uppercase'>Order Date</th>
             <th className='rounded-tr-md rounded-br-md text-center'>

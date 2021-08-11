@@ -45,9 +45,9 @@ const PaymentStatusDialog = ({
       return "Payment successful";
     } else if (!isPaymentSuccess()) {
       return (
-        confirmPaymentData?.error?.message ??
-        confirmPaymentError?.message ??
-        "Something went wrong while making payment"
+        confirmPaymentData?.error?.message + " Please try again." ??
+        confirmPaymentError?.message + " Please try again." ??
+        "Something went wrong while making payment, please try again."
       );
     }
 

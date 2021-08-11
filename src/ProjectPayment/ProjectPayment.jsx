@@ -243,17 +243,18 @@ const ProjectPayment = () => {
   };
 
   const navigateBack = () => {
-    history.goBack();
+    // history.goBack();
+    history.replace(generateRoute(routes.projects, projectId));
   };
 
   const handleCloseDialog = () => {
-    resetConfirmPayment();
-
     if (isPaymentSuccess()) {
+      resetConfirmPayment();
       resetInitiatePayment();
       invalidateProject();
       navigateBack();
     } else if (initiatePaymentError) {
+      resetConfirmPayment();
       resetInitiatePayment();
     }
 
@@ -349,6 +350,7 @@ const ProjectPayment = () => {
         <PaymentStatusDialog
           onClose={handleCloseDialog}
           onButtonClick={() => {
+            console.log("isPaymentSuccess()", isPaymentSuccess());
             if (isPaymentSuccess()) {
               resetConfirmPayment();
               resetInitiatePayment();

@@ -4,6 +4,7 @@ import _ from "lodash";
 
 import { isEmailValid } from "../utils";
 import Colors from "../colors";
+import { getEmailId } from "../storage";
 
 const InviteCollaborators = ({
   collaborators,
@@ -12,6 +13,7 @@ const InviteCollaborators = ({
   ...rest
 }) => {
   const [error, setError] = useState(null);
+  // const loggedInEmail = getEmailId();
 
   return (
     <div className='' {...rest}>
@@ -30,6 +32,11 @@ const InviteCollaborators = ({
             setError(null);
             return false;
           }
+
+          // else if (email === loggedInEmail) {
+          //   setError(null);
+          //   return false;
+          // }
 
           const result = isEmailValid(email?.trim());
 
