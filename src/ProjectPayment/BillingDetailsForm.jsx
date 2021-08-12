@@ -202,6 +202,16 @@ const BillingDetailsForm = ({ disabled = false, formRef }) => {
                         height: "6px",
                       },
                     }}
+                    onChange={(e) => {
+                      const re = /^[0-9\b]+$/;
+
+                      if (
+                        e?.target?.value?.trim() === "" ||
+                        re.test(e?.target?.value)
+                      ) {
+                        setFieldValue("zip", e.target.value);
+                      }
+                    }}
                     as={TextField}
                   />
                 </div>

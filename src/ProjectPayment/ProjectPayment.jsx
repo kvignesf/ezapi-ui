@@ -383,6 +383,15 @@ const ProjectPayment = () => {
     publishProjectError ||
     publishProjectData;
 
+  const canShowAutoPopulationButton = () => {
+    const loggedInUserEmailId = getEmailId();
+
+    return (
+      loggedInUserEmailId === "karthik.b@cumulations.com" ||
+      loggedInUserEmailId === "madhuworldwide@gmail.com" ||
+      loggedInUserEmailId === "dhirajsingh.k@cumulations.com"
+    );
+  };
   return (
     <div>
       <Dialog
@@ -449,6 +458,29 @@ const ProjectPayment = () => {
       <div className='w-full flex flex-row p-12 h-full'>
         {basicProductData && (
           <div className='flex-1 mr-6 px-6'>
+            {canShowAutoPopulationButton() && (
+              <button
+                className='p-1 bg-neutral-gray6 rounded-md mb-2'
+                onClick={(e) => {
+                  billingDetailsRef?.current?.setValues({
+                    fullName: "Hello",
+                    country: "IN",
+                    country: "IN",
+                    addressLine1: "Test Address",
+                    zip: "560070",
+                    city: "Test City",
+                    state: "Karnataka",
+                    email: "testemail@randomdomain123.com",
+                  });
+                  cardDetailsRef?.current?.setValues({
+                    cardHolderName: "Test card holder name",
+                  });
+                }}
+              >
+                <p className='text-overline2'>Populate data</p>
+              </button>
+            )}
+
             <BillingDetailsForm
               formRef={billingDetailsRef}
               disabled={isInitiatingPayment || isConfirmingPayment}
