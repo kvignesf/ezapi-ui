@@ -113,22 +113,21 @@ const Project = () => {
   });
   const getRecoilValueInfo = useGetRecoilValueInfo_UNSTABLE();
   const [userRole, setRole] = useState(null);
+  const [autoSyncIntervalId, setAutoSync] = useState(0);
+  const [showUnsavedPopup, setUnsavedPopup] = useState(true);
 
   useEffect(() => {
     if (canEdit(userRole)) {
-      const interval = setInterval(() => {
-        const { loadable: operationAtomLoadable } = getRecoilValueInfo(
-          operationAtomWithMiddleware
-        );
-        const operationState = operationAtomLoadable?.contents;
-
-        if (operationState?.isModified) {
-          saveProject();
-        }
-      }, 6500);
-      return () => clearInterval(interval);
+      startAutoSync();
     }
+    return () => stopAutoSync();
   }, [userRole]);
+
+  useEffect(() => {
+    if (operationState?.isModified) {
+      setUnsavedPopup(true);
+    }
+  }, [operationState?.isModified]);
 
   useEffect(() => {
     resetProjectState();
@@ -172,11 +171,43 @@ const Project = () => {
 
       resetSyncOperationMutation();
 
-      if (dialog?.data === "with-nav") {
-        navigateBack();
-      }
+      // if (dialog?.data === "with-nav") {
+      //   navigateBack();
+      // }
     }
   }, [isSyncOperationSuccess]);
+
+  const startAutoSync = () => {
+    stopAutoSync();
+
+    console.log("Starting auto sync");
+    const id = setInterval(() => {
+      console.log("Checking auto sync");
+      const { loadable: operationAtomLoadable } = getRecoilValueInfo(
+        operationAtomWithMiddleware
+      );
+      const operationState = operationAtomLoadable?.contents;
+
+      if (operationState?.isModified) {
+        console.log("There are unsaved changes");
+        saveProject();
+      }
+    }, 6500);
+
+    setAutoSync(id);
+  };
+
+  console.log("autoSyncIntervalId", autoSyncIntervalId);
+  const stopAutoSync = () => {
+    if (autoSyncIntervalId) {
+      console.log("Stopping auto sync");
+
+      clearInterval(autoSyncIntervalId);
+      setAutoSync(0);
+    } else {
+      console.log("No auto sync started");
+    }
+  };
 
   const resetProjectState = () => {
     resetTableState();
@@ -217,7 +248,7 @@ const Project = () => {
       const operationState = operationAtomLoadable?.contents;
 
       if (operationState?.isModified) {
-        showSaveOperationWarning("without-nav");
+        showSaveOperationWarning();
       } else {
         resetPublishMutation();
         verify({ projectId });
@@ -235,15 +266,21 @@ const Project = () => {
     setProfilemenuAnchorEl(event?.currentTarget);
   };
 
-  const showSaveOperationWarning = (navigationFlag) => {
+  const showSaveOperationWarning = (dontSaveAction) => {
+    stopAutoSync();
+
     setDialog({
       show: true,
       type: "save-operation-warning",
-      data: navigationFlag,
+      data: dontSaveAction,
     });
   };
 
   const handleCloseDialog = () => {
+    if (dialog?.type === "save-operation-warning") {
+      startAutoSync();
+    }
+
     setDialog({
       show: false,
       type: null,
@@ -406,16 +443,22 @@ const Project = () => {
             dialog?.type === "save-operation-warning" && (
               <SaveOperationWarning
                 onClose={handleCloseDialog}
-                navigateBack={() => {
+                onDontSave={() => {
                   handleCloseDialog();
+                  setUnsavedPopup(false);
 
-                  resetProjectState();
-
-                  if (dialog?.data === "with-nav") {
-                    navigateBack();
+                  if (dialog?.data === "reset_operation_state") {
+                    resetProjectState();
                   }
+
+                  // if (dialog?.data === "with-nav") {
+                  //   navigateBack();
+                  // }
                 }}
                 saveProject={() => {
+                  if (dialog?.data === "reset_operation_state") {
+                    resetProjectState();
+                  }
                   handleCloseDialog();
                   saveProject();
                 }}
@@ -447,11 +490,11 @@ const Project = () => {
                   event?.preventDefault();
                   event?.stopPropagation();
 
-                  if (!operationState?.isModified) {
+                  if (showUnsavedPopup && operationState?.isModified) {
+                    showSaveOperationWarning();
+                  } else {
                     resetProjectState();
                     navigateBack();
-                  } else {
-                    showSaveOperationWarning("with-nav");
                   }
                 }}
               >
@@ -611,13 +654,15 @@ const Project = () => {
                       path === null &&
                       operation === null
                     ) {
-                      if (!operationState?.isModified) {
-                        resetOperationState();
+                      if (showUnsavedPopup && operationState?.isModified) {
+                        showSaveOperationWarning("reset_operation_state");
                       } else {
-                        showSaveOperationWarning("without-nav");
+                        resetOperationState();
                       }
                     } else if (index !== operationState.operationIndex) {
-                      if (!operationState?.isModified) {
+                      if (showUnsavedPopup && operationState?.isModified) {
+                        showSaveOperationWarning("reset_operation_state");
+                      } else {
                         const cloned = _.cloneDeep(operationState);
                         cloned.operation = operation;
                         cloned.resource = resource;
@@ -625,8 +670,6 @@ const Project = () => {
                         cloned.operationIndex = index;
 
                         setOperationState(cloned);
-                      } else {
-                        showSaveOperationWarning("without-nav");
                       }
                     }
                   }}

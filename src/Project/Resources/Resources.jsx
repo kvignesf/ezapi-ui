@@ -159,6 +159,7 @@ const Resources = ({
                 }}
                 onClick={(e) => {
                   e.stopPropagation();
+                  console.log("here");
                   resetSelectedOperation();
                 }}
               >
