@@ -670,3 +670,15 @@ export const isFreePublishesExhausted = (publishProjectError) => {
     publishProjectError?.response?.data?.errorType === "FREE_PROJECTS_EXHAUSTED"
   );
 };
+
+export const isOrderSuccess = (order) => {
+  return order?.status?.toLowerCase() === "succeeded";
+};
+
+export const isOrderInitiated = (order) => {
+  return order?.status?.toLowerCase() === "initiated";
+};
+
+export const isOrderInOtherState = (order) => {
+  return !isOrderSuccess(order) && !isOrderInitiated(order);
+};

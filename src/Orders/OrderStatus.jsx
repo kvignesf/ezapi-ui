@@ -1,36 +1,33 @@
 import classNames from "classnames";
 import React from "react";
+import {
+  isOrderInitiated,
+  isOrderInOtherState,
+  isOrderSuccess,
+} from "../shared/utils";
 
-const OrderStatus = ({ status }) => {
-  const isSuccess = () => {
-    return status?.toLowerCase() === "succeeded";
-  };
-
-  const isInitiated = () => {
-    return status?.toLowerCase() === "initiated";
-  };
-
-  const isOther = () => {
-    return !isSuccess() && !isInitiated();
-  };
-
+const OrderStatus = ({ order }) => {
   return (
     <div
       className={classNames("p-1", {
-        "bg-accent-redSubtle": isOther(),
-        "bg-accent-greenSubtle": isSuccess(),
-        "bg-accent-orangeSubtle": isInitiated(),
+        "bg-accent-redSubtle": isOrderInOtherState(order),
+        "bg-accent-greenSubtle": isOrderSuccess(order),
+        "bg-accent-orangeSubtle": isOrderInitiated(order),
       })}
       style={{ width: "70px", borderRadius: "4px" }}
     >
       <p
         className={classNames("text-capitalised text-center", {
-          "text-accent-green": isSuccess(),
-          "text-accent-red": isOther(),
-          "text-accent-orange": isInitiated(),
+          "text-accent-green": isOrderSuccess(order),
+          "text-accent-red": isOrderInOtherState(order),
+          "text-accent-orange": isOrderInitiated(order),
         })}
       >
-        {isSuccess() ? "Sucesss" : isInitiated() ? "Initiated" : "Failure"}
+        {isOrderSuccess(order)
+          ? "Sucesss"
+          : isOrderInitiated(order)
+          ? "Initiated"
+          : "Failure"}
       </p>
     </div>
   );

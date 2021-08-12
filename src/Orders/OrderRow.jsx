@@ -3,6 +3,8 @@ import { useHistory } from "react-router-dom";
 
 import OrderStatus from "./OrderStatus";
 import routes, { generateRoute } from "../shared/routes";
+import { isOrderInOtherState } from "../shared/utils";
+import classNames from "classnames";
 
 const OrderRow = ({ order }) => {
   const history = useHistory();
@@ -17,6 +19,15 @@ const OrderRow = ({ order }) => {
 
   const navigateToProject = () => {
     history.push(generateRoute(routes.projects, order?.projectData?.projectId));
+  };
+
+  const navigateToOrderRetry = () => {
+    history.push(
+      generateRoute(routes.paymentForOrder, {
+        projectId: order?.projectData?.projectId,
+        orderId: order?.orderId,
+      })
+    );
   };
 
   return (
@@ -35,8 +46,20 @@ const OrderRow = ({ order }) => {
       </td>
       <td className='py-3'>{order?.productName}</td>
       <td className='py-3'>${order?.productPrice}</td>
-      <td>
-        <OrderStatus status={order?.status} />
+      <td
+        className={classNames({
+          "hover:opacity-75 cursor-pointer": isOrderInOtherState(order),
+        })}
+        onClick={(e) => {
+          e?.preventDefault();
+          e?.stopPropagation();
+
+          if (isOrderInOtherState(order)) {
+            navigateToOrderRetry();
+          }
+        }}
+      >
+        <OrderStatus order={order} />
       </td>
       <td>{order?.orderId}</td>
       <td>{orderCreatedDate}</td>

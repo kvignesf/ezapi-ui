@@ -15,6 +15,8 @@ export const generateRoute = (route, data) => {
     return `${routes.projects}/${data}`;
   } else if (route === routes.payment) {
     return `${routes.projects}/${data}/payment`;
+  } else if (route === routes.paymentForOrder) {
+    return `${routes.projects}/${data?.projectId}/payment/${data?.orderId}`;
   }
   return "/";
 };
