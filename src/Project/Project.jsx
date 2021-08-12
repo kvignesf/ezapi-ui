@@ -180,16 +180,13 @@ const Project = () => {
   const startAutoSync = () => {
     stopAutoSync();
 
-    console.log("Starting auto sync");
     const id = setInterval(() => {
-      console.log("Checking auto sync");
       const { loadable: operationAtomLoadable } = getRecoilValueInfo(
         operationAtomWithMiddleware
       );
       const operationState = operationAtomLoadable?.contents;
 
       if (operationState?.isModified) {
-        console.log("There are unsaved changes");
         saveProject();
       }
     }, 6500);
@@ -197,15 +194,10 @@ const Project = () => {
     setAutoSync(id);
   };
 
-  console.log("autoSyncIntervalId", autoSyncIntervalId);
   const stopAutoSync = () => {
     if (autoSyncIntervalId) {
-      console.log("Stopping auto sync");
-
       clearInterval(autoSyncIntervalId);
       setAutoSync(0);
-    } else {
-      console.log("No auto sync started");
     }
   };
 

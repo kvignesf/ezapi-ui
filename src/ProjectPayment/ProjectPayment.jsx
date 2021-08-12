@@ -22,7 +22,10 @@ import AppIcon from "../shared/components/AppIcon";
 import InitialsAvatar from "../shared/components/InitialsAvatar";
 import LoaderWithMessage from "../shared/components/LoaderWithMessage";
 import ErrorWithMessage from "../shared/components/ErrorWithMessage";
-import { useFetchProjectDetails } from "../Project/projectQueries";
+import {
+  useFetchProjectDetails,
+  useSubmitProject,
+} from "../Project/projectQueries";
 import { useCanEdit } from "../shared/utils";
 import { getFirstName, getLastName, getEmailId } from "../shared/storage";
 import Colors from "../shared/colors";
@@ -42,6 +45,7 @@ import { PaymentStatus } from "./paymentUtils";
 import routes, { generateRoute } from "../shared/routes";
 import { useQueryClient } from "react-query";
 import { queries } from "../shared/network/queryClient";
+import PublishStatusDialog from "./PublishStatusDialog";
 
 const Header = ({
   projectDetails,
@@ -174,6 +178,24 @@ const ProjectPayment = () => {
     reset: resetConfirmPayment,
   } = confirmPaymentMutation;
   const queryClient = useQueryClient();
+  const { verifyProjectMutation, publishProjectMutation } =
+    useSubmitProject(projectId);
+  const {
+    isLoading: isPublishingProject,
+    isSuccess: isPublishProjectSuccess,
+    data: publishProjectData,
+    error: publishProjectError,
+    mutate: publish,
+    reset: resetPublishMutation,
+  } = publishProjectMutation;
+  const {
+    isLoading: isVerifyingProject,
+    isSuccess: isVerifyProjectSuccess,
+    data: verifyProjectData,
+    error: verifyProjectError,
+    mutate: verify,
+    reset: resetVerifyMutation,
+  } = verifyProjectMutation;
 
   useEffect(() => {
     if (
@@ -224,6 +246,18 @@ const ProjectPayment = () => {
     }
   }, [projectDetailsError]);
 
+  // Auto publish after successful payment
+  useEffect(() => {
+    if (isPaymentSuccess()) {
+      resetConfirmPayment();
+      resetInitiatePayment();
+      resetVerifyMutation();
+      resetPublishMutation();
+
+      verify({ projectId });
+    }
+  }, [isConfirmPaymentSuccess, confirmPaymentData]);
+
   const initiatePaymentProcess = (billingDetails) => {
     if (_.isEmpty(initiatePaymentData?.clientSecret)) {
       initiatePayment({
@@ -248,9 +282,11 @@ const ProjectPayment = () => {
   };
 
   const handleCloseDialog = () => {
-    resetConfirmPayment();
+    resetVerifyMutation();
+    resetPublishMutation();
 
     if (isPaymentSuccess()) {
+      resetConfirmPayment();
       resetInitiatePayment();
       invalidateProject();
       navigateBack();
@@ -258,6 +294,8 @@ const ProjectPayment = () => {
     } else if (initiatePaymentError) {
       resetInitiatePayment();
     }
+
+    resetConfirmPayment();
 
     setDialog({
       show: false,
@@ -329,17 +367,29 @@ const ProjectPayment = () => {
     );
   }
 
+  const shouldShowDialogForPayment = () =>
+    isInitiatingPayment ||
+    initiatePaymentError ||
+    isConfirmingPayment ||
+    confirmPaymentError ||
+    confirmPaymentData ||
+    isConfirmPaymentSuccess;
+
+  const shouldShowDialogForPublish = () =>
+    isVerifyingProject ||
+    verifyProjectError ||
+    verifyProjectData ||
+    isPublishingProject ||
+    publishProjectError ||
+    publishProjectData;
+
   return (
     <div>
       <Dialog
         aria-labelledby='payment-dialog'
         open={
-          isInitiatingPayment ||
-          initiatePaymentError ||
-          isConfirmingPayment ||
-          confirmPaymentError ||
-          confirmPaymentData ||
-          isConfirmPaymentSuccess ||
+          shouldShowDialogForPayment() ||
+          shouldShowDialogForPublish() ||
           dialog?.show
         }
         fullWidth
@@ -348,21 +398,50 @@ const ProjectPayment = () => {
         }}
         disableBackdropClick
       >
-        <PaymentStatusDialog
-          onClose={handleCloseDialog}
-          onButtonClick={() => {
-            if (isPaymentSuccess()) {
+        {shouldShowDialogForPayment() && (
+          <PaymentStatusDialog
+            onClose={handleCloseDialog}
+            onButtonClick={() => {
+              if (isPaymentSuccess()) {
+                resetConfirmPayment();
+                resetInitiatePayment();
+                resetVerifyMutation();
+                resetPublishMutation();
+
+                invalidateProject();
+                navigateBack();
+              } else {
+                handleCloseDialog();
+              }
+            }}
+            initiatePaymentMutation={initiatePaymentMutation}
+            confirmPaymentMutation={confirmPaymentMutation}
+          />
+        )}
+
+        {shouldShowDialogForPublish() && (
+          <PublishStatusDialog
+            onClose={() => {
               resetConfirmPayment();
               resetInitiatePayment();
+              resetVerifyMutation();
+              resetPublishMutation();
               invalidateProject();
               navigateBack();
-            } else {
-              handleCloseDialog();
-            }
-          }}
-          initiatePaymentMutation={initiatePaymentMutation}
-          confirmPaymentMutation={confirmPaymentMutation}
-        />
+            }}
+            onButtonClick={() => {
+              resetConfirmPayment();
+              resetInitiatePayment();
+              resetVerifyMutation();
+              resetPublishMutation();
+              invalidateProject();
+              navigateBack();
+            }}
+            project={projectDetails}
+            verifyProjectMutation={verifyProjectMutation}
+            publishProjectMutation={publishProjectMutation}
+          />
+        )}
       </Dialog>
 
       <Header projectDetails={projectDetails} logoutMutation={logoutMutation} />
