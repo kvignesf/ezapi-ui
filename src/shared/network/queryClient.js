@@ -4,6 +4,7 @@ export const queries = {
   projects: "projects",
   products: "products",
   basicProduct: "basicProduct",
+  billingDetails: "billing",
   resources: "resources",
   project: "project",
   schemas: "schemas",

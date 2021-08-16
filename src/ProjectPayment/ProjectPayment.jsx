@@ -33,6 +33,7 @@ import { useLogout } from "../shared/query/authQueries";
 import {
   useConfirmPayment,
   useGetBasicProduct,
+  useGetBillingDetails,
   useGetProducts,
   useInitiatePayment,
   useMakePayment,
@@ -124,7 +125,7 @@ const Header = ({
 };
 
 const ProjectPayment = () => {
-  const { projectId, orderId } = useParams();
+  const { projectId } = useParams();
   const history = useHistory();
   const {
     isLoading: isFetchingProjectDetails,
@@ -196,6 +197,13 @@ const ProjectPayment = () => {
     mutate: verify,
     reset: resetVerifyMutation,
   } = verifyProjectMutation;
+  const {
+    isLoading: isFetchingBillingDetails,
+    isFetching: isFetchingBillingDetailsBg,
+    isSuccess: isBillingDetailsSuccess,
+    data: billingDetailsData,
+    error: fetchBillingDetailsError,
+  } = useGetBillingDetails(projectId);
 
   useEffect(() => {
     if (
@@ -211,6 +219,21 @@ const ProjectPayment = () => {
       });
     }
   }, [isInitiatePaymentSuccess, initiatePaymentData]);
+
+  useEffect(() => {
+    if (billingDetailsData) {
+      billingDetailsRef?.current?.setValues({
+        addressLine1: billingDetailsData?.address?.line1,
+        zip: billingDetailsData?.address?.postal_code,
+        city: billingDetailsData?.address?.name,
+        country: billingDetailsData?.country,
+        state: billingDetailsData?.address?.state,
+        fullName: billingDetailsData?.name,
+        email: billingDetailsData?.email,
+        phone: billingDetailsData?.phone,
+      });
+    }
+  }, [billingDetailsData]);
 
   useEffect(() => {
     if (projectDetails) {
@@ -264,7 +287,7 @@ const ProjectPayment = () => {
         projectId,
         productId: basicProductData?.product?.productId,
         billingDetails,
-        orderId,
+        // orderId,
       });
     } else {
       confirmPayment({
@@ -279,6 +302,11 @@ const ProjectPayment = () => {
   const navigateBack = () => {
     // history.goBack();
     history.replace(generateRoute(routes.projects, projectId));
+  };
+
+  const navigateToDashboard = () => {
+    // history.goBack();
+    history.replace(routes.projects);
   };
 
   const handleCloseDialog = () => {
@@ -416,7 +444,6 @@ const ProjectPayment = () => {
                 resetInitiatePayment();
                 resetVerifyMutation();
                 resetPublishMutation();
-
                 invalidateProject();
                 navigateBack();
               } else {
@@ -436,7 +463,7 @@ const ProjectPayment = () => {
               resetVerifyMutation();
               resetPublishMutation();
               invalidateProject();
-              navigateBack();
+              navigateToDashboard();
             }}
             onButtonClick={() => {
               resetConfirmPayment();
@@ -444,7 +471,7 @@ const ProjectPayment = () => {
               resetVerifyMutation();
               resetPublishMutation();
               invalidateProject();
-              navigateBack();
+              navigateToDashboard();
             }}
             project={projectDetails}
             verifyProjectMutation={verifyProjectMutation}

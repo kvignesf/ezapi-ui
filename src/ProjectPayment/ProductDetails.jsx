@@ -50,7 +50,7 @@ const ProductDetails = ({
       </div>
 
       <div className='flex flex-row items-center justify-end'>
-        <StripeLogo className='w-20' />
+        <StripeLogo className='w-24' />
 
         <div
           className='mx-2 h-4 bg-neutral-gray4'
@@ -61,7 +61,7 @@ const ProductDetails = ({
           href=' https://stripe.com/privacy'
           target='_blank'
           rel='noopener noreferrer'
-          className='text-overline3 text-neutral-gray4 cursor-pointer hover:opacity-75'
+          className='text-overline3 text-brand-secondary cursor-pointer hover:opacity-75'
         >
           Privacy
         </a>

@@ -23,10 +23,11 @@ const OrderRow = ({ order }) => {
 
   const navigateToOrderRetry = () => {
     history.push(
-      generateRoute(routes.paymentForOrder, {
-        projectId: order?.projectData?.projectId,
-        orderId: order?.orderId,
-      })
+      // generateRoute(routes.paymentForOrder, {
+      //   projectId: order?.projectData?.projectId,
+      //   orderId: order?.orderId,
+      // })
+      generateRoute(routes.payment, order?.projectData?.projectId)
     );
   };
 

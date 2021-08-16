@@ -46,12 +46,36 @@ export const useGetBasicProduct = (options = {}) => {
   return query;
 };
 
-const initiatePayment = async ({ projectId, productId, orderId }) => {
+const getBillingDetails = async ({ queryKey }) => {
+  try {
+    const { projectId } = queryKey[1];
+
+    const { data } = await client.get(endpoint.billingDetails);
+    return data;
+  } catch (error) {
+    throw getApiError(error);
+  }
+};
+
+export const useGetBillingDetails = (projectId, options = {}) => {
+  const query = useQuery(
+    [`${queries.basicProduct}-${projectId}`, { projectId }],
+    getBillingDetails,
+    {
+      refetchOnWindowFocus: false,
+      ...options,
+    }
+  );
+
+  return query;
+};
+
+const initiatePayment = async ({ projectId, productId }) => {
   try {
     const { data } = await client.post(endpoint.initiatePayment, {
       projectId,
       productId,
-      orderId,
+      // orderId,
     });
     return data;
   } catch (error) {

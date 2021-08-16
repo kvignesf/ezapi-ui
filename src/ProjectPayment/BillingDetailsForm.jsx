@@ -88,7 +88,7 @@ const BillingDetailsForm = ({ disabled = false, formRef }) => {
 
                 <div
                   className={classNames(
-                    "border-1 rounded-md p-3",
+                    "border-1 rounded-md p-1",
                     {
                       "border-accent-red":
                         touched?.country && Boolean(errors?.country),
@@ -110,6 +110,7 @@ const BillingDetailsForm = ({ disabled = false, formRef }) => {
                     helperText={<ErrorMessage name='country' />}
                     style={{
                       width: "100%",
+                      height: "2.25rem",
                     }}
                     as={CountryDropdown}
                     onChange={(v) => {
@@ -243,7 +244,7 @@ const BillingDetailsForm = ({ disabled = false, formRef }) => {
 
                   <div
                     className={classNames(
-                      "border-1 rounded-md",
+                      "border-1 rounded-md p-1",
                       {
                         "border-accent-red":
                           touched?.state && Boolean(errors?.state),
@@ -253,7 +254,6 @@ const BillingDetailsForm = ({ disabled = false, formRef }) => {
                       },
                       "focus-within:border-brand-primary focus-within:border-2"
                     )}
-                    style={{ padding: "9px" }}
                   >
                     <Field
                       id='state'
@@ -267,6 +267,7 @@ const BillingDetailsForm = ({ disabled = false, formRef }) => {
                       onKeyUp={(e) => {}}
                       style={{
                         width: "100%",
+                        height: "2.1rem",
                       }}
                       value={values?.state}
                       as={RegionDropdown}
