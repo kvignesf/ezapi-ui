@@ -48,19 +48,19 @@ const OrderRow = ({ order }) => {
       <td className='py-3'>{order?.productName}</td>
       <td className='py-3'>${order?.productPrice}</td>
       <td
-        className={classNames({
-          "hover:opacity-75 cursor-pointer": isOrderInOtherState(order),
-        })}
-        onClick={(e) => {
-          e?.preventDefault();
-          e?.stopPropagation();
+      // className={classNames({
+      //   "hover:opacity-75 cursor-pointer": isOrderInOtherState(order),
+      // })}
+      // onClick={(e) => {
+      //   e?.preventDefault();
+      //   e?.stopPropagation();
 
-          if (isOrderInOtherState(order)) {
-            navigateToOrderRetry();
-          }
-        }}
+      //   if (isOrderInOtherState(order)) {
+      //     navigateToOrderRetry();
+      //   }
+      // }}
       >
-        <OrderStatus order={order} />
+        <OrderStatus order={order} onRetry={navigateToOrderRetry} />
       </td>
       <td>{order?.orderId}</td>
       <td>{orderCreatedDate}</td>

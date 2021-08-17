@@ -1,11 +1,13 @@
 import React from "react";
 import CloseIcon from "@material-ui/icons/Close";
 import _ from "lodash";
+import { CircularProgress } from "@material-ui/core";
 
 import AppIcon from "../shared/components/AppIcon";
+import { ReactComponent as SuccessLogo } from "../static/images/success-icon.svg";
+import { ReactComponent as FailureLogo } from "../static/images/failure-icon.svg";
 import { PrimaryButton, TextButton } from "../shared/components/AppButton";
 import { PaymentStatus } from "./paymentUtils";
-import { CircularProgress } from "@material-ui/core";
 
 const PaymentStatusDialog = ({
   onButtonClick,
@@ -83,6 +85,22 @@ const PaymentStatusDialog = ({
       </div>
 
       <div className='p-4 py-6'>
+        {isPaymentSuccess() ? (
+          <div className='w-full flex flex-col items-center justify-center mb-3'>
+            <SuccessLogo className='mb-2' />
+            <p className='text-subtitle2'>Successful!</p>
+          </div>
+        ) : (initiatePaymentError ||
+            confirmPaymentError ||
+            !isPaymentSuccess()) &&
+          !isInitiatingPayment &&
+          !isConfirmingPayment ? (
+          <div className='w-full flex flex-col items-center justify-center mb-3'>
+            <FailureLogo className='mb-2' />
+            <p className='text-subtitle2'>Failure!</p>
+          </div>
+        ) : null}
+
         <p className='text-overline2'>{getContentMessage()}</p>
       </div>
 

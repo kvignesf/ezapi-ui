@@ -34,6 +34,7 @@ module.exports = {
           primary: "#C72C71",
           primarySubtle: "#FFEFF1",
           secondary: "#2C71C7",
+          secondarySubtle: "#E5F3FF",
           green: "#71C72C",
         },
         accent: {

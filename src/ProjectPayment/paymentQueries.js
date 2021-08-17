@@ -8,7 +8,7 @@ import client, { endpoint } from "../shared/network/client";
 import { clearQueryCache, queries } from "../shared/network/queryClient";
 import routes from "../shared/routes";
 import { clearSession, setAccessToken } from "../shared/storage";
-import { getApiError } from "../shared/utils";
+import { getApiError, delay } from "../shared/utils";
 
 const getProducts = async () => {
   try {
@@ -46,28 +46,19 @@ export const useGetBasicProduct = (options = {}) => {
   return query;
 };
 
-const getBillingDetails = async ({ queryKey }) => {
+const getBillingDetails = async ({ projectId }) => {
   try {
-    const { projectId } = queryKey[1];
-
-    const { data } = await client.get(endpoint.billingDetails);
+    const { data } = await client.post(endpoint.billingDetails, {
+      projectId,
+    });
     return data;
   } catch (error) {
     throw getApiError(error);
   }
 };
 
-export const useGetBillingDetails = (projectId, options = {}) => {
-  const query = useQuery(
-    [`${queries.basicProduct}-${projectId}`, { projectId }],
-    getBillingDetails,
-    {
-      refetchOnWindowFocus: false,
-      ...options,
-    }
-  );
-
-  return query;
+export const useGetBillingDetails = () => {
+  return useMutation(getBillingDetails);
 };
 
 const initiatePayment = async ({ projectId, productId }) => {
@@ -107,6 +98,9 @@ const confirmPayment = async ({ card, billingDetails, secret, stripe }) => {
         },
       },
     });
+
+    // Delay added so that the stripe updates the backend
+    await delay(2000);
 
     return result;
   } catch (error) {

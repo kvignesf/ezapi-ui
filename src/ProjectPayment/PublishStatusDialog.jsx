@@ -6,6 +6,8 @@ import CloseIcon from "@material-ui/icons/Close";
 
 import AppIcon from "../shared/components/AppIcon";
 import { PrimaryButton } from "../shared/components/AppButton";
+import { ReactComponent as SuccessLogo } from "../static/images/success-icon.svg";
+import { ReactComponent as FailureLogo } from "../static/images/failure-icon.svg";
 
 const PublishStatusDialog = ({
   onButtonClick,
@@ -119,7 +121,23 @@ const PublishStatusDialog = ({
         )}
       </div>
 
-      <div className='p-4 py-6'>{getContent()}</div>
+      <div className='p-4 py-6'>
+        {isPublishProjectSuccess ? (
+          <div className='w-full flex flex-col items-center justify-center mb-3'>
+            <SuccessLogo className='mb-2' />
+            <p className='text-subtitle2'>Successful!</p>
+          </div>
+        ) : publishProjectError ||
+          verifyProjectError ||
+          isProjectHavingErrors() ? (
+          <div className='w-full flex flex-col items-center justify-center mb-3'>
+            <FailureLogo className='mb-2' />
+            <p className='text-subtitle2'>Failure!</p>
+          </div>
+        ) : null}
+
+        {getContent()}
+      </div>
 
       <div className='p-4 border-t-1 flex flex-row justify-end'>
         {!isPublishingProject && !isVerifyingProject ? (

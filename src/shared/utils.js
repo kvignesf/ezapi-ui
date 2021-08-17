@@ -682,3 +682,5 @@ export const isOrderInitiated = (order) => {
 export const isOrderInOtherState = (order) => {
   return !isOrderSuccess(order) && !isOrderInitiated(order);
 };
+
+export const delay = (ms) => new Promise((res) => setTimeout(res, ms));

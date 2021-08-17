@@ -203,7 +203,14 @@ const ProjectPayment = () => {
     isSuccess: isBillingDetailsSuccess,
     data: billingDetailsData,
     error: fetchBillingDetailsError,
+    mutate: getBillingDetails,
   } = useGetBillingDetails(projectId);
+
+  useEffect(() => {
+    if (!_.isEmpty(projectId)) {
+      getBillingDetails({ projectId });
+    }
+  }, [projectId]);
 
   useEffect(() => {
     if (
@@ -221,16 +228,20 @@ const ProjectPayment = () => {
   }, [isInitiatePaymentSuccess, initiatePaymentData]);
 
   useEffect(() => {
-    if (billingDetailsData) {
+    if (
+      billingDetailsData?.isDataAvailable &&
+      !_.isEmpty(billingDetailsData?.data)
+    ) {
       billingDetailsRef?.current?.setValues({
-        addressLine1: billingDetailsData?.address?.line1,
-        zip: billingDetailsData?.address?.postal_code,
-        city: billingDetailsData?.address?.name,
-        country: billingDetailsData?.country,
-        state: billingDetailsData?.address?.state,
-        fullName: billingDetailsData?.name,
-        email: billingDetailsData?.email,
-        phone: billingDetailsData?.phone,
+        addressLine1: billingDetailsData?.data?.address?.line1,
+        addressLine2: billingDetailsData?.data?.address?.line2,
+        zip: billingDetailsData?.data?.address?.postal_code,
+        city: billingDetailsData?.data?.address?.name,
+        country: billingDetailsData?.data?.address?.country,
+        state: billingDetailsData?.data?.address?.state,
+        fullName: billingDetailsData?.data?.name,
+        email: billingDetailsData?.data?.email,
+        phone: billingDetailsData?.data?.phone,
       });
     }
   }, [billingDetailsData]);
@@ -352,6 +363,19 @@ const ProjectPayment = () => {
         />
 
         <LoaderWithMessage message='Loading project details' />
+      </div>
+    );
+  }
+
+  if (isFetchingBillingDetails || isFetchingBillingDetailsBg) {
+    return (
+      <div className='flex flex-col'>
+        <Header
+          projectDetails={projectDetails}
+          logoutMutation={logoutMutation}
+        />
+
+        <LoaderWithMessage message='Loading billing details' />
       </div>
     );
   }
