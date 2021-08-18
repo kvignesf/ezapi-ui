@@ -25,7 +25,7 @@ import {
 } from "./addProjectQuery";
 import TabLabel from "../shared/components/TabLabel";
 
-const AddProject = ({ onClose }) => {
+const AddProject = ({ onClose, onSuccess }) => {
   const [currentTab, setTab] = useState(0);
   const [specsError, setSpecsError] = useState(null);
   const [dbsError, setDbsError] = useState(null);
@@ -159,7 +159,7 @@ const AddProject = ({ onClose }) => {
         !_.isEmpty(projectDetails?.specs) &&
         !_.isEmpty(projectDetails?.dbs)))
   ) {
-    onClose();
+    onSuccess(createdProjectDetails?.projectId);
     return null;
   }
 

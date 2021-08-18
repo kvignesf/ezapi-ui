@@ -18,7 +18,7 @@ import { useRecoilState } from "recoil";
 import Logo from "../static/images/logo/svg.svg";
 import { ReactComponent as OrderHistoryIcon } from "../static/images/order-history.svg";
 import Colors from "../shared/colors";
-import routes from "../shared/routes";
+import routes, { generateRoute } from "../shared/routes";
 import AppIcon from "../shared/components/AppIcon";
 import AddProject from "../AddProject";
 import projectAtom, { defaultState } from "../AddProject/projectAtom";
@@ -109,7 +109,14 @@ const Dashboard = ({ selectedIndex, children }) => {
         disableBackdropClick
       >
         {dialog?.type === "add-project" && (
-          <AddProject onClose={handleCloseDialog} />
+          <AddProject
+            onClose={handleCloseDialog}
+            onSuccess={(projectId) => {
+              handleCloseDialog();
+
+              history.push(generateRoute(routes.projects, projectId));
+            }}
+          />
         )}
 
         {isLoggingOut && <div className='p-4'>Logging you out ...</div>}
