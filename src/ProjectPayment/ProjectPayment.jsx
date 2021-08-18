@@ -236,7 +236,7 @@ const ProjectPayment = () => {
         addressLine1: billingDetailsData?.data?.address?.line1,
         addressLine2: billingDetailsData?.data?.address?.line2,
         zip: billingDetailsData?.data?.address?.postal_code,
-        city: billingDetailsData?.data?.address?.name,
+        city: billingDetailsData?.data?.address?.city,
         country: billingDetailsData?.data?.address?.country,
         state: billingDetailsData?.data?.address?.state,
         fullName: billingDetailsData?.data?.name,
