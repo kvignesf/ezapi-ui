@@ -47,6 +47,8 @@ import routes, { generateRoute } from "../shared/routes";
 import { useQueryClient } from "react-query";
 import { queries } from "../shared/network/queryClient";
 import PublishStatusDialog from "./PublishStatusDialog";
+import ProfileMenu from "../shared/components/ProfileMenu";
+import EzapiLogo from "../shared/components/EzapiLogo";
 
 const Header = ({
   projectDetails,
@@ -80,7 +82,9 @@ const Header = ({
           <ArrowBackIcon />
         </AppIcon>
 
-        <p className='text-overline1'>{projectDetails?.projectName}</p>
+        <p className='text-overline1 mr-3'>{projectDetails?.projectName}</p>
+
+        <EzapiLogo />
       </div>
 
       <div className='flex flex-row py-2'>
@@ -97,27 +101,11 @@ const Header = ({
             }}
           />
 
-          <Menu
-            id='profile-menu'
-            anchorEl={profileMenuAnchorEl}
-            keepMounted
-            open={Boolean(profileMenuAnchorEl)}
-            onClose={() => {
-              setProfilemenuAnchorEl(null);
-            }}
-            TransitionComponent={Fade}
-            style={{ borderRadius: "1rem", zIndex: "100" }}
-          >
-            <MenuItem
-              onClick={() => {
-                setProfilemenuAnchorEl(null);
-                logout();
-              }}
-              style={{ color: Colors.accent.red }}
-            >
-              Logout
-            </MenuItem>
-          </Menu>
+          <ProfileMenu
+            onLogout={logout}
+            profileMenuAnchorEl={profileMenuAnchorEl}
+            setProfilemenuAnchorEl={setProfilemenuAnchorEl}
+          />
         </div>
       </div>
     </header>

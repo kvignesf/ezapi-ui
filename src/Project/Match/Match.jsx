@@ -58,7 +58,7 @@ const Match = ({ projectType, ...props }) => {
   };
 
   return (
-    <div className='flex-1 relative h-full' {...props}>
+    <div className='flex-1 relative w-full' {...props}>
       <Dialog
         onClose={handleCloseDialog}
         aria-labelledby='match-dialog'
@@ -75,9 +75,13 @@ const Match = ({ projectType, ...props }) => {
       </Dialog>
 
       <div
-        className={classNames("flex justify-between items-center border-b-2", {
-          "p-3": schemaState?.selected && !_.isEmpty(schemaState?.selected),
-        })}
+        className={classNames(
+          "fixed top-0 mt-14 z-999 bg-white flex flex-row items-center border-b-2",
+          {
+            "p-3": schemaState?.selected && !_.isEmpty(schemaState?.selected),
+          }
+        )}
+        style={{ width: `calc(100vw - 230px)` }}
       >
         <div className='flex-1'>
           {schemaState?.selected && !_.isEmpty(schemaState?.selected) ? (
@@ -238,7 +242,7 @@ const Match = ({ projectType, ...props }) => {
 
         {currentTab === "param" && canEdit() && (
           <div
-            className='flex flex-row items-center cursor-pointer hover:opacity-80 mr-4 border-1 rounded-md border-brand-secondary px-2 py-2'
+            className='flex flex-row items-center cursor-pointer hover:opacity-80 mr-8 border-1 rounded-md border-brand-secondary px-2 py-2'
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -257,10 +261,10 @@ const Match = ({ projectType, ...props }) => {
           </div>
         )}
 
-        <div className='text-overline2 mr-2'>Search</div>
+        {/* <p className='w-28 text-overline2 mr-2'>Search</p> */}
       </div>
 
-      <div className='h-full'>
+      <div className='mt-14 h-full'>
         {currentTab === "schema" ? (
           <Schema />
         ) : currentTab === "param" ? (

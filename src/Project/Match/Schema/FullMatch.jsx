@@ -21,15 +21,16 @@ const FullMatch = ({ items, onItemClick }) => {
       {items && (
         <Scrollbar>
           <div
-            style={{
-              height:
-                !operationState?.operationIndex && items?.length > 0
-                  ? `calc(100vh - 180px)`
-                  : null,
-              maxHeight: operationState?.operationIndex
-                ? `calc(50vh - 150px)`
-                : null,
-            }}
+            // style={{
+            //   height:
+            //     !operationState?.operationIndex && items?.length > 0
+            //       ? `calc(100vh - 250px)`
+            //       : null,
+            //   maxHeight: operationState?.operationIndex
+            //     ? `calc(50vh - 150px)`
+            //     : null,
+            // }}
+            style={{ height: "100%" }}
           >
             {items?.map((item, index) => {
               return (

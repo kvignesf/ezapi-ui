@@ -60,6 +60,9 @@ import VerifyProjectError from "./VerifyProjectError";
 import ProjectVerificationErrors from "./ProjectVerificationErrors";
 import ModifyCollaborators from "../ModifyCollaborators/ModifyCollaborators";
 import RepublishInfo from "./RepublishInfo";
+import ProfileMenu from "../shared/components/ProfileMenu";
+import EzapiLogo from "../shared/components/EzapiLogo";
+import EzapiFooter from "../shared/components/EzapiFooter";
 
 const Project = () => {
   const { projectId } = useParams();
@@ -474,7 +477,7 @@ const Project = () => {
         </Dialog>
 
         <DndProvider backend={HTML5Backend}>
-          <header className='px-2 border-b-2 flex flex-row items-center bg-white'>
+          <header className='fixed top-0 w-full px-2 border-b-2 flex flex-row items-center bg-white'>
             <div className='flex flex-row py-2 items-center'>
               <AppIcon
                 style={{ marginRight: "1rem" }}
@@ -493,7 +496,11 @@ const Project = () => {
                 <ArrowBackIcon />
               </AppIcon>
 
-              <p className='text-overline1'>{projectDetails?.projectName}</p>
+              <p className='text-overline1 mr-3'>
+                {projectDetails?.projectName}
+              </p>
+
+              <EzapiLogo />
 
               {canEdit(userRole) && isOperationSelected() && (
                 <div className='ml-4'>
@@ -601,39 +608,24 @@ const Project = () => {
                   }}
                 />
 
-                <Menu
-                  id='profile-menu'
-                  anchorEl={profileMenuAnchorEl}
-                  keepMounted
-                  open={Boolean(profileMenuAnchorEl)}
-                  onClose={() => {
-                    setProfilemenuAnchorEl(null);
-                  }}
-                  TransitionComponent={Fade}
-                  style={{ borderRadius: "1rem", zIndex: "100" }}
-                >
-                  <MenuItem
-                    onClick={() => {
-                      setProfilemenuAnchorEl(null);
-                      logout();
-                    }}
-                    style={{ color: Colors.accent.red }}
-                  >
-                    Logout
-                  </MenuItem>
-                </Menu>
+                <ProfileMenu
+                  onLogout={logout}
+                  profileMenuAnchorEl={profileMenuAnchorEl}
+                  setProfilemenuAnchorEl={setProfilemenuAnchorEl}
+                />
               </div>
             </div>
           </header>
 
           {currentTab === 0 && (
-            <div
-              className='flex flex-row'
-              style={{ height: `calc(100vh - 60px)` }}
-            >
+            <div className='flex flex-row mt-14'>
               <section
-                className='w-1/5 border-r-2 h-full'
-                style={{ minWidth: "220px", maxWidth: "300px" }}
+                className='border-r-2 '
+                style={{
+                  width: "300px",
+
+                  height: `calc(100vh - 100px)`,
+                }}
               >
                 <Resources
                   className='h-full flex flex-col'
@@ -668,14 +660,20 @@ const Project = () => {
                 />
               </section>
 
-              <section className='w-full flex flex-col'>
+              <section
+                className='w-full flex flex-col'
+                style={{ height: `calc(100vh - 112px)` }}
+              >
                 <div
-                  className={classNames(`overflow-hidden`, {
+                  className={classNames(``, {
                     "h-1/2": operationState.operationIndex,
                     "h-full": !operationState.operationIndex,
                   })}
                 >
-                  <Match projectType={projectDetails?.projectType} />
+                  <Match
+                    projectType={projectDetails?.projectType}
+                    style={{ height: "100%" }}
+                  />
                 </div>
 
                 {operationState.resource &&
@@ -694,6 +692,8 @@ const Project = () => {
               </section>
             </div>
           )}
+
+          <EzapiFooter />
         </DndProvider>
       </>
     </UserRoleProvider>

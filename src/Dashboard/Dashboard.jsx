@@ -25,6 +25,10 @@ import projectAtom, { defaultState } from "../AddProject/projectAtom";
 import InitialsAvatar from "../shared/components/InitialsAvatar";
 import { useLogout } from "../shared/query/authQueries";
 import { getFirstName, getLastName } from "../shared/storage";
+import EzapiLogo from "../shared/components/EzapiLogo";
+import ProfileMenu from "../shared/components/ProfileMenuWithIcon";
+import ProfileMenuWithIcon from "../shared/components/ProfileMenuWithIcon";
+import EzapiFooter from "../shared/components/EzapiFooter";
 
 const useStyles = makeStyles({
   selectedItem: {
@@ -128,12 +132,7 @@ const Dashboard = ({ selectedIndex, children }) => {
       >
         {/* EZAPI logo */}
         <div className='w-full'>
-          <img
-            src={Logo}
-            alt='ezapi logo'
-            className='bg-white'
-            style={{ height: "28px", width: "28px" }}
-          />
+          <EzapiLogo />
         </div>
 
         {/* Initials logo */}
@@ -151,38 +150,10 @@ const Dashboard = ({ selectedIndex, children }) => {
         </p>
 
         {/* Options */}
-        <AppIcon
-          aria-label='profile options'
-          style={{ color: "white" }}
-          onClick={handleProfileMenuClick}
-        >
-          <ExpandMoreIcon />
-        </AppIcon>
-
-        <Menu
-          id='profile-menu'
-          anchorEl={profileMenuAnchorEl}
-          keepMounted
-          open={Boolean(profileMenuAnchorEl)}
-          onClose={() => {
-            setProfilemenuAnchorEl(null);
-          }}
-          TransitionComponent={Fade}
-          style={{ borderRadius: "1rem", zIndex: "100" }}
-        >
-          <MenuItem
-            onClick={() => {
-              setProfilemenuAnchorEl(null);
-              handleOnLogout();
-            }}
-            style={{ color: Colors.accent.red }}
-          >
-            Logout
-          </MenuItem>
-        </Menu>
+        <ProfileMenuWithIcon logout={logout} />
       </header>
 
-      <section className='h-full flex flex-row' style={{ marginTop: "56px" }}>
+      <section className='h-full flex flex-row my-14'>
         <div className='h-full w-52 fixed left-0 border-r-2 border-gray-100'>
           <List>
             <ListItem
@@ -288,12 +259,18 @@ const Dashboard = ({ selectedIndex, children }) => {
           </List>
         </div>
 
-        <div className='ml-52 w-full' style={{ height: `calc(100vh - 80px)` }}>
+        <div
+          className='ml-52 w-full'
+
+          // style={{ height: `calc(100vh - 180px)` }}
+        >
           {React.cloneElement(children, {
             showCreateProjectDialog: showAddProjectDialog,
           })}
         </div>
       </section>
+
+      <EzapiFooter />
     </div>
   );
 };

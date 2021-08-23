@@ -13,6 +13,9 @@ module.exports = {
       height: {
         fit: "fit-content",
       },
+      zIndex: {
+        999: 999,
+      },
       maxWidth: {
         1: "1rem",
         2: "2rem",

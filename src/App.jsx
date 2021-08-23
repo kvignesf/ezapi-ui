@@ -21,6 +21,7 @@ import Project from "./Project";
 import ProjectPayment from "./ProjectPayment/ProjectPayment";
 import CookieConsentPopup from "./CookieConsent";
 import Orders from "./Orders/Orders";
+import EzapiFooter from "./shared/components/EzapiFooter";
 
 const theme = createMuiTheme({
   palette: {

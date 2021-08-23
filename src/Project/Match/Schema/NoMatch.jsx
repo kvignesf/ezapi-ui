@@ -24,10 +24,10 @@ const NoMatch = ({ items, onItemClick }) => {
             style={{
               height:
                 !operationState?.operationIndex && items?.length > 0
-                  ? `calc(100vh - 180px)`
+                  ? `calc(100vh - 230px)`
                   : null,
               maxHeight: operationState?.operationIndex
-                ? `calc(50vh - 150px)`
+                ? `calc(50vh - 180px)`
                 : null,
             }}
           >

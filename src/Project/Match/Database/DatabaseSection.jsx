@@ -43,11 +43,11 @@ const DatabaseSection = ({ items, onItemClick, section }) => {
           <div
             style={{
               height:
-                !operationState?.operationIndex && items?.length
-                  ? `calc(100vh - 180px)`
+                !operationState?.operationIndex && items?.length > 0
+                  ? `calc(100vh - 230px)`
                   : null,
               maxHeight: operationState?.operationIndex
-                ? `calc(50vh - 150px)`
+                ? `calc(50vh - 180px)`
                 : null,
             }}
           >

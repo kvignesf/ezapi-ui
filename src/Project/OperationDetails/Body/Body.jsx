@@ -229,14 +229,15 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
             <Scrollbar
               alwaysShowTracks={true}
               style={{
+               
                 maxHeight:
                   height > 790
-                    ? "26vh"
+                    ? "23vh"
                     : height > 770
-                    ? "22vh"
+                    ? "19vh"
                     : height > 600
-                    ? "18vh"
-                    : "13vh",
+                    ? "15vh"
+                    : "10vh",
               }}
             >
               <TreeView

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router";
 import _ from "lodash";
-import { useRecoilState } from "recoil";
+import { useRecoilState, useRecoilValue } from "recoil";
 
 import FullMatch from "./FullMatch";
 import PartialMatch from "./PartialMatch";
@@ -16,12 +16,14 @@ import {
   isObject,
   isPartialMatch,
   isSchema,
+  operationAtomWithMiddleware,
 } from "../../../shared/utils";
 
 const Schema = () => {
   const { projectId } = useParams();
   const [schemaState, setSchemaState] = useRecoilState(schemaAtom);
   const [schemaData, setSchemaData] = useState(null);
+
   const {
     isLoading,
     error: getAllSchemasError,
