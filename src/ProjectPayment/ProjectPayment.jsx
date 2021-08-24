@@ -49,6 +49,7 @@ import { queries } from "../shared/network/queryClient";
 import PublishStatusDialog from "./PublishStatusDialog";
 import ProfileMenu from "../shared/components/ProfileMenu";
 import EzapiLogo from "../shared/components/EzapiLogo";
+import EzapiFooter from "../shared/components/EzapiFooter";
 
 const Header = ({
   projectDetails,
@@ -68,7 +69,7 @@ const Header = ({
   };
 
   return (
-    <header className='px-2 border-b-2 flex flex-row justify-between items-center bg-white'>
+    <header className='fixed top-0 w-full z-999 px-2 border-b-2 flex flex-row justify-between items-center bg-white'>
       <div className='flex flex-row py-2 items-center'>
         <AppIcon
           style={{ marginRight: "1rem" }}
@@ -494,7 +495,7 @@ const ProjectPayment = () => {
 
       <Header projectDetails={projectDetails} logoutMutation={logoutMutation} />
 
-      <div className='w-full flex flex-row p-12 h-full'>
+      <div className='w-full flex flex-row p-12 h-full mt-14'>
         {basicProductData && (
           <div className='flex-1 mr-6 px-6'>
             {canShowAutoPopulationButton() && (
@@ -557,6 +558,8 @@ const ProjectPayment = () => {
           </div>
         )}
       </div>
+
+      <EzapiFooter />
     </div>
   );
 };

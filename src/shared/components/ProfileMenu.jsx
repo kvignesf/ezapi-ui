@@ -1,7 +1,7 @@
 import React from "react";
 import { Fade, Menu, MenuItem } from "@material-ui/core";
 import Colors from "../colors";
-import { useHistory } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 import routes from "../routes";
 
 const ProfileMenu = ({
@@ -27,13 +27,15 @@ const ProfileMenu = ({
       TransitionComponent={Fade}
       style={{ borderRadius: "1rem", zIndex: "100" }}
     >
-      <MenuItem
-        onClick={() => {
-          setProfilemenuAnchorEl(null);
-          navigateToContactUs();
-        }}
-      >
-        Contact Us
+      <MenuItem>
+        <Link
+          to='/contact'
+          target='_blank'
+          rel='noopener noreferrer'
+          className='text-overline2 text-brand-secondary hover:opacity-80'
+        >
+          Contact Us
+        </Link>
       </MenuItem>
 
       <MenuItem
