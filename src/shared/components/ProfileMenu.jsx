@@ -25,7 +25,7 @@ const ProfileMenu = ({
         setProfilemenuAnchorEl(null);
       }}
       TransitionComponent={Fade}
-      style={{ borderRadius: "1rem", zIndex: "100" }}
+      style={{ borderRadius: "1rem", zIndex: "1100" }}
     >
       <MenuItem>
         <Link
