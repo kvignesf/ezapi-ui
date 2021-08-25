@@ -1,4 +1,4 @@
-# EzAPI Intelligent Miner
+# EzAPI Designer FrontEnd
 
 This repository contains code for frontend of the EzAPI designer. It's built using ReactJs, TailwindCSS, RecoilJs.
 
