@@ -58,7 +58,7 @@ const InviteCollaborators = ({
           borderRadius: "4px",
           padding: "0.25rem 0.75rem",
         }}
-        disabled={addProjectMutation?.isSuccess}
+        // disabled={addProjectMutation?.isSuccess}
       />
 
       {error && <p className='text-overline2 text-accent-red mt-3'>{error}</p>}

@@ -29,6 +29,7 @@ import EzapiLogo from "../shared/components/EzapiLogo";
 import ProfileMenu from "../shared/components/ProfileMenuWithIcon";
 import ProfileMenuWithIcon from "../shared/components/ProfileMenuWithIcon";
 import EzapiFooter from "../shared/components/EzapiFooter";
+import _ from "lodash";
 
 const useStyles = makeStyles({
   selectedItem: {
@@ -118,7 +119,9 @@ const Dashboard = ({ selectedIndex, children }) => {
             onSuccess={(projectId) => {
               handleCloseDialog();
 
-              history.push(generateRoute(routes.projects, projectId));
+              if (!_.isEmpty(projectId)) {
+                history.push(generateRoute(routes.projects, projectId));
+              }
             }}
           />
         )}

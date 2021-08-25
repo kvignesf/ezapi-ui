@@ -27,7 +27,7 @@ const PartialMatch = ({ items, onItemClick }) => {
                   ? `calc(100vh - 230px)`
                   : null,
               maxHeight: operationState?.operationIndex
-                ? `calc(50vh - 150px)`
+                ? `calc(50vh - 180px)`
                 : null,
             }}
           >

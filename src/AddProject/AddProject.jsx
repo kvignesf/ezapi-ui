@@ -30,17 +30,17 @@ const AddProject = ({ onClose, onSuccess }) => {
   const [specsError, setSpecsError] = useState(null);
   const [dbsError, setDbsError] = useState(null);
   const [projectDetails, setProjectDetails] = useRecoilState(projectAtom);
+
+  const onAddProjectSuccess = (projectId) => {
+    onSuccess(projectId);
+  };
+
   const {
     addProjectMutation,
     uploadSpecsMutation,
     uploadDbMutation,
-    aiMatcherMutation: {
-      isLoading: isMatchingAi,
-      error: matchAiError,
-      isSuccess: matchAiSuccess,
-      mutate: callAiMatcher,
-    },
-  } = useAddProject();
+    aiMatcherMutation,
+  } = useAddProject(onAddProjectSuccess);
 
   const formRef = useRef();
 
@@ -52,6 +52,13 @@ const AddProject = ({ onClose, onSuccess }) => {
     mutate: uploadProjectData,
     reset: resetCreateProjectApi,
   } = addProjectMutation;
+
+  const {
+    isLoading: isMatchingAi,
+    error: matchAiError,
+    isSuccess: matchAiSuccess,
+    mutate: callAiMatcher,
+  } = aiMatcherMutation;
 
   const {
     isLoading: isUploadingSpecs,
@@ -88,6 +95,10 @@ const AddProject = ({ onClose, onSuccess }) => {
   };
 
   const handleDone = () => {
+    resetCreateProjectApi();
+    resetUploadDbsApi();
+    resetUploadSpecsApi();
+
     if (
       _.isEmpty(projectDetails?.name) ||
       (_.isEmpty(projectDetails?.dbs) && _.isEmpty(projectDetails?.specs))
@@ -100,34 +111,14 @@ const AddProject = ({ onClose, onSuccess }) => {
       return;
     }
 
-    if (!isProjectDetailsUploadSuccess) {
-      uploadProjectData({
-        name: projectDetails?.name,
-        invitees: projectDetails?.collaborators?.map((collaborator) => {
-          return {
-            email: collaborator,
-          };
-        }),
-      });
-    } else if (!uploadSpecsSuccess && !_.isEmpty(projectDetails?.specs)) {
-      uploadSpecs({
-        projectId: createdProjectDetails?.projectId,
-        files: projectDetails?.specs,
-      });
-    } else if (!uploadDbsSuccess && !_.isEmpty(projectDetails?.dbs)) {
-      uploadDbs({
-        projectId: createdProjectDetails?.projectId,
-        files: projectDetails?.dbs,
-      });
-    } else if (
-      !matchAiSuccess &&
-      !_.isEmpty(projectDetails?.specs) &&
-      !_.isEmpty(projectDetails?.dbs)
-    ) {
-      callAiMatcher({
-        projectId: createdProjectDetails?.projectId,
-      });
-    }
+    uploadProjectData({
+      name: projectDetails?.name,
+      invitees: projectDetails?.collaborators?.map((collaborator) => {
+        return {
+          email: collaborator,
+        };
+      }),
+    });
   };
 
   const handleCollaboratorsChange = (collaborators) => {
@@ -147,21 +138,6 @@ const AddProject = ({ onClose, onSuccess }) => {
       return updatedProjectDetails;
     });
   };
-
-  if (
-    // (isProjectDetailsUploadSuccess &&
-    //   _.isEmpty(projectDetails?.specs) &&
-    //   _.isEmpty(projectDetails?.dbs)) ||
-    isProjectDetailsUploadSuccess &&
-    ((uploadSpecsSuccess && _.isEmpty(projectDetails?.dbs)) ||
-      (uploadDbsSuccess && _.isEmpty(projectDetails?.specs)) ||
-      (matchAiSuccess &&
-        !_.isEmpty(projectDetails?.specs) &&
-        !_.isEmpty(projectDetails?.dbs)))
-  ) {
-    onSuccess(createdProjectDetails?.projectId);
-    return null;
-  }
 
   return (
     <div className='p-4'>
@@ -213,6 +189,7 @@ const AddProject = ({ onClose, onSuccess }) => {
                     addProjectMutation={addProjectMutation}
                     uploadSpecsMutation={uploadSpecsMutation}
                     uploadDbMutation={uploadDbMutation}
+                    aiMatcherMutation={aiMatcherMutation}
                   />
                 </div>
               ) : (
