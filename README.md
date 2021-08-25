@@ -34,11 +34,11 @@ Open the browser and go to [http://127.0.0.1:3000/](http://127.0.0.1:3000/). You
 
 The entire EzAPI Designer Webapp consists of the following core libraries -
 
-1. [https://reactjs.org](ReactJs)
-2. [https://tailwindcss.com](TailwindCSS)
-3. [https://recoiljs.org](RecoilJs)
-4. [https://react-query.tanstack.com](ReactQuery)
-5. [https://reactrouter.com](ReactRouter)
+1. [ReactJs](https://reactjs.org)
+2. [TailwindCSS](https://tailwindcss.com)
+3. [RecoilJs](https://recoiljs.org)
+4. [ReactQuery](https://react-query.tanstack.com)
+5. [ReactRouter](https://reactrouter.com)
 
 ### Folder Structure -
 
@@ -46,15 +46,15 @@ _The whole application is structured as features._
 
 ##### Files and folders
 
-```python
+```
 - /App.jsx - Contains the core component which acts as an entry point of the application
 - /index.jsx - Contains the root component of the application
 - /index.css - Contains the common styles used in the application
 - /tailwind.config.js - Contains the configuration data required by the tailwindcss
-- /craco.config.js - Contains the configuration data required by the craco. [https://www.npmjs.com/package/@craco/craco](Craco) modifies the webpack on the fly without us having to eject the react application.
+- /craco.config.js - Contains the configuration data required by the craco. [Craco](https://www.npmjs.com/package/@craco/craco) modifies the webpack on the fly without us having to eject the react application.
 
 - /static/ - This module contains all the assets such as images
-- /shared/atom - Contains all the common atoms ([https://recoiljs.org/docs/basic-tutorial/atoms/](Atom)) shared by the features
+- /shared/atom - Contains all the common atoms ([Atom](https://recoiljs.org/docs/basic-tutorial/atoms/)) shared by the features
 - /shared/components - Contains all the components shared by the features
 - /shared/network/client - Base network client used in the application
 - /shared/network/queryClient - Base react-query client used in the application
