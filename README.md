@@ -64,6 +64,6 @@ _The whole application is structured as features._
 - /shared/constants - Contains all the contants.
 - /shared/routes - Contains all the navigatable routes used in the project.
 - /shared/storage - Helper file which contains all the utilities to store and retreive the key/value pairs.
-- /shared/storage - Contains the common utility functions.
+- /shared/utils - Contains the common utility functions.
 
 ```
