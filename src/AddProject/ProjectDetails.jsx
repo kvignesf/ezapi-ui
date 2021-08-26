@@ -108,6 +108,7 @@ const ProjectDetails = ({
           return spec.name !== filename;
         }
       );
+
       return updatedProjectDetails;
     });
 
@@ -121,6 +122,7 @@ const ProjectDetails = ({
       updatedProjectDetails.dbs = _.filter(updatedProjectDetails.dbs, (db) => {
         return db.name !== filename;
       });
+
       return updatedProjectDetails;
     });
 
@@ -174,6 +176,7 @@ const ProjectDetails = ({
           hidden
           onChange={(e) => {
             handleOnSpecsPick(Array.from(e.target.files));
+            e.target.value = "";
           }}
         />
         <label
@@ -230,6 +233,7 @@ const ProjectDetails = ({
           hidden
           onChange={(e) => {
             handleOnDbsPick(Array.from(e.target.files));
+            e.target.value = "";
           }}
         />
         <label
