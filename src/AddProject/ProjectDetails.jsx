@@ -14,6 +14,7 @@ import { PrimaryButton } from "../shared/components/AppButton";
 import AppIcon from "../shared/components/AppIcon";
 import apiNameSchema from "../shared/schemas/apiNameSchema";
 import EnterKeyCaptureInput from "../shared/components/EnterKeyCaptureInput";
+import Messages from "../shared/messages";
 
 const ProjectDetails = ({
   formRef,
@@ -136,7 +137,7 @@ const ProjectDetails = ({
             name: projectDetails?.name ?? "",
           }}
           validationSchema={Yup.object().shape({
-            name: apiNameSchema("Name is required"),
+            name: apiNameSchema(Messages.NAME_REQUIRED),
           })}
           innerRef={formRef}
         >

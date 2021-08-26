@@ -51,10 +51,14 @@ _The whole application is structured as features._
 - /index.jsx - Contains the root component of the application
 - /index.css - Contains the common styles used in the application
 - /tailwind.config.js - Contains the configuration data required by the tailwindcss
-- /craco.config.js - Contains the configuration data required by the craco. [Craco](https://www.npmjs.com/package/@craco/craco) modifies the webpack on the fly without us having to eject the react application.
+- /craco.config.js - Contains the configuration data required by the craco. <pre>
+<a href="https://www.npmjs.com/package/@craco/craco">Craco</a>
+</pre> modifies the webpack on the fly without us having to eject the react application.
 
 - /static/ - This module contains all the assets such as images
-- /shared/atom - Contains all the common atoms ([Atom](https://recoiljs.org/docs/basic-tutorial/atoms/)) shared by the features
+- /shared/atom - Contains all the common atoms <pre>
+<a href="https://recoiljs.org/docs/basic-tutorial/atoms/">Atom</a>
+</pre> shared by the features
 - /shared/components - Contains all the components shared by the features
 - /shared/network/client - Base network client used in the application
 - /shared/network/queryClient - Base react-query client used in the application
@@ -65,5 +69,6 @@ _The whole application is structured as features._
 - /shared/routes - Contains all the navigatable routes used in the project.
 - /shared/storage - Helper file which contains all the utilities to store and retreive the key/value pairs.
 - /shared/utils - Contains the common utility functions.
+- /shared/messages - Contains all the messages used in the application and the helper functions to generate the appropriate message.
 
 ```

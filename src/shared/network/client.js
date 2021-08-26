@@ -2,6 +2,7 @@ import axios from "axios";
 
 import { getAccessToken, setAccessToken, clearSession } from "../storage";
 import routes from "../routes";
+import Messages from "../messages";
 
 const baseUrl = process.env.REACT_APP_API_URL;
 
@@ -47,7 +48,7 @@ export const endpoint = Object.freeze({
 const client = axios.create({
   baseURL: baseUrl,
   timeout: 10000,
-  timeoutErrorMessage: "Something went wrong, please try again",
+  timeoutErrorMessage: Messages.UNKNOWN,
   responseType: "json",
 });
 

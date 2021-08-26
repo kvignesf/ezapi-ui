@@ -8,6 +8,7 @@ import AppIcon from "../shared/components/AppIcon";
 import { PrimaryButton } from "../shared/components/AppButton";
 import { ReactComponent as SuccessLogo } from "../static/images/success-icon.svg";
 import { ReactComponent as FailureLogo } from "../static/images/failure-icon.svg";
+import Messages from "../shared/messages";
 
 const PublishStatusDialog = ({
   onButtonClick,
@@ -61,24 +62,18 @@ const PublishStatusDialog = ({
         </div>
       );
     } else if (verifyProjectError) {
-      return (
-        <p className='text-overline2'>
-          Failed to validate project. Please try again.
-        </p>
-      );
+      return <p className='text-overline2'>{Messages.VALIDATE_RETRY}</p>;
     } else if (isPublishingProject) {
       return <p className='text-overline2'>Publishing project.</p>;
     } else if (publishProjectError) {
-      return (
-        <p className='text-overline2'>
-          Failed to publish the project. Please try again.
-        </p>
-      );
+      return <p className='text-overline2'>{Messages.PUBLISH_RETRY}</p>;
     } else if (isPublishProjectSuccess) {
       return (
         <div>
           {publishProjectData?.success ? (
-            <p className='text-overline2'>{`Project ${project?.projectName} successfully published. You can now download the specs and artifacts.`}</p>
+            <p className='text-overline2'>
+              {Messages.publishSuccess(project?.projectName)}
+            </p>
           ) : (
             <p className='text-overline2'>{publishProjectData?.message}</p>
           )}

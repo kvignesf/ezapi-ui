@@ -2,6 +2,7 @@ import _ from "lodash";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useHistory } from "react-router-dom";
 import { useRecoilValue } from "recoil";
+import Messages from "../../shared/messages";
 
 import client, { endpoint } from "../../shared/network/client";
 import { getApiError } from "../../shared/utils";
@@ -52,11 +53,11 @@ const saveAttrRecommendation = async ({
   tableAttribute,
 }) => {
   if (!tableName) {
-    throw Error("Please select a table name");
+    throw Error(Messages.TABLE_REQUIRED);
   }
 
   if (!tableAttribute) {
-    throw Error("Please select a column name");
+    throw Error(Messages.COLUMN_REQUIRED);
   }
 
   try {

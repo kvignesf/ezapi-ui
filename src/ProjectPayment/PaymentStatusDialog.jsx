@@ -8,6 +8,7 @@ import { ReactComponent as SuccessLogo } from "../static/images/success-icon.svg
 import { ReactComponent as FailureLogo } from "../static/images/failure-icon.svg";
 import { PrimaryButton, TextButton } from "../shared/components/AppButton";
 import { PaymentStatus } from "./paymentUtils";
+import Messages from "../shared/messages";
 
 const PaymentStatusDialog = ({
   onButtonClick,
@@ -49,7 +50,7 @@ const PaymentStatusDialog = ({
       return (
         confirmPaymentData?.error?.message + " Please try again." ??
         confirmPaymentError?.message + " Please try again." ??
-        "Something went wrong while making payment, please try again."
+        Messages.PAYMENT_RETRY
       );
     }
 

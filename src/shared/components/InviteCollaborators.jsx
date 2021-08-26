@@ -5,6 +5,7 @@ import _ from "lodash";
 import { isEmailValid } from "../utils";
 import Colors from "../colors";
 import { getEmailId } from "../storage";
+import Messages from "../messages";
 
 const InviteCollaborators = ({
   collaborators,
@@ -44,7 +45,7 @@ const InviteCollaborators = ({
             setError(null);
             return result;
           } else {
-            setError("Seems like email entered is invalid");
+            setError(Messages.INVALID_EMAIL);
           }
         }}
         blurBehavior='add'

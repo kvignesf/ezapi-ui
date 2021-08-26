@@ -8,6 +8,7 @@ import { PrimaryButton, TextButton } from "../../shared/components/AppButton";
 import { useUpdateProject } from "../projectQueries";
 import apiNameSchema from "../../shared/schemas/apiNameSchema";
 import EnterKeyCaptureInput from "../../shared/components/EnterKeyCaptureInput";
+import Messages from "../../shared/messages";
 
 const RenameProject = ({ project, onClose }) => {
   const {
@@ -48,7 +49,7 @@ const RenameProject = ({ project, onClose }) => {
         initialValues={{
           name: project?.projectName ?? "",
         }}
-        validationSchema={apiNameSchema("Project Name is required")}
+        validationSchema={apiNameSchema(Messages.NAME_REQUIRED)}
         onSubmit={handleNext}
       >
         {({ errors, touched }) => (

@@ -3,6 +3,7 @@ import _ from "lodash";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useHistory, useParams } from "react-router-dom";
 import { useRecoilValue } from "recoil";
+import Messages from "../shared/messages";
 
 import client, { endpoint } from "../shared/network/client";
 import { clearQueryCache, queries } from "../shared/network/queryClient";
@@ -104,7 +105,7 @@ const confirmPayment = async ({ card, billingDetails, secret, stripe }) => {
 
     return result;
   } catch (error) {
-    throw Error("Something went wrong during payment");
+    throw Error(Messages.PAYMENT_FAILURE);
   }
 };
 

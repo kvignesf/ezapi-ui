@@ -24,6 +24,7 @@ import {
   useUploadProjectSpecs,
 } from "./addProjectQuery";
 import TabLabel from "../shared/components/TabLabel";
+import Messages from "../shared/messages";
 
 const AddProject = ({ onClose, onSuccess }) => {
   const [currentTab, setTab] = useState(0);
@@ -81,7 +82,7 @@ const AddProject = ({ onClose, onSuccess }) => {
       formRef.current.handleSubmit();
 
       if (_.isEmpty(projectDetails?.specs) || _.isEmpty(projectDetails?.dbs)) {
-        setDbsError("Atleast one spec or db file must be uploaded");
+        setDbsError(Messages.DB_REQUIRED);
       }
 
       if (

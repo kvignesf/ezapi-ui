@@ -57,7 +57,7 @@ import OperationErrorsDialog from "./OperationErrorsDialog";
 import UserRoleProvider from "./UserRoleContext";
 import PublishProjectMessage from "./PublishProjectMessage";
 import VerifyProjectError from "./VerifyProjectError";
-import ProjectVerificationErrors from "./ProjectVerificationErrors";
+import ProjectVerificationMessages from "./ProjectVerificationErrors";
 import ModifyCollaborators from "../ModifyCollaborators/ModifyCollaborators";
 import RepublishInfo from "./RepublishInfo";
 import ProfileMenu from "../shared/components/ProfileMenu";
