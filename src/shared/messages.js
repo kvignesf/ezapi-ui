@@ -18,7 +18,7 @@ const Messages = {
   VALIDATE_RETRY: "Failed to validate project, please try again.",
   PUBLISH_RETRY: "Failed to publish the project, please try again.",
   publishSuccess: (projectName) =>
-    `Project ${sprojectName} successfully published. You can now download the specs and artifacts.`,
+    `Project ${projectName} successfully published. You can now download the specs and artifacts.`,
 };
 
 export default Messages;
