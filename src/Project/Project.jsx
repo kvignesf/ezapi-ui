@@ -74,6 +74,7 @@ const Project = () => {
     isSuccess: isProjectDetailsFetched,
     error: projectDetailsError,
     data: projectDetails,
+    remove: resetFetchProject,
   } = useFetchProjectDetails(projectId, { refetchOnWindowFocus: false });
   const [currentTab, setCurrentTab] = useState(0);
   const [operationState, setOperationState] = useRecoilState(
@@ -225,7 +226,7 @@ const Project = () => {
       );
 
       syncOperation({
-        projectId,
+        projectId: operationState?.projectId,
         operationId: operationState?.operation?.operationId,
         pathId: operationState?.path?.pathId,
         resourceId: operationState?.resource?.resourceId,
@@ -284,6 +285,9 @@ const Project = () => {
   };
 
   const navigateBack = () => {
+    resetSubmitProjectMutation();
+    resetFetchProject();
+    resetSyncOperationMutation();
     history.replace(routes.projects);
     // history.goBack();
   };
