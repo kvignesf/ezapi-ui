@@ -425,14 +425,16 @@ const ProjectPayment = () => {
     publishProjectData;
 
   const canShowAutoPopulationButton = () => {
-    const loggedInUserEmailId = getEmailId();
+    return false;
+    // const loggedInUserEmailId = getEmailId();
 
-    return (
-      loggedInUserEmailId === "karthik.b@cumulations.com" ||
-      loggedInUserEmailId === "madhuworldwide@gmail.com" ||
-      loggedInUserEmailId === "dhirajsingh.k@cumulations.com"
-    );
+    // return (
+    //   loggedInUserEmailId === "karthik.b@cumulations.com" ||
+    //   loggedInUserEmailId === "madhuworldwide@gmail.com" ||
+    //   loggedInUserEmailId === "dhirajsingh.k@cumulations.com"
+    // );
   };
+
   return (
     <div>
       <Dialog
