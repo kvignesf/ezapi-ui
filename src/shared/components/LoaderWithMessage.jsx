@@ -15,7 +15,7 @@ const LoaderWithMessage = ({
       className={classNames(
         "flex flex-col items-center justify-center",
         {
-          "h-screen w-screen": !contained,
+          "h-screen w-full": !contained,
         },
         `${className}`
       )}

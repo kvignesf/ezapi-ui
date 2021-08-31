@@ -13,6 +13,7 @@ import {
 import apiNameSchema from "../../../shared/schemas/apiNameSchema";
 import { useAddResource, useEditResource } from "./resourceQuery";
 import EnterKeyCaptureInput from "../../../shared/components/EnterKeyCaptureInput";
+import Messages from "../../../shared/messages";
 
 const AddOrEditResource = ({
   projectId,
@@ -74,7 +75,7 @@ const AddOrEditResource = ({
           name: resourceName ?? "",
         }}
         validationSchema={Yup.object().shape({
-          name: apiNameSchema("Resource Name is required"),
+          name: apiNameSchema(Messages.NAME_REQUIRED),
         })}
         onSubmit={handleSubmit}
       >

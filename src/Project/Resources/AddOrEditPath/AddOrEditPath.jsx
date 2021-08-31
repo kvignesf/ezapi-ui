@@ -13,6 +13,7 @@ import {
 import apiNameSchema from "../../../shared/schemas/apiNameSchema";
 import { useAddPath, useEditPath } from "./pathQuery";
 import EnterKeyCaptureInput from "../../../shared/components/EnterKeyCaptureInput";
+import Messages from "../../../shared/messages";
 
 const AddOrEditPath = ({
   title,
@@ -77,7 +78,7 @@ const AddOrEditPath = ({
           name: pathName ?? "",
         }}
         validationSchema={Yup.object().shape({
-          name: apiNameSchema("Path Name is required"),
+          name: apiNameSchema(Messages.NAME_REQUIRED),
         })}
         onSubmit={handleSubmit}
       >

@@ -101,7 +101,7 @@ const AddOrEditOperation = ({
     mutate: editOperation,
     reset: resetEditOperation,
   } = useEditOperation();
-  const { id: projectId } = useParams();
+  const { projectId } = useParams();
   const resetMutationState = () => {
     if (operationName && operationDescription && operationType) {
       if (

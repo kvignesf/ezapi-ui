@@ -10,7 +10,7 @@ import tableAtom from "../../../shared/atom/tableAtom";
 import { isDatabase } from "../../../shared/utils";
 
 const Database = () => {
-  const { id: projectId } = useParams();
+  const { projectId } = useParams();
   const {
     isLoading: isFetchingTables,
     error: fetchTablesError,

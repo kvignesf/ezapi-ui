@@ -229,14 +229,15 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
             <Scrollbar
               alwaysShowTracks={true}
               style={{
+               
                 maxHeight:
                   height > 790
-                    ? "26vh"
+                    ? "23vh"
                     : height > 770
-                    ? "22vh"
+                    ? "19vh"
                     : height > 600
-                    ? "18vh"
-                    : "13vh",
+                    ? "15vh"
+                    : "10vh",
               }}
             >
               <TreeView
@@ -300,7 +301,7 @@ let treeIndex = 1;
 const BodyItem = ({ request = true, responseCode, itemRef }) => {
   const [bodyItem, setItem] = useState(itemRef);
   const setOperationDetails = useSetRecoilState(operationAtomWithMiddleware);
-  const { id: projectId } = useParams();
+  const { projectId } = useParams();
   const {
     isLoading: isLoadingSubSchema,
     error: getSubSchemasError,
@@ -920,7 +921,7 @@ const BodyItem = ({ request = true, responseCode, itemRef }) => {
 // This is shown only for arrays, schemas, objects of a parent schema
 const BodySubTreeItems = ({ currentRef: some }) => {
   const [currentRef, setCurrentRef] = useState(some);
-  const { id: projectId } = useParams();
+  const { projectId } = useParams();
   const {
     isLoading: isLoadingSubSchema,
     error: getSubSchemasError,

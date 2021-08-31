@@ -23,7 +23,7 @@ import Colors from "../../../../shared/colors";
 
 const AddOrEditParameter = ({ parameter, onClose }) => {
   const formRef = useRef(null);
-  const { id: projectId } = useParams();
+  const { projectId } = useParams();
   const {
     isLoading: isAddingParameter,
     isSuccess: isAddSuccess,

@@ -6,6 +6,24 @@ import AppIcon from "../shared/components/AppIcon";
 import { PrimaryButton } from "../shared/components/AppButton";
 
 const ProjectVerificationErrors = ({ onClose, response }) => {
+  const getLocationName = (responseItem) => {
+    let location;
+
+    if (responseItem?.resource_name) {
+      location = "/" + responseItem?.resource_name;
+    }
+
+    if (responseItem?.path_name) {
+      location += "/" + responseItem?.path_name;
+    }
+
+    if (responseItem?.operation_name) {
+      location += "/" + responseItem?.operation_name;
+    }
+
+    return location;
+  };
+
   return (
     <div
       className='flex flex-col'
@@ -38,7 +56,11 @@ const ProjectVerificationErrors = ({ onClose, response }) => {
             {response?.map((responseItem) => {
               return (
                 <div className='mb-2'>
-                  <p className='text-overline1 mb-1'>{`/${responseItem?.resource_name}/${responseItem?.path_name}/${responseItem?.operation_name}`}</p>
+                  {getLocationName(responseItem) && (
+                    <p className='text-overline1 mb-1'>
+                      {getLocationName(responseItem)}
+                    </p>
+                  )}
 
                   {responseItem?.errors?.map((errorMessage) => {
                     return (

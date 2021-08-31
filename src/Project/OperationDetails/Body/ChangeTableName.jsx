@@ -15,6 +15,7 @@ import {
 import { operationAtomWithMiddleware } from "../../../shared/utils";
 import apiNameSchema from "../../../shared/schemas/apiNameSchema";
 import EnterKeyCaptureInput from "../../../shared/components/EnterKeyCaptureInput";
+import Messages from "../../../shared/messages";
 
 const ChangeTableName = ({ labelItem, request, responseCode, onClose }) => {
   const formRef = useRef(null);
@@ -57,7 +58,7 @@ const ChangeTableName = ({ labelItem, request, responseCode, onClose }) => {
 
   const onTableNameUpdate = ({ name }) => {
     if (isNameAlreadyExisting(name)) {
-      setError("Table/Column with this name already exists.");
+      setError(Messages.TABLE_COLUMN_EXISTS);
 
       return;
     }
@@ -135,7 +136,7 @@ const ChangeTableName = ({ labelItem, request, responseCode, onClose }) => {
             name: labelItem?.name ?? "",
           }}
           validationSchema={Yup.object().shape({
-            name: apiNameSchema("Table Name is required"),
+            name: apiNameSchema(Messages.NAME_REQUIRED),
           })}
           innerRef={formRef}
           onSubmit={onTableNameUpdate}

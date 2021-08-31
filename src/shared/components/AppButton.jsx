@@ -13,10 +13,10 @@ export const PrimaryButton = ({
   ...rest
 }) => {
   let classnames = classNames(
-    `rounded-md px-4 py-2 w-min flex items-center`,
+    `px-4 py-2 w-min flex items-center`,
     {
       "cursor-pointer bg-brand-secondary hover:opacity-80": !disabled,
-      "bg-neutral-gray4": disabled,
+      "bg-neutral-gray4 cursor-not-allowed": disabled,
     },
     classes
   );
@@ -24,10 +24,10 @@ export const PrimaryButton = ({
   return (
     <button
       className={classnames}
-      style={{ ...style, border: "none", outline: "none" }}
+      style={{ ...style, borderRadius: "4px", border: "none", outline: "none" }}
       {...rest}
     >
-      <p className='text-mediumLabel text-white whitespace-nowrap'>
+      <p className='text-mediumLabel text-white whitespace-nowrap text-center w-full'>
         {children}
       </p>
     </button>
@@ -59,7 +59,7 @@ export const OutlineButton = ({
   ...rest
 }) => {
   let classnames = classNames(
-    `px-4 py-2 w-min flex items-center rounded-lg border-2 text-brand-secondary ${classes}`,
+    `px-4 py-2 w-min flex items-center border-2 text-brand-secondary ${classes}`,
     {
       "cursor-pointer hover:opacity-70": !disabled,
       "text-neutral-gray4": disabled,
@@ -69,7 +69,7 @@ export const OutlineButton = ({
   return (
     <button
       className={classnames}
-      style={{ ...style, outline: "none" }}
+      style={{ ...style, borderRadius: "4px", outline: "none" }}
       {...rest}
     >
       <p className='text-mediumLabel whitespace-nowrap'>{children}</p>

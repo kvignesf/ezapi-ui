@@ -2,11 +2,15 @@ import { QueryClient } from "react-query";
 
 export const queries = {
   projects: "projects",
+  products: "products",
+  basicProduct: "basicProduct",
+  billingDetails: "billing",
   resources: "resources",
   project: "project",
   schemas: "schemas",
   parameters: "parameters",
   operationRequest: "operationRequest",
+  orders: "orders",
 };
 
 const queryClient = new QueryClient({

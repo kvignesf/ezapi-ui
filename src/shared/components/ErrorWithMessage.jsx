@@ -9,7 +9,7 @@ const ErrorWithMessage = ({ message, className, contained = false }) => {
       className={classNames(
         "flex flex-col justify-center items-center",
         {
-          "w-screen h-screen": !contained,
+          "w-full h-screen": !contained,
         },
         `${className}`
       )}

@@ -2,6 +2,7 @@ import axios from "axios";
 import _ from "lodash";
 import { useMutation, useQueryClient } from "react-query";
 import { useHistory } from "react-router-dom";
+import Messages from "../messages";
 
 import client, { endpoint } from "../network/client";
 import { clearQueryCache, queries } from "../network/queryClient";
@@ -19,7 +20,7 @@ import { getApiError } from "../utils";
 
 const login = async ({ linkedInAuthToken, redirect_uri }) => {
   if (!linkedInAuthToken || _.isEmpty(linkedInAuthToken)) {
-    throw Error("Need to login using LinkedIn");
+    throw Error(Messages.LINKEDIN_REQUIRED);
   }
 
   try {
@@ -84,12 +85,12 @@ export const useLogout = () => {
   const mutation = useMutation(logout, {
     onSuccess: (data) => {
       clearQueryCache(queryClient);
-      history.replace(routes.signIn);
+      history.replace(routes.root);
     },
     onError: (err) => {
       clearQueryCache(queryClient);
 
-      history.replace(routes.signIn);
+      history.replace(routes.root);
     },
   });
 

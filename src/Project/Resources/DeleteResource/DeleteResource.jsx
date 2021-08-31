@@ -14,7 +14,7 @@ const DeleteResource = ({
   resource: { resourceId, resourceName },
   onClose,
 }) => {
-  const { id: projectId } = useParams();
+  const { projectId } = useParams();
   const {
     isLoading: isDeleting,
     isSuccess: isDeleteSuccess,

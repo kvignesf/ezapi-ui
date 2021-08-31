@@ -13,6 +13,9 @@ module.exports = {
       height: {
         fit: "fit-content",
       },
+      zIndex: {
+        999: 999,
+      },
       maxWidth: {
         1: "1rem",
         2: "2rem",
@@ -34,11 +37,16 @@ module.exports = {
           primary: "#C72C71",
           primarySubtle: "#FFEFF1",
           secondary: "#2C71C7",
+          secondarySubtle: "#E5F3FF",
           green: "#71C72C",
         },
         accent: {
           red: "#E53535",
           orange: "#FF8800",
+          green: "#05A660",
+          orangeSubtle: "#FFF8E5",
+          greenSubtle: "#E3FFF1",
+          redSubtle: "#FFE5E5",
         },
         score: {
           yellow: "#F1C232",
@@ -51,7 +59,9 @@ module.exports = {
     },
   },
   variants: {
-    extend: {},
+    extend: {
+      borderWidth: ["focus-within"],
+    },
   },
   plugins: [],
 };

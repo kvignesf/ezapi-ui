@@ -41,7 +41,7 @@ const OperationDetails = ({
   projectType,
   ...props
 }) => {
-  const { id: projectId } = useParams();
+  const { projectId } = useParams();
   const tabsClasses = tabsStyles();
   const tabClasses = tabStyles();
   const [currentTab, setTab] = useState(0);

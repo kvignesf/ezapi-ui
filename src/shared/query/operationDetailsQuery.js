@@ -95,7 +95,7 @@ export const useGetOperation = () => {
   const setOperationState = useSetRecoilState(operationAtom);
 
   const mutation = useMutation(getOperation, {
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
       if (data?.getRequestApiData) {
         setOperationState((operationState) => {
           const clonedOperationState = _.cloneDeep(operationState);
@@ -104,6 +104,7 @@ export const useGetOperation = () => {
           );
 
           clonedOperationState.operationRequest = parsedOperationRequest;
+          clonedOperationState.projectId = variables?.projectId;
 
           return clonedOperationState;
         });
@@ -128,6 +129,7 @@ export const useGetOperation = () => {
           }
 
           clonedOperationState.operationResponse = parsedOperationResponse;
+          clonedOperationState.projectId = variables?.projectId;
 
           return clonedOperationState;
         });

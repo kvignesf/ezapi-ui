@@ -2,10 +2,8 @@ import axios from "axios";
 
 import { getAccessToken, setAccessToken, clearSession } from "../storage";
 import routes from "../routes";
+import Messages from "../messages";
 
-//const baseUrl = "https://test-1.ezapi.ai/node";
-//const baseUrl = "http://localhost:7744/";
-//console.log("env", process.env.REACT_APP_API_URL)
 const baseUrl = process.env.REACT_APP_API_URL;
 
 export const endpoint = Object.freeze({
@@ -35,25 +33,40 @@ export const endpoint = Object.freeze({
   downloadSpec: "/download_spec",
   downloadArtifact: "/download_apiops",
   downloadCodegen: "/download_codegen",
+
+  // Payment
+  products: "/product",
+  basicProduct: "/product/basic",
+  billingDetails: "/billing-details",
+  payment: "/payment",
+  initiatePayment: "/initiate-order",
+
+  // Orders
+  orders: "/orders",
 });
 
 const client = axios.create({
   baseURL: baseUrl,
   timeout: 10000,
-  timeoutErrorMessage: "Something went wrong, please try again",
+  timeoutErrorMessage: Messages.UNKNOWN,
   responseType: "json",
 });
 
 // Setting token for requests
-client.interceptors.request.use((request) => {
-  const accessToken = getAccessToken();
-  const url = request.url;
+client.interceptors.request.use(
+  (request) => {
+    const accessToken = getAccessToken();
+    const url = request.url;
 
-  if (accessToken && url && url !== endpoint.login) {
-    request.headers["Authorization"] = `Bearer ${accessToken}`;
+    if (accessToken && url && url !== endpoint.login) {
+      request.headers["Authorization"] = `Bearer ${accessToken}`;
+    }
+    return request;
+  },
+  (err) => {
+    return Promise.reject(err);
   }
-  return request;
-});
+);
 
 const navigateToSignin = () => {
   clearSession();
@@ -61,13 +74,20 @@ const navigateToSignin = () => {
 };
 
 // Intercepting error responses
-client.interceptors.response.use(null, (err) => {
-  const error = err?.response;
+client.interceptors.response.use(
+  (response) => {
+    return response;
+  },
+  (err) => {
+    const error = err?.response;
 
-  // Logout if 401
-  if (error?.status === 401) {
-    navigateToSignin();
+    // Logout if 401
+    if (error?.status === 401) {
+      navigateToSignin();
+    }
+
+    return Promise.reject(err);
   }
-});
+);
 
 export default client;

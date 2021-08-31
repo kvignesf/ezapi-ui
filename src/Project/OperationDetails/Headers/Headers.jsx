@@ -406,7 +406,7 @@ const Headers = ({ request = true, responseCode }) => {
     <DropArea onItemDropped={itemDropped}>
       <TableContainer
         style={{
-          maxHeight: height > 750 ? "30vh" : height > 600 ? "26vh" : "23vh",
+          maxHeight: height > 750 ? "27vh" : height > 600 ? "23vh" : "20vh",
         }}
       >
         <Table
