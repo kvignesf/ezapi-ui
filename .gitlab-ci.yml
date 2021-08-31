@@ -62,10 +62,10 @@ deploy-demo1:
   image: alpine  
   extends: .deploy-demo1
   only:
-    - master
+    - stage
 deploy-instance1:
   stage: deploy-instance1
   image: alpine  
   extends: .deploy-instance1
   only: 
-    - stage       
+    - master       

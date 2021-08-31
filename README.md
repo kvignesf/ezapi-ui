@@ -20,7 +20,7 @@ npm install
 
    - REACT_APP_API_URL
    - REACT_APP_LINKEDIN_CLIENT_ID
-   - REACT_APP_STRIPE_KEY
+   - REACT_APP_STRIPE_KEY : stripe publish key.
 
 3. Run the application locally
 
