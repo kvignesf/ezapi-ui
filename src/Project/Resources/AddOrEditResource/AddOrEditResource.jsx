@@ -97,10 +97,10 @@ const AddOrEditResource = ({
 
                   if (!_.isEmpty(errors)) {
                     setErrors(errors);
-                    e.preventDefault();
                   } else {
                     submitForm();
                   }
+                  e.preventDefault();
                 }
               }}
             >

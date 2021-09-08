@@ -63,6 +63,7 @@ import RepublishInfo from "./RepublishInfo";
 import ProfileMenu from "../shared/components/ProfileMenu";
 import EzapiLogo from "../shared/components/EzapiLogo";
 import EzapiFooter from "../shared/components/EzapiFooter";
+import Scrollbar from "react-smooth-scrollbar";
 
 const Project = () => {
   const { projectId } = useParams();
@@ -481,7 +482,7 @@ const Project = () => {
         </Dialog>
 
         <DndProvider backend={HTML5Backend}>
-          <header className='fixed top-0 w-full px-2 border-b-2 flex flex-row items-center bg-white'>
+          <header className='fixed top-0 w-full px-2 border-b-2 flex flex-row items-center bg-white z-50'>
             <div className='flex flex-row py-2 items-center'>
               <AppIcon
                 style={{ marginRight: "1rem" }}
@@ -624,44 +625,46 @@ const Project = () => {
           {currentTab === 0 && (
             <div className='flex flex-row mt-14'>
               <section
-                className='border-r-2 '
+                className='border-r-2'
                 style={{
                   width: "300px",
 
                   height: `calc(100vh - 100px)`,
                 }}
               >
-                <Resources
-                  className='h-full flex flex-col'
-                  projectId={projectId}
-                  selectedIndex={operationState.operationIndex}
-                  onOperationSelect={(index, resource, path, operation) => {
-                    if (
-                      index === null &&
-                      resource === null &&
-                      path === null &&
-                      operation === null
-                    ) {
-                      if (showUnsavedPopup && operationState?.isModified) {
-                        showSaveOperationWarning("reset_operation_state");
-                      } else {
-                        resetOperationState();
-                      }
-                    } else if (index !== operationState.operationIndex) {
-                      if (showUnsavedPopup && operationState?.isModified) {
-                        showSaveOperationWarning("reset_operation_state");
-                      } else {
-                        const cloned = _.cloneDeep(operationState);
-                        cloned.operation = operation;
-                        cloned.resource = resource;
-                        cloned.path = path;
-                        cloned.operationIndex = index;
+                <Scrollbar style={{ height: `calc(100vh - 100px)` }}>
+                  <Resources
+                    className='h-full flex flex-col'
+                    projectId={projectId}
+                    selectedIndex={operationState.operationIndex}
+                    onOperationSelect={(index, resource, path, operation) => {
+                      if (
+                        index === null &&
+                        resource === null &&
+                        path === null &&
+                        operation === null
+                      ) {
+                        if (showUnsavedPopup && operationState?.isModified) {
+                          showSaveOperationWarning("reset_operation_state");
+                        } else {
+                          resetOperationState();
+                        }
+                      } else if (index !== operationState.operationIndex) {
+                        if (showUnsavedPopup && operationState?.isModified) {
+                          showSaveOperationWarning("reset_operation_state");
+                        } else {
+                          const cloned = _.cloneDeep(operationState);
+                          cloned.operation = operation;
+                          cloned.resource = resource;
+                          cloned.path = path;
+                          cloned.operationIndex = index;
 
-                        setOperationState(cloned);
+                          setOperationState(cloned);
+                        }
                       }
-                    }
-                  }}
-                />
+                    }}
+                  />
+                </Scrollbar>
               </section>
 
               <section
