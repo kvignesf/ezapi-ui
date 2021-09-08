@@ -82,9 +82,31 @@ const AddOrEditPath = ({
         })}
         onSubmit={handleSubmit}
       >
-        {({ errors, touched }) => (
+        {({
+          errors,
+          touched,
+          values,
+          handleBlur,
+          validateForm,
+          setErrors,
+          submitForm,
+        }) => (
           <>
-            <Form>
+            <Form
+              onKeyDown={async (e) => {
+                if (e.key === "Enter") {
+                  handleBlur(e);
+                  const errors = await validateForm(values);
+
+                  if (!_.isEmpty(errors)) {
+                    setErrors(errors);
+                    e.preventDefault();
+                  } else {
+                    submitForm();
+                  }
+                }
+              }}
+            >
               <EnterKeyCaptureInput />
 
               <div className='mb-4 px-4'>

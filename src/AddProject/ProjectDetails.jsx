@@ -143,7 +143,15 @@ const ProjectDetails = ({
           })}
           innerRef={formRef}
         >
-          {({ errors, touched }) => (
+          {({
+            errors,
+            touched,
+            values,
+            submitForm,
+            validateForm,
+            handleBlur,
+            setErrors,
+          }) => (
             <Form>
               <Field
                 id='name'

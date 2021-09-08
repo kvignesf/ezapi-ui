@@ -64,8 +64,31 @@ const ChangeColumnName = ({
           innerRef={formRef}
           onSubmit={onTableNameUpdate}
         >
-          {({ errors, touched }) => (
-            <Form>
+          {({
+            errors,
+            touched,
+            values,
+            handleBlur,
+            validateForm,
+            setErrors,
+            submitForm,
+          }) => (
+            <Form
+              onKeyDown={async (e) => {
+                if (e.key === "Enter") {
+                  handleBlur(e);
+                  const errors = await validateForm(values);
+
+                  if (!_.isEmpty(errors)) {
+                    setErrors(errors);
+                  } else {
+                    submitForm();
+                  }
+
+                  e.preventDefault();
+                }
+              }}
+            >
               <EnterKeyCaptureInput />
 
               <Field
