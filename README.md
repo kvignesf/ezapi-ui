@@ -77,4 +77,21 @@ retreive the key/value pairs.
 - /shared/utils - Contains the common utility functions.
 - /shared/messages - Contains all the messages used in the application and the
 helper functions to generate the appropriate message.
+
+- /AddProject/ - Contains all the related components, queries and atoms required while adding a project.
+- /Dashboard/ - Contains all the components related to the common dashboard template used.
+- /Landing/ - Contains backup code for the previously used landing page.
+- /Login/ - Contains all the related components, queries and atoms required while logging in.
+- /ModifyCollaborators/ - Contains all the related components, queries and atoms required while inviting the users to a particular project.
+- /ModifyCollaborators/ - Contains all the related components, queries and atoms required while inviting the users to a particular project.
+- /Orders/ - Contains all the components, queries and atoms related orders of a particular user.
+- /Projects/ - Contains all the related components, queries and atoms required while listing the projects of a particular user.
+- /Project/ - Contains all the components, queries and atoms related to a particular project.
+- /Project/AttributeDetails - Contains all the related components, queries and atoms required while displaying the details of particular attribute. Shows up when you click a particular attribute in the schema listing.
+- /Project/Match - Contains all the related components, queries and atoms required while displaying the Schema/Database/Parameter section.
+- /Project/Match - Contains all the related components, queries and atoms required while displaying the Schema/Database/Parameter section.
+- /Project/OperationDetails - Contains all the related components, queries and atoms required while displaying the details of a particular operation section.
+- /Project/Resources - Contains all the related components, queries and atoms required while displaying the details of a resources section of particular project.
+- /Project/SchemaDetails - Contains all the related components, queries and atoms required while displaying the details of a particular schema section.
+- /ProjectPayment/ - Contains all the components, queries and atoms related to payment for a particular project.
 ```

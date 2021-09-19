@@ -2,6 +2,7 @@ import React from "react";
 import CloseIcon from "@material-ui/icons/Close";
 import { Field, ErrorMessage, Form, Formik } from "formik";
 import { CircularProgress, TextField } from "@material-ui/core";
+import * as Yup from "yup";
 
 import AppIcon from "../../shared/components/AppIcon";
 import { PrimaryButton, TextButton } from "../../shared/components/AppButton";
@@ -9,6 +10,7 @@ import { useUpdateProject } from "../projectQueries";
 import apiNameSchema from "../../shared/schemas/apiNameSchema";
 import EnterKeyCaptureInput from "../../shared/components/EnterKeyCaptureInput";
 import Messages from "../../shared/messages";
+import _ from "lodash";
 
 const RenameProject = ({ project, onClose }) => {
   const {
@@ -49,12 +51,36 @@ const RenameProject = ({ project, onClose }) => {
         initialValues={{
           name: project?.projectName ?? "",
         }}
-        validationSchema={apiNameSchema(Messages.NAME_REQUIRED)}
+        validationSchema={Yup.object().shape({
+          name: apiNameSchema(Messages.NAME_REQUIRED),
+        })}
         onSubmit={handleNext}
       >
-        {({ errors, touched }) => (
+        {({
+          errors,
+          touched,
+          values,
+          handleBlur,
+          validateForm,
+          setErrors,
+          submitForm,
+        }) => (
           <>
-            <Form>
+            <Form
+              onKeyDown={async (e) => {
+                if (e.key === "Enter") {
+                  handleBlur(e);
+                  const errors = await validateForm(values);
+
+                  if (!_.isEmpty(errors)) {
+                    setErrors(errors);
+                  } else {
+                    submitForm();
+                  }
+                  e.preventDefault();
+                }
+              }}
+            >
               <EnterKeyCaptureInput />
 
               <div className='mb-4 px-4'>

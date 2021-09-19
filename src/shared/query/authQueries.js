@@ -85,12 +85,14 @@ export const useLogout = () => {
   const mutation = useMutation(logout, {
     onSuccess: (data) => {
       clearQueryCache(queryClient);
-      history.replace(routes.root);
+      //history.replace(routes.signIn);
+      //window.location = history.location.pathname;
+      window.location = window.location.origin;
     },
     onError: (err) => {
       clearQueryCache(queryClient);
-
-      history.replace(routes.root);
+      //history.replace(routes.signIn);
+      window.location = window.location.origin;
     },
   });
 
