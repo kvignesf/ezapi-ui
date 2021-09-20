@@ -50,7 +50,7 @@ import tableAtom from "../shared/atom/tableAtom";
 import schemaAtom from "../shared/atom/schemaAtom";
 import operationAtom from "./operationAtom";
 import Colors from "../shared/colors";
-import routes from "../shared/routes";
+import routes, { generateRoute } from "../shared/routes";
 import { useLogout } from "../shared/query/authQueries";
 import SaveOperationWarning from "./SaveOperationWarning";
 import OperationErrorsDialog from "./OperationErrorsDialog";
@@ -59,9 +59,14 @@ import PublishProjectMessage from "./PublishProjectMessage";
 import VerifyProjectError from "./VerifyProjectError";
 import ProjectVerificationErrors from "./ProjectVerificationErrors";
 import ModifyCollaborators from "../ModifyCollaborators/ModifyCollaborators";
+import RepublishInfo from "./RepublishInfo";
+import ProfileMenu from "../shared/components/ProfileMenu";
+import EzapiLogo from "../shared/components/EzapiLogo";
+import EzapiFooter from "../shared/components/EzapiFooter";
+import Scrollbar from "react-smooth-scrollbar";
 
 const Project = () => {
-  const { id: projectId } = useParams();
+  const { projectId } = useParams();
   const history = useHistory();
   const firstName = getFirstName();
   const lastName = getLastName();
@@ -70,6 +75,7 @@ const Project = () => {
     isSuccess: isProjectDetailsFetched,
     error: projectDetailsError,
     data: projectDetails,
+    remove: resetFetchProject,
   } = useFetchProjectDetails(projectId, { refetchOnWindowFocus: false });
   const [currentTab, setCurrentTab] = useState(0);
   const [operationState, setOperationState] = useRecoilState(
@@ -112,22 +118,21 @@ const Project = () => {
   });
   const getRecoilValueInfo = useGetRecoilValueInfo_UNSTABLE();
   const [userRole, setRole] = useState(null);
+  const [autoSyncIntervalId, setAutoSync] = useState(0);
+  const [showUnsavedPopup, setUnsavedPopup] = useState(true);
 
   useEffect(() => {
     if (canEdit(userRole)) {
-      const interval = setInterval(() => {
-        const { loadable: operationAtomLoadable } = getRecoilValueInfo(
-          operationAtomWithMiddleware
-        );
-        const operationState = operationAtomLoadable?.contents;
-
-        if (operationState?.isModified) {
-          saveProject();
-        }
-      }, 6500);
-      return () => clearInterval(interval);
+      startAutoSync();
     }
+    return () => stopAutoSync();
   }, [userRole]);
+
+  useEffect(() => {
+    if (operationState?.isModified) {
+      setUnsavedPopup(true);
+    }
+  }, [operationState?.isModified]);
 
   useEffect(() => {
     resetProjectState();
@@ -171,11 +176,35 @@ const Project = () => {
 
       resetSyncOperationMutation();
 
-      if (dialog?.data === "with-nav") {
-        navigateBack();
-      }
+      // if (dialog?.data === "with-nav") {
+      //   navigateBack();
+      // }
     }
   }, [isSyncOperationSuccess]);
+
+  const startAutoSync = () => {
+    stopAutoSync();
+
+    const id = setInterval(() => {
+      const { loadable: operationAtomLoadable } = getRecoilValueInfo(
+        operationAtomWithMiddleware
+      );
+      const operationState = operationAtomLoadable?.contents;
+
+      if (operationState?.isModified) {
+        saveProject();
+      }
+    }, 6500);
+
+    setAutoSync(id);
+  };
+
+  const stopAutoSync = () => {
+    if (autoSyncIntervalId) {
+      clearInterval(autoSyncIntervalId);
+      setAutoSync(0);
+    }
+  };
 
   const resetProjectState = () => {
     resetTableState();
@@ -198,7 +227,7 @@ const Project = () => {
       );
 
       syncOperation({
-        projectId,
+        projectId: operationState?.projectId,
         operationId: operationState?.operation?.operationId,
         pathId: operationState?.path?.pathId,
         resourceId: operationState?.resource?.resourceId,
@@ -216,8 +245,9 @@ const Project = () => {
       const operationState = operationAtomLoadable?.contents;
 
       if (operationState?.isModified) {
-        showSaveOperationWarning("without-nav");
+        showSaveOperationWarning();
       } else {
+        resetPublishMutation();
         verify({ projectId });
       }
     }
@@ -233,15 +263,21 @@ const Project = () => {
     setProfilemenuAnchorEl(event?.currentTarget);
   };
 
-  const showSaveOperationWarning = (navigationFlag) => {
+  const showSaveOperationWarning = (dontSaveAction) => {
+    stopAutoSync();
+
     setDialog({
       show: true,
       type: "save-operation-warning",
-      data: navigationFlag,
+      data: dontSaveAction,
     });
   };
 
   const handleCloseDialog = () => {
+    if (dialog?.type === "save-operation-warning") {
+      startAutoSync();
+    }
+
     setDialog({
       show: false,
       type: null,
@@ -250,7 +286,11 @@ const Project = () => {
   };
 
   const navigateBack = () => {
-    history.goBack();
+    resetSubmitProjectMutation();
+    resetFetchProject();
+    resetSyncOperationMutation();
+    history.replace(routes.projects);
+    // history.goBack();
   };
 
   const resetSubmitProjectMutation = () => {
@@ -281,6 +321,41 @@ const Project = () => {
     );
   };
 
+  const isPublishLimitReached = () => {
+    return (
+      publishProjectError?.response?.data?.errorType === "PUBLISH_LIMIT_REACHED"
+    );
+  };
+
+  const isFreePublishesExhausted = () => {
+    return (
+      publishProjectError?.response?.data?.errorType ===
+      "FREE_PROJECTS_EXHAUSTED"
+    );
+  };
+
+  const getPublishButtonText = () => {
+    if (projectDetails?.publishCount === 0) {
+      return "Publish";
+    } else if (projectDetails?.publishCount > 0) {
+      return "Republish";
+    }
+
+    return "Publish";
+  };
+
+  const canShowPublishCountStatus = () => {
+    return projectDetails?.publishCount > 0 ?? false;
+  };
+
+  const showRepublishStatus = () => {
+    setDialog({
+      show: true,
+      type: "republish-status",
+      data: null,
+    });
+  };
+
   return (
     <UserRoleProvider role={userRole}>
       <>
@@ -290,6 +365,7 @@ const Project = () => {
             isPublishingProject ||
             isVerifyingProject ||
             publishProjectData ||
+            publishProjectError ||
             verifyProjectError ||
             isProjectHavingErrors() ||
             dialog?.show
@@ -338,9 +414,27 @@ const Project = () => {
             <PublishProjectMessage
               publishProjectData={publishProjectData}
               publishProjectError={publishProjectError}
-              closeSuccessMessage={closePublishProjectSuccess}
-              resetMutationState={resetSubmitProjectMutation}
-              projectName={projectDetails?.projectName}
+              project={projectDetails}
+              onButtonClick={() => {
+                if (publishProjectData?.success) {
+                  closePublishProjectSuccess();
+                } else {
+                  resetSubmitProjectMutation();
+
+                  if (isFreePublishesExhausted()) {
+                    history.push(generateRoute(routes.payment, projectId));
+                  } else if (isPublishLimitReached()) {
+                    history.push(routes.contact);
+                  }
+                }
+              }}
+              onClose={() => {
+                if (publishProjectData?.success) {
+                  closePublishProjectSuccess();
+                } else {
+                  resetSubmitProjectMutation();
+                }
+              }}
             />
           )}
 
@@ -349,16 +443,22 @@ const Project = () => {
             dialog?.type === "save-operation-warning" && (
               <SaveOperationWarning
                 onClose={handleCloseDialog}
-                navigateBack={() => {
+                onDontSave={() => {
                   handleCloseDialog();
+                  setUnsavedPopup(false);
 
-                  resetProjectState();
-
-                  if (dialog?.data === "with-nav") {
-                    navigateBack();
+                  if (dialog?.data === "reset_operation_state") {
+                    resetProjectState();
                   }
+
+                  // if (dialog?.data === "with-nav") {
+                  //   navigateBack();
+                  // }
                 }}
                 saveProject={() => {
+                  if (dialog?.data === "reset_operation_state") {
+                    resetProjectState();
+                  }
                   handleCloseDialog();
                   saveProject();
                 }}
@@ -372,10 +472,17 @@ const Project = () => {
               invitedCollaborators={projectDetails?.members}
             />
           )}
+
+          {dialog?.type === "republish-status" && (
+            <RepublishInfo
+              project={projectDetails}
+              onClose={handleCloseDialog}
+            />
+          )}
         </Dialog>
 
         <DndProvider backend={HTML5Backend}>
-          <header className='px-2 border-b-2 flex flex-row items-center bg-white'>
+          <header className='fixed top-0 w-full px-2 border-b-2 flex flex-row items-center bg-white z-50'>
             <div className='flex flex-row py-2 items-center'>
               <AppIcon
                 style={{ marginRight: "1rem" }}
@@ -383,18 +490,22 @@ const Project = () => {
                   event?.preventDefault();
                   event?.stopPropagation();
 
-                  if (!operationState?.isModified) {
+                  if (showUnsavedPopup && operationState?.isModified) {
+                    showSaveOperationWarning();
+                  } else {
                     resetProjectState();
                     navigateBack();
-                  } else {
-                    showSaveOperationWarning("with-nav");
                   }
                 }}
               >
                 <ArrowBackIcon />
               </AppIcon>
 
-              <p className='text-overline1'>{projectDetails?.projectName}</p>
+              <p className='text-overline1 mr-3'>
+                {projectDetails?.projectName}
+              </p>
+
+              <EzapiLogo />
 
               {canEdit(userRole) && isOperationSelected() && (
                 <div className='ml-4'>
@@ -458,7 +569,7 @@ const Project = () => {
 
               {canEdit(userRole) && (
                 <PrimaryButton
-                  classes='mr-3'
+                  classes={canShowPublishCountStatus() ? "" : "mr-3"}
                   onClick={(e) => {
                     e?.preventDefault();
                     e?.stopPropagation();
@@ -466,8 +577,27 @@ const Project = () => {
                     submitProject();
                   }}
                 >
-                  Publish
+                  {getPublishButtonText()}
                 </PrimaryButton>
+              )}
+
+              {canShowPublishCountStatus() && (
+                <div
+                  className='flex flex-col py-1 px-3 border-1 border-l-0 border-brand-secondary mr-3 justify-center cursor-pointer'
+                  style={{
+                    borderRadius: "4px",
+                    borderTopLeftRadius: "0px",
+                    borderBottomLeftRadius: "0px",
+                  }}
+                  onClick={(e) => {
+                    e?.preventDefault();
+                    e?.stopPropagation();
+
+                    showRepublishStatus();
+                  }}
+                >
+                  <p className='text-overline2 text-brand-secondary text-center'>{`${projectDetails?.publishCount} / ${projectDetails?.publishLimit}`}</p>
+                </div>
               )}
 
               <div>
@@ -483,81 +613,74 @@ const Project = () => {
                   }}
                 />
 
-                <Menu
-                  id='profile-menu'
-                  anchorEl={profileMenuAnchorEl}
-                  keepMounted
-                  open={Boolean(profileMenuAnchorEl)}
-                  onClose={() => {
-                    setProfilemenuAnchorEl(null);
-                  }}
-                  TransitionComponent={Fade}
-                  style={{ borderRadius: "1rem", zIndex: "100" }}
-                >
-                  <MenuItem
-                    onClick={() => {
-                      setProfilemenuAnchorEl(null);
-                      logout();
-                    }}
-                    style={{ color: Colors.accent.red }}
-                  >
-                    Logout
-                  </MenuItem>
-                </Menu>
+                <ProfileMenu
+                  onLogout={logout}
+                  profileMenuAnchorEl={profileMenuAnchorEl}
+                  setProfilemenuAnchorEl={setProfilemenuAnchorEl}
+                />
               </div>
             </div>
           </header>
 
           {currentTab === 0 && (
-            <div
-              className='flex flex-row'
-              style={{ height: `calc(100vh - 60px)` }}
-            >
+            <div className='flex flex-row mt-14'>
               <section
-                className='w-1/5 border-r-2 h-full'
-                style={{ minWidth: "220px", maxWidth: "300px" }}
-              >
-                <Resources
-                  className='h-full flex flex-col'
-                  projectId={projectId}
-                  selectedIndex={operationState.operationIndex}
-                  onOperationSelect={(index, resource, path, operation) => {
-                    if (
-                      index === null &&
-                      resource === null &&
-                      path === null &&
-                      operation === null
-                    ) {
-                      if (!operationState?.isModified) {
-                        resetOperationState();
-                      } else {
-                        showSaveOperationWarning("without-nav");
-                      }
-                    } else if (index !== operationState.operationIndex) {
-                      if (!operationState?.isModified) {
-                        const cloned = _.cloneDeep(operationState);
-                        cloned.operation = operation;
-                        cloned.resource = resource;
-                        cloned.path = path;
-                        cloned.operationIndex = index;
+                className='border-r-2'
+                style={{
+                  width: "300px",
 
-                        setOperationState(cloned);
-                      } else {
-                        showSaveOperationWarning("without-nav");
+                  height: `calc(100vh - 100px)`,
+                }}
+              >
+                <Scrollbar style={{ height: `calc(100vh - 100px)` }}>
+                  <Resources
+                    className='h-full flex flex-col'
+                    projectId={projectId}
+                    selectedIndex={operationState.operationIndex}
+                    onOperationSelect={(index, resource, path, operation) => {
+                      if (
+                        index === null &&
+                        resource === null &&
+                        path === null &&
+                        operation === null
+                      ) {
+                        if (showUnsavedPopup && operationState?.isModified) {
+                          showSaveOperationWarning("reset_operation_state");
+                        } else {
+                          resetOperationState();
+                        }
+                      } else if (index !== operationState.operationIndex) {
+                        if (showUnsavedPopup && operationState?.isModified) {
+                          showSaveOperationWarning("reset_operation_state");
+                        } else {
+                          const cloned = _.cloneDeep(operationState);
+                          cloned.operation = operation;
+                          cloned.resource = resource;
+                          cloned.path = path;
+                          cloned.operationIndex = index;
+
+                          setOperationState(cloned);
+                        }
                       }
-                    }
-                  }}
-                />
+                    }}
+                  />
+                </Scrollbar>
               </section>
 
-              <section className='w-full flex flex-col'>
+              <section
+                className='w-full flex flex-col'
+                style={{ height: `calc(100vh - 112px)` }}
+              >
                 <div
-                  className={classNames(`overflow-hidden`, {
+                  className={classNames(``, {
                     "h-1/2": operationState.operationIndex,
                     "h-full": !operationState.operationIndex,
                   })}
                 >
-                  <Match projectType={projectDetails?.projectType} />
+                  <Match
+                    projectType={projectDetails?.projectType}
+                    style={{ height: "100%" }}
+                  />
                 </div>
 
                 {operationState.resource &&
@@ -576,6 +699,8 @@ const Project = () => {
               </section>
             </div>
           )}
+
+          <EzapiFooter />
         </DndProvider>
       </>
     </UserRoleProvider>

@@ -14,6 +14,7 @@ import { PrimaryButton } from "../shared/components/AppButton";
 import AppIcon from "../shared/components/AppIcon";
 import apiNameSchema from "../shared/schemas/apiNameSchema";
 import EnterKeyCaptureInput from "../shared/components/EnterKeyCaptureInput";
+import Messages from "../shared/messages";
 
 const ProjectDetails = ({
   formRef,
@@ -22,11 +23,14 @@ const ProjectDetails = ({
   addProjectMutation,
   uploadSpecsMutation,
   uploadDbMutation,
+  aiMatcherMutation,
 }) => {
   const [projectDetails, setProjectDetails] = useRecoilState(projectAtom);
 
   const debouncedSetName = useCallback(
     debounce((nextValue) => {
+      resetProjectApiState();
+
       setProjectDetails((currProjectDetails) => {
         return {
           ...currProjectDetails,
@@ -37,15 +41,14 @@ const ProjectDetails = ({
     [] // will be created only once initially
   );
 
-  const handleOnSpecsPick = (pickedSpecs) => {
-    if (
-      uploadSpecsMutation?.isError ||
-      uploadSpecsMutation?.isLoading ||
-      uploadSpecsMutation?.isSuccess
-    ) {
-      uploadSpecsMutation?.reset();
-    }
+  const resetProjectApiState = () => {
+    addProjectMutation?.reset();
+    uploadSpecsMutation?.reset();
+    uploadDbMutation?.reset();
+    aiMatcherMutation?.reset();
+  };
 
+  const handleOnSpecsPick = (pickedSpecs) => {
     setProjectDetails((currProjectDetails) => {
       const updatedProjectDetails = _.cloneDeep(currProjectDetails);
 
@@ -66,17 +69,11 @@ const ProjectDetails = ({
 
       return updatedProjectDetails;
     });
+
+    resetProjectApiState();
   };
 
   const handleOnDbsPick = (pickedDbs) => {
-    if (
-      uploadDbMutation?.isError ||
-      uploadDbMutation?.isLoading ||
-      uploadDbMutation?.isSuccess
-    ) {
-      uploadDbMutation?.reset();
-    }
-
     setProjectDetails((currProjectDetails) => {
       const updatedProjectDetails = _.cloneDeep(currProjectDetails);
 
@@ -97,17 +94,11 @@ const ProjectDetails = ({
 
       return updatedProjectDetails;
     });
+
+    resetProjectApiState();
   };
 
   const removeSelectedSpec = (filename) => {
-    if (
-      uploadSpecsMutation?.isError ||
-      uploadSpecsMutation?.isLoading ||
-      uploadSpecsMutation?.isSuccess
-    ) {
-      uploadSpecsMutation?.reset();
-    }
-
     setProjectDetails((currProjectDetails) => {
       const updatedProjectDetails = _.cloneDeep(currProjectDetails);
 
@@ -117,27 +108,25 @@ const ProjectDetails = ({
           return spec.name !== filename;
         }
       );
+
       return updatedProjectDetails;
     });
+
+    resetProjectApiState();
   };
 
   const removeSelectedDb = (filename) => {
-    if (
-      uploadDbMutation?.isError ||
-      uploadDbMutation?.isLoading ||
-      uploadDbMutation?.isSuccess
-    ) {
-      uploadDbMutation?.reset();
-    }
-
     setProjectDetails((currProjectDetails) => {
       const updatedProjectDetails = _.cloneDeep(currProjectDetails);
 
       updatedProjectDetails.dbs = _.filter(updatedProjectDetails.dbs, (db) => {
         return db.name !== filename;
       });
+
       return updatedProjectDetails;
     });
+
+    resetProjectApiState();
   };
 
   return (
@@ -150,11 +139,19 @@ const ProjectDetails = ({
             name: projectDetails?.name ?? "",
           }}
           validationSchema={Yup.object().shape({
-            name: apiNameSchema("Name is required"),
+            name: apiNameSchema(Messages.NAME_REQUIRED),
           })}
           innerRef={formRef}
         >
-          {({ errors, touched }) => (
+          {({
+            errors,
+            touched,
+            values,
+            submitForm,
+            validateForm,
+            handleBlur,
+            setErrors,
+          }) => (
             <Form>
               <Field
                 id='name'
@@ -169,7 +166,7 @@ const ProjectDetails = ({
                 }}
                 variant='outlined'
                 inputProps={{ maxLength: 24 }}
-                disabled={addProjectMutation?.isSuccess}
+                // disabled={addProjectMutation?.isSuccess}
                 as={TextField}
               />
             </Form>
@@ -187,6 +184,7 @@ const ProjectDetails = ({
           hidden
           onChange={(e) => {
             handleOnSpecsPick(Array.from(e.target.files));
+            e.target.value = "";
           }}
         />
         <label
@@ -243,6 +241,7 @@ const ProjectDetails = ({
           hidden
           onChange={(e) => {
             handleOnDbsPick(Array.from(e.target.files));
+            e.target.value = "";
           }}
         />
         <label

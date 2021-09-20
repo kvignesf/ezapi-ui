@@ -4,6 +4,8 @@ import _ from "lodash";
 
 import { isEmailValid } from "../utils";
 import Colors from "../colors";
+import { getEmailId } from "../storage";
+import Messages from "../messages";
 
 const InviteCollaborators = ({
   collaborators,
@@ -12,6 +14,7 @@ const InviteCollaborators = ({
   ...rest
 }) => {
   const [error, setError] = useState(null);
+  // const loggedInEmail = getEmailId();
 
   return (
     <div className='' {...rest}>
@@ -31,13 +34,18 @@ const InviteCollaborators = ({
             return false;
           }
 
+          // else if (email === loggedInEmail) {
+          //   setError(null);
+          //   return false;
+          // }
+
           const result = isEmailValid(email?.trim());
 
           if (result) {
             setError(null);
             return result;
           } else {
-            setError("Seems like email entered is invalid");
+            setError(Messages.INVALID_EMAIL);
           }
         }}
         blurBehavior='add'
@@ -51,7 +59,7 @@ const InviteCollaborators = ({
           borderRadius: "4px",
           padding: "0.25rem 0.75rem",
         }}
-        disabled={addProjectMutation?.isSuccess}
+        // disabled={addProjectMutation?.isSuccess}
       />
 
       {error && <p className='text-overline2 text-accent-red mt-3'>{error}</p>}

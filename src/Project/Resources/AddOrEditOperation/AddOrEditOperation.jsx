@@ -101,7 +101,7 @@ const AddOrEditOperation = ({
     mutate: editOperation,
     reset: resetEditOperation,
   } = useEditOperation();
-  const { id: projectId } = useParams();
+  const { projectId } = useParams();
   const resetMutationState = () => {
     if (operationName && operationDescription && operationType) {
       if (
@@ -150,7 +150,9 @@ const AddOrEditOperation = ({
     });
   };
 
+  console.log("isEditingOperationSuccess", isEditingOperationSuccess);
   if (isEditingOperationSuccess || isAddingOperationSuccess) {
+    console.log("show");
     onClose();
     return null;
   }
@@ -178,9 +180,30 @@ const AddOrEditOperation = ({
         validationSchema={operationSchema}
         onSubmit={handleSubmit}
       >
-        {({ errors, touched }) => (
+        {({
+          errors,
+          touched,
+          values,
+          handleBlur,
+          validateForm,
+          setErrors,
+          submitForm,
+        }) => (
           <>
-            <Form>
+            <Form
+              onKeyDown={async (e) => {
+                if (e.key === "Enter") {
+                  handleBlur(e);
+                  const errors = await validateForm(values);
+                  if (!_.isEmpty(errors)) {
+                    setErrors(errors);
+                  } else {
+                    submitForm();
+                  }
+                  e.preventDefault();
+                }
+              }}
+            >
               <EnterKeyCaptureInput />
 
               <div className='m-4 p-4 rounded-md bg-neutral-gray7'>
@@ -193,7 +216,7 @@ const AddOrEditOperation = ({
                       fullWidth
                       id='type'
                       name='type'
-                      onKeyUp={resetMutationState}
+                      // onKeyUp={resetMutationState}
                       helperText={<ErrorMessage name='role' />}
                       error={touched.role && Boolean(errors.role)}
                       as={CustomSelect}
@@ -216,7 +239,7 @@ const AddOrEditOperation = ({
                       name='name'
                       fullWidth
                       color='primary'
-                      onKeyUp={resetMutationState}
+                      // onKeyUp={resetMutationState}
                       error={touched.name && Boolean(errors.name)}
                       helperText={<ErrorMessage name='name' />}
                       variant='outlined'
@@ -237,7 +260,7 @@ const AddOrEditOperation = ({
                     error={touched.desc && Boolean(errors.desc)}
                     helperText={<ErrorMessage name='desc' />}
                     variant='outlined'
-                    onKeyUp={resetMutationState}
+                    // onKeyUp={resetMutationState}
                     as={CustomTextField}
                     multiline
                     rows={4}

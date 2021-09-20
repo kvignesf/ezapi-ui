@@ -14,6 +14,7 @@ import schemaAtom from "./atom/schemaAtom";
 import tableAtom from "./atom/tableAtom";
 import operationAtom, { defaultState } from "../Project/operationAtom";
 import { UserRoleContext, useUserRole } from "../Project/UserRoleContext";
+import Messages from "./messages";
 
 export const isEmailValid = (email) => {
   const re =
@@ -32,15 +33,19 @@ export const getApiError = (error) => {
 
   if (error?.response?.status === 400) {
     if (url && url === endpoint.login) {
-      return new Error("Failed to get the user details, please try again.");
+      return new Error(Messages.NO_USER_DETAILS);
     }
 
-    return new Error("Invalid data provided, please check and retry");
+    if (url && url === endpoint.publishProject) {
+      return error;
+    }
+
+    return new Error(Messages.INVALID_DATA);
   } else if (url && !_.isEmpty(url) && url.includes("/uploads")) {
     return new Error(error?.response?.data?.aiResponse?.message);
   }
 
-  return new Error("Something went wrong, please try again");
+  return new Error(Messages.UNKNOWN);
 };
 
 export const isArray = (object) => {
@@ -660,3 +665,23 @@ export const isItemSame = (item1, item2, fullPath) => {
     return item1.name === item2.name;
   }
 };
+
+export const isFreePublishesExhausted = (publishProjectError) => {
+  return (
+    publishProjectError?.response?.data?.errorType === "FREE_PROJECTS_EXHAUSTED"
+  );
+};
+
+export const isOrderSuccess = (order) => {
+  return order?.status?.toLowerCase() === "succeeded";
+};
+
+export const isOrderInitiated = (order) => {
+  return order?.status?.toLowerCase() === "initiated";
+};
+
+export const isOrderInOtherState = (order) => {
+  return !isOrderSuccess(order) && !isOrderInitiated(order);
+};
+
+export const delay = (ms) => new Promise((res) => setTimeout(res, ms));

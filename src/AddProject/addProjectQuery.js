@@ -22,16 +22,16 @@ const addProject = async ({ name, invitees }) => {
   }
 };
 
-export const useAddProject = () => {
+export const useAddProject = (onSuccess) => {
   /*
     This is a chain API in the following order - 
     1. /project (POST) - uploads basic details of the project - name, invites
     2. /project/{project_id}/upload (POST) - uploads the spec files
     3. /project/{project_id}/upload (POST) - uploads the db files
   */
-  const aiMutation = useAiMatcher();
-  const dbMutation = useUploadProjectDbs(aiMutation);
-  const specsMutation = useUploadProjectSpecs(dbMutation);
+  const aiMutation = useAiMatcher(onSuccess);
+  const dbMutation = useUploadProjectDbs(aiMutation, onSuccess);
+  const specsMutation = useUploadProjectSpecs(dbMutation, onSuccess);
   const projectDetails = useRecoilValue(projectAtom);
   const queryClient = useQueryClient();
 
@@ -48,6 +48,7 @@ export const useAddProject = () => {
           files: projectDetails?.dbs,
         });
       } else {
+        onSuccess(data?.projectId);
         queryClient.invalidateQueries(queries.projects);
       }
     },
@@ -86,7 +87,7 @@ const uploadProjectSpecs = async ({ projectId, files }) => {
   }
 };
 
-const useUploadProjectSpecs = (dbMutation) => {
+const useUploadProjectSpecs = (dbMutation, onSuccess) => {
   const projectDetails = useRecoilValue(projectAtom);
   const queryClient = useQueryClient();
 
@@ -99,6 +100,7 @@ const useUploadProjectSpecs = (dbMutation) => {
             files: projectDetails?.dbs,
           });
         } else {
+          onSuccess(data?.projectId);
           queryClient.invalidateQueries(queries.projects);
         }
       }
@@ -134,7 +136,7 @@ const uploadProjectDbs = async ({ projectId, files }) => {
   }
 };
 
-const useUploadProjectDbs = (aiMutation) => {
+const useUploadProjectDbs = (aiMutation, onSuccess) => {
   const projectDetails = useRecoilValue(projectAtom);
   const queryClient = useQueryClient();
 
@@ -149,6 +151,7 @@ const useUploadProjectDbs = (aiMutation) => {
             projectId: data?.projectId,
           });
         } else {
+          onSuccess(data?.projectId);
           queryClient.invalidateQueries(queries.projects);
         }
       }
@@ -175,11 +178,12 @@ const aiMatcher = async ({ projectId }) => {
   }
 };
 
-const useAiMatcher = () => {
+const useAiMatcher = (onSuccess) => {
   const queryClient = useQueryClient();
 
   const mutation = useMutation(aiMatcher, {
     onSuccess: (data) => {
+      onSuccess(data?.projectId);
       queryClient.invalidateQueries(queries.projects);
     },
   });

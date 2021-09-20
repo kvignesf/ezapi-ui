@@ -13,6 +13,7 @@ import {
 import apiNameSchema from "../../../shared/schemas/apiNameSchema";
 import { useAddPath, useEditPath } from "./pathQuery";
 import EnterKeyCaptureInput from "../../../shared/components/EnterKeyCaptureInput";
+import Messages from "../../../shared/messages";
 
 const AddOrEditPath = ({
   title,
@@ -77,13 +78,35 @@ const AddOrEditPath = ({
           name: pathName ?? "",
         }}
         validationSchema={Yup.object().shape({
-          name: apiNameSchema("Path Name is required"),
+          name: apiNameSchema(Messages.NAME_REQUIRED),
         })}
         onSubmit={handleSubmit}
       >
-        {({ errors, touched }) => (
+        {({
+          errors,
+          touched,
+          values,
+          handleBlur,
+          validateForm,
+          setErrors,
+          submitForm,
+        }) => (
           <>
-            <Form>
+            <Form
+              onKeyDown={async (e) => {
+                if (e.key === "Enter") {
+                  handleBlur(e);
+                  const errors = await validateForm(values);
+
+                  if (!_.isEmpty(errors)) {
+                    setErrors(errors);
+                  } else {
+                    submitForm();
+                  }
+                  e.preventDefault();
+                }
+              }}
+            >
               <EnterKeyCaptureInput />
 
               <div className='mb-4 px-4'>

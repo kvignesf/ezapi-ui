@@ -4,7 +4,7 @@ import CloseIcon from "@material-ui/icons/Close";
 import { PrimaryButton, TextButton } from "../shared/components/AppButton";
 import AppIcon from "../shared/components/AppIcon";
 
-const SaveOperationWarning = ({ onClose, navigateBack, saveProject }) => {
+const SaveOperationWarning = ({ onClose, onDontSave, saveProject }) => {
   return (
     <div>
       <div className='p-4 flex flex-row justify-between border-b-1'>
@@ -31,7 +31,7 @@ const SaveOperationWarning = ({ onClose, navigateBack, saveProject }) => {
             e?.preventDefault();
             e?.stopPropagation();
 
-            navigateBack();
+            onDontSave();
           }}
         >
           Don't Save

@@ -57,7 +57,7 @@ const AttributeDetails = ({ attribute, onClose }) => {
   const schemaDetails = useRecoilValue(schemaAtom);
   const [table, setTable] = useState(null); // table name
   const [column, setColumn] = useState(null); // column name
-  const { id: projectId } = useParams();
+  const { projectId } = useParams();
   const {
     isLoading: isFetchingTables,
     data: tablesData,

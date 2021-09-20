@@ -5,6 +5,7 @@ export const defaultState = {
   operation: null,
   resource: null,
   path: null,
+  projectId: null,
   operationIndex: null,
 
   operationRequest: {

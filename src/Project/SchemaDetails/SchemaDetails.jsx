@@ -29,7 +29,7 @@ import { isFullMatch, useCanEdit } from "../../shared/utils";
 
 const SchemaDetails = ({ schema, onClose }) => {
   const history = useHistory();
-  const { id: projectId } = useParams();
+  const { projectId } = useParams();
   const {
     isLoading: isFetchingTables,
     data: tablesData,

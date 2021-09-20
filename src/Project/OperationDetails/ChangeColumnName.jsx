@@ -12,6 +12,7 @@ import { TextButton, PrimaryButton } from "../../shared/components/AppButton";
 import { isDatabase } from "../../shared/utils";
 import apiNameSchema from "../../shared/schemas/apiNameSchema";
 import EnterKeyCaptureInput from "../../shared/components/EnterKeyCaptureInput";
+import Messages from "../../shared/messages";
 
 const ChangeColumnName = ({
   labelItem,
@@ -24,7 +25,7 @@ const ChangeColumnName = ({
 
   const onTableNameUpdate = ({ name }) => {
     if (isNameTaken(labelItem, name)) {
-      setError("Table/Column with this name already exists");
+      setError(Messages.TABLE_COLUMN_EXISTS);
       return;
     }
     renameColumn(labelItem, name);
@@ -58,13 +59,36 @@ const ChangeColumnName = ({
             name: labelItem?.name ?? "",
           }}
           validationSchema={Yup.object().shape({
-            name: apiNameSchema("Column Name is required"),
+            name: apiNameSchema(Messages.NAME_REQUIRED),
           })}
           innerRef={formRef}
           onSubmit={onTableNameUpdate}
         >
-          {({ errors, touched }) => (
-            <Form>
+          {({
+            errors,
+            touched,
+            values,
+            handleBlur,
+            validateForm,
+            setErrors,
+            submitForm,
+          }) => (
+            <Form
+              onKeyDown={async (e) => {
+                if (e.key === "Enter") {
+                  handleBlur(e);
+                  const errors = await validateForm(values);
+
+                  if (!_.isEmpty(errors)) {
+                    setErrors(errors);
+                  } else {
+                    submitForm();
+                  }
+
+                  e.preventDefault();
+                }
+              }}
+            >
               <EnterKeyCaptureInput />
 
               <Field

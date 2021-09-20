@@ -27,7 +27,7 @@ import { useDrag } from "react-dnd";
 import { operationAtomWithMiddleware } from "../../../shared/utils";
 
 const Parameters = () => {
-  const { id: projectId } = useParams();
+  const { projectId } = useParams();
   const {
     isLoading: isFetchingParameters,
     data: parameters,
@@ -76,8 +76,8 @@ const Parameters = () => {
 
       <div className='m-4 h-full mb-16'>
         <div
-          className='bg-neutral-gray7 p-4 rounded-md flex flex-col'
-          style={{ height: `calc(100% - 85px)` }}
+          className='bg-neutral-gray7 mt-14 p-4 rounded-md flex flex-col'
+          style={{ height: `calc(100% - 80px)` }}
         >
           {isFetchingParameters && (
             <div className='flex-1 flex flex-col items-center justify-center'>
@@ -123,10 +123,10 @@ const Parameters = () => {
               <Scrollbar
                 style={{
                   height: !operationState?.operationIndex
-                    ? `calc(100vh - 180px)`
+                    ? `calc(100vh - 210px)`
                     : null,
                   maxHeight: operationState?.operationIndex
-                    ? `calc(50vh - 180px)`
+                    ? `calc(50vh - 210px)`
                     : null,
                 }}
               >
