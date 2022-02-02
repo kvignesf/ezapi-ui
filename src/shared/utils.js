@@ -40,6 +40,11 @@ export const getApiError = (error) => {
       return error;
     }
 
+    if (url && url === endpoint.testDBConnection) {
+      console.log("@@@",error.response.data.message);
+      return new Error(error?.response?.data?.message);
+    }
+
     return new Error(Messages.INVALID_DATA);
   } else if (url && !_.isEmpty(url) && url.includes("/uploads")) {
     return new Error(error?.response?.data?.aiResponse?.message);

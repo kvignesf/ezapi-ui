@@ -9,6 +9,7 @@ import routes from "../shared/routes";
 import { clearSession, setAccessToken } from "../shared/storage";
 import { getApiError } from "../shared/utils";
 import projectAtom from "./projectAtom";
+import Snackbar from "@mui/material/Snackbar";
 
 const addProject = async ({ name, invitees }) => {
   try {
@@ -20,6 +21,49 @@ const addProject = async ({ name, invitees }) => {
   } catch (error) {
     throw getApiError(error);
   }
+};
+
+const databaseConnectionTest = async (formData) => {
+  try {
+    const { data } = await client.post(endpoint.testDBConnection, formData);
+    return data;
+  } catch (error) {
+    console.log("**********", error);
+    throw getApiError(error);
+  }
+};
+
+export const useDatabaseConnection = (onSuccess) => {
+  const mutation = useMutation(databaseConnectionTest, {
+    onSuccess: (data) => {
+      console.log("dataResponse : ", data);
+      if (data.status === "success") {
+        console.log("entered!!!");
+        // <Snackbar
+        //   open={this.state.open}
+        //   autoHideDuration={6000}
+        //   onClose={this.state.handleClose}
+        //   message="Note archived"
+        //   action={this.state.action}
+        // />;
+      }
+      //   if (!_.isEmpty(projectDetails?.specs)) {
+      //     specsMutation.mutate({
+      //       projectId: data?.projectId,
+      //       files: projectDetails?.specs,
+      //     });
+      //   } else if (!_.isEmpty(projectDetails?.dbs)) {
+      //     dbMutation.mutate({
+      //       projectId: data?.projectId,
+      //       files: projectDetails?.dbs,
+      //     });
+      //   } else {
+      //     onSuccess(data?.projectId);
+      //     queryClient.invalidateQueries(queries.projects);
+      //   }
+    },
+  });
+  return mutation;
 };
 
 export const useAddProject = (onSuccess) => {

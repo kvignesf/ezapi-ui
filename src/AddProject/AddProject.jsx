@@ -6,6 +6,7 @@ import {
   Tabs,
   MuiThemeProvider,
 } from "@material-ui/core";
+import Button from "@mui/material/Button";
 import CloseIcon from "@material-ui/icons/Close";
 import { useRecoilState } from "recoil";
 import _ from "lodash";
@@ -15,19 +16,30 @@ import { PrimaryButton, TextButton } from "../shared/components/AppButton";
 import LoaderWithMessage from "../shared/components/LoaderWithMessage";
 import { isEmailValid } from "../shared/utils";
 import ProjectDetails from "./ProjectDetails";
+import ConnectDatabase from "./ConnectDatabase";
 import InviteCollaborators from "../shared/components/InviteCollaborators";
 import projectAtom from "./projectAtom";
 import {
+  useDatabaseConnection,
   useAddProject,
   useUploadProjectDbs,
   useUploadProjectFile,
   useUploadProjectSpecs,
 } from "./addProjectQuery";
+import { getApiError } from "../shared/utils";
 import TabLabel from "../shared/components/TabLabel";
 import Messages from "../shared/messages";
 
+import client, { endpoint } from "../shared/network/client";
+
+import Snackbar from "@material-ui/core/Snackbar";
+import MuiAlert from "@material-ui/lab/Alert";
+
 const AddProject = ({ onClose, onSuccess }) => {
   const [currentTab, setTab] = useState(0);
+  const [connectDatabaseTab, setConnectDatabaseTab] = useState(0);
+  const [open, setOpen] = React.useState(false);
+
   const [specsError, setSpecsError] = useState(null);
   const [dbsError, setDbsError] = useState(null);
   const [projectDetails, setProjectDetails] = useRecoilState(projectAtom);
@@ -78,19 +90,22 @@ const AddProject = ({ onClose, onSuccess }) => {
   } = uploadDbMutation;
 
   const handleNext = () => {
+    console.log("*********", formRef);
     if (formRef.current) {
       formRef.current.handleSubmit();
-
       if (_.isEmpty(projectDetails?.specs) || _.isEmpty(projectDetails?.dbs)) {
         setDbsError(Messages.DB_REQUIRED);
       }
-
       if (
         formRef.current.isValid &&
         !_.isEmpty(projectDetails?.name) &&
-        !(_.isEmpty(projectDetails?.dbs) && _.isEmpty(projectDetails?.specs))
+        !(_.isEmpty(projectDetails?.dbs) && _.isEmpty(projectDetails?.specs)) &&
+        currentTab === 0
       ) {
-        setTab(1);
+        setTab(currentTab + 1);
+      } else if (currentTab === 1) {
+        formRef.current.handleSubmit();
+        setTab(currentTab + 1);
       }
     }
   };
@@ -140,16 +155,69 @@ const AddProject = ({ onClose, onSuccess }) => {
     });
   };
 
+  const {
+    mutate: testDatabase,
+    isLoading: isUploadingCredentials,
+    error: dbConnectionTestError,
+    isSuccess: isDbConnectionSuccess,
+  } = useDatabaseConnection();
+
+  const databaseConnectionTest = () => {
+    let payload = {
+      host: projectDetails.host,
+      port: projectDetails.port,
+      username: projectDetails.username,
+      password: projectDetails.password,
+      database: projectDetails.database,
+      type: formRef.current.values.servername,
+    };
+    console.log(payload, "***************");
+    testDatabase(payload);
+  };
+
+  const handleClick = () => {
+    setOpen(true);
+  };
+
+  const handleClose = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+
+    setOpen(false);
+  };
+
+  const action = (
+    <React.Fragment>
+      <Button color="secondary" size="small" onClick={handleClose}>
+        UNDO
+      </Button>
+      <IconButton
+        size="small"
+        aria-label="close"
+        color="inherit"
+        onClick={handleClose}
+      >
+        <CloseIcon fontSize="small" />
+      </IconButton>
+    </React.Fragment>
+  );
+
+  const Alert = React.forwardRef(function Alert(props, ref) {
+    return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+  });
+
   return (
-    <div className='p-4'>
-      <div className='flex flex-row items-center justify-between mb-3'>
+    <div className="p-4">
+      <div className="flex flex-row items-center justify-between mb-3">
         <h5>Create New API Project</h5>
 
         {!isUploadingProjectDetails &&
           !isUploadingDbs &&
           !isUploadingSpecs &&
-          !isMatchingAi && (
-            <AppIcon aria-label='close' onClick={onClose}>
+          !isMatchingAi &&
+          !isUploadingCredentials && (
+            <AppIcon aria-label="close" onClick={onClose}>
               <CloseIcon />
             </AppIcon>
           )}
@@ -158,31 +226,36 @@ const AddProject = ({ onClose, onSuccess }) => {
       {!isUploadingProjectDetails &&
         !isUploadingDbs &&
         !isUploadingSpecs &&
-        !isMatchingAi && (
+        !isMatchingAi &&
+        !isUploadingCredentials && (
           <>
             <Tabs
               value={currentTab}
               onChange={(_, index) => {
                 setTab(index);
               }}
-              aria-label='add project tabs'
-              indicatorColor='primary'
-              textColor='primary'
+              aria-label="add project tabs"
+              indicatorColor="primary"
+              textColor="primary"
             >
               <Tab
                 label={<TabLabel label={"1. Create API"} />}
                 style={{ outline: "none", border: "none" }}
               />
               <Tab
-                label={<TabLabel label={"2. Invite Collaborators"} />}
+                label={<TabLabel label={"2. Connect Database"} />}
+                style={{ outline: "none", border: "none" }}
+              />
+              <Tab
+                label={<TabLabel label={"3. Invite Collaborators"} />}
                 style={{ outline: "none", border: "none" }}
               />
             </Tabs>
 
             {/* Content */}
-            <div className='h-full'>
+            <div>
               {currentTab === 0 ? (
-                <div>
+                <div className="h-80">
                   <ProjectDetails
                     formRef={formRef}
                     specsError={specsError}
@@ -193,8 +266,16 @@ const AddProject = ({ onClose, onSuccess }) => {
                     aiMatcherMutation={aiMatcherMutation}
                   />
                 </div>
+              ) : currentTab === 1 ? (
+                <div className="h-80">
+                  <ConnectDatabase
+                    activeTab={connectDatabaseTab}
+                    handleTabChange={setConnectDatabaseTab}
+                    formRef={formRef}
+                  />
+                </div>
               ) : (
-                <div className='h-80 pt-4 mb-4'>
+                <div className="h-80">
                   <InviteCollaborators
                     handleChange={handleCollaboratorsChange}
                     collaborators={projectDetails?.collaborators}
@@ -205,37 +286,60 @@ const AddProject = ({ onClose, onSuccess }) => {
             </div>
 
             {projectDetailsError && (
-              <p className='text-overline2 text-accent-red my-2'>
+              <p className="text-overline2 text-accent-red my-2">
                 {projectDetailsError?.message}
               </p>
             )}
 
+            {dbConnectionTestError && (
+              <p className="text-overline2 text-accent-red my-2">
+                {`Failed to connect Db - ${dbConnectionTestError?.message}`}
+              </p>
+            )}
+
+            {isDbConnectionSuccess && (
+              <Snackbar
+                open={open}
+                autoHideDuration={6000}
+                onClose={handleClose}
+                action={action}
+              >
+                <Alert
+                  onClose={handleClose}
+                  severity="success"
+                  sx={{ width: "100%" }}
+                >
+                  Db connection is successful
+                </Alert>
+              </Snackbar>
+            )}
+
             {uploadSpecsError && (
-              <p className='text-overline2 text-accent-red my-2'>
+              <p className="text-overline2 text-accent-red my-2">
                 {`Failed to upload specs - ${uploadSpecsError?.message}`}
               </p>
             )}
 
             {uploadDbsError && (
-              <p className='text-overline2 text-accent-red my-2'>
+              <p className="text-overline2 text-accent-red my-2">
                 {`Failed to upload dbs - ${uploadDbsError?.message}`}
               </p>
             )}
 
             {matchAiError && (
-              <p className='text-overline2 text-accent-red my-2'>
+              <p className="text-overline2 text-accent-red my-2">
                 {matchAiError?.message}
               </p>
             )}
 
             {/* Bottom section */}
-            <div className='border-t-2 border-neutral-gray7 flex flex-row items-center justify-end pt-4'>
-              {currentTab === 1 ? (
+            <div className="border-t-2 border-neutral-gray7 flex flex-row items-center justify-end pt-4">
+              {currentTab === 2 ? (
                 <TextButton
                   onClick={() => {
                     handleDone();
                   }}
-                  classes='flex-1 -ml-4 text-brand-secondary'
+                  classes="flex-1 -ml-4 text-brand-secondary"
                 >
                   Skip for now
                 </TextButton>
@@ -243,54 +347,72 @@ const AddProject = ({ onClose, onSuccess }) => {
 
               <TextButton
                 onClick={() => {
-                  if (currentTab === 0) {
+                  if (
+                    currentTab === 0 ||
+                    (currentTab === 1 && connectDatabaseTab === 1)
+                  ) {
                     onClose();
+                  } else if (currentTab === 1) {
+                    handleClick();
+                    databaseConnectionTest();
                   } else {
-                    setTab(0);
+                    setTab(1);
                   }
                 }}
-                classes='mr-3'
+                classes="mr-3"
               >
-                {currentTab === 0 ? "Cancel" : "Back"}
+                {currentTab === 0
+                  ? "Cancel"
+                  : currentTab === 1
+                  ? connectDatabaseTab === 0
+                    ? "Test"
+                    : "Cancel"
+                  : "Back"}
               </TextButton>
 
               <PrimaryButton
                 onClick={() => {
-                  if (currentTab === 0) {
+                  if (currentTab === 0 || currentTab === 1) {
                     handleNext();
                   } else {
                     handleDone();
                   }
                 }}
               >
-                {currentTab === 0 ? "Next" : "Done"}
+                {currentTab === 0 || currentTab === 1 ? "Next" : "Done"}
               </PrimaryButton>
             </div>
           </>
         )}
 
+      {isUploadingCredentials && (
+        <div className="my-7">
+          <LoaderWithMessage message="Connecting to Database" contained />
+        </div>
+      )}
+
       {isUploadingProjectDetails && (
-        <div className='my-7'>
-          <LoaderWithMessage message='Creating new project' contained />
+        <div className="my-7">
+          <LoaderWithMessage message="Creating new project" contained />
         </div>
       )}
 
       {isUploadingSpecs && (
-        <div className='my-7'>
-          <LoaderWithMessage message='Uploading spec files' contained />
+        <div className="my-7">
+          <LoaderWithMessage message="Uploading spec files" contained />
         </div>
       )}
 
       {isUploadingDbs && (
-        <div className='my-7'>
-          <LoaderWithMessage message='Uploading database files' contained />
+        <div className="my-7">
+          <LoaderWithMessage message="Uploading database files" contained />
         </div>
       )}
 
       {isMatchingAi && (
-        <div className='my-7'>
+        <div className="my-7">
           <LoaderWithMessage
-            message='Running AI Matcher for the uploaded files'
+            message="Running AI Matcher for the uploaded files"
             contained
           />
         </div>
