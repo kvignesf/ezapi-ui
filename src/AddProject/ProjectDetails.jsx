@@ -130,7 +130,7 @@ const ProjectDetails = ({
   };
 
   return (
-    <div className='p-4'>
+    <div className='p-4 mb-10'>
       <p className='text-mediumLabel mb-2'>API Name</p>
 
       <div className='mb-6'>

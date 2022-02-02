@@ -109,7 +109,7 @@ const Dashboard = ({ selectedIndex, children }) => {
         open={isLoggingOut || (dialog?.show ?? false)}
         fullWidth
         PaperProps={{
-          style: { borderRadius: 8 },
+          style: { borderRadius: 8},
         }}
         disableBackdropClick
       >
