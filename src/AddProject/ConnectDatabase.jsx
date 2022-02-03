@@ -239,7 +239,7 @@ const ConnectDatabase = ({
 
   return (
     <div className="p-4" style={{ height: "350px"}}>
-      <Scrollbar className='max-h-60' alwaysShowTracks={false}>
+      <Scrollbar className='max-h-60' alwaysShowTracks={true}>
       <>
         <CustomTabs
           value={activeTab}
@@ -317,10 +317,10 @@ const ConnectDatabase = ({
                           name="servername"
                           component={CustomizedSelectForFormik}
                         >
-                          <MenuItem value="mssql">MySQL</MenuItem>
-                          <MenuItem value="SQL Server">SQL Server</MenuItem>
-                          <MenuItem value="Mongo">Mongo</MenuItem>
-                          <MenuItem value="Postgres">Postgres</MenuItem>
+                          <MenuItem value="mysql">MySQL</MenuItem>
+                          <MenuItem value="mssql">SQL Server</MenuItem>
+                          <MenuItem value="mongo">Mongo</MenuItem>
+                          <MenuItem value="postgres">Postgres</MenuItem>
                         </Field>
                       </Grid>
                       <Grid item xl={6}>
