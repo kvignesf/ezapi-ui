@@ -11,10 +11,11 @@ import { getApiError } from "../shared/utils";
 import projectAtom from "./projectAtom";
 import Snackbar from "@mui/material/Snackbar";
 
-const addProject = async ({ name, invitees }) => {
+const addProject = async ({ name, dbdetails, invitees }) => {
   try {
     const { data } = await client.post(endpoint.project, {
       projectName: name,
+      dbdetails: dbdetails,
       invites: invitees,
     });
     return data;
