@@ -115,19 +115,19 @@ const ConnectDatabase = ({
     [] // will be created only once initially
   );
 
-  // const debouncedSetServer = useCallback(
-  //   debounce((nextValue) => {
-  //     resetProjectApiState();
+  const debouncedSetType = useCallback(
+    debounce((nextValue) => {
+      resetProjectApiState();
 
-  //     setProjectDetails((currProjectDetails) => {
-  //       return {
-  //         ...currProjectDetails,
-  //         servername: nextValue,
-  //       };
-  //     });
-  //   }, 300),
-  //   [] // will be created only once initially
-  // );
+      setProjectDetails((currProjectDetails) => {
+        return {
+          ...currProjectDetails,
+          type: nextValue,
+        };
+      });
+    }, 300),
+    [] // will be created only once initially
+  );
 
   const resetProjectApiState = () => {
     addProjectMutation?.reset();
@@ -238,65 +238,66 @@ const ConnectDatabase = ({
   })(Tabs);
 
   return (
-    <div className="p-4" style={{ height: "350px"}}>
-      <Scrollbar className='max-h-60' alwaysShowTracks={true}>
-      <>
-        <CustomTabs
-          value={activeTab}
-          onChange={(_, index) => {
-            handleTabChange(index);
-          }}
-          aria-label="add project tabs"
-          indicatorColor="white"
-          // textColor="primary"
-          centered
-        >
-          <CustomTab
-            label={<TabLabel label={"Connect"} />}
-            style={{ outline: "none", border: "none" }}
-          />
-          <CustomTab
-            label={<TabLabel label={"Upload"} />}
-            style={{ outline: "none", border: "none" }}
-          />
-        </CustomTabs>
+    <div className="p-4" style={{ height: "350px" }}>
+      <Scrollbar className="max-h-60" alwaysShowTracks={true}>
+        <>
+          <CustomTabs
+            value={activeTab}
+            onChange={(_, index) => {
+              handleTabChange(index);
+            }}
+            aria-label="add project tabs"
+            indicatorColor="white"
+            // textColor="primary"
+            centered
+          >
+            <CustomTab
+              label={<TabLabel label={"Connect"} />}
+              style={{ outline: "none", border: "none" }}
+            />
+            <CustomTab
+              label={<TabLabel label={"Upload"} />}
+              style={{ outline: "none", border: "none" }}
+            />
+          </CustomTabs>
 
-        {/* Content */}
-        <div>
-          {activeTab === 0 ? (
-            <div className="mt-6 mb-6">
-              <p className="text-mediumLabel mb-2">Server Type</p>
-              <Formik
-                initialValues={{
-                  servername: projectDetails?.servername ?? "",
-                  host: projectDetails?.host ?? "",
-                  port: projectDetails?.port ?? "",
-                  database: projectDetails?.database ?? "",
-                  username: projectDetails?.username ?? "",
-                  password: projectDetails?.password ?? "",
-                }}
-                validationSchema={Yup.object().shape({
-                  // name: apiNameSchema(Messages.NAME_REQUIRED),
-                  host: Yup.string().required("host is required."),
-                  port: Yup.string().required("port is required."),
-                  database: Yup.string().required("database is required."),
-                  username: Yup.string().required("username is required."),
-                  password: Yup.string().required("password is required."),
-                })}
-                innerRef={formRef}
-              >
-                {({
-                  errors,
-                  touched,
-                  values,
-                  submitForm,
-                  validateForm,
-                  handleBlur,
-                  setErrors,
-                }) => (
-                  <Form>
-                    <Grid container spacing={2}>
-                      {/* <Field
+          {/* Content */}
+          <div>
+            {activeTab === 0 ? (
+              <div className="mt-6 mb-6">
+                <p className="text-mediumLabel mb-2">Server Type</p>
+                <Formik
+                  initialValues={{
+                    type: projectDetails?.type ?? "",
+                    host: projectDetails?.host ?? "",
+                    port: projectDetails?.port ?? "",
+                    database: projectDetails?.database ?? "",
+                    username: "",
+                    password: "",
+                  }}
+                  validationSchema={Yup.object().shape({
+                    // name: apiNameSchema(Messages.NAME_REQUIRED),
+                    host: Yup.string().required("host is required."),
+                    port: Yup.string().required("port is required."),
+                    database: Yup.string().required("database is required."),
+                    username: Yup.string().required("username is required."),
+                    password: Yup.string().required("password is required."),
+                  })}
+                  innerRef={formRef}
+                >
+                  {({
+                    errors,
+                    touched,
+                    values,
+                    submitForm,
+                    validateForm,
+                    handleChange,
+                    handleBlur,
+                    setErrors,
+                  }) => (
+                    <Form>
+                      <Grid container spacing={2}>
+                        {/* <Field
                         id='name'
                         name='serverType'
                         fullWidth
@@ -312,115 +313,134 @@ const ConnectDatabase = ({
                         // disabled={addProjectMutation?.isSuccess}
                         as={Select}
                       /> */}
-                      <Grid item xs={12}>
-                        <Field
-                          name="servername"
-                          component={CustomizedSelectForFormik}
-                        >
-                          <MenuItem value="mysql">MySQL</MenuItem>
-                          <MenuItem value="mssql">SQL Server</MenuItem>
-                          <MenuItem value="mongo">Mongo</MenuItem>
-                          <MenuItem value="postgres">Postgres</MenuItem>
-                        </Field>
-                      </Grid>
-                      <Grid item xs={6}>
-                        <p className="text-mediumLabel mb-2">Host</p>
-                        <Field
-                          id="host"
-                          name="host"
-                          fullWidth
-                          color="primary"
-                          placeholder="127.0.0.1"
-                          error={touched.host && Boolean(errors.host)}
-                          helperText={<ErrorMessage name="host" />}
-                          onKeyUp={(e) => {
-                            const { value } = e.target;
-                            debouncedSetHost(value);
-                          }}
-                          variant="outlined"
-                          inputProps={{ maxLength: 24 }}
-                          // disabled={addProjectMutation?.isSuccess}
-                          as={TextField}
-                        />
-                      </Grid>
-                      <Grid item xs={6}>
-                        <p className="text-mediumLabel mb-2">Port</p>
-                        <Field
-                          id="port"
-                          name="port"
-                          fullWidth
-                          color="primary"
-                          placeholder="7744"
-                          error={touched.port && Boolean(errors.port)}
-                          helperText={<ErrorMessage name="port" />}
-                          onKeyUp={(e) => {
-                            const { value } = e.target;
-                            debouncedSetPort(value);
-                          }}
-                          variant="outlined"
-                          inputProps={{ maxLength: 24 }}
-                          // disabled={addProjectMutation?.isSuccess}
-                          as={TextField}
-                        />
-                      </Grid>
-                      <Grid item xs={12}>
-                        <p className="text-mediumLabel mb-2">Username</p>
-                        <Field
-                          id="username"
-                          name="username"
-                          fullWidth
-                          color="primary"
-                          error={touched.username && Boolean(errors.username)}
-                          helperText={<ErrorMessage name="username" />}
-                          onKeyUp={(e) => {
-                            const { value } = e.target;
-                            debouncedSetUsername(value);
-                          }}
-                          variant="outlined"
-                          inputProps={{ maxLength: 24 }}
-                          // disabled={addProjectMutation?.isSuccess}
-                          as={TextField}
-                        />
-                      </Grid>
-                      <Grid item xs={12}>
-                        <p className="text-mediumLabel mb-2">Password</p>
-                        <Field
-                          id="password"
-                          name="password"
-                          fullWidth
-                          color="primary"
-                          error={touched.password && Boolean(errors.password)}
-                          helperText={<ErrorMessage name="password" />}
-                          onKeyUp={(e) => {
-                            const { value } = e.target;
-                            debouncedSetPassword(value);
-                          }}
-                          variant="outlined"
-                          inputProps={{ maxLength: 24 }}
-                          // disabled={addProjectMutation?.isSuccess}
-                          as={TextField}
-                        />
-                      </Grid>
-                      <Grid item xs={12}>
-                        <p className="text-mediumLabel mb-2">Database</p>
-                        <Field
-                          id="database"
-                          name="database"
-                          fullWidth
-                          color="primary"
-                          error={touched.database && Boolean(errors.database)}
-                          helperText={<ErrorMessage name="database" />}
-                          onKeyUp={(e) => {
-                            const { value } = e.target;
-                            debouncedSetDatabase(value);
-                          }}
-                          variant="outlined"
-                          inputProps={{ maxLength: 24 }}
-                          // disabled={addProjectMutation?.isSuccess}
-                          as={TextField}
-                        />
-                      </Grid>
-                      {/* <Grid item xl={12}>
+                        <Grid item xs={12}>
+                          <select
+                            name="type"
+                            value={values.type}
+                            // color = "primary"
+                            onChange={handleChange}
+                            onBlur={(e) => {
+                              debouncedSetType(values.type);
+                            }}
+                            variant="outlined"
+                            style = {{border: "1px solid #d2d2d2", height: '60px', borderRadius: '4px', width : '100%', color: 'primary', backgroundColor: '#ffffff'}}
+                          >
+                            <option value="" label="Select db type"/>
+                            <option value="mysql" label="MySQL"/>
+                            <option value="mssql" label="SQL Server"/>
+                            <option value="mongo" label="Mongo"/>
+                            <option value="postgres" label="Postgres"/>
+                          </select>
+                          {/* <Field
+                            name="servername"
+                            component={CustomizedSelectForFormik}
+                          >
+                            <MenuItem value="mysql">MySQL</MenuItem>
+                            <MenuItem value="mssql">SQL Server</MenuItem>
+                            <MenuItem value="mongo">Mongo</MenuItem>
+                            <MenuItem value="postgres">Postgres</MenuItem>
+                          </Field> */}
+                        </Grid>
+                        <Grid item xs={6}>
+                          <p className="text-mediumLabel mb-2">Host</p>
+                          <Field
+                            id="host"
+                            name="host"
+                            fullWidth
+                            color="primary"
+                            placeholder="127.0.0.1"
+                            error={touched.host && Boolean(errors.host)}
+                            helperText={<ErrorMessage name="host" />}
+                            onKeyUp={(e) => {
+                              const { value } = e.target;
+                              debouncedSetHost(value);
+                            }}
+                            variant="outlined"
+                            inputProps={{ maxLength: 24 }}
+                            // disabled={addProjectMutation?.isSuccess}
+                            as={TextField}
+                          />
+                        </Grid>
+                        <Grid item xs={6}>
+                          <p className="text-mediumLabel mb-2">Port</p>
+                          <Field
+                            id="port"
+                            name="port"
+                            fullWidth
+                            color="primary"
+                            placeholder="7744"
+                            error={touched.port && Boolean(errors.port)}
+                            helperText={<ErrorMessage name="port" />}
+                            onKeyUp={(e) => {
+                              const { value } = e.target;
+                              debouncedSetPort(value);
+                            }}
+                            variant="outlined"
+                            inputProps={{ maxLength: 24 }}
+                            // disabled={addProjectMutation?.isSuccess}
+                            as={TextField}
+                          />
+                        </Grid>
+                        <Grid item xs={12}>
+                          <p className="text-mediumLabel mb-2">Username</p>
+                          <Field
+                            id="username"
+                            name="username"
+                            fullWidth
+                            color="primary"
+                            error={touched.username && Boolean(errors.username)}
+                            helperText={<ErrorMessage name="username" />}
+                            onKeyUp={(e) => {
+                              const { value } = e.target;
+                              debouncedSetUsername(value);
+                            }}
+                            variant="outlined"
+                            inputProps={{ maxLength: 24 }}
+                            // disabled={addProjectMutation?.isSuccess}
+                            as={TextField}
+                          />
+                        </Grid>
+                        <Grid item xs={12}>
+                          <p className="text-mediumLabel mb-2">Password</p>
+                          <Field
+                            id="password"
+                            name="password"
+                            type="password"
+                            autocomplete="off"
+                            fullWidth
+                            color="primary"
+                            error={touched.password && Boolean(errors.password)}
+                            helperText={<ErrorMessage name="password" />}
+                            onKeyUp={(e) => {
+                              const { value } = e.target;
+                              debouncedSetPassword(value);
+                            }}
+                            variant="outlined"
+                            inputProps={{ maxLength: 24 }}
+                            // disabled={addProjectMutation?.isSuccess}
+                            as={TextField}
+                          />
+                        </Grid>
+                        <Grid item xs={12}>
+                          <p className="text-mediumLabel mb-2">Database</p>
+                          <Field
+                            id="database"
+                            name="database"
+                            fullWidth
+                            color="primary"
+                            error={touched.database && Boolean(errors.database)}
+                            helperText={<ErrorMessage name="database" />}
+                            onKeyUp={(e) => {
+                              const { value } = e.target;
+                              debouncedSetDatabase(value);
+                            }}
+                            variant="outlined"
+                            inputProps={{ maxLength: 24 }}
+                            // disabled={addProjectMutation?.isSuccess}
+                            as={TextField}
+                          />
+                        </Grid>
+                        {/* <Grid item xl={12}>
                           <p className="text-mediumLabel mb-2">ssl</p>
                           <Field
                             id="name"
@@ -439,109 +459,115 @@ const ConnectDatabase = ({
                             as={TextField}
                           />
                         </Grid> */}
-                    </Grid>
-                  </Form>
-                )}
-              </Formik>
-            </div>
-          ) : (
-            <div className="h-80 pt-4 mb-4">
-              <Formik innerRef={formRef}>
-                <Form>
-                  <div className="mb-3">
-                    <p className="text-mediumLabel mb-2">
-                      Connect DB{" "}
-                      <span>
-                        <InfoOutlinedIcon />
-                      </span>
-                    </p>
-                    <input
-                      id="dbs"
-                      type="file"
-                      accept=".sql"
-                      multiple
-                      hidden
-                      onChange={(e) => {
-                        handleOnDbsPick(Array.from(e.target.files));
-                        e.target.value = "";
-                      }}
-                    />
-                    <label
-                      for="dbs"
-                      className="bg-brand-secondary rounded-md px-4 py-2
+                      </Grid>
+                    </Form>
+                  )}
+                </Formik>
+              </div>
+            ) : (
+              <div className="h-80 pt-4 mb-4">
+                <Formik innerRef={formRef}>
+                  <Form>
+                    <div className="mb-3">
+                      <p className="text-mediumLabel mb-2">
+                        Connect DB{" "}
+                        <span>
+                          <InfoOutlinedIcon />
+                        </span>
+                      </p>
+                      <input
+                        id="dbs"
+                        type="file"
+                        accept=".sql"
+                        multiple
+                        hidden
+                        onChange={(e) => {
+                          handleOnDbsPick(Array.from(e.target.files));
+                          e.target.value = "";
+                        }}
+                      />
+                      <label
+                        for="dbs"
+                        className="bg-brand-secondary rounded-md px-4 py-2
            text-white text-mediumLabel hover:opacity-90"
-                    >
-                      Upload DDL
-                    </label>
+                      >
+                        Upload DDL
+                      </label>
 
-                    {/* Connected Dbs */}
-                    {!_.isEmpty(projectDetails?.dbs) ? (
-                      <div className="mt-3">
-                        <Scrollbar className="max-h-24" alwaysShowTracks={true}>
-                          <ul>
-                            {projectDetails?.dbs?.map((file) => {
-                              return (
-                                <li key={file.name}>
-                                  <div className="rounded-md border bg-neutral-gray7 p-2 mb-2 flex flex-row items-center justify-between">
-                                    <p className="text-overline2">
-                                      {file.name} {Math.round(file.size / 1024)}{" "}
-                                      KB
-                                    </p>
-                                    <AppIcon
-                                      aria-label="remove"
-                                      onClick={() => {
-                                        removeSelectedDb(file.name);
-                                      }}
-                                      style={{ width: "18px", height: "18px" }}
-                                    >
-                                      <CloseIcon />
-                                    </AppIcon>
-                                  </div>
-                                </li>
-                              );
-                            })}
-                          </ul>
-                        </Scrollbar>
-                      </div>
-                    ) : null}
+                      {/* Connected Dbs */}
+                      {!_.isEmpty(projectDetails?.dbs) ? (
+                        <div className="mt-3">
+                          <Scrollbar
+                            className="max-h-24"
+                            alwaysShowTracks={true}
+                          >
+                            <ul>
+                              {projectDetails?.dbs?.map((file) => {
+                                return (
+                                  <li key={file.name}>
+                                    <div className="rounded-md border bg-neutral-gray7 p-2 mb-2 flex flex-row items-center justify-between">
+                                      <p className="text-overline2">
+                                        {file.name}{" "}
+                                        {Math.round(file.size / 1024)} KB
+                                      </p>
+                                      <AppIcon
+                                        aria-label="remove"
+                                        onClick={() => {
+                                          removeSelectedDb(file.name);
+                                        }}
+                                        style={{
+                                          width: "18px",
+                                          height: "18px",
+                                        }}
+                                      >
+                                        <CloseIcon />
+                                      </AppIcon>
+                                    </div>
+                                  </li>
+                                );
+                              })}
+                            </ul>
+                          </Scrollbar>
+                        </div>
+                      ) : null}
 
-                    {_.isEmpty(projectDetails?.dbs) &&
-                      _.isEmpty(projectDetails?.specs) &&
-                      !_.isEmpty(dbsError) && (
-                        <p className="text-accent-red text-overline2 mt-2">
-                          {dbsError}
-                        </p>
-                      )}
-                  </div>
-                </Form>
-              </Formik>
-            </div>
-          )}
-        </div>
-      </>
+                      {_.isEmpty(projectDetails?.dbs) &&
+                        _.isEmpty(projectDetails?.specs) &&
+                        !_.isEmpty(dbsError) && (
+                          <p className="text-accent-red text-overline2 mt-2">
+                            {dbsError}
+                          </p>
+                        )}
+                    </div>
+                  </Form>
+                </Formik>
+              </div>
+            )}
+          </div>
+        </>
       </Scrollbar>
     </div>
   );
 };
 
-const CustomizedSelectForFormik = ({ children, form, field }) => {
-  const { name, value } = field;
-  const { setFieldValue } = form;
+// const CustomizedSelectForFormik = ({ children, form, field }) => {
+//   const { name, value } = field;
+//   const { setFieldValue } = form;
 
-  return (
-    <Select
-      name={name}
-      value={value}
-      input={<OutlinedInput />}
-      label={name}
-      style={{ width: "100%" }}
-      onChange={(e) => {
-        setFieldValue(name, e.target.value);
-      }}
-    >
-      {children}
-    </Select>
-  );
-};
+//   return (
+//     <Select
+//       name={name}
+//       value={value}
+//       input={<OutlinedInput />}
+//       label={name}
+//       style={{ width: "100%" }}
+//       onChange={(e) => {
+//         setFieldValue(name, e.target.value);
+//       }}
+//     >
+//       {children}
+//     </Select>
+//   );
+// };
 
 export default ConnectDatabase;

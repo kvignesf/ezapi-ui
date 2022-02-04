@@ -129,6 +129,15 @@ const AddProject = ({ onClose, onSuccess }) => {
 
     uploadProjectData({
       name: projectDetails?.name,
+      dbdetails: {
+        host: projectDetails.host,
+        port: projectDetails.port,
+        username: projectDetails.username,
+        password: projectDetails.password,
+        database: projectDetails.database,
+        type: projectDetails.type
+        // type: formRef.current.values.servername,
+      },
       invitees: projectDetails?.collaborators?.map((collaborator) => {
         return {
           email: collaborator,
@@ -169,7 +178,7 @@ const AddProject = ({ onClose, onSuccess }) => {
       username: projectDetails.username,
       password: projectDetails.password,
       database: projectDetails.database,
-      type: formRef.current.values.servername,
+      type: projectDetails.type,
     };
     console.log(payload, "***************");
     testDatabase(payload);
