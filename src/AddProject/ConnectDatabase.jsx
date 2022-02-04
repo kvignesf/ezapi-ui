@@ -312,7 +312,7 @@ const ConnectDatabase = ({
                         // disabled={addProjectMutation?.isSuccess}
                         as={Select}
                       /> */}
-                      <Grid item xl={12}>
+                      <Grid item xs={12}>
                         <Field
                           name="servername"
                           component={CustomizedSelectForFormik}
@@ -323,7 +323,7 @@ const ConnectDatabase = ({
                           <MenuItem value="postgres">Postgres</MenuItem>
                         </Field>
                       </Grid>
-                      <Grid item xl={6}>
+                      <Grid item xs={6}>
                         <p className="text-mediumLabel mb-2">Host</p>
                         <Field
                           id="host"
@@ -343,7 +343,7 @@ const ConnectDatabase = ({
                           as={TextField}
                         />
                       </Grid>
-                      <Grid item xl={6}>
+                      <Grid item xs={6}>
                         <p className="text-mediumLabel mb-2">Port</p>
                         <Field
                           id="port"
@@ -363,7 +363,7 @@ const ConnectDatabase = ({
                           as={TextField}
                         />
                       </Grid>
-                      <Grid item xl={12}>
+                      <Grid item xs={12}>
                         <p className="text-mediumLabel mb-2">Username</p>
                         <Field
                           id="username"
@@ -382,7 +382,7 @@ const ConnectDatabase = ({
                           as={TextField}
                         />
                       </Grid>
-                      <Grid item xl={12}>
+                      <Grid item xs={12}>
                         <p className="text-mediumLabel mb-2">Password</p>
                         <Field
                           id="password"
@@ -401,7 +401,7 @@ const ConnectDatabase = ({
                           as={TextField}
                         />
                       </Grid>
-                      <Grid item xl={12}>
+                      <Grid item xs={12}>
                         <p className="text-mediumLabel mb-2">Database</p>
                         <Field
                           id="database"
