@@ -231,7 +231,7 @@ const ProjectDetails = ({
           )}
       </div>
 
-      <div className='mb-3'>
+      {/* <div className='mb-3'>
         <p className='text-mediumLabel mb-2'>Connect DB</p>
         <input
           id='dbs'
@@ -250,10 +250,10 @@ const ProjectDetails = ({
            text-white text-mediumLabel hover:opacity-90'
         >
           Upload
-        </label>
+        </label> */}
 
         {/* Connected Dbs */}
-        {!_.isEmpty(projectDetails?.dbs) ? (
+        {/* {!_.isEmpty(projectDetails?.dbs) ? (
           <div className='mt-3'>
             <Scrollbar className='max-h-24' alwaysShowTracks={true}>
               <ul>
@@ -287,7 +287,7 @@ const ProjectDetails = ({
           !_.isEmpty(dbsError) && (
             <p className='text-accent-red text-overline2 mt-2'>{dbsError}</p>
           )}
-      </div>
+      </div> */}
     </div>
   );
 };
