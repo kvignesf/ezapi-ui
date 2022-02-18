@@ -370,7 +370,7 @@ const ConnectDatabase = ({
                               debouncedSetHost(value);
                             }}
                             variant="outlined"
-                            inputProps={{ maxLength: 24 }}
+                            inputProps={{ maxLength: 55 }}
                             // disabled={addProjectMutation?.isSuccess}
                             as={TextField}
                           />
@@ -449,7 +449,7 @@ const ConnectDatabase = ({
                               debouncedSetDatabase(value);
                             }}
                             variant="outlined"
-                            inputProps={{ maxLength: 24 }}
+                            inputProps={{ maxLength: 55 }}
                             // disabled={addProjectMutation?.isSuccess}
                             as={TextField}
                           />
