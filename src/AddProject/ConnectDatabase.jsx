@@ -115,6 +115,20 @@ const ConnectDatabase = ({
     [] // will be created only once initially
   );
 
+  const debouncedSetDbType = useCallback(
+    debounce((nextValue) => {
+      resetProjectApiState();
+
+      setProjectDetails((currProjectDetails) => {
+        return {
+          ...currProjectDetails,
+          dbType: nextValue,
+        };
+      });
+    }, 300),
+    [] // will be created only once initially
+  );
+
   const debouncedSetType = useCallback(
     debounce((nextValue) => {
       resetProjectApiState();
@@ -466,33 +480,69 @@ const ConnectDatabase = ({
               </div>
             ) : (
               <div className="h-80 pt-4 mb-4">
-                <Formik innerRef={formRef}>
+                <Formik 
+                initialValues={{
+                  dbType: projectDetails?.dbType ?? ""
+                }}
+
+                innerRef={formRef}>
+                {({
+                    errors,
+                    touched,
+                    values,
+                    submitForm,
+                    validateForm,
+                    handleChange,
+                    handleBlur,
+                    setErrors,
+                  }) => (
                   <Form>
                     <div className="mb-3">
-                      <p className="text-mediumLabel mb-2">
-                        Connect DB{" "}
-                        <span>
-                          <InfoOutlinedIcon />
-                        </span>
-                      </p>
-                      <input
-                        id="dbs"
-                        type="file"
-                        accept=".sql"
-                        multiple
-                        hidden
-                        onChange={(e) => {
-                          handleOnDbsPick(Array.from(e.target.files));
-                          e.target.value = "";
-                        }}
-                      />
-                      <label
-                        for="dbs"
-                        className="bg-brand-secondary rounded-md px-4 py-2
-           text-white text-mediumLabel hover:opacity-90"
-                      >
-                        Upload DDL
-                      </label>
+                      <Grid item xs={12}>
+                        <select
+                          name="dbType"
+                          value={values.dbType}
+                          // color = "primary"
+                          onChange={handleChange}
+                          onBlur={(e) => {
+                            debouncedSetDbType(values.dbType);
+                          }}
+                          variant="outlined"
+                          style = {{border: "1px solid #d2d2d2", height: '60px', marginBottom: '10px', borderRadius: '4px', width : '100%', color: 'primary', backgroundColor: '#ffffff'}}
+                        >
+                          <option value="" label="Select db type"/>
+                          <option value="mysql" label="MySQL"/>
+                          <option value="mssql" label="SQL Server"/>
+                          <option value="mongo" label="Mongo"/>
+                          <option value="postgres" label="Postgres"/>
+                        </select>
+                      </Grid>
+                      <Grid item xs={12}>
+                        <p className="text-mediumLabel mb-2">
+                          Connect DB{" "}
+                          <span>
+                            <InfoOutlinedIcon />
+                          </span>
+                        </p>
+                        <input
+                          id="dbs"
+                          type="file"
+                          accept=".sql"
+                          multiple
+                          hidden
+                          onChange={(e) => {
+                            handleOnDbsPick(Array.from(e.target.files));
+                            e.target.value = "";
+                          }}
+                        />
+                        <label
+                          for="dbs"
+                          className="bg-brand-secondary rounded-md px-4 py-2
+            text-white text-mediumLabel hover:opacity-90"
+                        >
+                          Upload DDL
+                        </label>
+                      </Grid>
 
                       {/* Connected Dbs */}
                       {!_.isEmpty(projectDetails?.dbs) ? (
@@ -540,6 +590,7 @@ const ConnectDatabase = ({
                         )}
                     </div>
                   </Form>
+                )}
                 </Formik>
               </div>
             )}
