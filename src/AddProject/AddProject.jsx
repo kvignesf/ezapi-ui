@@ -138,6 +138,7 @@ const AddProject = ({ onClose, onSuccess }) => {
         type: projectDetails.type
         // type: formRef.current.values.servername,
       },
+      dbType: projectDetails.dbType,
       invitees: projectDetails?.collaborators?.map((collaborator) => {
         return {
           email: collaborator,
