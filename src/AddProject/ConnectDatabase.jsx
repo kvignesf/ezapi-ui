@@ -286,8 +286,8 @@ const ConnectDatabase = ({
                     host: projectDetails?.host ?? "",
                     port: projectDetails?.port ?? "",
                     database: projectDetails?.database ?? "",
-                    username: "",
-                    password: "",
+                    username: projectDetails?.database ?? "",
+                    password: projectDetails?.database ?? "",
                   }}
                   validationSchema={Yup.object().shape({
                     // name: apiNameSchema(Messages.NAME_REQUIRED),
