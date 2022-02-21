@@ -77,7 +77,7 @@ export const useAddProject = (onSuccess) => {
   */
   const aiMutation = useAiMatcher(onSuccess);
   const dbMutation = useUploadProjectDbs(aiMutation, onSuccess);
-  const specsMutation = useUploadProjectSpecs(dbMutation, onSuccess);
+  const specsMutation = useUploadProjectSpecs(aiMutation, dbMutation, onSuccess);
   const projectDetails = useRecoilValue(projectAtom);
   const queryClient = useQueryClient();
 
@@ -133,7 +133,7 @@ const uploadProjectSpecs = async ({ projectId, files }) => {
   }
 };
 
-const useUploadProjectSpecs = (dbMutation, onSuccess) => {
+const useUploadProjectSpecs = (aiMutation, dbMutation, onSuccess) => {
   const projectDetails = useRecoilValue(projectAtom);
   const queryClient = useQueryClient();
 
@@ -145,7 +145,16 @@ const useUploadProjectSpecs = (dbMutation, onSuccess) => {
             projectId: data?.projectId,
             files: projectDetails?.dbs,
           });
-        } else {
+        } 
+        else if (!_.isEmpty(projectDetails?.specs) &&
+         (!_.isEmpty(projectDetails?.host) && !_.isEmpty(projectDetails?.port) && !_.isEmpty(projectDetails?.username) && !_.isEmpty(projectDetails?.password) && !_.isEmpty(projectDetails?.database) && !_.isEmpty(projectDetails?.type))){
+          console.log("Manojjjj");
+          aiMutation.mutate({
+            projectId: data?.projectId,
+          });
+         }
+
+        else {
           onSuccess(data?.projectId);
           queryClient.invalidateQueries(queries.projects);
         }
@@ -188,11 +197,14 @@ const useUploadProjectDbs = (aiMutation, onSuccess) => {
 
   const mutation = useMutation(uploadProjectDbs, {
     onSuccess: (data) => {
+      console.log("##MANOJ");
+      console.log("data:",data);
       if (data?.projectId) {
         if (
-          !_.isEmpty(projectDetails?.dbs) &&
-          !_.isEmpty(projectDetails?.specs)
+          !_.isEmpty(projectDetails?.specs) &&
+          (!_.isEmpty(projectDetails?.dbs) || (!_.isEmpty(projectDetails?.host) && !_.isEmpty(projectDetails?.port) && !_.isEmpty(projectDetails?.username) && !_.isEmpty(projectDetails?.password) && !_.isEmpty(projectDetails?.database) && !_.isEmpty(projectDetails?.type)))
         ) {
+          console.log("data:",data);
           aiMutation.mutate({
             projectId: data?.projectId,
           });
