@@ -89,34 +89,17 @@ const AddProject = ({ onClose, onSuccess }) => {
     reset: resetUploadDbsApi,
   } = uploadDbMutation;
 
-  // const handleNext = () => {
-  //   console.log("*********", formRef);
-  //   if (formRef.current) {
-  //     formRef.current.handleSubmit();
-  //     if (_.isEmpty(projectDetails?.specs) || _.isEmpty(projectDetails?.dbs)) {
-  //       setDbsError(Messages.DB_REQUIRED);
-  //     }
-  //     if (
-  //       formRef.current.isValid &&
-  //       !_.isEmpty(projectDetails?.name) &&
-  //       !(_.isEmpty(projectDetails?.dbs) && _.isEmpty(projectDetails?.specs)) &&
-  //       currentTab === 0
-  //     ) {
-  //       setTab(currentTab + 1);
-  //     } else if (currentTab === 1) {
-  //       formRef.current.handleSubmit();
-  //       setTab(currentTab + 1);
-  //     }
-  //   }
-  // };
-
   const handleNext = () => {
     console.log("*********", formRef);
     if (formRef.current) {
       formRef.current.handleSubmit();
+      if (_.isEmpty(projectDetails?.specs) || _.isEmpty(projectDetails?.dbs)) {
+        setDbsError(Messages.DB_REQUIRED);
+      }
       if (
         formRef.current.isValid &&
         !_.isEmpty(projectDetails?.name) &&
+        !(_.isEmpty(projectDetails?.dbs) && _.isEmpty(projectDetails?.specs)) &&
         currentTab === 0
       ) {
         setTab(currentTab + 1);
@@ -126,6 +109,7 @@ const AddProject = ({ onClose, onSuccess }) => {
       }
     }
   };
+
   const handleDone = () => {
     resetCreateProjectApi();
     resetUploadDbsApi();
@@ -133,7 +117,7 @@ const AddProject = ({ onClose, onSuccess }) => {
 
     if (
       _.isEmpty(projectDetails?.name) ||
-      (_.isEmpty(projectDetails?.dbs) && _.isEmpty(projectDetails?.specs) && (_.isEmpty(projectDetails?.host) && _.isEmpty(projectDetails?.port) && _.isEmpty(projectDetails?.username) && _.isEmpty(projectDetails?.password) && _.isEmpty(projectDetails?.database) && _.isEmpty(projectDetails?.type)))
+      (_.isEmpty(projectDetails?.dbs) && _.isEmpty(projectDetails?.specs))
     ) {
       setTab(0);
       if (formRef.current) {
@@ -146,15 +130,15 @@ const AddProject = ({ onClose, onSuccess }) => {
     uploadProjectData({
       name: projectDetails?.name,
       dbdetails: {
-        host: projectDetails?.host,
-        port: projectDetails?.port,
-        username: projectDetails?.username,
-        password: projectDetails?.password,
-        database: projectDetails?.database,
-        type: projectDetails?.type
+        host: projectDetails.host,
+        port: projectDetails.port,
+        username: projectDetails.username,
+        password: projectDetails.password,
+        database: projectDetails.database,
+        type: projectDetails.type
         // type: formRef.current.values.servername,
       },
-      dbType: projectDetails?.dbType,
+      dbType: projectDetails.dbType,
       invitees: projectDetails?.collaborators?.map((collaborator) => {
         return {
           email: collaborator,

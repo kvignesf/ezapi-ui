@@ -190,10 +190,9 @@ const useUploadProjectDbs = (aiMutation, onSuccess) => {
     onSuccess: (data) => {
       if (data?.projectId) {
         if (
-          (!_.isEmpty(projectDetails?.dbs) || (!_.isEmpty(projectDetails?.host) && !_.isEmpty(projectDetails?.port) && !_.isEmpty(projectDetails?.username) && !_.isEmpty(projectDetails?.password) && !_.isEmpty(projectDetails?.database) && !_.isEmpty(projectDetails?.type)))&&
+          !_.isEmpty(projectDetails?.dbs) &&
           !_.isEmpty(projectDetails?.specs)
         ) {
-          console.log("$$$$$$","entered into data");
           aiMutation.mutate({
             projectId: data?.projectId,
           });
