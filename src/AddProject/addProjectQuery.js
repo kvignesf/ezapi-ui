@@ -18,6 +18,8 @@ const addProject = async ({ name, dbdetails, invitees,dbType }) => {
       dbdetails: dbdetails,
       dbType: dbType,
       invites: invitees,
+    },{
+      timeout: 90000,
     });
     return data;
   } catch (error) {
