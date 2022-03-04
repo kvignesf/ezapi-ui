@@ -17,7 +17,7 @@ const InviteCollaborators = ({
   // const loggedInEmail = getEmailId();
 
   return (
-    <div className='p-4' {...rest} style={{height:'350px', overflow:'auto'}}>
+    <div className='p-4' {...rest} style={{height:'300px', overflowY:'scroll'}}>
       <p className='text-mediumLabel mb-2'>Invite users to collaborate</p>
 
       <ChipInput
