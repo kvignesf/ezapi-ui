@@ -117,6 +117,10 @@ const Row = ({
             setHovering(false);
           }
         }}
+        style={{
+          cursor: isColumn(row) ? "pointer" : null,
+        }}
+        ref={nameRef}
       >
         <TableCell
           align='left'
@@ -127,7 +131,6 @@ const Row = ({
             cursor: isColumn(row) ? "pointer" : null,
             userSelect: "none",
           }}
-          ref={nameRef}
         >
           {row.name}
         </TableCell>

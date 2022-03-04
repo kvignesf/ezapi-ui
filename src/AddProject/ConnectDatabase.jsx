@@ -252,8 +252,8 @@ const ConnectDatabase = ({
   })(Tabs);
 
   return (
-    <div className="p-4" style={{ height: "350px" }}>
-      <Scrollbar className="max-h-60" alwaysShowTracks={true}>
+    <div className="p-4" style={{ height: "300px", overflowY : "scroll"}}>
+      {/* <Scrollbar className="max-h-60" alwaysShowTracks={true}> */}
         <>
           <CustomTabs
             value={activeTab}
@@ -596,7 +596,7 @@ const ConnectDatabase = ({
             )}
           </div>
         </>
-      </Scrollbar>
+      {/* </Scrollbar> */}
     </div>
   );
 };
