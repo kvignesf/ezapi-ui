@@ -145,16 +145,6 @@ const AddProject = ({ onClose, onSuccess }) => {
 
     uploadProjectData({
       name: projectDetails?.name,
-      dbdetails: {
-        host: projectDetails?.host,
-        port: projectDetails?.port,
-        username: projectDetails?.username,
-        password: projectDetails?.password,
-        database: projectDetails?.database,
-        type: projectDetails?.type
-        // type: formRef.current.values.servername,
-      },
-      dbType: projectDetails?.dbType,
       invitees: projectDetails?.collaborators?.map((collaborator) => {
         return {
           email: collaborator,
@@ -295,9 +285,15 @@ const AddProject = ({ onClose, onSuccess }) => {
               ) : currentTab === 1 ? (
                 <div className="h-80">
                   <ConnectDatabase
+                    formRef={formRef}
+                    specsError={specsError}
+                    dbsError={dbsError}
+                    addProjectMutation={addProjectMutation}
+                    uploadSpecsMutation={uploadSpecsMutation}
+                    uploadDbMutation={uploadDbMutation}
+                    aiMatcherMutation={aiMatcherMutation}
                     activeTab={connectDatabaseTab}
                     handleTabChange={setConnectDatabaseTab}
-                    formRef={formRef}
                   />
                 </div>
               ) : (
