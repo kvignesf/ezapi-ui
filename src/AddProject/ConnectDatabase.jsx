@@ -423,8 +423,8 @@ const ConnectDatabase = ({
                   host: projectDetails?.host ?? "",
                   port: projectDetails?.port ?? "",
                   database: projectDetails?.database ?? "",
-                  username: projectDetails?.database ?? "",
-                  password: projectDetails?.database ?? "",
+                  username: projectDetails?.username ?? "",
+                  password: projectDetails?.password ?? "",
                   toggle: false,
                 }}
                 validationSchema={Yup.object().shape({

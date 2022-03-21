@@ -25,6 +25,9 @@ import {
   useUploadProjectDbs,
   useUploadProjectFile,
   useUploadProjectSpecs,
+  useExportDBSchema,
+  useUploadProjectCertificate,
+  useUploadProjectCACertificate,
 } from "./addProjectQuery";
 import { getApiError } from "../shared/utils";
 import TabLabel from "../shared/components/TabLabel";
@@ -53,6 +56,10 @@ const AddProject = ({ onClose, onSuccess }) => {
     uploadSpecsMutation,
     uploadDbMutation,
     aiMatcherMutation,
+    exportDBSchemaMutation,
+    caCertificateMutation,
+    certificateMutation,
+    keyMutation,
   } = useAddProject(onAddProjectSuccess);
 
   const formRef = useRef();
@@ -89,29 +96,8 @@ const AddProject = ({ onClose, onSuccess }) => {
     reset: resetUploadDbsApi,
   } = uploadDbMutation;
 
-  // const handleNext = () => {
-  //   console.log("*********", formRef);
-  //   if (formRef.current) {
-  //     formRef.current.handleSubmit();
-  //     if (_.isEmpty(projectDetails?.specs) || _.isEmpty(projectDetails?.dbs)) {
-  //       setDbsError(Messages.DB_REQUIRED);
-  //     }
-  //     if (
-  //       formRef.current.isValid &&
-  //       !_.isEmpty(projectDetails?.name) &&
-  //       !(_.isEmpty(projectDetails?.dbs) && _.isEmpty(projectDetails?.specs)) &&
-  //       currentTab === 0
-  //     ) {
-  //       setTab(currentTab + 1);
-  //     } else if (currentTab === 1) {
-  //       formRef.current.handleSubmit();
-  //       setTab(currentTab + 1);
-  //     }
-  //   }
-  // };
-
+ 
   const handleNext = () => {
-    console.log("*********", formRef);
     if (formRef.current) {
       formRef.current.handleSubmit();
       if (
@@ -133,7 +119,14 @@ const AddProject = ({ onClose, onSuccess }) => {
 
     if (
       _.isEmpty(projectDetails?.name) ||
-      (_.isEmpty(projectDetails?.dbs) && _.isEmpty(projectDetails?.specs) && (_.isEmpty(projectDetails?.host) && _.isEmpty(projectDetails?.port) && _.isEmpty(projectDetails?.username) && _.isEmpty(projectDetails?.password) && _.isEmpty(projectDetails?.database) && _.isEmpty(projectDetails?.type)))
+      (_.isEmpty(projectDetails?.dbs) &&
+        _.isEmpty(projectDetails?.specs) &&
+        _.isEmpty(projectDetails?.host) &&
+        _.isEmpty(projectDetails?.port) &&
+        _.isEmpty(projectDetails?.username) &&
+        _.isEmpty(projectDetails?.password) &&
+        _.isEmpty(projectDetails?.database) &&
+        _.isEmpty(projectDetails?.type))
     ) {
       setTab(0);
       if (formRef.current) {
@@ -177,6 +170,29 @@ const AddProject = ({ onClose, onSuccess }) => {
     error: dbConnectionTestError,
     isSuccess: isDbConnectionSuccess,
   } = useDatabaseConnection();
+  const {
+    isLoading: isExportingDb,
+    error: exportDBError,
+    isSuccess: isExportDBSuccess,
+  } = exportDBSchemaMutation;
+
+  const {
+    isLoading: isUploadingProjectKey,
+    error: uploadProjectKeyError,
+    isSuccess: isUploadProjectKeySuccess,
+  } = keyMutation;
+
+  const {
+    isLoading: isUploadingProjectCertificate,
+    error: uploadProjectCertificateError,
+    isSuccess: isUploadProjectCertificateSuccess,
+  } = certificateMutation;
+
+  const {
+    isLoading: isUploadingProjectCACertificate,
+    error: uploadProjectCACertificateError,
+    isSuccess: isUploadProjectCACertificateSuccess,
+  } = caCertificateMutation;
 
   const databaseConnectionTest = () => {
     let payload = {
@@ -187,7 +203,6 @@ const AddProject = ({ onClose, onSuccess }) => {
       database: projectDetails.database,
       type: projectDetails.type,
     };
-    console.log(payload, "***************");
     testDatabase(payload);
   };
 
@@ -232,7 +247,11 @@ const AddProject = ({ onClose, onSuccess }) => {
           !isUploadingDbs &&
           !isUploadingSpecs &&
           !isMatchingAi &&
-          !isUploadingCredentials && (
+          !isUploadingCredentials && 
+          !isUploadingProjectKey &&
+          !isUploadingProjectCertificate &&
+          !isUploadingProjectCACertificate &&
+          !isExportingDb &&(
             <AppIcon aria-label="close" onClick={onClose}>
               <CloseIcon />
             </AppIcon>
@@ -243,7 +262,11 @@ const AddProject = ({ onClose, onSuccess }) => {
         !isUploadingDbs &&
         !isUploadingSpecs &&
         !isMatchingAi &&
-        !isUploadingCredentials && (
+        !isUploadingCredentials && 
+        !isUploadingProjectKey &&
+        !isUploadingProjectCertificate &&
+        !isUploadingProjectCACertificate &&
+        !isExportingDb &&(
           <>
             <Tabs
               value={currentTab}
@@ -412,6 +435,7 @@ const AddProject = ({ onClose, onSuccess }) => {
           <LoaderWithMessage message="Connecting to Database" contained />
         </div>
       )}
+      
 
       {isUploadingProjectDetails && (
         <div className="my-7">
@@ -428,6 +452,30 @@ const AddProject = ({ onClose, onSuccess }) => {
       {isUploadingDbs && (
         <div className="my-7">
           <LoaderWithMessage message="Uploading database files" contained />
+        </div>
+      )}
+
+      {isUploadingProjectKey && (
+        <div className="my-7">
+          <LoaderWithMessage message="UploadingProjectKey" contained />
+        </div>
+      )}
+      {isUploadingProjectCertificate && (
+        <div className="my-7">
+          <LoaderWithMessage message="UploadingProjectCertificate" contained />
+        </div>
+      )}
+      {isUploadingProjectCACertificate && (
+        <div className="my-7">
+          <LoaderWithMessage
+            message="UploadingProjectCACertificate"
+            contained
+          />
+        </div>
+      )}
+      {isExportingDb && (
+        <div className="my-7">
+          <LoaderWithMessage message="ExportingDb " contained />
         </div>
       )}
 
