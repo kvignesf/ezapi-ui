@@ -21,7 +21,7 @@ const Content = () => {
   } = useGetOrders();
 
   return (
-    <div className='p-3 h-full'>
+    <div className="p-3 h-full">
       {/* <Dialog
         onClose={handleCloseDialog}
         aria-labelledby='projects-dialog'
@@ -49,29 +49,29 @@ const Content = () => {
         )}
       </Dialog> */}
 
-      {isFetchingOrders && <LoaderWithMessage message='Fetching orders' />}
+      {isFetchingOrders && <LoaderWithMessage message="Fetching orders" />}
 
-      {fetchOrdersError && <ErrorWithMessage message='Failed to load orders' />}
+      {fetchOrdersError && <ErrorWithMessage message="Failed to load orders" />}
 
       {!_.isEmpty(ordersData?.orders) && (
-        <table className='w-full'>
-          <tr className='mr-16  bg-neutral-gray6 w-full text-left text-neutral-gray4 text-mediumLabel'>
+        <table className="w-full">
+          <tr className="mr-16  bg-neutral-gray6 w-full text-left text-neutral-gray4 text-mediumLabel">
             {/* <th className='p-2 rounded-tl-md rounded-bl-md uppercase'>
               Project Id
             </th> */}
-            <th className='p-2 rounded-tl-md rounded-bl-md uppercase'>
+            <th className="p-2 rounded-tl-md rounded-bl-md uppercase">
               Project Name
             </th>
-            <th className='uppercase'>Product</th>
-            <th className='uppercase'>Price</th>
-            <th className='uppercase w-64'>Payment Status</th>
-            <th className='uppercase'>Order Id</th>
-            <th className='uppercase'>Order Date</th>
-            <th className='rounded-tr-md rounded-br-md text-center'>
+            <th className="uppercase">Product</th>
+            <th className="uppercase">Price</th>
+            <th className="uppercase w-64">Payment Status</th>
+            <th className="uppercase">Order Id</th>
+            <th className="uppercase">Order Date</th>
+            <th className="rounded-tr-md rounded-br-md text-center">
               {isFetchingOrdersBg ? (
-                <CircularProgress size='20px' />
+                <CircularProgress size="20px" />
               ) : (
-                <Tooltip title='Refresh list'>
+                <Tooltip title="Refresh list">
                   <ReplayIcon
                     style={{
                       width: "20px",
@@ -98,14 +98,14 @@ const Content = () => {
 
       {/* Empty state */}
       {_.isEmpty(ordersData?.orders) && (
-        <div className='h-full flex flex-col items-center justify-center'>
+        <div className="h-full flex flex-col items-center justify-center">
           <img
             src={EmptyLogo}
-            className='mb-4'
+            className="mb-4"
             style={{ width: "100px", height: "100px" }}
           />
 
-          <h5 className='mb-3'>There are no orders</h5>
+          <h5 className="mb-3">There are no orders</h5>
         </div>
       )}
     </div>

@@ -36,6 +36,7 @@ export const endpoint = Object.freeze({
   testDBConnection: "/testDBConnection",
 
   // Payment
+  products2: "/products",
   products: "/product",
   basicProduct: "/product/basic",
   billingDetails: "/billing-details",

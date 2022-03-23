@@ -3,6 +3,7 @@ const routes = Object.freeze({
   signIn: "/signin",
   projects: "/projects",
   orders: "/orders",
+  pricing: "/pricing",
   payment: "/projects/:projectId/payment",
   paymentForOrder: "/projects/:projectId/payment/:orderId?",
   project: "/projects/:projectId",

@@ -10,7 +10,7 @@ import billingDetailsSchema from "./billingDetailsSchema";
 import { PrimaryButton } from "../shared/components/AppButton";
 import classNames from "classnames";
 
-const BillingDetailsForm = ({ disabled = false, formRef }) => {
+const BillingPage = ({ disabled = false, formRef }) => {
   return (
     <div className="mb-8">
       <p className="text-subtitle1 mb-3">Billing Details</p>
@@ -358,4 +358,4 @@ const BillingDetailsForm = ({ disabled = false, formRef }) => {
   );
 };
 
-export default BillingDetailsForm;
+export default BillingPage;

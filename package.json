@@ -18,6 +18,7 @@
     "@testing-library/react": "^9.3.2",
     "@testing-library/user-event": "^7.1.2",
     "axios": "^0.21.1",
+    "chokidar": "^3.5.3",
     "classnames": "^2.3.1",
     "env-cmd": "^10.1.0",
     "file-saver": "^2.0.5",
@@ -55,7 +56,6 @@
   "scripts": {
     "start": "craco --openssl-legacy-provider start",
     "build": "craco --openssl-legacy-provider build",
-    
     "test": "craco --openssl-legacy-provider test",
     "eject": "react-scripts eject",
     "build:dev": "env-cmd -f .env.dev craco --openssl-legacy-provider build",

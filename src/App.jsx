@@ -21,6 +21,7 @@ import Project from "./Project";
 import ProjectPayment from "./ProjectPayment/ProjectPayment";
 import Orders from "./Orders/Orders";
 import EzapiFooter from "./shared/components/EzapiFooter";
+import Pricing from "./Pricing";
 
 const theme = createMuiTheme({
   palette: {
@@ -61,6 +62,7 @@ const App = () => {
                 />
 
                 <PrivateRoute exact path={routes.orders} component={Orders} />
+                <PrivateRoute exact path={routes.pricing} component={Pricing} />
 
                 <Route
                   path={routes.paymentForOrder}
@@ -86,9 +88,9 @@ const App = () => {
 
                 <PrivateRoute exact path={routes.project} component={Project} />
 
-                <Route exact path='/linkedin' component={LinkedInPopUp} />
+                <Route exact path="/linkedin" component={LinkedInPopUp} />
                 {/* Base route */}
-                <Route exact path='/' component={Landing} />
+                <Route exact path="/" component={Landing} />
                 {/* 404 */}
                 <Route component={NotFound} />
               </Switch>

@@ -24,6 +24,7 @@ export const isEmailValid = (email) => {
 
 export const isUserLoggedIn = () => {
   const token = getAccessToken();
+  console.log("acc_token: " + token);
 
   return token && !_.isEmpty(token);
 };
@@ -41,7 +42,7 @@ export const getApiError = (error) => {
     }
 
     if (url && url === endpoint.testDBConnection) {
-      console.log("@@@",error.response.data.message);
+      console.log("@@@", error.response.data.message);
       return new Error(error?.response?.data?.message);
     }
 
