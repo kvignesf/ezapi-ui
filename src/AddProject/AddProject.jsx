@@ -37,11 +37,14 @@ import client, { endpoint } from "../shared/network/client";
 
 import Snackbar from "@material-ui/core/Snackbar";
 import MuiAlert from "@material-ui/lab/Alert";
+import { getUserId } from "../shared/storage";
+
 
 const AddProject = ({ onClose, onSuccess }) => {
   const [currentTab, setTab] = useState(0);
   const [connectDatabaseTab, setConnectDatabaseTab] = useState(0);
   const [open, setOpen] = React.useState(false);
+  const loggedInUserId = getUserId();
 
   const [specsError, setSpecsError] = useState(null);
   const [dbsError, setDbsError] = useState(null);
@@ -57,6 +60,7 @@ const AddProject = ({ onClose, onSuccess }) => {
     uploadDbMutation,
     aiMatcherMutation,
     exportDBSchemaMutation,
+    dbConnectionTestMutation,
     caCertificateMutation,
     certificateMutation,
     keyMutation,
@@ -96,7 +100,6 @@ const AddProject = ({ onClose, onSuccess }) => {
     reset: resetUploadDbsApi,
   } = uploadDbMutation;
 
- 
   const handleNext = () => {
     if (formRef.current) {
       formRef.current.handleSubmit();
@@ -169,7 +172,7 @@ const AddProject = ({ onClose, onSuccess }) => {
     isLoading: isUploadingCredentials,
     error: dbConnectionTestError,
     isSuccess: isDbConnectionSuccess,
-  } = useDatabaseConnection();
+  } = dbConnectionTestMutation;
   const {
     isLoading: isExportingDb,
     error: exportDBError,
@@ -195,15 +198,28 @@ const AddProject = ({ onClose, onSuccess }) => {
   } = caCertificateMutation;
 
   const databaseConnectionTest = () => {
-    let payload = {
-      host: projectDetails.host,
-      port: projectDetails.port,
-      username: projectDetails.username,
-      password: projectDetails.password,
-      database: projectDetails.database,
-      type: projectDetails.type,
-    };
-    testDatabase(payload);
+    if (
+      !_.isEmpty(projectDetails?.keys) &&
+      !_.isEmpty(projectDetails?.certificates) &&
+      !_.isEmpty(projectDetails?.caCertificates)
+    ) {
+      keyMutation.mutate({
+        projectId: loggedInUserId,
+        file: projectDetails?.keys[0],
+        userId: loggedInUserId,
+        test: true
+      });
+    } else {
+      let payload = {
+        host: projectDetails.host,
+        port: projectDetails.port,
+        username: projectDetails.username,
+        password: projectDetails.password,
+        database: projectDetails.database,
+        type: projectDetails.type,
+      };
+      testDatabase(payload);
+    }
   };
 
   const handleClick = () => {
@@ -247,11 +263,11 @@ const AddProject = ({ onClose, onSuccess }) => {
           !isUploadingDbs &&
           !isUploadingSpecs &&
           !isMatchingAi &&
-          !isUploadingCredentials && 
+          !isUploadingCredentials &&
           !isUploadingProjectKey &&
           !isUploadingProjectCertificate &&
           !isUploadingProjectCACertificate &&
-          !isExportingDb &&(
+          !isExportingDb && (
             <AppIcon aria-label="close" onClick={onClose}>
               <CloseIcon />
             </AppIcon>
@@ -262,11 +278,11 @@ const AddProject = ({ onClose, onSuccess }) => {
         !isUploadingDbs &&
         !isUploadingSpecs &&
         !isMatchingAi &&
-        !isUploadingCredentials && 
+        !isUploadingCredentials &&
         !isUploadingProjectKey &&
         !isUploadingProjectCertificate &&
         !isUploadingProjectCACertificate &&
-        !isExportingDb &&(
+        !isExportingDb && (
           <>
             <Tabs
               value={currentTab}
@@ -435,7 +451,6 @@ const AddProject = ({ onClose, onSuccess }) => {
           <LoaderWithMessage message="Connecting to Database" contained />
         </div>
       )}
-      
 
       {isUploadingProjectDetails && (
         <div className="my-7">
