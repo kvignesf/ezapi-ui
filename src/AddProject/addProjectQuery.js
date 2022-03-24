@@ -12,7 +12,6 @@ import projectAtom from "./projectAtom";
 import Snackbar from "@mui/material/Snackbar";
 import { getUserId } from "../shared/storage";
 
-const loggedInUserId = getUserId();
 let keyPath, certPath, caCertPath, savedProjectId;
 
 const exportDBSchema = async ({
@@ -64,8 +63,7 @@ export const useExportDBSchema = (aiMutation, onSuccess) => {
           aiMutation.mutate({
             projectId: data?.projectId,
           });
-        }
-        else {
+        } else {
           onSuccess(data?.projectId);
           queryClient.invalidateQueries(queries.projects);
         }
@@ -114,13 +112,23 @@ export const useAddProject = (onSuccess) => {
     2. /project/{project_id}/upload (POST) - uploads the spec files
     3. /project/{project_id}/upload (POST) - uploads the db files
   */
+  const loggedInUserId = getUserId();
+
+  const dbConnectionTestMutation = useDatabaseConnection(onSuccess);
   const aiMutation = useAiMatcher(onSuccess);
   const dbMutation = useUploadProjectDbs(aiMutation, onSuccess);
   const exportDBSchemaMutation = useExportDBSchema(aiMutation, onSuccess);
- 
-  const CACertificateMutation = useUploadProjectCACertificate(exportDBSchemaMutation, onSuccess);
 
-  const certificateMutation = useUploadProjectCertificate(CACertificateMutation, onSuccess);
+  const CACertificateMutation = useUploadProjectCACertificate(
+    dbConnectionTestMutation,
+    exportDBSchemaMutation,
+    onSuccess
+  );
+
+  const certificateMutation = useUploadProjectCertificate(
+    CACertificateMutation,
+    onSuccess
+  );
 
   const keyMutation = useUploadProjectKey(certificateMutation, onSuccess);
 
@@ -130,7 +138,6 @@ export const useAddProject = (onSuccess) => {
     dbMutation,
     onSuccess
   );
-  
 
   const projectDetails = useRecoilValue(projectAtom);
   const queryClient = useQueryClient();
@@ -165,6 +172,7 @@ export const useAddProject = (onSuccess) => {
               projectId: data?.projectId,
               file: projectDetails?.keys[0],
               userId: loggedInUserId,
+              test: false,
             });
           } else {
             exportDBSchemaMutation.mutate({
@@ -181,8 +189,7 @@ export const useAddProject = (onSuccess) => {
               rootPath: "",
             });
           }
-        }
-        else {
+        } else {
           onSuccess(data?.projectId);
           queryClient.invalidateQueries(queries.projects);
         }
@@ -195,6 +202,7 @@ export const useAddProject = (onSuccess) => {
     uploadDbMutation: dbMutation,
     uploadSpecsMutation: specsMutation,
     aiMatcherMutation: aiMutation,
+    dbConnectionTestMutation: dbConnectionTestMutation,
     exportDBSchemaMutation: exportDBSchemaMutation,
     caCertificateMutation: CACertificateMutation,
     certificateMutation: certificateMutation,
@@ -202,10 +210,11 @@ export const useAddProject = (onSuccess) => {
   };
 };
 
-const uploadProjectKey = async ({ projectId, file, userId }) => {
+const uploadProjectKey = async ({ projectId, file, userId, test }) => {
   const bodyFormData = new FormData();
   bodyFormData.append("upload", file);
   bodyFormData.append("userid", userId);
+  bodyFormData.append("test", test);
   try {
     const { data } = await client.post(
       endpoint.projects + `/${projectId}/upload_To_GCP`,
@@ -223,10 +232,12 @@ const uploadProjectKey = async ({ projectId, file, userId }) => {
   }
 };
 
-const uploadProjectCertificate = async ({ projectId, file, userId }) => {
+const uploadProjectCertificate = async ({ projectId, file, userId, test }) => {
   const bodyFormData = new FormData();
   bodyFormData.append("upload", file);
   bodyFormData.append("userid", userId);
+  bodyFormData.append("test", test);
+
   try {
     const { data } = await client.post(
       endpoint.projects + `/${projectId}/upload_To_GCP`,
@@ -244,10 +255,16 @@ const uploadProjectCertificate = async ({ projectId, file, userId }) => {
   }
 };
 
-const uploadProjectCACertificate = async ({ projectId, file, userId }) => {
+const uploadProjectCACertificate = async ({
+  projectId,
+  file,
+  userId,
+  test,
+}) => {
   const bodyFormData = new FormData();
   bodyFormData.append("upload", file);
   bodyFormData.append("userid", userId);
+  bodyFormData.append("test", test);
   try {
     const { data } = await client.post(
       endpoint.projects + `/${projectId}/upload_To_GCP`,
@@ -291,6 +308,7 @@ const uploadProjectSpecs = async ({ projectId, files }) => {
 };
 
 export const useUploadProjectKey = (certificateMutation, onSuccess) => {
+  const loggedInUserId = getUserId();
   const projectDetails = useRecoilValue(projectAtom);
   const queryClient = useQueryClient();
 
@@ -299,11 +317,22 @@ export const useUploadProjectKey = (certificateMutation, onSuccess) => {
       if (data?.url) {
         keyPath = data.url;
         if (projectDetails?.certificates) {
-          certificateMutation.mutate({
-            projectId: savedProjectId,
-            file: projectDetails?.certificates[0],
-            userId: loggedInUserId,
-          });
+          console.log("testing_test:",data.test);
+          if (data.test === true) {
+            certificateMutation.mutate({
+              projectId: loggedInUserId,
+              file: projectDetails?.certificates[0],
+              userId: loggedInUserId,
+              test: true,
+            });
+          } else {
+            certificateMutation.mutate({
+              projectId: savedProjectId,
+              file: projectDetails?.certificates[0],
+              userId: loggedInUserId,
+              test: false,
+            });
+          }
         }
       }
     },
@@ -312,7 +341,11 @@ export const useUploadProjectKey = (certificateMutation, onSuccess) => {
   return mutation;
 };
 
-export const useUploadProjectCertificate = (CACertificateMutation, onSuccess) => {
+export const useUploadProjectCertificate = (
+  CACertificateMutation,
+  onSuccess
+) => {
+  const loggedInUserId = getUserId();
   const projectDetails = useRecoilValue(projectAtom);
   const queryClient = useQueryClient();
 
@@ -321,11 +354,21 @@ export const useUploadProjectCertificate = (CACertificateMutation, onSuccess) =>
       if (data?.url) {
         certPath = data.url;
         if (projectDetails?.caCertificates) {
-          CACertificateMutation.mutate({
-            projectId: savedProjectId,
-            file: projectDetails?.caCertificates[0],
-            userId: loggedInUserId,
-          });
+          if (data.test === true) {
+            CACertificateMutation.mutate({
+              projectId: loggedInUserId,
+              file: projectDetails?.caCertificates[0],
+              userId: loggedInUserId,
+              test: true,
+            });
+          } else {
+            CACertificateMutation.mutate({
+              projectId: savedProjectId,
+              file: projectDetails?.caCertificates[0],
+              userId: loggedInUserId,
+              test: false,
+            });
+          }
         }
       }
     },
@@ -334,7 +377,11 @@ export const useUploadProjectCertificate = (CACertificateMutation, onSuccess) =>
   return mutation;
 };
 
-export const useUploadProjectCACertificate = (exportDBSchemaMutation, onSuccess) => {
+export const useUploadProjectCACertificate = (
+  dbConnectionTestMutation,
+  exportDBSchemaMutation,
+  onSuccess
+) => {
   const projectDetails = useRecoilValue(projectAtom);
   const queryClient = useQueryClient();
 
@@ -342,7 +389,21 @@ export const useUploadProjectCACertificate = (exportDBSchemaMutation, onSuccess)
     onSuccess: (data) => {
       if (data?.url) {
         caCertPath = data.url;
-        if (keyPath && certPath && caCertPath) {
+        if (data.test === true) {
+          dbConnectionTestMutation.mutate({
+            host: projectDetails.host,
+            port: projectDetails.port,
+            username: projectDetails.username,
+            database: projectDetails.database,
+            type: projectDetails.type,
+            ssl: {
+              sslFlag: true,
+              certPath: certPath,
+              keyPath: keyPath,
+              rootPath: caCertPath,
+            },
+          });
+        } else if (keyPath && certPath && caCertPath) {
           exportDBSchemaMutation.mutate({
             projectId: savedProjectId,
             sslMode: "Y",
@@ -364,7 +425,14 @@ export const useUploadProjectCACertificate = (exportDBSchemaMutation, onSuccess)
   return mutation;
 };
 
-export const useUploadProjectSpecs = (exportDBSchemaMutation, keyMutation, dbMutation, onSuccess) => {
+export const useUploadProjectSpecs = (
+  exportDBSchemaMutation,
+  keyMutation,
+  dbMutation,
+  onSuccess
+) => {
+  const loggedInUserId = getUserId();
+
   const projectDetails = useRecoilValue(projectAtom);
   const queryClient = useQueryClient();
 
