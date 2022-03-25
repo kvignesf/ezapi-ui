@@ -82,6 +82,7 @@ const AddProject = ({ onClose, onSuccess }) => {
     error: matchAiError,
     isSuccess: matchAiSuccess,
     mutate: callAiMatcher,
+    reset: resetAiMatcherApi,
   } = aiMatcherMutation;
 
   const {
@@ -119,6 +120,8 @@ const AddProject = ({ onClose, onSuccess }) => {
     resetCreateProjectApi();
     resetUploadDbsApi();
     resetUploadSpecsApi();
+    exportDBSchemaApi();
+    resetAiMatcherApi();
 
     if (
       _.isEmpty(projectDetails?.name) ||
@@ -172,32 +175,41 @@ const AddProject = ({ onClose, onSuccess }) => {
     isLoading: isUploadingCredentials,
     error: dbConnectionTestError,
     isSuccess: isDbConnectionSuccess,
+    reset: dbConnectionTestApi,
   } = dbConnectionTestMutation;
   const {
     isLoading: isExportingDb,
     error: exportDBError,
     isSuccess: isExportDBSuccess,
+    reset: exportDBSchemaApi,
   } = exportDBSchemaMutation;
 
   const {
     isLoading: isUploadingProjectKey,
     error: uploadProjectKeyError,
     isSuccess: isUploadProjectKeySuccess,
+    reset: uploadKeyApi,
   } = keyMutation;
 
   const {
     isLoading: isUploadingProjectCertificate,
     error: uploadProjectCertificateError,
     isSuccess: isUploadProjectCertificateSuccess,
+    reset: uploadCertificateApi,
   } = certificateMutation;
 
   const {
     isLoading: isUploadingProjectCACertificate,
     error: uploadProjectCACertificateError,
     isSuccess: isUploadProjectCACertificateSuccess,
+    reset: uploadCaCertificateApi,
   } = caCertificateMutation;
 
   const databaseConnectionTest = () => {
+    uploadKeyApi();
+    uploadCertificateApi();
+    uploadCaCertificateApi();
+    dbConnectionTestApi();
     if (
       !_.isEmpty(projectDetails?.keys) &&
       !_.isEmpty(projectDetails?.certificates) &&
