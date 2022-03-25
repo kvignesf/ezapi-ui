@@ -155,6 +155,7 @@ export const useAddProject = (onSuccess) => {
           dbMutation.mutate({
             projectId: data?.projectId,
             files: projectDetails?.dbs,
+            dbtype: projectDetails?.dbType,
           });
         } else if (
           !_.isEmpty(projectDetails?.host) &&
@@ -443,6 +444,7 @@ export const useUploadProjectSpecs = (
           dbMutation.mutate({
             projectId: data?.projectId,
             files: projectDetails?.dbs,
+            dbtype: projectDetails?.dbType,
           });
         } else if (
           !_.isEmpty(projectDetails?.specs) &&
@@ -488,7 +490,7 @@ export const useUploadProjectSpecs = (
   return mutation;
 };
 
-const uploadProjectDbs = async ({ projectId, files }) => {
+const uploadProjectDbs = async ({ projectId, files, dbtype }) => {
   const bodyFormData = new FormData();
 
   files.forEach((file) => {
@@ -496,6 +498,8 @@ const uploadProjectDbs = async ({ projectId, files }) => {
   });
 
   bodyFormData.append("type", "db");
+  bodyFormData.append("dbtype", dbtype);
+
 
   try {
     const { data } = await client.post(
