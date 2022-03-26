@@ -472,44 +472,44 @@ const AddProject = ({ onClose, onSuccess }) => {
 
       {isUploadingSpecs && (
         <div className="my-7">
-          <LoaderWithMessage message="Uploading spec files" contained />
+          <LoaderWithMessage message="Uploading Spec" contained />
         </div>
       )}
 
       {isUploadingDbs && (
         <div className="my-7">
-          <LoaderWithMessage message="Uploading database files" contained />
+          <LoaderWithMessage message="Uploading DDL" contained />
         </div>
       )}
 
       {isUploadingProjectKey && (
         <div className="my-7">
-          <LoaderWithMessage message="UploadingProjectKey" contained />
+          <LoaderWithMessage message="Using Connection KeyCredentials" contained />
         </div>
       )}
       {isUploadingProjectCertificate && (
         <div className="my-7">
-          <LoaderWithMessage message="UploadingProjectCertificate" contained />
+          <LoaderWithMessage message="Using Connection CertCredentials" contained />
         </div>
       )}
       {isUploadingProjectCACertificate && (
         <div className="my-7">
           <LoaderWithMessage
-            message="UploadingProjectCACertificate"
+            message="Using Connection RootCertCredentials"
             contained
           />
         </div>
       )}
       {isExportingDb && (
         <div className="my-7">
-          <LoaderWithMessage message="ExportingDb " contained />
+          <LoaderWithMessage message="Scanning Schemas" contained />
         </div>
       )}
 
       {isMatchingAi && (
         <div className="my-7">
           <LoaderWithMessage
-            message="Running AI Matcher for the uploaded files"
+            message="Running AI Matcher"
             contained
           />
         </div>

@@ -290,6 +290,7 @@ const uploadProjectSpecs = async ({ projectId, files }) => {
     bodyFormData.append("upload", file);
   });
   bodyFormData.append("type", "apiSpec");
+  bodyFormData.append("dbtype", "spec");
 
   try {
     const { data } = await client.post(
