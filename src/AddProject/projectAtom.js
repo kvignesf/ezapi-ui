@@ -4,6 +4,7 @@ export const defaultState = {
   name: null,
   specs: null,
   dbs: null,
+  password: "",
   collaborators: [],
 };
 

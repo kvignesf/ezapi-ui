@@ -33,6 +33,8 @@ export const endpoint = Object.freeze({
   downloadSpec: "/download_spec",
   downloadArtifact: "/download_apiops",
   downloadCodegen: "/download_codegen",
+  testDBConnection: "/testDBConnection",
+  exportDBSchema: "/db_to_python",
 
   // Payment
   products: "/product",
