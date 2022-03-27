@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { useHistory, useParams } from "react-router-dom";
 import _ from "lodash";
 import ArrowBackIcon from "@material-ui/icons/ArrowBack";
+import client, { endpoint } from "../shared/network/client";
+
 import {
   CircularProgress,
   Dialog,
@@ -39,6 +41,7 @@ import {
   useMakePayment,
 } from "./paymentQueries";
 import BillingDetailsForm from "./BillingDetailsForm";
+import { useMutation, useQuery } from "react-query";
 import CardDetailsForm from "./CardDetailsForm";
 import ProductDetails from "./ProductDetails";
 import PaymentStatusDialog from "./PaymentStatusDialog";
@@ -50,6 +53,7 @@ import PublishStatusDialog from "./PublishStatusDialog";
 import ProfileMenu from "../shared/components/ProfileMenu";
 import EzapiLogo from "../shared/components/EzapiLogo";
 import EzapiFooter from "../shared/components/EzapiFooter";
+import { getAccessToken } from "../shared/storage";
 
 const Header = ({
   projectDetails,
@@ -112,7 +116,17 @@ const Header = ({
     </header>
   );
 };
-
+const pricingData = async () => {
+  const { data } = await client.get(endpoint.products2);
+  // priceIDFinder(data);
+  // console.log(data);
+  return data;
+};
+export const usePricingData = () => {
+  return useQuery([queries.products], pricingData, {
+    refetchOnWindowFocus: false,
+  });
+};
 const ProjectPayment = () => {
   const { projectId } = useParams();
   const history = useHistory();
@@ -281,22 +295,122 @@ const ProjectPayment = () => {
     }
   }, [isConfirmPaymentSuccess, confirmPaymentData]);
 
-  const initiatePaymentProcess = (billingDetails) => {
-    if (_.isEmpty(initiatePaymentData?.clientSecret)) {
-      initiatePayment({
-        projectId,
-        productId: basicProductData?.product?.productId,
-        billingDetails,
-        // orderId,
-      });
-    } else {
-      confirmPayment({
-        secret: initiatePaymentData?.clientSecret,
-        card: elements.getElement(CardElement),
-        billingDetails: billingDetailsRef?.current?.values,
-        stripe,
+  // const initiatePaymentProcess = (billingDetails) => {
+
+  //   if (_.isEmpty(initiatePaymentData?.clientSecret)) {
+  //     console.log("if");
+  //     initiatePayment({
+  //       projectId,
+  //       productId: basicProductData?.product?.productId,
+  //       billingDetails,
+  //       // orderId,
+  //     });
+  //   } else {
+  //     console.log("else");
+  //     confirmPayment({
+  //       secret: initiatePaymentData?.clientSecret,
+  //       card: elements.getElement(CardElement),
+  //       billingDetails: billingDetailsRef?.current?.values,
+  //       stripe,
+  //     });
+  //   }
+  // };
+  const acc_token = getAccessToken();
+  console.log(acc_token);
+
+  const { data: pricing_data } = usePricingData();
+  var priceIDData = "";
+  function priceIDFinder(type, duration) {
+    if (!_.isEmpty(pricing_data?.products)) {
+      pricing_data["products"].map((item, index) => {
+        if (type == item["plan_name"]) {
+          durationFinder(item, duration);
+        }
       });
     }
+  }
+  function durationFinder(item, duration) {
+    if (_.isEmpty(item["stripe"])) {
+      return "Trial cant be subscribed";
+    }
+    item["stripe"].map((item2, index2) => {
+      if (duration == item2["plan_interval"]) {
+        // console.log(item2["price_id"]);
+        priceIDData = item2["price_id"];
+        return item2["price_id"];
+      }
+    });
+  }
+
+  const initiatePaymentProcess = async (billingDetails, type, duration) => {
+    switch (type) {
+      case 10:
+        type = "Trial";
+        break;
+      case 20:
+        type = "Basic";
+        break;
+      case 30:
+        type = "Pro";
+        break;
+    }
+    switch (duration) {
+      case 10:
+        duration = "month";
+        break;
+      case 20:
+        duration = "year";
+        break;
+    }
+
+    console.log(type, duration);
+    priceIDFinder(type, duration);
+    console.log(priceIDData);
+    const { token, error } = await stripe.createToken(
+      elements.getElement(CardElement),
+      {
+        headers: {
+          Authorization: process.env.REACT_APP_STRIPE_KEY,
+        },
+      }
+    );
+    console.log(token);
+
+    const { addCardData } = await client.post(
+      endpoint.addCard,
+      {
+        stripe_token: "tok_visa",
+        billing_address: {
+          city: billingDetails?.city,
+          country: billingDetails?.country,
+          line1: billingDetails?.addressLine1,
+          line2: billingDetails?.addressLine2,
+          state: billingDetails?.state,
+          postal_code: billingDetails?.zip,
+        },
+      },
+      {
+        headers: {
+          Authorization: acc_token,
+        },
+        timeout: 480000,
+      }
+    );
+    // console.log(data);
+
+    const { subscribeData } = await client.post(
+      endpoint.subscribe,
+      {
+        update_plan: true,
+        price_id: priceIDData,
+      },
+      {
+        headers: {
+          Authorization: acc_token,
+        },
+        timeout: 480000,
+      }
+    );
   };
 
   const navigateBack = () => {
@@ -543,18 +657,23 @@ const ProjectPayment = () => {
                 isInitiatingPayment || isConfirmingPayment || isLoggingOut
               }
               project={projectDetails}
-              onPurchaseClick={() => {
+              onPurchaseClick={(type, duration) => {
                 billingDetailsRef.current.handleSubmit();
                 cardDetailsRef.current.handleSubmit();
-
-                if (
-                  billingDetailsRef.current.isValid &&
-                  cardDetailsRef.current.isValid &&
-                  billingDetailsRef?.current?.values?.fullName &&
-                  billingDetailsRef?.current?.values?.addressLine1
-                ) {
-                  initiatePaymentProcess(billingDetailsRef.current.values);
-                }
+                // console.log("heree");
+                initiatePaymentProcess(
+                  billingDetailsRef.current.values,
+                  type,
+                  duration
+                );
+                // if (
+                //   billingDetailsRef.current.isValid &&
+                //   cardDetailsRef.current.isValid &&
+                //   billingDetailsRef?.current?.values?.fullName &&
+                //   billingDetailsRef?.current?.values?.addressLine1
+                // ) {
+                //   initiatePaymentProcess(billingDetailsRef.current.values);
+                // }
               }}
             />
           </div>

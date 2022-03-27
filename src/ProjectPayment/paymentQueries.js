@@ -102,7 +102,7 @@ const confirmPayment = async ({ card, billingDetails, secret, stripe }) => {
 
     // Delay added so that the stripe updates the backend
     await delay(2000);
-
+    console.log(result);
     return result;
   } catch (error) {
     throw Error(Messages.PAYMENT_FAILURE);

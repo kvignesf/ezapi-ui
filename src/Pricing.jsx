@@ -37,6 +37,7 @@ import TableCell from "@material-ui/core/TableCell";
 import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
 import { makeStyles, styled } from "@material-ui/core/styles";
+import { useHistory } from "react-router-dom";
 import trialLogo from "./icons/trial_logo.png";
 import basicLogo from "./icons/basic_logo.png";
 import proLogo from "./icons/pro_logo.png";
@@ -44,7 +45,8 @@ import enterpriseLogo from "./icons/enterprise_logo.png";
 import tickLogo from "./icons/tick_logo.png";
 import crossLogo from "./icons/cross_logo.png";
 import Switch from "@mui/material/Switch";
-import BillingDetailsForm from "./ProjectPayment/BillingDetailsForm";
+import routes, { generateRoute } from "./shared/routes";
+import BillingPage from "./BillingPage";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -69,18 +71,28 @@ const RecieptSubHeadings = styled(TableCell)({
 });
 
 const pricingData = async () => {
+  const { data } = await client.get(endpoint.products2);
+  // priceIDFinder(data);
+  // console.log(data);
+  return data;
+};
+const userProfile = async () => {
   try {
-    const { data } = await client.get(endpoint.products2, {
-      timeout: 480000,
-    });
+    const { data } = await client.get(endpoint.userProfile);
+    // console.log(data);
     return data;
   } catch (error) {
-    throw "getApiError(error)";
+    throw getApiError(error);
   }
 };
 
 export const usePricingData = () => {
   return useQuery([queries.products], pricingData, {
+    refetchOnWindowFocus: false,
+  });
+};
+export const useUserProfile = () => {
+  return useQuery([queries.userProfile], userProfile, {
     refetchOnWindowFocus: false,
   });
 };
@@ -90,11 +102,15 @@ function BillSection(headings, rows, headingIcon) {
 }
 
 const Pricing = () => {
+  const history = useHistory();
   var dataTransferTemp = [[], [], []];
   var dataTransferTemp2AC = [[], [], []];
   var dataTransferTemp3C = [[], [], []];
   var dataTransferTemp4V = [[], [], []];
   const [durationMY, setDurationMY] = React.useState(0);
+  const [trialButton, setTrialButton] = React.useState("SUBSCRIBE");
+  const [basicButton, setBasicButton] = React.useState("SUBSCRIBE");
+  const [proButton, setProButton] = React.useState("SUBSCRIBE");
 
   const tiers = [
     {
@@ -259,7 +275,47 @@ const Pricing = () => {
   //   return { name, trial, basic, pro, enterprise };
   // }
 
+  const handleClick = () => {
+    history.push(routes.payment);
+  };
+
   const { data: pricing_data } = usePricingData();
+  const { data: userProfile_data } = useUserProfile();
+  var alreadySubscribed;
+  if (userProfile_data != undefined) {
+    // console.log(userProfile_data["subscribed_product"]);
+    if (userProfile_data["subscribed_product"] == "") {
+      // setTrialButton("Currently Subscribed");
+      alreadySubscribed = "Trial";
+    } else if (
+      userProfile_data["subscribed_product"] ==
+        "price_1KbgSaDXX1U3xHmP8Jac0qNX" ||
+      userProfile_data["subscribed_product"] == "price_1KbgKaDXX1U3xHmPYs8KuyFV"
+    ) {
+      // console.log("entered");
+      // setBasicButton("Currently Subscribed");
+      alreadySubscribed = "Basic";
+    } else if (
+      userProfile_data["subscribed_product"] ==
+        "price_1KbgTiDXX1U3xHmPCHjkKqGN" ||
+      userProfile_data["subscribed_product"] == "price_1KbgTiDXX1U3xHmPOwGrKyBp"
+    ) {
+      // setProButton("Currently Subscribed");
+      alreadySubscribed = "Pro";
+    }
+  }
+
+  console.log(alreadySubscribed);
+  if (alreadySubscribed == "Basic") {
+    tiers[1]["buttonText"] = "Currently Subscribed";
+  }
+  if (alreadySubscribed == "Pro") {
+    tiers[2]["buttonText"] = "Currently Subscribed";
+  }
+  if (alreadySubscribed == "Trial") {
+    tiers[0]["buttonText"] = "Currently Subscribed";
+  }
+
   if (!_.isEmpty(pricing_data?.products)) {
     // console.log(pricing_data["products"]);
 
@@ -329,6 +385,7 @@ const Pricing = () => {
     // console.log(tiers);
     // console.log(rows);
   }
+
   const classes = useStyles();
 
   return (
@@ -432,12 +489,9 @@ const Pricing = () => {
                     </CardContent>
                     <CardActions className="flex my-10 ">
                       <Button
-                        // onClick={
-                        //   <BillingDetailsForm
-                        //     formRef={billingDetailsRef}
-                        //     disabled={false}
-                        //   />
-                        // }
+                        onClick={() => {
+                          handleClick();
+                        }}
                         fullWidth
                         variant={tier.buttonVariant}
                       >

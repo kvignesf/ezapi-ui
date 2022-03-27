@@ -38,10 +38,15 @@ export const endpoint = Object.freeze({
   // Payment
   products2: "/products",
   products: "/product",
+  userProfile: "/userProfile",
   basicProduct: "/product/basic",
   billingDetails: "/billing-details",
   payment: "/payment",
   initiatePayment: "/initiate-order",
+  addCard: "/addCard",
+  subscribe: "/subscribe",
+  unSubscribe: "/unsubscribe",
+  // initiatePayment: "/subscribe",
 
   // Orders
   orders: "/orders",

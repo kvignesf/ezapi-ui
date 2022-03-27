@@ -19,9 +19,12 @@ import Landing from "./Landing";
 import { isUserLoggedIn, DebugObserver } from "./shared/utils";
 import Project from "./Project";
 import ProjectPayment from "./ProjectPayment/ProjectPayment";
+import ProjectPayment2 from "./ProjectPayment/ProjectPayment2";
 import Orders from "./Orders/Orders";
+
 import EzapiFooter from "./shared/components/EzapiFooter";
 import Pricing from "./Pricing";
+import Billing from "./BillingPage";
 
 const theme = createMuiTheme({
   palette: {
@@ -63,6 +66,27 @@ const App = () => {
 
                 <PrivateRoute exact path={routes.orders} component={Orders} />
                 <PrivateRoute exact path={routes.pricing} component={Pricing} />
+                <Route
+                  path={routes.payment}
+                  render={(props) => {
+                    return (
+                      <>
+                        {isAuthenticated() ? (
+                          <Elements stripe={stripePromise}>
+                            <ProjectPayment2 />
+                          </Elements>
+                        ) : (
+                          <Redirect
+                            to={{
+                              pathname: routes.signIn,
+                              state: { from: props.location },
+                            }}
+                          />
+                        )}
+                      </>
+                    );
+                  }}
+                />
 
                 <Route
                   path={routes.paymentForOrder}
