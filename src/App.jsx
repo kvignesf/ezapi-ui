@@ -73,7 +73,7 @@ const App = () => {
                       <>
                         {isAuthenticated() ? (
                           <Elements stripe={stripePromise}>
-                            <ProjectPayment2 />
+                            <ProjectPayment2 {...props} />
                           </Elements>
                         ) : (
                           <Redirect

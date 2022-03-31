@@ -17,6 +17,8 @@ import { useRecoilState } from "recoil";
 
 import Logo from "../static/images/logo/svg.svg";
 import { ReactComponent as OrderHistoryIcon } from "../static/images/order-history.svg";
+import { ReactComponent as PricingPageIcon } from "../static/images/pricing-page.svg";
+import PricingPageLogo from "../icons/pricingPage_logo.png";
 import Colors from "../shared/colors";
 import routes, { generateRoute } from "../shared/routes";
 import AppIcon from "../shared/components/AppIcon";
@@ -276,7 +278,7 @@ const Dashboard = ({ selectedIndex, children }) => {
               disableTouchRipple
             >
               <ListItemIcon style={{ minWidth: "0", marginRight: "1rem" }}>
-                <OrderHistoryIcon
+                <PricingPageIcon
                   fill={
                     selectedIndex === 3
                       ? Colors.brand.primary

@@ -1,9 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useHistory, useLocation, useParams } from "react-router-dom";
+import { useHistory, useParams } from "react-router-dom";
 import _ from "lodash";
 import ArrowBackIcon from "@material-ui/icons/ArrowBack";
-import client, { endpoint } from "../shared/network/client";
-
 import {
   CircularProgress,
   Dialog,
@@ -28,10 +26,7 @@ import {
   useFetchProjectDetails,
   useSubmitProject,
 } from "../Project/projectQueries";
-import {
-  generateSyncOperationResponseRequest,
-  useCanEdit,
-} from "../shared/utils";
+import { useCanEdit } from "../shared/utils";
 import { getFirstName, getLastName, getEmailId } from "../shared/storage";
 import Colors from "../shared/colors";
 import { useLogout } from "../shared/query/authQueries";
@@ -44,7 +39,6 @@ import {
   useMakePayment,
 } from "./paymentQueries";
 import BillingDetailsForm from "./BillingDetailsForm";
-import { useMutation, useQuery } from "react-query";
 import CardDetailsForm from "./CardDetailsForm";
 import ProductDetails from "./ProductDetails";
 import PaymentStatusDialog from "./PaymentStatusDialog";
@@ -56,7 +50,6 @@ import PublishStatusDialog from "./PublishStatusDialog";
 import ProfileMenu from "../shared/components/ProfileMenu";
 import EzapiLogo from "../shared/components/EzapiLogo";
 import EzapiFooter from "../shared/components/EzapiFooter";
-import { getAccessToken } from "../shared/storage";
 
 const Header = ({
   projectDetails,
@@ -119,38 +112,8 @@ const Header = ({
     </header>
   );
 };
-const pricingData = async () => {
-  const { data } = await client.get(endpoint.products2);
-  // priceIDFinder(data);
-  // console.log(data);
-  return data;
-};
-export const usePricingData = () => {
-  return useQuery([queries.products], pricingData, {
-    refetchOnWindowFocus: false,
-  });
-};
 
-const ProjectPayment = (props) => {
-  const location = useLocation();
-  const [durationDefault, setDurationDefault] = React.useState(false);
-  const [typeDefault, setTypeDefault] = React.useState(false);
-  const [priceDefault, setPriceDefault] = React.useState();
-  const [addCardResponseID, setAddCardResponseID] = React.useState();
-  useEffect(() => {
-    var selectedPlanType;
-    if (location.state["duration"] == false) {
-      selectedPlanType = "mo";
-    } else {
-      selectedPlanType = "yr";
-    }
-    setDurationDefault(selectedPlanType);
-    setTypeDefault(location.state["type"]);
-    setPriceDefault(location.state["price"]);
-  }, [location]);
-
-  console.log(durationDefault, typeDefault);
-
+const ProjectPayment = () => {
   const { projectId } = useParams();
   const history = useHistory();
   const {
@@ -184,7 +147,6 @@ const ProjectPayment = (props) => {
     data: null,
     type: null,
   });
-  const [tokenID, setTokenID] = useState();
   const billingDetailsRef = useRef();
   const cardDetailsRef = useRef();
   const stripe = useStripe();
@@ -245,7 +207,7 @@ const ProjectPayment = (props) => {
       !_.isEmpty(initiatePaymentData?.clientSecret)
     ) {
       confirmPayment({
-        token: tokenID,
+        secret: initiatePaymentData?.clientSecret,
         card: elements.getElement(CardElement),
         billingDetails: billingDetailsRef?.current?.values,
         // billingDetails: {},
@@ -319,128 +281,27 @@ const ProjectPayment = (props) => {
     }
   }, [isConfirmPaymentSuccess, confirmPaymentData]);
 
-  const acc_token = getAccessToken();
-  console.log(acc_token);
-
-  const { data: pricing_data } = usePricingData();
-  var priceIDData = "";
-  function priceIDFinder(type, duration) {
-    if (!_.isEmpty(pricing_data?.products)) {
-      pricing_data["products"].map((item, index) => {
-        if (type == item["plan_name"]) {
-          durationFinder(item, duration);
-        }
+  const initiatePaymentProcess = (billingDetails) => {
+    if (_.isEmpty(initiatePaymentData?.clientSecret)) {
+      initiatePayment({
+        projectId,
+        productId: basicProductData?.product?.productId,
+        billingDetails,
+        // orderId,
+      });
+    } else {
+      confirmPayment({
+        secret: initiatePaymentData?.clientSecret,
+        card: elements.getElement(CardElement),
+        billingDetails: billingDetailsRef?.current?.values,
+        stripe,
       });
     }
-  }
-  function durationFinder(item, duration) {
-    if (_.isEmpty(item["stripe"])) {
-      return "Trial cant be subscribed";
-    }
-    item["stripe"].map((item2, index2) => {
-      if (duration == item2["plan_interval"]) {
-        // console.log(item2["price_id"]);
-        priceIDData = item2["price_id"];
-        return item2["price_id"];
-      }
-    });
-  }
-
-  const initiatePaymentProcess = async (billingDetails, type, duration) => {
-    switch (type) {
-      case 10:
-        type = "Trial";
-        break;
-      case 20:
-        type = "Basic";
-        break;
-      case 30:
-        type = "Pro";
-        break;
-    }
-    switch (duration) {
-      case 10:
-        duration = "month";
-        break;
-      case 20:
-        duration = "year";
-        break;
-    }
-
-    priceIDFinder(type, duration);
-
-    const { token, error } = await stripe.createToken(
-      elements.getElement(CardElement),
-      {
-        headers: {
-          Authorization: process.env.REACT_APP_STRIPE_KEY,
-        },
-      }
-    );
-
-    // setTokenID(token?.["id"]);
-    console.log(token?.["id"]);
-    const addCardResponse = await client.post(
-      endpoint.addCard,
-      {
-        stripe_token: token["id"],
-        billing_address: {
-          city: billingDetails?.city,
-          country: billingDetails?.country,
-          line1: billingDetails?.addressLine1,
-          line2: billingDetails?.addressLine2,
-          state: billingDetails?.state,
-          postal_code: billingDetails?.zip,
-        },
-      },
-      {
-        headers: {
-          Authorization: acc_token,
-        },
-        timeout: 480000,
-      }
-    );
-    console.log(addCardResponse?.["status"]);
-    setAddCardResponseID(addCardResponse?.["status"]);
-    const subscribeData = await client.post(
-      endpoint.subscribe,
-      {
-        update_plan: true,
-        price_id: priceIDData,
-      },
-      {
-        headers: {
-          Authorization: acc_token,
-        },
-        timeout: 480000,
-      }
-    );
-    console.log(subscribeData);
-    if (
-      billingDetailsRef.current.isValid &&
-      cardDetailsRef.current.isValid &&
-      billingDetailsRef?.current?.values?.fullName &&
-      billingDetailsRef?.current?.values?.addressLine1
-    ) {
-      initiatePaymentProcess2(billingDetailsRef.current.values, token?.["id"]);
-    }
-  };
-
-  const initiatePaymentProcess2 = (billingDetails, token) => {
-    console.log("enter 2");
-    confirmPayment({
-      // addCardResponse: addCardResponse,
-      token: token,
-      card: elements.getElement(CardElement),
-      billingDetails: billingDetailsRef?.current?.values,
-      stripe,
-    });
   };
 
   const navigateBack = () => {
     // history.goBack();
-    // history.replace(generateRoute(routes.projects, projectId));
-    history.push(routes.payment);
+    history.replace(generateRoute(routes.projects, projectId));
   };
 
   const navigateToDashboard = () => {
@@ -564,7 +425,7 @@ const ProjectPayment = (props) => {
     publishProjectData;
 
   const canShowAutoPopulationButton = () => {
-    return true;
+    return false;
     // const loggedInUserEmailId = getEmailId();
 
     // return (
@@ -573,7 +434,7 @@ const ProjectPayment = (props) => {
     //   loggedInUserEmailId === "dhirajsingh.k@cumulations.com"
     // );
   };
-  console.log(confirmPaymentMutation);
+
   return (
     <div>
       <Dialog
@@ -591,9 +452,20 @@ const ProjectPayment = (props) => {
       >
         {shouldShowDialogForPayment() && (
           <PaymentStatusDialog
-            response={addCardResponseID}
             onClose={handleCloseDialog}
-            // initiatePaymentMutation={initiatePaymentMutation}
+            onButtonClick={() => {
+              if (isPaymentSuccess()) {
+                resetConfirmPayment();
+                resetInitiatePayment();
+                resetVerifyMutation();
+                resetPublishMutation();
+                invalidateProject();
+                navigateBack();
+              } else {
+                handleCloseDialog();
+              }
+            }}
+            initiatePaymentMutation={initiatePaymentMutation}
             confirmPaymentMutation={confirmPaymentMutation}
           />
         )}
@@ -624,14 +496,7 @@ const ProjectPayment = (props) => {
       </Dialog>
 
       <Header projectDetails={projectDetails} logoutMutation={logoutMutation} />
-      {/* <h3>what</h3>
-      <button
-        onClick={() => {
-          history.push(routes.pricing);
-        }}
-      >
-        BACK PLS
-      </button> */}
+
       <div className="w-full flex flex-row p-12 h-full mt-14">
         {basicProductData && (
           <div className="flex-1 mr-6 px-6">
@@ -640,17 +505,17 @@ const ProjectPayment = (props) => {
                 className="p-1 bg-neutral-gray6 rounded-md mb-2"
                 onClick={(e) => {
                   billingDetailsRef?.current?.setValues({
-                    fullName: "Aakash",
+                    fullName: "Hello",
                     country: "IN",
                     country: "IN",
-                    addressLine1: "Chennai",
-                    zip: "600001",
-                    city: "Chennai",
-                    state: "Tamil Nadu",
-                    email: "aakashchid02@gmail.com",
+                    addressLine1: "Test Address",
+                    zip: "560070",
+                    city: "Test City",
+                    state: "Karnataka",
+                    email: "testemail@randomdomain123.com",
                   });
                   cardDetailsRef?.current?.setValues({
-                    cardHolderName: "Aakash Test",
+                    cardHolderName: "Test card holder name",
                   });
                 }}
               >
@@ -673,22 +538,23 @@ const ProjectPayment = (props) => {
         {basicProductData && (
           <div className="flex-1">
             <ProductDetails
-              type={typeDefault}
-              duration={durationDefault}
-              priceId={priceDefault}
               product={basicProductData?.product}
               disabled={
                 isInitiatingPayment || isConfirmingPayment || isLoggingOut
               }
               project={projectDetails}
-              onPurchaseClick={(type, duration) => {
+              onPurchaseClick={() => {
                 billingDetailsRef.current.handleSubmit();
                 cardDetailsRef.current.handleSubmit();
-                initiatePaymentProcess(
-                  billingDetailsRef.current.values,
-                  type,
-                  duration
-                );
+
+                if (
+                  billingDetailsRef.current.isValid &&
+                  cardDetailsRef.current.isValid &&
+                  billingDetailsRef?.current?.values?.fullName &&
+                  billingDetailsRef?.current?.values?.addressLine1
+                ) {
+                  initiatePaymentProcess(billingDetailsRef.current.values);
+                }
               }}
             />
           </div>

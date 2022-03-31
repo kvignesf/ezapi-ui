@@ -1,29 +1,136 @@
 import React from "react";
 import { Link, useParams } from "react-router-dom";
-
+import { useGetOrders } from "../Orders/ordersQueries";
 import { PrimaryButton } from "../shared/components/AppButton";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
-import { ReactComponent as StripeLogo } from "../static/images/stripe_purple.svg";
+import { useMutation, useQuery, useQueryClient } from "react-query";
+import { clearQueryCache, queries } from "../shared/network/queryClient";
 
+import client, { endpoint } from "../shared/network/client";
+import { ReactComponent as StripeLogo } from "../static/images/stripe_purple.svg";
+import { getContainerUtilityClass } from "@mui/material";
+
+const pricingData = async () => {
+  const { data } = await client.get(endpoint.products2);
+  // priceIDFinder(data);
+  // console.log(data);
+  return data;
+};
+export const usePricingData = () => {
+  return useQuery([queries.products], pricingData, {
+    refetchOnWindowFocus: false,
+  });
+};
 const ProductDetails = ({
+  type,
+  duration,
+  priceId,
   product,
   project,
   disabled = false,
   onPurchaseClick,
 }) => {
   const { projectId } = useParams();
-  const [planType, setPlanType] = React.useState("");
-  const [subscriptionType, setSubscriptionType] = React.useState("");
+  var defType;
+  var defSub;
+  switch (type) {
+    case "Trial":
+      defType = 10;
+      break;
+    case "Basic":
+      defType = 20;
+      break;
+    case "Pro":
+      defType = 30;
+  }
+  switch (duration) {
+    case "mo":
+      defSub = 10;
+      break;
+    case "yr":
+      defSub = 20;
+      break;
+  }
+
+  const { data: pricing_data } = usePricingData();
+
+  const [planType, setPlanType] = React.useState(defType);
+
+  const [subscriptionType, setSubscriptionType] = React.useState(defSub);
+  const [price, setPrice] = React.useState(priceId);
   const handleChange = (event) => {
     setPlanType(event.target.value);
+    priceFinder(event.target.value, subscriptionType);
   };
   const handleChange2 = (event) => {
     setSubscriptionType(event.target.value);
+    priceFinder(planType, event.target.value);
   };
-  // console.log(planType);
+
+  // function priceFinder(planType, subscriptionType) {
+  //   // console.log(pricing_data);
+  //   if (!_.isEmpty(pricing_data?.products)) {
+  //     pricing_data["products"].map((item, index) => {
+  //       if (type == item["plan_name"]) {
+  //         durationFinder(item, duration);
+  //       }
+  //     });
+  //   }
+  //   function durationFinder(item, duration) {
+  //     if (_.isEmpty(item["stripe"])) {
+  //       return "Trial cant be subscribed";
+  //     }
+  //     item["stripe"].map((item2, index2) => {
+  //       if (duration == item2["plan_interval"]) {
+  //         // console.log(item2["price_id"]);
+  //         // priceIDData = item2["price_id"];
+  //         return item2["plan_price"];
+  //       }
+  //     });
+  //   }
+  // }
+  function priceFinder(type, duration) {
+    switch (type) {
+      case 10:
+        type = "Trial";
+        break;
+      case 20:
+        type = "Basic";
+        break;
+      case 30:
+        type = "Pro";
+    }
+    switch (duration) {
+      case 10:
+        duration = "month";
+        break;
+      case 20:
+        duration = "year";
+        break;
+    }
+    // console.log("inside");
+    if (pricing_data?.products.length > 0) {
+      pricing_data["products"].map((item, index) => {
+        if (type == item["plan_name"]) {
+          durationFinder(item, duration);
+        }
+      });
+    }
+  }
+
+  function durationFinder(item, duration) {
+    if (item["stripe"].length > 0) {
+      item["stripe"].map((item2, index2) => {
+        if (duration == item2["plan_interval"]) {
+          setPrice(item2["plan_price"]);
+        }
+      });
+    }
+  }
+
   return (
     <div className="flex flex-col fixed pl-6">
       <div className="bg-brand-primarySubtle rounded-md p-8 w-full max-w-md mb-3">
@@ -47,11 +154,12 @@ const ProductDetails = ({
               value={planType}
               onChange={handleChange}
               label="Plan Type"
+              defaultValue={20}
             >
               {/* <MenuItem value="">
                 <em>None</em>
               </MenuItem> */}
-              <MenuItem value={10}>Trial</MenuItem>
+              {/* <MenuItem value={10}>Trial</MenuItem> */}
               <MenuItem value={20}>Basic</MenuItem>
               <MenuItem value={30}>Pro</MenuItem>
             </Select>
@@ -70,6 +178,7 @@ const ProductDetails = ({
               value={subscriptionType}
               onChange={handleChange2}
               label="Subscription Type"
+              defaultValue={10}
             >
               {/* <MenuItem value="">
                 <em>None</em>
@@ -82,8 +191,8 @@ const ProductDetails = ({
         </div>
 
         <div className="border-t-1 border-b-1 border-neutral-gray5 py-3 flex flex-row justify-between items-center my-6">
-          <p className="text-body1">Total Amount</p>
-          <h4>${product?.price}</h4>
+          <p className="text-body1">Total Amount : {price}</p>
+          {/* <h4>{priceIDFinder(planType, subscriptionType)}</h4> */}
         </div>
 
         <PrimaryButton

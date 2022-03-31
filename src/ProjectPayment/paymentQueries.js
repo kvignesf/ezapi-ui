@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useHistory, useParams } from "react-router-dom";
 import { useRecoilValue } from "recoil";
 import Messages from "../shared/messages";
+import { getAccessToken } from "../shared/storage";
 
 import client, { endpoint } from "../shared/network/client";
 import { clearQueryCache, queries } from "../shared/network/queryClient";
@@ -79,30 +80,70 @@ export const useInitiatePayment = () => {
   return useMutation(initiatePayment);
 };
 
-const confirmPayment = async ({ card, billingDetails, secret, stripe }) => {
+// const confirmPayment = async ({ card, billingDetails, secret, stripe }) => {
+//   try {
+//     const result = await stripe.confirmCardPayment(secret, {
+//       payment_method: {
+//         card: card,
+//         billing_details: {
+//           address: {
+//             city: billingDetails?.city,
+//             country: billingDetails?.country,
+//             line1: billingDetails?.addressLine1,
+//             line2: billingDetails?.addressLine2,
+//             state: billingDetails?.state,
+//             postal_code: billingDetails?.zip,
+//           },
+//           email: billingDetails?.email,
+//           phone: _.isEmpty(billingDetails?.phone) ? "-" : billingDetails?.phone,
+//           name: billingDetails?.fullName,
+//         },
+//       },
+//     });
+
+//     // Delay added so that the stripe updates the backend
+//     await delay(2000);
+//     console.log(result);
+//     return result;
+//   } catch (error) {
+//     throw Error(Messages.PAYMENT_FAILURE);
+//   }
+// };
+const acc_token = getAccessToken();
+const confirmPayment = async ({
+  addCardResponse,
+  token,
+  card,
+  billingDetails,
+  secret,
+  stripe,
+}) => {
+  console.log("enter confirm payment");
+  return addCardResponse;
   try {
-    const result = await stripe.confirmCardPayment(secret, {
-      payment_method: {
-        card: card,
-        billing_details: {
-          address: {
-            city: billingDetails?.city,
-            country: billingDetails?.country,
-            line1: billingDetails?.addressLine1,
-            line2: billingDetails?.addressLine2,
-            state: billingDetails?.state,
-            postal_code: billingDetails?.zip,
-          },
-          email: billingDetails?.email,
-          phone: _.isEmpty(billingDetails?.phone) ? "-" : billingDetails?.phone,
-          name: billingDetails?.fullName,
+    const result = await client.post(
+      endpoint.addCard,
+      {
+        stripe_token: token,
+        billing_address: {
+          city: billingDetails?.city,
+          country: billingDetails?.country,
+          line1: billingDetails?.addressLine1,
+          line2: billingDetails?.addressLine2,
+          state: billingDetails?.state,
+          postal_code: billingDetails?.zip,
         },
       },
-    });
+      {
+        headers: {
+          Authorization: acc_token,
+        },
+      }
+    );
 
     // Delay added so that the stripe updates the backend
     await delay(2000);
-    console.log(result);
+    // console.log(result);
     return result;
   } catch (error) {
     throw Error(Messages.PAYMENT_FAILURE);
@@ -115,6 +156,7 @@ export const useConfirmPayment = () => {
 
   return useMutation(confirmPayment, {
     onSuccess: (data) => {
+      console.log(data);
       // if (data?.paymentIntent?.status?.toLowerCase() === "succeeded") {
       //   queryClient.invalidateQueries(`${queries.projects}-${projectId}`);
       // }

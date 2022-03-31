@@ -9,7 +9,17 @@ import classNames from "classnames";
 const CardDetailsForm = ({ disabled, formRef }) => {
   const stripe = useStripe();
   const elements = useElements();
-
+  async function generateToken() {
+    const { token, error } = await stripe.createToken(
+      elements.getElement(CardElement),
+      {
+        headers: {
+          Authorization: process.env.REACT_APP_STRIPE_KEY,
+        },
+      }
+    );
+    console.log(token?.["id"]);
+  }
   return (
     <div>
       <p className="text-subtitle1 mb-3">Card Details</p>
@@ -77,6 +87,7 @@ const CardDetailsForm = ({ disabled, formRef }) => {
                   </p>
                 )}
               </div>
+              <button onClick={generateToken}>Generate Token</button>
             </Form>
           );
         }}

@@ -10,7 +10,7 @@ import Colors from "./shared/colors";
 import OrderRow from "./Orders/OrderRow";
 import ErrorWithMessage from "./shared/components/ErrorWithMessage";
 import LoaderWithMessage from "./shared/components/LoaderWithMessage";
-import { Class } from "@material-ui/icons";
+import { Class, Unsubscribe } from "@material-ui/icons";
 import Box from "@mui/material/Box";
 import client, { endpoint } from "./shared/network/client";
 import CardActions from "@mui/material/CardActions";
@@ -47,6 +47,9 @@ import crossLogo from "./icons/cross_logo.png";
 import Switch from "@mui/material/Switch";
 import routes, { generateRoute } from "./shared/routes";
 import BillingPage from "./BillingPage";
+import ProductDetails from "./ProjectPayment/ProductDetails";
+import selectedTypeButton from "./ProjectPayment/ProjectPayment2";
+import { getAccessToken } from "./shared/storage";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -76,6 +79,12 @@ const pricingData = async () => {
   // console.log(data);
   return data;
 };
+// const unSubscribePlan = async () => {
+//   const { data } = await client.post(endpoint.unSubscribe);
+//   // priceIDFinder(data);
+//   // console.log(data);
+//   return data;
+// };
 const userProfile = async () => {
   try {
     const { data } = await client.get(endpoint.userProfile);
@@ -91,6 +100,7 @@ export const usePricingData = () => {
     refetchOnWindowFocus: false,
   });
 };
+
 export const useUserProfile = () => {
   return useQuery([queries.userProfile], userProfile, {
     refetchOnWindowFocus: false,
@@ -103,15 +113,16 @@ function BillSection(headings, rows, headingIcon) {
 
 const Pricing = () => {
   const history = useHistory();
+  const acc_token = getAccessToken();
   var dataTransferTemp = [[], [], []];
   var dataTransferTemp2AC = [[], [], []];
   var dataTransferTemp3C = [[], [], []];
   var dataTransferTemp4V = [[], [], []];
-  const [durationMY, setDurationMY] = React.useState(0);
+  const [durationMY, setDurationMY] = React.useState(false);
+
   const [trialButton, setTrialButton] = React.useState("SUBSCRIBE");
   const [basicButton, setBasicButton] = React.useState("SUBSCRIBE");
   const [proButton, setProButton] = React.useState("SUBSCRIBE");
-
   const tiers = [
     {
       title: "Trial",
@@ -146,6 +157,8 @@ const Pricing = () => {
       logo: enterpriseLogo,
     },
   ];
+  // const [tiersState, setTiersState] = React.useState();
+
   const headings = ["PROJECTS", "API LIFECYCLE", "CONNECTORS", "VALIDITY"];
   const rows = [
     [
@@ -275,13 +288,23 @@ const Pricing = () => {
   //   return { name, trial, basic, pro, enterprise };
   // }
 
-  const handleClick = () => {
-    history.push(routes.payment);
+  const handleClick = (title, price) => {
+    // console.log("hii");
+    // selectedTypeButton();
+    // console.log(title);
+    // history.push(routes.payment);
+    history.push({
+      pathname: routes.payment,
+      // search: title,
+      state: { type: title, duration: durationMY, price: price },
+    });
   };
 
   const { data: pricing_data } = usePricingData();
   const { data: userProfile_data } = useUserProfile();
+  // const { data: unsubscribe_data } = useUnSubscribeData();
   var alreadySubscribed;
+
   if (userProfile_data != undefined) {
     // console.log(userProfile_data["subscribed_product"]);
     if (userProfile_data["subscribed_product"] == "") {
@@ -305,7 +328,7 @@ const Pricing = () => {
     }
   }
 
-  console.log(alreadySubscribed);
+  // console.log(alreadySubscribed);
   if (alreadySubscribed == "Basic") {
     tiers[1]["buttonText"] = "Currently Subscribed";
   }
@@ -322,18 +345,19 @@ const Pricing = () => {
     pricing_data["products"].map((item, index) => {
       // for (let i = 1; i < 3; i++) {
       //   if (!_.isEmpty(item["stripe"])) {
-      if (durationMY == 0) {
+      if (durationMY == false) {
         tiers[1]["price"] =
           pricing_data["products"][0]["stripe"][0]["plan_price"];
         tiers[2]["price"] =
           pricing_data["products"][1]["stripe"][1]["plan_price"];
       }
-      if (durationMY == 1) {
+      if (durationMY == true) {
         tiers[1]["price"] =
           pricing_data["products"][0]["stripe"][1]["plan_price"];
         tiers[2]["price"] =
           pricing_data["products"][1]["stripe"][0]["plan_price"];
       }
+      // setTiersState(tiers);
 
       //   }
       // }
@@ -385,54 +409,89 @@ const Pricing = () => {
     // console.log(tiers);
     // console.log(rows);
   }
-
+  const handleUnsubscribe = async () => {
+    const { UnsubscribeData } = await client.post(endpoint.unSubscribe, {
+      headers: {
+        Authorization: acc_token,
+      },
+      // timeout: 480000,
+    });
+    history.push(routes.pricing);
+    // userProfileUpdateCheck();
+  };
   const classes = useStyles();
+  function handleSwitchChange(event) {
+    setDurationMY(event.target.checked);
+    if (durationMY == false) {
+      document.getElementById("yr").style.color = "blue";
+      document.getElementById("mo").style.color = "black";
+    } else if (durationMY == true) {
+      document.getElementById("yr").style.color = "black";
+      document.getElementById("mo").style.color = "blue";
+    }
+  }
 
   return (
     <Dashboard selectedIndex={3}>
-      <div className="flex flex-col">
-        <div id="heading" className="flex flex-col py-3 self-center">
-          {" "}
-          <h1>The Right Pricing Plan for Your Business</h1>
-        </div>
+      <div className="flex flex-col items-center justify-center ">
+        {" "}
+        <div className="flex flex-col w-3/4 items-center justify-center  h-full">
+          <div id="heading" className="container mx-auto py-4">
+            {" "}
+            <h1 className="text-center">
+              The Right Pricing Plan for Your Business
+            </h1>
+          </div>
 
-        <div id="durationMY" className="flex flex-row py-3 self-center">
-          <Button
-            onClick={() => {
-              setDurationMY(0);
-            }}
-          >
-            Monthly
-          </Button>
-          <Switch defaultChecked />
-          <Button
-            onClick={() => {
-              setDurationMY(1);
-            }}
-          >
-            Yearly
-          </Button>
-        </div>
+          <div id="durationMY" className="container mx-auto py-4 ">
+            <div className="flex justify-center ">
+              {" "}
+              {/* <Button
+              variant="outlined"
+              color="primary"
+              sx={{ border: "2px solid", borderRadius: 28 }}
+              onClick={() => {
+                setDurationMY(0);
+              }}
+            >
+              Monthly
+            </Button>
+            <Switch defaultChecked />
+            <Button
+              onClick={() => {
+                setDurationMY(1);
+              }}
+            >
+              Yearly
+            </Button> */}
+              <div id="mo" className="mt-1.5 text-blue-500">
+                Monthly
+              </div>
+              <Switch
+                color="default"
+                checked={durationMY}
+                onChange={handleSwitchChange}
+              />
+              <div id="yr" className="mt-1.5 text-black-500">
+                Yearly
+              </div>
+            </div>
+          </div>
 
-        <div
-          id="pricingTypeCards"
-          className="flex flex-row self-end w-5/6 mr-16"
-        >
-          <Container
-            style={{ width: 900 }}
-            // className="flex mx-2  bg-green-900  "
-            component="main"
-          >
-            <Grid container spacing={2}>
-              {tiers.map((tier) => (
+          <div id="pricingTypeCards" className="container mx-auto   p-2 ">
+            <div className="grid grid-cols-5 gap-5   ">
+              <Grid>
+                <Button onClick={handleUnsubscribe}>unsubscribe</Button>
+              </Grid>
+              {tiers.map((tier, index) => (
                 <Grid
                   item
                   key={tier.title}
                   // xs={5}
                   // sm={tier.title === "Enterprise" ? 12 : 6}
-                  md={3}
+                  // md={3}
                 >
-                  <Card className="flex flex-col">
+                  <Card className="flex flex-col h-full self-center">
                     <div className="flex justify-center ...">
                       {" "}
                       <img src={tier.logo} alt="logo" />
@@ -441,13 +500,6 @@ const Pricing = () => {
                     <CardHeader
                       title={tier.title}
                       titleTypographyProps={{ align: "center" }}
-
-                      // sx={{
-                      //   backgroundColor: (theme) =>
-                      //     theme.palette.mode === "light"
-                      //       ? theme.palette.grey[200]
-                      //       : theme.palette.grey[700],
-                      // }}
                     />
                     <CardContent className="flex flex-col">
                       <Box
@@ -455,7 +507,6 @@ const Pricing = () => {
                           display: "flex",
                           justifyContent: "center",
                           alignItems: "baseline",
-                          mb: 2,
                         }}
                       >
                         <Typography
@@ -465,13 +516,14 @@ const Pricing = () => {
                           //     : (component = "h4")
                           // }
                           component="h4"
-                          variant="h5"
+                          variant="h6"
                           color="#2FDAA1"
                         >
                           ${tier.price}
                         </Typography>
                         <Typography variant="h6" color="text.secondary">
-                          /mo
+                          {index != 3 &&
+                            (durationMY ? <div>/yr</div> : <div>/mo</div>)}
                         </Typography>
                       </Box>
                       <ul className="flex flex-col h-3">
@@ -490,7 +542,7 @@ const Pricing = () => {
                     <CardActions className="flex my-10 ">
                       <Button
                         onClick={() => {
-                          handleClick();
+                          handleClick(tier["title"], tier["price"]);
                         }}
                         fullWidth
                         variant={tier.buttonVariant}
@@ -501,171 +553,238 @@ const Pricing = () => {
                   </Card>
                 </Grid>
               ))}
-            </Grid>
-          </Container>
-        </div>
+            </div>
+          </div>
 
-        <div id="pricingDataTables" className="flex flex-col">
-          <Paper className={classes.root}>
-            <Table className={classes.table}>
-              <TableHead>
-                <TableRow>
-                  <RecieptSubHeadings>
-                    <Box>{headings[0]}</Box>
-                  </RecieptSubHeadings>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {rows[0].map((row) => (
-                  <TableRow key={row["name"]} xs={10}>
-                    <StyledTableRow align="left" style={{ width: 260 }}>
+          <div id="pricingDataTables" className="container mx-auto   p-2 ">
+            <Card className="p-2 mb-3">
+              <div className="bg-gray-100">
+                <h4 className="px-2" align="left">
+                  {headings[0]}
+                </h4>
+              </div>
+              <div className="grid grid-cols-5 pt-2 gap-4">
+                <Grid item>
+                  {rows[0].map((row) => (
+                    <h6 className=" px-2 py-1" align="left">
                       {row["name"]}
-                    </StyledTableRow>
-                    <StyledTableRow align="left" style={{ width: 215 }}>
+                    </h6>
+                  ))}
+                </Grid>
+                <Grid item>
+                  {rows[0].map((row) => (
+                    <div className=" px-2 py-1" align="center">
                       {row["trial"]}
-                    </StyledTableRow>
-                    <StyledTableRow align="left" style={{ width: 215 }}>
-                      {row["basic"]}
-                    </StyledTableRow>
-                    <StyledTableRow align="left" style={{ width: 185 }}>
-                      {row["pro"]}
-                    </StyledTableRow>
-                    <StyledTableRow>{row["enterprise"]}</StyledTableRow>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </Paper>
+                    </div>
+                  ))}
+                </Grid>
 
-          <Paper className={classes.root}>
-            <Table className={classes.table}>
-              <TableHead>
-                <TableRow>
-                  <RecieptSubHeadings>
-                    <Box>{headings[1]}</Box>
-                  </RecieptSubHeadings>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {rows[1].map((row) => (
-                  <TableRow key={row["name"]}>
-                    <StyledTableRow align="left" style={{ width: 220 }}>
-                      {row["name"]}
-                    </StyledTableRow>
-                    <StyledTableRow align="left" style={{ width: 190 }}>
-                      {row["trial"] == true ? (
-                        <img src={tickLogo} />
-                      ) : (
-                        <img src={crossLogo} />
-                      )}
-                    </StyledTableRow>
-                    <StyledTableRow align="left" style={{ width: 190 }}>
-                      {row["basic"] == true ? (
-                        <img src={tickLogo} />
-                      ) : (
-                        <img src={crossLogo} />
-                      )}
-                    </StyledTableRow>
-                    <StyledTableRow align="left" style={{ width: 190 }}>
-                      {row["pro"] == true ? (
-                        <img src={tickLogo} />
-                      ) : (
-                        <img src={crossLogo} />
-                      )}
-                    </StyledTableRow>
-                    <StyledTableRow align="left" style={{ width: 205 }}>
-                      {row["enterprise"] == true ? (
-                        <img src={tickLogo} />
-                      ) : (
-                        <img src={crossLogo} />
-                      )}
-                    </StyledTableRow>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </Paper>
-
-          <Paper className={classes.root}>
-            <Table className={classes.table}>
-              <TableHead>
-                <TableRow>
-                  <RecieptSubHeadings>
-                    <Box>{headings[2]}</Box>
-                  </RecieptSubHeadings>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {rows[2].map((row) => (
-                  <TableRow key={row["name"]}>
-                    <StyledTableRow align="left" style={{ width: 220 }}>
-                      {row["name"]}
-                    </StyledTableRow>
-                    <StyledTableRow align="left" style={{ width: 190 }}>
-                      {row["trial"] == true ? (
-                        <img src={tickLogo} />
-                      ) : (
-                        <img src={crossLogo} />
-                      )}
-                    </StyledTableRow>
-                    <StyledTableRow align="left" style={{ width: 190 }}>
-                      {row["basic"] == true ? (
-                        <img src={tickLogo} />
-                      ) : (
-                        <img src={crossLogo} />
-                      )}
-                    </StyledTableRow>
-                    <StyledTableRow align="left" style={{ width: 190 }}>
-                      {row["pro"] == true ? (
-                        <img src={tickLogo} />
-                      ) : (
-                        <img src={crossLogo} />
-                      )}
-                    </StyledTableRow>
-                    <StyledTableRow align="left" style={{ width: 205 }}>
-                      {row["enterprise"] == true ? (
-                        <img src={tickLogo} />
-                      ) : (
-                        <img src={crossLogo} />
-                      )}
-                    </StyledTableRow>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </Paper>
-          <Paper className={classes.root}>
-            <Table className={classes.table}>
-              <TableHead>
-                <TableRow>
-                  <RecieptSubHeadings>
-                    <Box>{headings[3]}</Box>
-                  </RecieptSubHeadings>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {rows[3].map((row) => (
-                  <TableRow key={row["name"]}>
-                    <StyledTableRow align="left" style={{ width: 230 }}>
-                      {row["name"]}
-                    </StyledTableRow>
-                    <StyledTableRow align="left" style={{ width: 190 }}>
-                      {row["trial"]}
-                    </StyledTableRow>
-                    <StyledTableRow align="left" style={{ width: 190 }}>
+                <Grid item>
+                  {rows[0].map((row) => (
+                    <div className=" px-2 py-1" align="center">
                       {row["basic"]}
-                    </StyledTableRow>
-                    <StyledTableRow align="left" style={{ width: 190 }}>
+                    </div>
+                  ))}
+                </Grid>
+                <Grid item>
+                  {rows[0].map((row) => (
+                    <div className=" px-2 py-1" align="center">
                       {row["pro"]}
-                    </StyledTableRow>
-                    <StyledTableRow align="left" style={{ width: 240 }}>
+                    </div>
+                  ))}
+                </Grid>
+                <Grid item>
+                  {rows[0].map((row) => (
+                    <div className=" px-2 py-1" align="center">
                       {row["enterprise"]}
-                    </StyledTableRow>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </Paper>
+                    </div>
+                  ))}
+                </Grid>
+              </div>
+
+              {/* </TableBody> */}
+            </Card>
+
+            <Card className="p-2 mb-3">
+              <div className="bg-gray-100">
+                <h4 className="px-2" align="left">
+                  {headings[1]}
+                </h4>
+              </div>
+              <div className="grid grid-cols-5 pt-2  gap-4">
+                <Grid item>
+                  {rows[1].map((row) => (
+                    <h6 className=" px-2 py-1" v align="left">
+                      {row["name"]}
+                    </h6>
+                  ))}
+                </Grid>
+                <Grid item>
+                  {rows[1].map((row) => (
+                    <div className=" px-2 py-1" align="center">
+                      {" "}
+                      {row["trial"] == true ? (
+                        <img src={tickLogo} />
+                      ) : (
+                        <img src={crossLogo} />
+                      )}
+                    </div>
+                  ))}
+                </Grid>
+
+                <Grid item>
+                  {rows[1].map((row) => (
+                    <div className=" px-2 py-1" align="center">
+                      {" "}
+                      {row["basic"] == true ? (
+                        <img src={tickLogo} />
+                      ) : (
+                        <img src={crossLogo} />
+                      )}
+                    </div>
+                  ))}
+                </Grid>
+                <Grid item>
+                  {rows[1].map((row) => (
+                    <div className=" px-2 py-1" align="center">
+                      {" "}
+                      {row["pro"] == true ? (
+                        <img src={tickLogo} />
+                      ) : (
+                        <img src={crossLogo} />
+                      )}
+                    </div>
+                  ))}
+                </Grid>
+                <Grid item>
+                  {rows[1].map((row) => (
+                    <div className=" px-2 py-1" align="center">
+                      {" "}
+                      {row["enterprise"] == true ? (
+                        <img src={tickLogo} />
+                      ) : (
+                        <img src={crossLogo} />
+                      )}
+                    </div>
+                  ))}
+                </Grid>
+              </div>
+            </Card>
+
+            <Card className="p-2 mb-3">
+              <div className="bg-gray-100">
+                <h4 className="px-2" align="left">
+                  {headings[2]}
+                </h4>
+              </div>
+              <div className="grid grid-cols-5 pt-2  gap-4">
+                <Grid item>
+                  {rows[2].map((row) => (
+                    <h6 className="px-2 py-1" align="left">
+                      {row["name"]}
+                    </h6>
+                  ))}
+                </Grid>
+                <Grid item>
+                  {rows[2].map((row) => (
+                    <div className=" px-2 py-1" align="center">
+                      {" "}
+                      {row["trial"] == true ? (
+                        <img src={tickLogo} />
+                      ) : (
+                        <img src={crossLogo} />
+                      )}
+                    </div>
+                  ))}
+                </Grid>
+
+                <Grid item>
+                  {rows[2].map((row) => (
+                    <div className=" px-2 py-1" align="center">
+                      {" "}
+                      {row["basic"] == true ? (
+                        <img src={tickLogo} />
+                      ) : (
+                        <img src={crossLogo} />
+                      )}
+                    </div>
+                  ))}
+                </Grid>
+                <Grid item>
+                  {rows[2].map((row) => (
+                    <div className=" px-2 py-1" align="center">
+                      {" "}
+                      {row["pro"] == true ? (
+                        <img src={tickLogo} />
+                      ) : (
+                        <img src={crossLogo} />
+                      )}
+                    </div>
+                  ))}
+                </Grid>
+                <Grid item>
+                  {rows[2].map((row) => (
+                    <div className=" px-2 py-1" align="center">
+                      {" "}
+                      {row["enterprise"] == true ? (
+                        <img src={tickLogo} />
+                      ) : (
+                        <img src={crossLogo} />
+                      )}
+                    </div>
+                  ))}
+                </Grid>
+              </div>
+            </Card>
+
+            <Card className="p-2 mb-3">
+              <div className="bg-gray-100">
+                <h4 className="px-2" align="left">
+                  {headings[3]}
+                </h4>
+              </div>
+              <div className="grid grid-cols-5 pt-2  gap-4">
+                <Grid item>
+                  {rows[3].map((row) => (
+                    <h6 className=" px-2 py-1" align="left">
+                      {row["name"]}
+                    </h6>
+                  ))}
+                </Grid>
+                <Grid item>
+                  {rows[3].map((row) => (
+                    <div className=" px-2 py-1" align="center">
+                      {row["trial"]}
+                    </div>
+                  ))}
+                </Grid>
+
+                <Grid item>
+                  {rows[3].map((row) => (
+                    <div className=" px-2 py-1" align="center">
+                      {row["basic"]}
+                    </div>
+                  ))}
+                </Grid>
+                <Grid item>
+                  {rows[3].map((row) => (
+                    <div className=" px-2 py-1" align="center">
+                      {row["pro"]}
+                    </div>
+                  ))}
+                </Grid>
+                <Grid item>
+                  {rows[3].map((row) => (
+                    <div className=" px-2 py-1" align="center">
+                      {row["enterprise"]}
+                    </div>
+                  ))}
+                </Grid>
+              </div>
+
+              {/* </TableBody> */}
+            </Card>
+          </div>
         </div>
       </div>
     </Dashboard>

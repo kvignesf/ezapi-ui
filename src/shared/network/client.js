@@ -45,7 +45,7 @@ export const endpoint = Object.freeze({
   initiatePayment: "/initiate-order",
   addCard: "/addCard",
   subscribe: "/subscribe",
-  unSubscribe: "/unsubscribe",
+  unSubscribe: "/cancelSubscription",
   // initiatePayment: "/subscribe",
 
   // Orders
