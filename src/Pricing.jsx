@@ -76,20 +76,14 @@ const RecieptSubHeadings = styled(TableCell)({
 
 const pricingData = async () => {
   const { data } = await client.get(endpoint.products2);
-  // priceIDFinder(data);
-  // console.log(data);
+
   return data;
 };
-// const unSubscribePlan = async () => {
-//   const { data } = await client.post(endpoint.unSubscribe);
-//   // priceIDFinder(data);
-//   // console.log(data);
-//   return data;
-// };
+
 const userProfile = async () => {
   try {
     const { data } = await client.get(endpoint.userProfile);
-    // console.log(data);
+
     return data;
   } catch (error) {
     throw getApiError(error);
@@ -280,20 +274,9 @@ const Pricing = () => {
         enterprise: 'Contract Based',
       },
     ],
-    // createData("No. of API Design", "Unlimited"),
-    // createData("No. of Republish", 5, 10, 10, "Unlimited"),
-    // createData("No. of Creator Licenses", 5, 10, 10, "Unlimited"),
-    // createData("No. of Collaborators", 5, 10, 10, "Unlimited"),
   ];
-  // function createData(name, enterprise) {
-  //   return { name, trial, basic, pro, enterprise };
-  // }
 
   const handleClick = (title, price) => {
-    // console.log("hii");
-    // selectedTypeButton();
-    // console.log(title);
-    // history.push(routes.payment);
     history.push({
       pathname: routes.payment,
       // search: title,
@@ -303,33 +286,26 @@ const Pricing = () => {
 
   const { data: pricing_data } = usePricingData();
   const { data: userProfile_data } = useUserProfile();
-  // const { data: unsubscribe_data } = useUnSubscribeData();
   var alreadySubscribed;
 
   if (userProfile_data != undefined) {
-    // console.log(userProfile_data["subscribed_product"]);
     if (userProfile_data['subscribed_product'] == '') {
-      // setTrialButton("Currently Subscribed");
       alreadySubscribed = 'Trial';
     } else if (
       userProfile_data['subscribed_product'] ==
         'price_1KbgSaDXX1U3xHmP8Jac0qNX' ||
       userProfile_data['subscribed_product'] == 'price_1KbgKaDXX1U3xHmPYs8KuyFV'
     ) {
-      // console.log("entered");
-      // setBasicButton("Currently Subscribed");
       alreadySubscribed = 'Basic';
     } else if (
       userProfile_data['subscribed_product'] ==
         'price_1KbgTiDXX1U3xHmPCHjkKqGN' ||
       userProfile_data['subscribed_product'] == 'price_1KbgTiDXX1U3xHmPOwGrKyBp'
     ) {
-      // setProButton("Currently Subscribed");
       alreadySubscribed = 'Pro';
     }
   }
 
-  // console.log(alreadySubscribed);
   if (alreadySubscribed == 'Basic') {
     tiers[1]['buttonText'] = 'Currently Subscribed';
   }
@@ -341,11 +317,7 @@ const Pricing = () => {
   }
 
   if (!_.isEmpty(pricing_data?.products)) {
-    // console.log(pricing_data["products"]);
-
     pricing_data['products'].map((item, index) => {
-      // for (let i = 1; i < 3; i++) {
-      //   if (!_.isEmpty(item["stripe"])) {
       if (durationMY == false) {
         tiers[1]['price'] =
           pricing_data['products'][0]['stripe'][0]['plan_price'];
@@ -358,10 +330,6 @@ const Pricing = () => {
         tiers[2]['price'] =
           pricing_data['products'][1]['stripe'][0]['plan_price'];
       }
-      // setTiersState(tiers);
-
-      //   }
-      // }
 
       dataTransferTemp[index].push(
         item['no_of_projects'],
@@ -406,19 +374,14 @@ const Pricing = () => {
       rows[3][i]['basic'] = dataTransferTemp4V[0][i];
       rows[3][i]['pro'] = dataTransferTemp4V[1][i];
     }
-
-    // console.log(tiers);
-    // console.log(rows);
   }
   const handleUnsubscribe = async () => {
     const { UnsubscribeData } = await client.post(endpoint.unSubscribe, {
       headers: {
         Authorization: acc_token,
       },
-      // timeout: 480000,
     });
     history.push(routes.pricing);
-    // userProfileUpdateCheck();
   };
   const classes = useStyles();
   function handleSwitchChange(event) {
@@ -447,24 +410,6 @@ const Pricing = () => {
           <div id="durationMY" className="container mx-auto py-4 ">
             <div className="flex justify-center ">
               {' '}
-              {/* <Button
-              variant="outlined"
-              color="primary"
-              sx={{ border: "2px solid", borderRadius: 28 }}
-              onClick={() => {
-                setDurationMY(0);
-              }}
-            >
-              Monthly
-            </Button>
-            <Switch defaultChecked />
-            <Button
-              onClick={() => {
-                setDurationMY(1);
-              }}
-            >
-              Yearly
-            </Button> */}
               <div id="mo" className="mt-1.5 text-blue-500">
                 Monthly
               </div>
@@ -485,13 +430,7 @@ const Pricing = () => {
                 <Button onClick={handleUnsubscribe}>unsubscribe</Button>
               </Grid>
               {tiers.map((tier, index) => (
-                <Grid
-                  item
-                  key={tier.title}
-                  // xs={5}
-                  // sm={tier.title === "Enterprise" ? 12 : 6}
-                  // md={3}
-                >
+                <Grid item key={tier.title}>
                   <Card className="flex flex-col h-full self-center">
                     <div className="flex justify-center ...">
                       {' '}
@@ -516,16 +455,7 @@ const Pricing = () => {
                           alignItems: 'baseline',
                         }}
                       >
-                        <Typography
-                          // action={
-                          //   tier.title === "Enterprise"
-                          //     ? (component = "h4")
-                          //     : (component = "h4")
-                          // }
-                          component="h4"
-                          variant="h6"
-                          color="#2FDAA1"
-                        >
+                        <Typography component="h4" variant="h6" color="#2FDAA1">
                           ${tier.price}
                         </Typography>
                         <Typography variant="h6" color="text.secondary">

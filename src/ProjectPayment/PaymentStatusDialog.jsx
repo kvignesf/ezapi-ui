@@ -1,15 +1,15 @@
-import React from "react";
-import CloseIcon from "@material-ui/icons/Close";
-import _ from "lodash";
-import { CircularProgress } from "@material-ui/core";
-import routes, { generateRoute } from "../shared/routes";
-import AppIcon from "../shared/components/AppIcon";
-import { ReactComponent as SuccessLogo } from "../static/images/success-icon.svg";
-import { ReactComponent as FailureLogo } from "../static/images/failure-icon.svg";
-import { PrimaryButton, TextButton } from "../shared/components/AppButton";
-import { PaymentStatus } from "./paymentUtils";
-import Messages from "../shared/messages";
-import { useHistory, useLocation, useParams } from "react-router-dom";
+import React from 'react';
+import CloseIcon from '@material-ui/icons/Close';
+import _ from 'lodash';
+import { CircularProgress } from '@material-ui/core';
+import routes, { generateRoute } from '../shared/routes';
+import AppIcon from '../shared/components/AppIcon';
+import { ReactComponent as SuccessLogo } from '../static/images/success-icon.svg';
+import { ReactComponent as FailureLogo } from '../static/images/failure-icon.svg';
+import { PrimaryButton, TextButton } from '../shared/components/AppButton';
+import { PaymentStatus } from './paymentUtils';
+import Messages from '../shared/messages';
+import { useHistory, useLocation, useParams } from 'react-router-dom';
 
 const PaymentStatusDialog = ({
   response,
@@ -36,18 +36,18 @@ const PaymentStatusDialog = ({
 
   const getContentMessage = () => {
     if (isConfirmingPayment) {
-      return "Confirming Payment";
+      return 'Confirming Payment';
     } else if (isPaymentSuccess()) {
-      return "Payment successful";
+      return 'Payment successful';
     } else if (!isPaymentSuccess()) {
       return (
-        confirmPaymentData?.error?.message + " Please try again." ??
-        confirmPaymentError?.message + " Please try again." ??
+        confirmPaymentData?.error?.message + ' Please try again.' ??
+        confirmPaymentError?.message + ' Please try again.' ??
         Messages.PAYMENT_RETRY
       );
     }
 
-    return "-";
+    return '-';
   };
 
   return (
@@ -80,7 +80,7 @@ const PaymentStatusDialog = ({
             <p className="text-subtitle2">Failure!</p>
           </div>
         ) : (
-          "idkidkidk"
+          'undefined'
         )}
 
         <p className="text-overline2">{getContentMessage()}</p>
@@ -91,17 +91,10 @@ const PaymentStatusDialog = ({
           <PrimaryButton
             onClick={() => {
               if (isPaymentSuccess()) {
-                // resetConfirmPayment();
-                // resetInitiatePayment();
-                // resetVerifyMutation();
-                // resetPublishMutation();
-                // invalidateProject();
-                // navigateBack();
-                console.log("back pls");
+                console.log('back pls');
                 history.push(routes.pricing);
               } else {
-                console.log("wronggg");
-                // handleCloseDialog();
+                console.log('wronggg');
               }
             }}
           >
