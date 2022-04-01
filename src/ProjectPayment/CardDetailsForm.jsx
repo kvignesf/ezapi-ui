@@ -9,10 +9,20 @@ import classNames from "classnames";
 const CardDetailsForm = ({ disabled, formRef }) => {
   const stripe = useStripe();
   const elements = useElements();
-
+  async function generateToken() {
+    const { token, error } = await stripe.createToken(
+      elements.getElement(CardElement),
+      {
+        headers: {
+          Authorization: process.env.REACT_APP_STRIPE_KEY,
+        },
+      }
+    );
+    console.log(token?.["id"]);
+  }
   return (
     <div>
-      <p className='text-subtitle1 mb-3'>Card Details</p>
+      <p className="text-subtitle1 mb-3">Card Details</p>
 
       <Formik
         initialValues={{
@@ -25,20 +35,20 @@ const CardDetailsForm = ({ disabled, formRef }) => {
         {({ errors, touched, setFieldValue }) => {
           return (
             <Form>
-              <div className='mb-4'>
-                <p className='text-overline2 mb-2'>Card Holder Name</p>
+              <div className="mb-4">
+                <p className="text-overline2 mb-2">Card Holder Name</p>
 
                 <Field
-                  id='cardHolderName'
-                  name='cardHolderName'
+                  id="cardHolderName"
+                  name="cardHolderName"
                   fullWidth
-                  color='primary'
-                  variant='outlined'
+                  color="primary"
+                  variant="outlined"
                   disabled={disabled}
                   error={
                     touched.cardHolderName && Boolean(errors.cardHolderName)
                   }
-                  helperText={<ErrorMessage name='cardHolderName' />}
+                  helperText={<ErrorMessage name="cardHolderName" />}
                   onKeyUp={(e) => {}}
                   inputProps={{
                     style: {
@@ -49,7 +59,7 @@ const CardDetailsForm = ({ disabled, formRef }) => {
                 />
               </div>
 
-              <div className='mb-4'>
+              <div className="mb-4">
                 <CardElement
                   className={classNames("border-1 rounded-md p-3", {
                     "border-accent-red": touched?.card && Boolean(errors?.card),
@@ -66,7 +76,7 @@ const CardDetailsForm = ({ disabled, formRef }) => {
                 />
                 {touched?.card && Boolean(errors?.card) && (
                   <p
-                    className='py-1'
+                    className="py-1"
                     style={{
                       fontSize: "0.75rem",
                       marginLeft: "1rem",
@@ -77,6 +87,7 @@ const CardDetailsForm = ({ disabled, formRef }) => {
                   </p>
                 )}
               </div>
+              <button onClick={generateToken}>Generate Token</button>
             </Form>
           );
         }}

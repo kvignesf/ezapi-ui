@@ -6,11 +6,11 @@ import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import { CountryDropdown, RegionDropdown } from "react-country-region-selector";
 
-import billingDetailsSchema from "./billingDetailsSchema";
-import { PrimaryButton } from "../shared/components/AppButton";
+import billingDetailsSchema from "./ProjectPayment/billingDetailsSchema";
+import { PrimaryButton } from "./shared/components/AppButton";
 import classNames from "classnames";
 
-const BillingDetailsForm = ({ disabled = false, formRef }) => {
+const BillingPage = ({ disabled = false }) => {
   return (
     <div className="mb-8">
       <p className="text-subtitle1 mb-3">Billing Details</p>
@@ -29,7 +29,7 @@ const BillingDetailsForm = ({ disabled = false, formRef }) => {
           phone: "",
         }}
         validationSchema={billingDetailsSchema}
-        innerRef={formRef}
+        // innerRef={formRef}
       >
         {({ values, errors, touched, setFieldValue }) => {
           return (
@@ -358,4 +358,4 @@ const BillingDetailsForm = ({ disabled = false, formRef }) => {
   );
 };
 
-export default BillingDetailsForm;
+export default BillingPage;

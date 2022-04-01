@@ -37,11 +37,17 @@ export const endpoint = Object.freeze({
   exportDBSchema: "/db_to_python",
 
   // Payment
+  products2: "/products",
   products: "/product",
+  userProfile: "/userProfile",
   basicProduct: "/product/basic",
   billingDetails: "/billing-details",
   payment: "/payment",
   initiatePayment: "/initiate-order",
+  addCard: "/addCard",
+  subscribe: "/subscribe",
+  unSubscribe: "/cancelSubscription",
+  // initiatePayment: "/subscribe",
 
   // Orders
   orders: "/orders",

@@ -1,36 +1,198 @@
 import React from "react";
 import { Link, useParams } from "react-router-dom";
-
+import { useGetOrders } from "../Orders/ordersQueries";
 import { PrimaryButton } from "../shared/components/AppButton";
-import { ReactComponent as StripeLogo } from "../static/images/stripe_purple.svg";
+import InputLabel from "@mui/material/InputLabel";
+import MenuItem from "@mui/material/MenuItem";
+import FormControl from "@mui/material/FormControl";
+import Select from "@mui/material/Select";
+import { useMutation, useQuery, useQueryClient } from "react-query";
+import { clearQueryCache, queries } from "../shared/network/queryClient";
 
+import client, { endpoint } from "../shared/network/client";
+import { ReactComponent as StripeLogo } from "../static/images/stripe_purple.svg";
+import { getContainerUtilityClass } from "@mui/material";
+
+const pricingData = async () => {
+  const { data } = await client.get(endpoint.products2);
+  // priceIDFinder(data);
+  // console.log(data);
+  return data;
+};
+export const usePricingData = () => {
+  return useQuery([queries.products], pricingData, {
+    refetchOnWindowFocus: false,
+  });
+};
 const ProductDetails = ({
+  type,
+  duration,
+  priceId,
   product,
   project,
   disabled = false,
   onPurchaseClick,
 }) => {
   const { projectId } = useParams();
+  var defType;
+  var defSub;
+  switch (type) {
+    case "Trial":
+      defType = 10;
+      break;
+    case "Basic":
+      defType = 20;
+      break;
+    case "Pro":
+      defType = 30;
+  }
+  switch (duration) {
+    case "mo":
+      defSub = 10;
+      break;
+    case "yr":
+      defSub = 20;
+      break;
+  }
+
+  const { data: pricing_data } = usePricingData();
+
+  const [planType, setPlanType] = React.useState(defType);
+
+  const [subscriptionType, setSubscriptionType] = React.useState(defSub);
+  const [price, setPrice] = React.useState(priceId);
+  const handleChange = (event) => {
+    setPlanType(event.target.value);
+    priceFinder(event.target.value, subscriptionType);
+  };
+  const handleChange2 = (event) => {
+    setSubscriptionType(event.target.value);
+    priceFinder(planType, event.target.value);
+  };
+
+  // function priceFinder(planType, subscriptionType) {
+  //   // console.log(pricing_data);
+  //   if (!_.isEmpty(pricing_data?.products)) {
+  //     pricing_data["products"].map((item, index) => {
+  //       if (type == item["plan_name"]) {
+  //         durationFinder(item, duration);
+  //       }
+  //     });
+  //   }
+  //   function durationFinder(item, duration) {
+  //     if (_.isEmpty(item["stripe"])) {
+  //       return "Trial cant be subscribed";
+  //     }
+  //     item["stripe"].map((item2, index2) => {
+  //       if (duration == item2["plan_interval"]) {
+  //         // console.log(item2["price_id"]);
+  //         // priceIDData = item2["price_id"];
+  //         return item2["plan_price"];
+  //       }
+  //     });
+  //   }
+  // }
+  function priceFinder(type, duration) {
+    switch (type) {
+      case 10:
+        type = "Trial";
+        break;
+      case 20:
+        type = "Basic";
+        break;
+      case 30:
+        type = "Pro";
+    }
+    switch (duration) {
+      case 10:
+        duration = "month";
+        break;
+      case 20:
+        duration = "year";
+        break;
+    }
+    // console.log("inside");
+    if (pricing_data?.products.length > 0) {
+      pricing_data["products"].map((item, index) => {
+        if (type == item["plan_name"]) {
+          durationFinder(item, duration);
+        }
+      });
+    }
+  }
+
+  function durationFinder(item, duration) {
+    if (item["stripe"].length > 0) {
+      item["stripe"].map((item2, index2) => {
+        if (duration == item2["plan_interval"]) {
+          setPrice(item2["plan_price"]);
+        }
+      });
+    }
+  }
 
   return (
-    <div className='flex flex-col fixed pl-6'>
-      <div className='bg-brand-primarySubtle rounded-md p-8 w-full max-w-md mb-3'>
-        <div className='flex flex-row mb-3 items-center'>
-          <p className='text-overline2'>Project Name:</p>
-          <p className='text-body2 ml-2'>{project?.projectName}</p>
+    <div className="flex flex-col fixed pl-6">
+      <div className="bg-brand-primarySubtle rounded-md p-8 w-full max-w-md mb-3">
+        {/* <div className="flex flex-row mb-3 items-center">
+          <p className="text-overline2">Project Name:</p>
+          <p className="text-body2 ml-2">{project?.projectName}</p>
         </div>
-        <div className='flex flex-row mb-3 items-center'>
-          <p className='text-overline2'>Project ID:</p>
-          <p className='text-body2 ml-2'>{project?.projectId}</p>
+        <div className="flex flex-row mb-3 items-center">
+          <p className="text-overline2">Project ID:</p>
+          <p className="text-body2 ml-2">{project?.projectId}</p>
+        </div> */}
+        <div className="flex flex-row items-center">
+          {/* <p className="text-overline2">Plan Type:</p> */}
+          <FormControl variant="standard" sx={{ m: 1, minWidth: 200 }}>
+            <InputLabel id="demo-simple-select-standard-label">
+              Plan Type
+            </InputLabel>
+            <Select
+              labelId="demo-simple-select-standard-label"
+              id="demo-simple-select-standard"
+              value={planType}
+              onChange={handleChange}
+              label="Plan Type"
+              defaultValue={20}
+            >
+              {/* <MenuItem value="">
+                <em>None</em>
+              </MenuItem> */}
+              {/* <MenuItem value={10}>Trial</MenuItem> */}
+              <MenuItem value={20}>Basic</MenuItem>
+              <MenuItem value={30}>Pro</MenuItem>
+            </Select>
+          </FormControl>
+          <p className="text-body2 ml-2">{product?.name}</p>
         </div>
-        <div className='flex flex-row items-center'>
-          <p className='text-overline2'>Plan:</p>
-          <p className='text-body2 ml-2'>{product?.name}</p>
+        <div className="flex flex-row items-center">
+          {/* <p className="text-overline2">Subscription Type:</p> */}
+          <FormControl variant="standard" sx={{ m: 1, minWidth: 200 }}>
+            <InputLabel id="demo-simple-select-standard-label">
+              Subscription Type
+            </InputLabel>
+            <Select
+              labelId="demo-simple-select-standard-label"
+              id="demo-simple-select-standard"
+              value={subscriptionType}
+              onChange={handleChange2}
+              label="Subscription Type"
+              defaultValue={10}
+            >
+              {/* <MenuItem value="">
+                <em>None</em>
+              </MenuItem> */}
+              <MenuItem value={10}>Monthly</MenuItem>
+              <MenuItem value={20}>Yearly</MenuItem>
+              {/* <MenuItem value={30}>Pro</MenuItem> */}
+            </Select>
+          </FormControl>
         </div>
 
-        <div className='border-t-1 border-b-1 border-neutral-gray5 py-3 flex flex-row justify-between items-center my-6'>
-          <p className='text-body1'>Total Amount</p>
-          <h4>${product?.price}</h4>
+        <div className="border-t-1 border-b-1 border-neutral-gray5 py-3 flex flex-row justify-between items-center my-6">
+          <p className="text-body1">Total Amount : {price}</p>
+          {/* <h4>{priceIDFinder(planType, subscriptionType)}</h4> */}
         </div>
 
         <PrimaryButton
@@ -41,27 +203,27 @@ const ProductDetails = ({
             e?.stopPropagation();
 
             if (!disabled) {
-              onPurchaseClick();
+              onPurchaseClick(planType, subscriptionType);
             }
           }}
         >
-          Purchase Now
+          Subscribe Now
         </PrimaryButton>
       </div>
 
-      <div className='flex flex-row items-center justify-end'>
-        <StripeLogo className='w-24' />
+      <div className="flex flex-row items-center justify-end">
+        <StripeLogo className="w-24" />
 
         <div
-          className='mx-2 h-4 bg-neutral-gray4'
+          className="mx-2 h-4 bg-neutral-gray4"
           style={{ width: "1px" }}
         ></div>
 
         <a
-          href=' https://stripe.com/privacy'
-          target='_blank'
-          rel='noopener noreferrer'
-          className='text-overline3 text-brand-secondary cursor-pointer hover:opacity-75'
+          href=" https://stripe.com/privacy"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-overline3 text-brand-secondary cursor-pointer hover:opacity-75"
         >
           Privacy
         </a>

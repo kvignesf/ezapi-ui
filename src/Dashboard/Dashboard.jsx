@@ -17,6 +17,8 @@ import { useRecoilState } from "recoil";
 
 import Logo from "../static/images/logo/svg.svg";
 import { ReactComponent as OrderHistoryIcon } from "../static/images/order-history.svg";
+import { ReactComponent as PricingPageIcon } from "../static/images/pricing-page.svg";
+import PricingPageLogo from "../icons/pricingPage_logo.png";
 import Colors from "../shared/colors";
 import routes, { generateRoute } from "../shared/routes";
 import AppIcon from "../shared/components/AppIcon";
@@ -73,6 +75,8 @@ const Dashboard = ({ selectedIndex, children }) => {
         history.push(routes.projects);
       } else if (index === 2) {
         history.push(routes.orders);
+      } else if (index === 3) {
+        history.push(routes.pricing);
       }
     }
   };
@@ -102,14 +106,14 @@ const Dashboard = ({ selectedIndex, children }) => {
   };
 
   return (
-    <div className='flex flex-col'>
+    <div className="flex flex-col">
       <Dialog
         onClose={handleCloseDialog}
-        aria-labelledby='dashboard-dialog'
+        aria-labelledby="dashboard-dialog"
         open={isLoggingOut || (dialog?.show ?? false)}
         fullWidth
         PaperProps={{
-          style: { borderRadius: 8},
+          style: { borderRadius: 8 },
         }}
         disableBackdropClick
       >
@@ -126,15 +130,15 @@ const Dashboard = ({ selectedIndex, children }) => {
           />
         )}
 
-        {isLoggingOut && <div className='p-4'>Logging you out ...</div>}
+        {isLoggingOut && <div className="p-4">Logging you out ...</div>}
       </Dialog>
 
       <header
-        className='fixed w-full top-0 bg-brand-primary flex flex-row p-4 items-center'
+        className="fixed w-full top-0 bg-brand-primary flex flex-row p-4 items-center"
         style={{ height: "56px", zIndex: "99" }}
       >
         {/* EZAPI logo */}
-        <div className='w-full'>
+        <div className="w-full">
           <EzapiLogo />
         </div>
 
@@ -148,7 +152,7 @@ const Dashboard = ({ selectedIndex, children }) => {
         />
 
         {/* Name */}
-        <p className='text-overline2 text-white whitespace-nowrap mr-2'>
+        <p className="text-overline2 text-white whitespace-nowrap mr-2">
           {firstName} {lastName}
         </p>
 
@@ -156,8 +160,8 @@ const Dashboard = ({ selectedIndex, children }) => {
         <ProfileMenuWithIcon logout={logout} />
       </header>
 
-      <section className='h-full flex flex-row my-14'>
-        <div className='h-full w-52 fixed left-0 border-r-2 border-gray-100'>
+      <section className="h-full flex flex-row my-14">
+        <div className="h-full w-52 fixed left-0 border-r-2 border-gray-100">
           <List>
             <ListItem
               button
@@ -259,11 +263,43 @@ const Dashboard = ({ selectedIndex, children }) => {
                 Order History
               </p>
             </ListItem>
+
+            <ListItem
+              button
+              selected={selectedIndex === 3}
+              onClick={() => {
+                handleSideMenuItemClick(3);
+              }}
+              style={{
+                padding: "1rem",
+              }}
+              className={selectedIndex === 3 ? styles.selectedItem : null}
+              classes={{ root: styles.root, selected: styles.selected }}
+              disableTouchRipple
+            >
+              <ListItemIcon style={{ minWidth: "0", marginRight: "1rem" }}>
+                <PricingPageIcon
+                  fill={
+                    selectedIndex === 3
+                      ? Colors.brand.primary
+                      : Colors.neutral.gray4
+                  }
+                />
+              </ListItemIcon>
+              <p
+                className={`text-overline2 ${classNames({
+                  "text-brand-primary": selectedIndex === 3,
+                  "text-neutral-gray4": selectedIndex !== 3,
+                })}`}
+              >
+                Pricing Plan
+              </p>
+            </ListItem>
           </List>
         </div>
 
         <div
-          className='ml-52 w-full'
+          className="ml-52 w-full"
 
           // style={{ height: `calc(100vh - 180px)` }}
         >
