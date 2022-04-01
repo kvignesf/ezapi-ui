@@ -10,17 +10,81 @@ import { clearSession, setAccessToken } from "../shared/storage";
 import { getApiError } from "../shared/utils";
 import projectAtom from "./projectAtom";
 import Snackbar from "@mui/material/Snackbar";
+import { getUserId } from "../shared/storage";
 
-const addProject = async ({ name, dbdetails, invitees,dbType }) => {
+let keyPath, certPath, caCertPath, savedProjectId;
+
+const exportDBSchema = async ({
+  projectId,
+  sslMode,
+  server,
+  port,
+  username,
+  password,
+  database,
+  type,
+  keyPath,
+  certPath,
+  rootPath,
+}) => {
   try {
-    const { data } = await client.post(endpoint.project, {
-      projectName: name,
-      dbdetails: dbdetails,
-      dbType: dbType,
-      invites: invitees,
-    },{
-      timeout: 90000,
-    });
+    const { data } = await client.post(
+      endpoint.exportDBSchema,
+      {
+        projectId: projectId,
+        sslMode: sslMode,
+        server: server,
+        portNo: port,
+        username: username,
+        password: password,
+        database: database,
+        dbtype: type,
+        keyPath: keyPath,
+        certPath: certPath,
+        rootPath: rootPath,
+      },
+      {
+        timeout: 90000,
+      }
+    );
+    return data;
+  } catch (error) {
+    throw getApiError(error);
+  }
+};
+
+export const useExportDBSchema = (aiMutation, onSuccess) => {
+  const projectDetails = useRecoilValue(projectAtom);
+  const queryClient = useQueryClient();
+  const mutation = useMutation(exportDBSchema, {
+    onSuccess: (data) => {
+      if (data) {
+        if (!_.isEmpty(projectDetails.specs) && data.projectId) {
+          aiMutation.mutate({
+            projectId: data?.projectId,
+          });
+        } else {
+          onSuccess(data?.projectId);
+          queryClient.invalidateQueries(queries.projects);
+        }
+      }
+    },
+  });
+  return mutation;
+};
+
+const addProject = async ({ name, invitees }) => {
+  try {
+    const { data } = await client.post(
+      endpoint.project,
+      {
+        projectName: name,
+        invites: invitees,
+      },
+      {
+        timeout: 90000,
+      }
+    );
     return data;
   } catch (error) {
     throw getApiError(error);
@@ -32,41 +96,12 @@ const databaseConnectionTest = async (formData) => {
     const { data } = await client.post(endpoint.testDBConnection, formData);
     return data;
   } catch (error) {
-    console.log("**********", error);
     throw getApiError(error);
   }
 };
 
 export const useDatabaseConnection = (onSuccess) => {
-  const mutation = useMutation(databaseConnectionTest, {
-    onSuccess: (data) => {
-      console.log("dataResponse : ", data);
-      if (data.status === "success") {
-        console.log("entered!!!");
-        // <Snackbar
-        //   open={this.state.open}
-        //   autoHideDuration={6000}
-        //   onClose={this.state.handleClose}
-        //   message="Note archived"
-        //   action={this.state.action}
-        // />;
-      }
-      //   if (!_.isEmpty(projectDetails?.specs)) {
-      //     specsMutation.mutate({
-      //       projectId: data?.projectId,
-      //       files: projectDetails?.specs,
-      //     });
-      //   } else if (!_.isEmpty(projectDetails?.dbs)) {
-      //     dbMutation.mutate({
-      //       projectId: data?.projectId,
-      //       files: projectDetails?.dbs,
-      //     });
-      //   } else {
-      //     onSuccess(data?.projectId);
-      //     queryClient.invalidateQueries(queries.projects);
-      //   }
-    },
-  });
+  const mutation = useMutation(databaseConnectionTest);
   return mutation;
 };
 
@@ -77,27 +112,88 @@ export const useAddProject = (onSuccess) => {
     2. /project/{project_id}/upload (POST) - uploads the spec files
     3. /project/{project_id}/upload (POST) - uploads the db files
   */
+  const loggedInUserId = getUserId();
+
+  const dbConnectionTestMutation = useDatabaseConnection(onSuccess);
   const aiMutation = useAiMatcher(onSuccess);
   const dbMutation = useUploadProjectDbs(aiMutation, onSuccess);
-  const specsMutation = useUploadProjectSpecs(aiMutation, dbMutation, onSuccess);
+  const exportDBSchemaMutation = useExportDBSchema(aiMutation, onSuccess);
+
+  const CACertificateMutation = useUploadProjectCACertificate(
+    dbConnectionTestMutation,
+    exportDBSchemaMutation,
+    onSuccess
+  );
+
+  const certificateMutation = useUploadProjectCertificate(
+    CACertificateMutation,
+    onSuccess
+  );
+
+  const keyMutation = useUploadProjectKey(certificateMutation, onSuccess);
+
+  const specsMutation = useUploadProjectSpecs(
+    exportDBSchemaMutation,
+    keyMutation,
+    dbMutation,
+    onSuccess
+  );
+
   const projectDetails = useRecoilValue(projectAtom);
   const queryClient = useQueryClient();
 
   const mutation = useMutation(addProject, {
     onSuccess: (data) => {
-      if (!_.isEmpty(projectDetails?.specs)) {
-        specsMutation.mutate({
-          projectId: data?.projectId,
-          files: projectDetails?.specs,
-        });
-      } else if (!_.isEmpty(projectDetails?.dbs)) {
-        dbMutation.mutate({
-          projectId: data?.projectId,
-          files: projectDetails?.dbs,
-        });
-      } else {
-        onSuccess(data?.projectId);
-        queryClient.invalidateQueries(queries.projects);
+      if (data) {
+        savedProjectId = data.projectId;
+        if (!_.isEmpty(projectDetails?.specs)) {
+          specsMutation.mutate({
+            projectId: data?.projectId,
+            files: projectDetails?.specs,
+          });
+        } else if (!_.isEmpty(projectDetails?.dbs)) {
+          dbMutation.mutate({
+            projectId: data?.projectId,
+            files: projectDetails?.dbs,
+            dbtype: projectDetails?.dbType,
+          });
+        } else if (
+          !_.isEmpty(projectDetails?.host) &&
+          !_.isEmpty(projectDetails?.port) &&
+          !_.isEmpty(projectDetails?.username) &&
+          !_.isEmpty(projectDetails?.database) &&
+          !_.isEmpty(projectDetails?.type)
+        ) {
+          if (
+            !_.isEmpty(projectDetails?.keys) &&
+            !_.isEmpty(projectDetails?.certificates) &&
+            !_.isEmpty(projectDetails?.caCertificates)
+          ) {
+            keyMutation.mutate({
+              projectId: data?.projectId,
+              file: projectDetails?.keys[0],
+              userId: loggedInUserId,
+              test: false,
+            });
+          } else {
+            exportDBSchemaMutation.mutate({
+              projectId: data?.projectId,
+              sslMode: "N",
+              server: projectDetails?.host,
+              port: projectDetails?.port,
+              username: projectDetails?.username,
+              password: projectDetails?.password,
+              database: projectDetails?.database,
+              type: projectDetails?.type,
+              keyPath: "",
+              certPath: "",
+              rootPath: "",
+            });
+          }
+        } else {
+          onSuccess(data?.projectId);
+          queryClient.invalidateQueries(queries.projects);
+        }
       }
     },
   });
@@ -107,7 +203,84 @@ export const useAddProject = (onSuccess) => {
     uploadDbMutation: dbMutation,
     uploadSpecsMutation: specsMutation,
     aiMatcherMutation: aiMutation,
+    dbConnectionTestMutation: dbConnectionTestMutation,
+    exportDBSchemaMutation: exportDBSchemaMutation,
+    caCertificateMutation: CACertificateMutation,
+    certificateMutation: certificateMutation,
+    keyMutation: keyMutation,
   };
+};
+
+const uploadProjectKey = async ({ projectId, file, userId, test }) => {
+  const bodyFormData = new FormData();
+  bodyFormData.append("upload", file);
+  bodyFormData.append("userid", userId);
+  bodyFormData.append("test", test);
+  try {
+    const { data } = await client.post(
+      endpoint.projects + `/${projectId}/upload_To_GCP`,
+      bodyFormData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        timeout: 480000,
+      }
+    );
+    return data;
+  } catch (error) {
+    throw getApiError(error);
+  }
+};
+
+const uploadProjectCertificate = async ({ projectId, file, userId, test }) => {
+  const bodyFormData = new FormData();
+  bodyFormData.append("upload", file);
+  bodyFormData.append("userid", userId);
+  bodyFormData.append("test", test);
+
+  try {
+    const { data } = await client.post(
+      endpoint.projects + `/${projectId}/upload_To_GCP`,
+      bodyFormData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        timeout: 480000,
+      }
+    );
+    return data;
+  } catch (error) {
+    throw getApiError(error);
+  }
+};
+
+const uploadProjectCACertificate = async ({
+  projectId,
+  file,
+  userId,
+  test,
+}) => {
+  const bodyFormData = new FormData();
+  bodyFormData.append("upload", file);
+  bodyFormData.append("userid", userId);
+  bodyFormData.append("test", test);
+  try {
+    const { data } = await client.post(
+      endpoint.projects + `/${projectId}/upload_To_GCP`,
+      bodyFormData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        timeout: 480000,
+      }
+    );
+    return data;
+  } catch (error) {
+    throw getApiError(error);
+  }
 };
 
 const uploadProjectSpecs = async ({ projectId, files }) => {
@@ -117,6 +290,7 @@ const uploadProjectSpecs = async ({ projectId, files }) => {
     bodyFormData.append("upload", file);
   });
   bodyFormData.append("type", "apiSpec");
+  bodyFormData.append("dbtype", "spec");
 
   try {
     const { data } = await client.post(
@@ -135,7 +309,132 @@ const uploadProjectSpecs = async ({ projectId, files }) => {
   }
 };
 
-const useUploadProjectSpecs = (aiMutation, dbMutation, onSuccess) => {
+export const useUploadProjectKey = (certificateMutation, onSuccess) => {
+  const loggedInUserId = getUserId();
+  const projectDetails = useRecoilValue(projectAtom);
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation(uploadProjectKey, {
+    onSuccess: (data) => {
+      if (data?.url) {
+        keyPath = data.url;
+        if (projectDetails?.certificates) {
+          console.log("testing_test:",data.test);
+          if (data.test === true) {
+            certificateMutation.mutate({
+              projectId: loggedInUserId,
+              file: projectDetails?.certificates[0],
+              userId: loggedInUserId,
+              test: true,
+            });
+          } else {
+            certificateMutation.mutate({
+              projectId: savedProjectId,
+              file: projectDetails?.certificates[0],
+              userId: loggedInUserId,
+              test: false,
+            });
+          }
+        }
+      }
+    },
+  });
+
+  return mutation;
+};
+
+export const useUploadProjectCertificate = (
+  CACertificateMutation,
+  onSuccess
+) => {
+  const loggedInUserId = getUserId();
+  const projectDetails = useRecoilValue(projectAtom);
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation(uploadProjectCertificate, {
+    onSuccess: (data) => {
+      if (data?.url) {
+        certPath = data.url;
+        if (projectDetails?.caCertificates) {
+          if (data.test === true) {
+            CACertificateMutation.mutate({
+              projectId: loggedInUserId,
+              file: projectDetails?.caCertificates[0],
+              userId: loggedInUserId,
+              test: true,
+            });
+          } else {
+            CACertificateMutation.mutate({
+              projectId: savedProjectId,
+              file: projectDetails?.caCertificates[0],
+              userId: loggedInUserId,
+              test: false,
+            });
+          }
+        }
+      }
+    },
+  });
+
+  return mutation;
+};
+
+export const useUploadProjectCACertificate = (
+  dbConnectionTestMutation,
+  exportDBSchemaMutation,
+  onSuccess
+) => {
+  const projectDetails = useRecoilValue(projectAtom);
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation(uploadProjectCACertificate, {
+    onSuccess: (data) => {
+      if (data?.url) {
+        caCertPath = data.url;
+        if (data.test === true) {
+          dbConnectionTestMutation.mutate({
+            host: projectDetails.host,
+            port: projectDetails.port,
+            username: projectDetails.username,
+            database: projectDetails.database,
+            type: projectDetails.type,
+            ssl: {
+              sslFlag: true,
+              certPath: certPath,
+              keyPath: keyPath,
+              rootPath: caCertPath,
+            },
+          });
+        } else if (keyPath && certPath && caCertPath) {
+          exportDBSchemaMutation.mutate({
+            projectId: savedProjectId,
+            sslMode: "Y",
+            server: projectDetails?.host,
+            port: projectDetails?.port,
+            username: projectDetails?.username,
+            password: projectDetails?.password,
+            database: projectDetails?.database,
+            type: projectDetails?.type,
+            keyPath: keyPath,
+            certPath: certPath,
+            rootPath: caCertPath,
+          });
+        }
+      }
+    },
+  });
+
+  return mutation;
+};
+
+export const useUploadProjectSpecs = (
+  exportDBSchemaMutation,
+  keyMutation,
+  dbMutation,
+  onSuccess
+) => {
+  const loggedInUserId = getUserId();
+
   const projectDetails = useRecoilValue(projectAtom);
   const queryClient = useQueryClient();
 
@@ -146,17 +445,42 @@ const useUploadProjectSpecs = (aiMutation, dbMutation, onSuccess) => {
           dbMutation.mutate({
             projectId: data?.projectId,
             files: projectDetails?.dbs,
+            dbtype: projectDetails?.dbType,
           });
-        } 
-        else if (!_.isEmpty(projectDetails?.specs) &&
-         (!_.isEmpty(projectDetails?.host) && !_.isEmpty(projectDetails?.port) && !_.isEmpty(projectDetails?.username) && !_.isEmpty(projectDetails?.password) && !_.isEmpty(projectDetails?.database) && !_.isEmpty(projectDetails?.type))){
-          console.log("Manojjjj");
-          aiMutation.mutate({
-            projectId: data?.projectId,
-          });
-         }
-
-        else {
+        } else if (
+          !_.isEmpty(projectDetails?.specs) &&
+          !_.isEmpty(projectDetails?.host) &&
+          !_.isEmpty(projectDetails?.port) &&
+          !_.isEmpty(projectDetails?.username) &&
+          !_.isEmpty(projectDetails?.database) &&
+          !_.isEmpty(projectDetails?.type)
+        ) {
+          if (
+            !_.isEmpty(projectDetails?.keys) &&
+            !_.isEmpty(projectDetails?.certificates) &&
+            !_.isEmpty(projectDetails?.caCertificates)
+          ) {
+            keyMutation.mutate({
+              projectId: data?.projectId,
+              file: projectDetails?.keys[0],
+              userId: loggedInUserId,
+            });
+          } else {
+            exportDBSchemaMutation.mutate({
+              projectId: data?.projectId,
+              sslMode: "N",
+              server: projectDetails?.host,
+              port: projectDetails?.port,
+              username: projectDetails?.username,
+              password: projectDetails?.password,
+              database: projectDetails?.database,
+              type: projectDetails?.type,
+              keyPath: "",
+              certPath: "",
+              rootPath: "",
+            });
+          }
+        } else {
           onSuccess(data?.projectId);
           queryClient.invalidateQueries(queries.projects);
         }
@@ -167,7 +491,7 @@ const useUploadProjectSpecs = (aiMutation, dbMutation, onSuccess) => {
   return mutation;
 };
 
-const uploadProjectDbs = async ({ projectId, files }) => {
+const uploadProjectDbs = async ({ projectId, files, dbtype }) => {
   const bodyFormData = new FormData();
 
   files.forEach((file) => {
@@ -175,6 +499,8 @@ const uploadProjectDbs = async ({ projectId, files }) => {
   });
 
   bodyFormData.append("type", "db");
+  bodyFormData.append("dbtype", dbtype);
+
 
   try {
     const { data } = await client.post(
@@ -199,14 +525,16 @@ const useUploadProjectDbs = (aiMutation, onSuccess) => {
 
   const mutation = useMutation(uploadProjectDbs, {
     onSuccess: (data) => {
-      console.log("##MANOJ");
-      console.log("data:",data);
       if (data?.projectId) {
         if (
           !_.isEmpty(projectDetails?.specs) &&
-          (!_.isEmpty(projectDetails?.dbs) || (!_.isEmpty(projectDetails?.host) && !_.isEmpty(projectDetails?.port) && !_.isEmpty(projectDetails?.username) && !_.isEmpty(projectDetails?.password) && !_.isEmpty(projectDetails?.database) && !_.isEmpty(projectDetails?.type)))
+          (!_.isEmpty(projectDetails?.dbs) ||
+            (!_.isEmpty(projectDetails?.host) &&
+              !_.isEmpty(projectDetails?.port) &&
+              !_.isEmpty(projectDetails?.username) &&
+              !_.isEmpty(projectDetails?.database) &&
+              !_.isEmpty(projectDetails?.type)))
         ) {
-          console.log("data:",data);
           aiMutation.mutate({
             projectId: data?.projectId,
           });
