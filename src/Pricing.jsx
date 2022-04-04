@@ -48,6 +48,7 @@ import crossLogo from './icons/cross_logo.png';
 import Switch from '@mui/material/Switch';
 import routes, { generateRoute } from './shared/routes';
 import BillingPage from './BillingPage';
+import axios from 'axios';
 import ProductDetails from './ProjectPayment/ProductDetails';
 import selectedTypeButton from './ProjectPayment/ProjectPayment2';
 import { getAccessToken } from './shared/storage';
@@ -83,7 +84,7 @@ const pricingData = async () => {
 const userProfile = async () => {
   try {
     const { data } = await client.get(endpoint.userProfile);
-
+    // console.lo g(data);
     return data;
   } catch (error) {
     throw getApiError(error);
@@ -96,11 +97,11 @@ export const usePricingData = () => {
   });
 };
 
-export const useUserProfile = () => {
-  return useQuery([queries.userProfile], userProfile, {
-    refetchOnWindowFocus: false,
-  });
-};
+// export const useUserProfile = () => {
+//   return useQuery([queries.userProfile], userProfile, {
+//     refetchOnWindowFocus: false,
+//   });
+// };
 
 function BillSection(headings, rows, headingIcon) {
   const classes = useStyles();
@@ -124,14 +125,14 @@ const Pricing = () => {
       price: '0',
       description: ['Get the Trial, free'],
       logo: trialLogo,
-      buttonText: 'SUBSCRIBE',
+      buttonText: trialButton,
       buttonVariant: 'outlined',
     },
     {
       title: 'Basic',
       price: '15',
       description: ['Everything in Trial, Plus'],
-      buttonText: 'SUBSCRIBE',
+      buttonText: basicButton,
       buttonVariant: 'outlined',
       logo: basicLogo,
     },
@@ -139,7 +140,7 @@ const Pricing = () => {
       title: 'Pro',
       price: '30',
       description: ['Everything in Basic, Plus'],
-      buttonText: 'SUBSCRIBE',
+      buttonText: proButton,
       buttonVariant: 'outlined',
       logo: proLogo,
     },
@@ -275,7 +276,46 @@ const Pricing = () => {
       },
     ],
   ];
+  (async () => {
+    var alreadySubscribed;
+    const userProfile_data = await userProfile();
+    // console.log(userProfile_data);
+    if (userProfile_data != undefined) {
+      console.log('in');
+      if (userProfile_data['subscribed_price'] == '') {
+        console.log('empty');
+        alreadySubscribed = 'Trial';
+        setTrialButton('Currently Subscribed');
+      } else {
+        setTrialButton('Subscribe');
+      }
+      if (
+        userProfile_data['subscribed_price'] ==
+          'price_1KbgSaDXX1U3xHmP8Jac0qNX' ||
+        userProfile_data['subscribed_subscribed_priceproduct'] ==
+          'price_1KbgKaDXX1U3xHmPYs8KuyFV'
+      ) {
+        console.log('basic');
+        setBasicButton('Currently Subscribed');
+        alreadySubscribed = 'Basic';
+      } else {
+        setBasicButton('Subscribe');
+      }
+      if (
+        userProfile_data['subscribed_price'] ==
+          'price_1KbgTiDXX1U3xHmPCHjkKqGN' ||
+        userProfile_data['subscribed_price'] == 'price_1KbgTiDXX1U3xHmPOwGrKyBp'
+      ) {
+        console.log('prooo');
+        setProButton('Currently Subscribed');
+        alreadySubscribed = 'Pro';
+      } else {
+        setProButton('Subscribe');
+      }
+    }
+  })();
 
+  // console.log(tiers);
   const handleClick = (title, price) => {
     history.push({
       pathname: routes.payment,
@@ -285,36 +325,7 @@ const Pricing = () => {
   };
 
   const { data: pricing_data } = usePricingData();
-  const { data: userProfile_data } = useUserProfile();
-  var alreadySubscribed;
-
-  if (userProfile_data != undefined) {
-    if (userProfile_data['subscribed_product'] == '') {
-      alreadySubscribed = 'Trial';
-    } else if (
-      userProfile_data['subscribed_product'] ==
-        'price_1KbgSaDXX1U3xHmP8Jac0qNX' ||
-      userProfile_data['subscribed_product'] == 'price_1KbgKaDXX1U3xHmPYs8KuyFV'
-    ) {
-      alreadySubscribed = 'Basic';
-    } else if (
-      userProfile_data['subscribed_product'] ==
-        'price_1KbgTiDXX1U3xHmPCHjkKqGN' ||
-      userProfile_data['subscribed_product'] == 'price_1KbgTiDXX1U3xHmPOwGrKyBp'
-    ) {
-      alreadySubscribed = 'Pro';
-    }
-  }
-
-  if (alreadySubscribed == 'Basic') {
-    tiers[1]['buttonText'] = 'Currently Subscribed';
-  }
-  if (alreadySubscribed == 'Pro') {
-    tiers[2]['buttonText'] = 'Currently Subscribed';
-  }
-  if (alreadySubscribed == 'Trial') {
-    tiers[0]['buttonText'] = 'Currently Subscribed';
-  }
+  // const { data: userProfile_data } = useUserProfile();
 
   if (!_.isEmpty(pricing_data?.products)) {
     pricing_data['products'].map((item, index) => {

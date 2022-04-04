@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useRef } from "react";
-import { useHistory, useLocation, useParams } from "react-router-dom";
-import _ from "lodash";
-import ArrowBackIcon from "@material-ui/icons/ArrowBack";
-import client, { endpoint } from "../shared/network/client";
+import React, { useState, useEffect, useRef } from 'react';
+import { useHistory, useLocation, useParams } from 'react-router-dom';
+import _ from 'lodash';
+import ArrowBackIcon from '@material-ui/icons/ArrowBack';
+import client, { endpoint } from '../shared/network/client';
+import { getApiError } from '../shared/utils';
 
 import {
   CircularProgress,
@@ -11,30 +12,30 @@ import {
   Menu,
   MenuItem,
   Tooltip,
-} from "@material-ui/core";
+} from '@material-ui/core';
 import {
   CardElement,
   Elements,
   useElements,
   useStripe,
-} from "@stripe/react-stripe-js";
-import { loadStripe } from "@stripe/stripe-js";
+} from '@stripe/react-stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
 
-import AppIcon from "../shared/components/AppIcon";
-import InitialsAvatar from "../shared/components/InitialsAvatar";
-import LoaderWithMessage from "../shared/components/LoaderWithMessage";
-import ErrorWithMessage from "../shared/components/ErrorWithMessage";
+import AppIcon from '../shared/components/AppIcon';
+import InitialsAvatar from '../shared/components/InitialsAvatar';
+import LoaderWithMessage from '../shared/components/LoaderWithMessage';
+import ErrorWithMessage from '../shared/components/ErrorWithMessage';
 import {
   useFetchProjectDetails,
   useSubmitProject,
-} from "../Project/projectQueries";
+} from '../Project/projectQueries';
 import {
   generateSyncOperationResponseRequest,
   useCanEdit,
-} from "../shared/utils";
-import { getFirstName, getLastName, getEmailId } from "../shared/storage";
-import Colors from "../shared/colors";
-import { useLogout } from "../shared/query/authQueries";
+} from '../shared/utils';
+import { getFirstName, getLastName, getEmailId } from '../shared/storage';
+import Colors from '../shared/colors';
+import { useLogout } from '../shared/query/authQueries';
 import {
   useConfirmPayment,
   useGetBasicProduct,
@@ -42,22 +43,30 @@ import {
   useGetProducts,
   useInitiatePayment,
   useMakePayment,
-} from "./paymentQueries";
-import BillingDetailsForm from "./BillingDetailsForm";
-import { useMutation, useQuery } from "react-query";
-import CardDetailsForm from "./CardDetailsForm";
-import ProductDetails from "./ProductDetails";
-import PaymentStatusDialog from "./PaymentStatusDialog";
-import { PaymentStatus } from "./paymentUtils";
-import routes, { generateRoute } from "../shared/routes";
-import { useQueryClient } from "react-query";
-import { queries } from "../shared/network/queryClient";
-import PublishStatusDialog from "./PublishStatusDialog";
-import ProfileMenu from "../shared/components/ProfileMenu";
-import EzapiLogo from "../shared/components/EzapiLogo";
-import EzapiFooter from "../shared/components/EzapiFooter";
-import { getAccessToken } from "../shared/storage";
-
+} from './paymentQueries';
+import BillingDetailsForm from './BillingDetailsForm';
+import { useMutation, useQuery } from 'react-query';
+import CardDetailsForm from './CardDetailsForm';
+import ProductDetails from './ProductDetails';
+import PaymentStatusDialog from './PaymentStatusDialog';
+import { PaymentStatus } from './paymentUtils';
+import routes, { generateRoute } from '../shared/routes';
+import { useQueryClient } from 'react-query';
+import { queries } from '../shared/network/queryClient';
+import PublishStatusDialog from './PublishStatusDialog';
+import ProfileMenu from '../shared/components/ProfileMenu';
+import EzapiLogo from '../shared/components/EzapiLogo';
+import EzapiFooter from '../shared/components/EzapiFooter';
+import { getAccessToken } from '../shared/storage';
+const userProfile = async () => {
+  try {
+    const { data } = await client.get(endpoint.userProfile);
+    // console.lo g(data);
+    return data;
+  } catch (error) {
+    throw getApiError(error);
+  }
+};
 const Header = ({
   projectDetails,
   logoutMutation: { isLoading: isLoggingOut, mutate: logout },
@@ -79,7 +88,7 @@ const Header = ({
     <header className="fixed top-0 w-full z-999 px-2 border-b-2 flex flex-row justify-between items-center bg-white">
       <div className="flex flex-row py-2 items-center">
         <AppIcon
-          style={{ marginRight: "1rem" }}
+          style={{ marginRight: '1rem' }}
           onClick={(event) => {
             event?.preventDefault();
             event?.stopPropagation();
@@ -137,16 +146,32 @@ const ProjectPayment = (props) => {
   const [typeDefault, setTypeDefault] = React.useState(false);
   const [priceDefault, setPriceDefault] = React.useState();
   const [addCardResponseID, setAddCardResponseID] = React.useState();
+  const [cityName, setCityName] = React.useState('SUBSCRIBE');
+  const [countryName, setCountryName] = React.useState('SUBSCRIBE');
+  const [line1Name, setLine1Name] = React.useState('SUBSCRIBE');
+  const [stateName, setStateName] = React.useState('SUBSCRIBE');
+  const [postalCodeName, setPostalCodeName] = React.useState('SUBSCRIBE');
+  (async () => {
+    const userProfile_data = await userProfile();
+    console.log(userProfile_data);
+    console.log(userProfile_data?.['billing_address']?.['city']);
+    setCityName(userProfile_data?.['billing_address']?.['city']);
+    setCountryName(userProfile_data?.['billing_address']?.['country']);
+    setStateName(userProfile_data?.['billing_address']?.['state']);
+    setLine1Name(userProfile_data?.['billing_address']?.['line1']);
+    setPostalCodeName(userProfile_data?.['billing_address']?.['postal_code']);
+  })();
+  console.log(stateName);
   useEffect(() => {
     var selectedPlanType;
-    if (location.state["duration"] == false) {
-      selectedPlanType = "mo";
+    if (location.state['duration'] == false) {
+      selectedPlanType = 'mo';
     } else {
-      selectedPlanType = "yr";
+      selectedPlanType = 'yr';
     }
     setDurationDefault(selectedPlanType);
-    setTypeDefault(location.state["type"]);
-    setPriceDefault(location.state["price"]);
+    setTypeDefault(location.state['type']);
+    setPriceDefault(location.state['price']);
   }, [location]);
 
   console.log(durationDefault, typeDefault);
@@ -287,14 +312,14 @@ const ProjectPayment = (props) => {
 
       // Project is not valid state
       if (
-        projectDetails?.status?.toLowerCase() !== "in_progress" &&
-        projectDetails?.status?.toLowerCase() !== "complete"
+        projectDetails?.status?.toLowerCase() !== 'in_progress' &&
+        projectDetails?.status?.toLowerCase() !== 'complete'
       ) {
         navigateBack();
       }
 
       // Cannot make payment
-      if (projectDetails?.projectBillingPlan?.toLowerCase() !== "none") {
+      if (projectDetails?.projectBillingPlan?.toLowerCase() !== 'none') {
         navigateBack();
       }
     }
@@ -302,7 +327,7 @@ const ProjectPayment = (props) => {
 
   useEffect(() => {
     // User no access
-    if (projectDetailsError?.message?.toLowerCase() === "no_access") {
+    if (projectDetailsError?.message?.toLowerCase() === 'no_access') {
       navigateBack();
     }
   }, [projectDetailsError]);
@@ -323,25 +348,25 @@ const ProjectPayment = (props) => {
   console.log(acc_token);
 
   const { data: pricing_data } = usePricingData();
-  var priceIDData = "";
+  var priceIDData = '';
   function priceIDFinder(type, duration) {
     if (!_.isEmpty(pricing_data?.products)) {
-      pricing_data["products"].map((item, index) => {
-        if (type == item["plan_name"]) {
+      pricing_data['products'].map((item, index) => {
+        if (type == item['plan_name']) {
           durationFinder(item, duration);
         }
       });
     }
   }
   function durationFinder(item, duration) {
-    if (_.isEmpty(item["stripe"])) {
-      return "Trial cant be subscribed";
+    if (_.isEmpty(item['stripe'])) {
+      return 'Trial cant be subscribed';
     }
-    item["stripe"].map((item2, index2) => {
-      if (duration == item2["plan_interval"]) {
+    item['stripe'].map((item2, index2) => {
+      if (duration == item2['plan_interval']) {
         // console.log(item2["price_id"]);
-        priceIDData = item2["price_id"];
-        return item2["price_id"];
+        priceIDData = item2['price_id'];
+        return item2['price_id'];
       }
     });
   }
@@ -349,21 +374,21 @@ const ProjectPayment = (props) => {
   const initiatePaymentProcess = async (billingDetails, type, duration) => {
     switch (type) {
       case 10:
-        type = "Trial";
+        type = 'Trial';
         break;
       case 20:
-        type = "Basic";
+        type = 'Basic';
         break;
       case 30:
-        type = "Pro";
+        type = 'Pro';
         break;
     }
     switch (duration) {
       case 10:
-        duration = "month";
+        duration = 'month';
         break;
       case 20:
-        duration = "year";
+        duration = 'year';
         break;
     }
 
@@ -379,11 +404,11 @@ const ProjectPayment = (props) => {
     );
 
     // setTokenID(token?.["id"]);
-    console.log(token?.["id"]);
+    console.log(token?.['id']);
     const addCardResponse = await client.post(
       endpoint.addCard,
       {
-        stripe_token: token["id"],
+        stripe_token: token['id'],
         billing_address: {
           city: billingDetails?.city,
           country: billingDetails?.country,
@@ -400,8 +425,8 @@ const ProjectPayment = (props) => {
         timeout: 480000,
       }
     );
-    console.log(addCardResponse?.["status"]);
-    setAddCardResponseID(addCardResponse?.["status"]);
+    console.log(addCardResponse?.['status']);
+    setAddCardResponseID(addCardResponse?.['status']);
     const subscribeData = await client.post(
       endpoint.subscribe,
       {
@@ -422,12 +447,12 @@ const ProjectPayment = (props) => {
       billingDetailsRef?.current?.values?.fullName &&
       billingDetailsRef?.current?.values?.addressLine1
     ) {
-      initiatePaymentProcess2(billingDetailsRef.current.values, token?.["id"]);
+      initiatePaymentProcess2(billingDetailsRef.current.values, token?.['id']);
     }
   };
 
   const initiatePaymentProcess2 = (billingDetails, token) => {
-    console.log("enter 2");
+    console.log('enter 2');
     confirmPayment({
       // addCardResponse: addCardResponse,
       token: token,
@@ -474,7 +499,7 @@ const ProjectPayment = (props) => {
   const isPaymentSuccess = () => {
     return (
       isConfirmPaymentSuccess &&
-      confirmPaymentData?.paymentIntent?.status === "succeeded"
+      confirmPaymentData?.paymentIntent?.status === 'succeeded'
     );
   };
 
@@ -565,15 +590,9 @@ const ProjectPayment = (props) => {
 
   const canShowAutoPopulationButton = () => {
     return true;
-    // const loggedInUserEmailId = getEmailId();
-
-    // return (
-    //   loggedInUserEmailId === "karthik.b@cumulations.com" ||
-    //   loggedInUserEmailId === "madhuworldwide@gmail.com" ||
-    //   loggedInUserEmailId === "dhirajsingh.k@cumulations.com"
-    // );
+    console.log(confirmPaymentMutation);
   };
-  console.log(confirmPaymentMutation);
+
   return (
     <div>
       <Dialog
@@ -624,14 +643,6 @@ const ProjectPayment = (props) => {
       </Dialog>
 
       <Header projectDetails={projectDetails} logoutMutation={logoutMutation} />
-      {/* <h3>what</h3>
-      <button
-        onClick={() => {
-          history.push(routes.pricing);
-        }}
-      >
-        BACK PLS
-      </button> */}
       <div className="w-full flex flex-row p-12 h-full mt-14">
         {basicProductData && (
           <div className="flex-1 mr-6 px-6">
@@ -640,17 +651,16 @@ const ProjectPayment = (props) => {
                 className="p-1 bg-neutral-gray6 rounded-md mb-2"
                 onClick={(e) => {
                   billingDetailsRef?.current?.setValues({
-                    fullName: "Aakash",
-                    country: "IN",
-                    country: "IN",
-                    addressLine1: "Chennai",
-                    zip: "600001",
-                    city: "Chennai",
-                    state: "Tamil Nadu",
-                    email: "aakashchid02@gmail.com",
+                    fullName: 'Aakash22',
+                    country: countryName,
+                    addressLine1: line1Name,
+                    zip: postalCodeName,
+                    city: cityName,
+                    state: stateName,
+                    email: 'aakashchid02@gmail.com',
                   });
                   cardDetailsRef?.current?.setValues({
-                    cardHolderName: "Aakash Test",
+                    cardHolderName: 'Aakash Test',
                   });
                 }}
               >
