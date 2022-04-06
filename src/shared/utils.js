@@ -35,16 +35,26 @@ export const getApiError = (error) => {
     if (url && url === endpoint.login) {
       return new Error(Messages.NO_USER_DETAILS);
     }
-
+    
     if (url && url === endpoint.publishProject) {
       return error;
     }
 
-    if (url && url === endpoint.testDBConnection) {
-      console.log("@@@",error.response.data.message);
+    if (url && url === endpoint.project) {
       return new Error(error?.response?.data?.message);
     }
 
+    if (url && url === endpoint.testDBConnection) {
+      return new Error(error?.response?.data?.message);
+    }
+
+    if (url && url === endpoint.exportDBSchema) {
+      return new Error(error?.response?.data?.message);
+    }
+
+    if(url && !_.isEmpty(url) && url.includes("/upload_To_GCP")){
+      return new Error(error?.response?.data?.message);
+    }
     return new Error(Messages.INVALID_DATA);
   } else if (url && !_.isEmpty(url) && url.includes("/uploads")) {
     return new Error(error?.response?.data?.aiResponse?.message);
