@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef } from "react";
-import { useHistory, useParams } from "react-router-dom";
-import _ from "lodash";
-import ArrowBackIcon from "@material-ui/icons/ArrowBack";
+import React, { useState, useEffect, useRef } from 'react';
+import { useHistory, useParams } from 'react-router-dom';
+import _ from 'lodash';
+import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import {
   CircularProgress,
   Dialog,
@@ -9,27 +9,27 @@ import {
   Menu,
   MenuItem,
   Tooltip,
-} from "@material-ui/core";
+} from '@material-ui/core';
 import {
   CardElement,
   Elements,
   useElements,
   useStripe,
-} from "@stripe/react-stripe-js";
-import { loadStripe } from "@stripe/stripe-js";
+} from '@stripe/react-stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
 
-import AppIcon from "../shared/components/AppIcon";
-import InitialsAvatar from "../shared/components/InitialsAvatar";
-import LoaderWithMessage from "../shared/components/LoaderWithMessage";
-import ErrorWithMessage from "../shared/components/ErrorWithMessage";
+import AppIcon from '../shared/components/AppIcon';
+import InitialsAvatar from '../shared/components/InitialsAvatar';
+import LoaderWithMessage from '../shared/components/LoaderWithMessage';
+import ErrorWithMessage from '../shared/components/ErrorWithMessage';
 import {
   useFetchProjectDetails,
   useSubmitProject,
-} from "../Project/projectQueries";
-import { useCanEdit } from "../shared/utils";
-import { getFirstName, getLastName, getEmailId } from "../shared/storage";
-import Colors from "../shared/colors";
-import { useLogout } from "../shared/query/authQueries";
+} from '../Project/projectQueries';
+import { useCanEdit } from '../shared/utils';
+import { getFirstName, getLastName, getEmailId } from '../shared/storage';
+import Colors from '../shared/colors';
+import { useLogout } from '../shared/query/authQueries';
 import {
   useConfirmPayment,
   useGetBasicProduct,
@@ -37,19 +37,19 @@ import {
   useGetProducts,
   useInitiatePayment,
   useMakePayment,
-} from "./paymentQueries";
-import BillingDetailsForm from "./BillingDetailsForm";
-import CardDetailsForm from "./CardDetailsForm";
-import ProductDetails from "./ProductDetails";
-import PaymentStatusDialog from "./PaymentStatusDialog";
-import { PaymentStatus } from "./paymentUtils";
-import routes, { generateRoute } from "../shared/routes";
-import { useQueryClient } from "react-query";
-import { queries } from "../shared/network/queryClient";
-import PublishStatusDialog from "./PublishStatusDialog";
-import ProfileMenu from "../shared/components/ProfileMenu";
-import EzapiLogo from "../shared/components/EzapiLogo";
-import EzapiFooter from "../shared/components/EzapiFooter";
+} from './paymentQueries';
+import BillingDetailsForm from './BillingDetailsForm';
+import CardDetailsForm from './CardDetailsForm';
+import ProductDetails from './ProductDetails';
+import PaymentStatusDialog from './PaymentStatusDialog';
+import { PaymentStatus } from './paymentUtils';
+import routes, { generateRoute } from '../shared/routes';
+import { useQueryClient } from 'react-query';
+import { queries } from '../shared/network/queryClient';
+import PublishStatusDialog from './PublishStatusDialog';
+import ProfileMenu from '../shared/components/ProfileMenu';
+import EzapiLogo from '../shared/components/EzapiLogo';
+import EzapiFooter from '../shared/components/EzapiFooter';
 
 const Header = ({
   projectDetails,
@@ -72,7 +72,7 @@ const Header = ({
     <header className="fixed top-0 w-full z-999 px-2 border-b-2 flex flex-row justify-between items-center bg-white">
       <div className="flex flex-row py-2 items-center">
         <AppIcon
-          style={{ marginRight: "1rem" }}
+          style={{ marginRight: '1rem' }}
           onClick={(event) => {
             event?.preventDefault();
             event?.stopPropagation();
@@ -249,14 +249,14 @@ const ProjectPayment = () => {
 
       // Project is not valid state
       if (
-        projectDetails?.status?.toLowerCase() !== "in_progress" &&
-        projectDetails?.status?.toLowerCase() !== "complete"
+        projectDetails?.status?.toLowerCase() !== 'in_progress' &&
+        projectDetails?.status?.toLowerCase() !== 'complete'
       ) {
         navigateBack();
       }
 
       // Cannot make payment
-      if (projectDetails?.projectBillingPlan?.toLowerCase() !== "none") {
+      if (projectDetails?.projectBillingPlan?.toLowerCase() !== 'none') {
         navigateBack();
       }
     }
@@ -264,7 +264,7 @@ const ProjectPayment = () => {
 
   useEffect(() => {
     // User no access
-    if (projectDetailsError?.message?.toLowerCase() === "no_access") {
+    if (projectDetailsError?.message?.toLowerCase() === 'no_access') {
       navigateBack();
     }
   }, [projectDetailsError]);
@@ -335,7 +335,7 @@ const ProjectPayment = () => {
   const isPaymentSuccess = () => {
     return (
       isConfirmPaymentSuccess &&
-      confirmPaymentData?.paymentIntent?.status === "succeeded"
+      confirmPaymentData?.paymentIntent?.status === 'succeeded'
     );
   };
 
@@ -505,17 +505,17 @@ const ProjectPayment = () => {
                 className="p-1 bg-neutral-gray6 rounded-md mb-2"
                 onClick={(e) => {
                   billingDetailsRef?.current?.setValues({
-                    fullName: "Hello",
-                    country: "IN",
-                    country: "IN",
-                    addressLine1: "Test Address",
-                    zip: "560070",
-                    city: "Test City",
-                    state: "Karnataka",
-                    email: "testemail@randomdomain123.com",
+                    fullName: 'Hello',
+                    country: 'IN',
+                    country: 'IN',
+                    addressLine1: 'Test Address',
+                    zip: '560070',
+                    city: 'Test City',
+                    state: 'Karnataka',
+                    email: 'testemail@randomdomain123.com',
                   });
                   cardDetailsRef?.current?.setValues({
-                    cardHolderName: "Test card holder name",
+                    cardHolderName: 'Test card holder name',
                   });
                 }}
               >

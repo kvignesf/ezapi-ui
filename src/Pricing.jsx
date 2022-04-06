@@ -281,7 +281,7 @@ const Pricing = () => {
   (async () => {
     var alreadySubscribed;
     const userProfile_data = await userProfile();
-    console.log(userProfile_data);
+    // console.log(userProfile_data);
     if (userProfile_data != undefined) {
       if (userProfile_data['subscribed_price'] == '') {
         alreadySubscribed = 'Trial';

@@ -23,25 +23,42 @@ const PaymentStatusDialog = ({
     mutate: confirmPayment,
     reset: resetConfirmPayment,
   },
+  initiatePaymentMutation: {
+    isLoading: isInitiatingPayment,
+    error: initiatePaymentError,
+    data: initiatePaymentData,
+    isSuccess: isInitiatePaymentSuccess,
+    mutate: initiatePayment,
+    reset: resetInitiatePayment,
+  },
 }) => {
   const history = useHistory();
-  console.log(response);
+  // console.log(response);
   const isPaymentSuccess = () => {
-    if (response == 200) {
-      return true;
-    } else {
-      return false;
-    }
+    // if (response == 200) {
+    //   return true;
+    // } else {
+    //   return false;
+    // }
+    return (
+      isConfirmPaymentSuccess &&
+      confirmPaymentData?.['status'] == 200 &&
+      !(initiatePaymentError || confirmPaymentError)
+    );
   };
 
   const getContentMessage = () => {
-    if (isConfirmingPayment) {
+    if (isInitiatingPayment) {
+      return 'Initialising Payment';
+    } else if (initiatePaymentError) {
+      return initiatePaymentError?.message;
+    } else if (isConfirmingPayment) {
       return 'Confirming Payment';
     } else if (isPaymentSuccess()) {
       return 'Payment successful';
     } else if (!isPaymentSuccess()) {
       return (
-        confirmPaymentData?.error?.message + ' Please try again.' ??
+        confirmPaymentData?.error?.message + ' Please try again!!!!!!!1.' ??
         confirmPaymentError?.message + ' Please try again.' ??
         Messages.PAYMENT_RETRY
       );
@@ -53,7 +70,18 @@ const PaymentStatusDialog = ({
   return (
     <div>
       <div className="p-4 flex flex-row justify-between border-b-1">
-        {!isConfirmingPayment && (
+        <p className="text-subtitle2">
+          {isInitiatingPayment
+            ? 'Payment Initialisation'
+            : initiatePaymentError || confirmPaymentError
+            ? 'Payment Failure'
+            : isConfirmingPayment
+            ? 'Payment Confirmation'
+            : isPaymentSuccess()
+            ? 'Payment Success'
+            : 'Payment Failure'}
+        </p>
+        {!isInitiatingPayment && !isConfirmingPayment && (
           <AppIcon
             onClick={(e) => {
               e?.preventDefault();
@@ -73,29 +101,28 @@ const PaymentStatusDialog = ({
             <SuccessLogo className="mb-2" />
             <p className="text-subtitle2">Successful!</p>
           </div>
-        ) : (confirmPaymentError || !isPaymentSuccess()) &&
+        ) : (initiatePaymentError ||
+            confirmPaymentError ||
+            !isPaymentSuccess()) &&
+          !isInitiatingPayment &&
           !isConfirmingPayment ? (
           <div className="w-full flex flex-col items-center justify-center mb-3">
             <FailureLogo className="mb-2" />
             <p className="text-subtitle2">Failure!</p>
           </div>
-        ) : (
-          'undefined'
-        )}
+        ) : null}
 
         <p className="text-overline2">{getContentMessage()}</p>
       </div>
 
       <div className="p-4 border-t-1 flex flex-row justify-end">
-        {!isConfirmingPayment ? (
+        {!isInitiatingPayment && !isConfirmingPayment ? (
           <PrimaryButton
-            onClick={() => {
-              if (isPaymentSuccess()) {
-                console.log('back pls');
-                history.push(routes.pricing);
-              } else {
-                console.log('wronggg');
-              }
+            onClick={(e) => {
+              e?.preventDefault();
+              e?.stopPropagation();
+
+              onButtonClick();
             }}
           >
             OK
