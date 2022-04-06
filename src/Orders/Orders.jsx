@@ -1,15 +1,16 @@
-import React from "react";
-import { CircularProgress, Dialog, Tooltip } from "@material-ui/core";
-import _ from "lodash";
-import ReplayIcon from "@material-ui/icons/Replay";
+import React from 'react';
+import { CircularProgress, Dialog, Tooltip } from '@material-ui/core';
+import _ from 'lodash';
+import ReplayIcon from '@material-ui/icons/Replay';
 
-import Dashboard from "../Dashboard";
-import { useGetOrders } from "./ordersQueries";
-import EmptyLogo from "../static/images/empty-state.svg";
-import Colors from "../shared/colors";
-import OrderRow from "./OrderRow";
-import ErrorWithMessage from "../shared/components/ErrorWithMessage";
-import LoaderWithMessage from "../shared/components/LoaderWithMessage";
+import Dashboard from '../Dashboard';
+import { useGetOrders } from './ordersQueries';
+import EmptyLogo from '../static/images/empty-state.svg';
+
+import Colors from '../shared/colors';
+import OrderRow from './OrderRow';
+import ErrorWithMessage from '../shared/components/ErrorWithMessage';
+import LoaderWithMessage from '../shared/components/LoaderWithMessage';
 
 const Content = () => {
   const {
@@ -74,10 +75,10 @@ const Content = () => {
                 <Tooltip title="Refresh list">
                   <ReplayIcon
                     style={{
-                      width: "20px",
-                      height: "20px",
+                      width: '20px',
+                      height: '20px',
                       color: Colors.brand.primary,
-                      cursor: "pointer",
+                      cursor: 'pointer',
                     }}
                     onClick={(e) => {
                       e?.preventDefault();
@@ -102,7 +103,7 @@ const Content = () => {
           <img
             src={EmptyLogo}
             className="mb-4"
-            style={{ width: "100px", height: "100px" }}
+            style={{ width: '100px', height: '100px' }}
           />
 
           <h5 className="mb-3">There are no orders</h5>

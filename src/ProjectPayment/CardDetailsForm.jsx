@@ -1,10 +1,10 @@
-import React, { useState } from "react";
-import { CardElement, useElements, useStripe } from "@stripe/react-stripe-js";
-import { ErrorMessage, Field, Form, Formik, useFormik } from "formik";
+import React, { useState } from 'react';
+import { CardElement, useElements, useStripe } from '@stripe/react-stripe-js';
+import { ErrorMessage, Field, Form, Formik, useFormik } from 'formik';
 
-import cardDetailsSchema from "./cardDetailsSchema";
-import { TextField } from "@material-ui/core";
-import classNames from "classnames";
+import cardDetailsSchema from './cardDetailsSchema';
+import { TextField } from '@material-ui/core';
+import classNames from 'classnames';
 
 const CardDetailsForm = ({ disabled, formRef }) => {
   const stripe = useStripe();
@@ -18,7 +18,7 @@ const CardDetailsForm = ({ disabled, formRef }) => {
         },
       }
     );
-    console.log(token?.["id"]);
+    console.log(token?.['id']);
   }
   return (
     <div>
@@ -26,7 +26,7 @@ const CardDetailsForm = ({ disabled, formRef }) => {
 
       <Formik
         initialValues={{
-          cardHolderName: "",
+          cardHolderName: 'Aakash',
           card: false,
         }}
         validationSchema={cardDetailsSchema}
@@ -52,7 +52,7 @@ const CardDetailsForm = ({ disabled, formRef }) => {
                   onKeyUp={(e) => {}}
                   inputProps={{
                     style: {
-                      height: "6px",
+                      height: '6px',
                     },
                   }}
                   as={TextField}
@@ -61,14 +61,14 @@ const CardDetailsForm = ({ disabled, formRef }) => {
 
               <div className="mb-4">
                 <CardElement
-                  className={classNames("border-1 rounded-md p-3", {
-                    "border-accent-red": touched?.card && Boolean(errors?.card),
-                    "border-neutral-gray5": !(
+                  className={classNames('border-1 rounded-md p-3', {
+                    'border-accent-red': touched?.card && Boolean(errors?.card),
+                    'border-neutral-gray5': !(
                       touched?.card && Boolean(errors?.card)
                     ),
                   })}
                   onChange={(e) => {
-                    setFieldValue("card", e?.complete);
+                    setFieldValue('card', e?.complete);
                   }}
                   options={{
                     hidePostalCode: true,
@@ -78,9 +78,9 @@ const CardDetailsForm = ({ disabled, formRef }) => {
                   <p
                     className="py-1"
                     style={{
-                      fontSize: "0.75rem",
-                      marginLeft: "1rem",
-                      color: "#f44336",
+                      fontSize: '0.75rem',
+                      marginLeft: '1rem',
+                      color: '#f44336',
                     }}
                   >
                     {errors?.card}
