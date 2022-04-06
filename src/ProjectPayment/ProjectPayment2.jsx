@@ -64,7 +64,7 @@ const userProfile = async () => {
     // console.lo g(data);
     return data;
   } catch (error) {
-    throw getApiError(error);
+    // throw getApiError(error);
   }
 };
 const Header = ({
@@ -77,7 +77,8 @@ const Header = ({
   const [profileMenuAnchorEl, setProfilemenuAnchorEl] = useState(false);
 
   const navigateBack = () => {
-    history.goBack();
+    history.push(routes.pricing);
+    // history.goBack();
   };
 
   const handleProfileMenuClick = (event) => {
@@ -146,11 +147,11 @@ const ProjectPayment = (props) => {
   const [typeDefault, setTypeDefault] = React.useState(false);
   const [priceDefault, setPriceDefault] = React.useState();
   const [addCardResponseID, setAddCardResponseID] = React.useState();
-  const [cityName, setCityName] = React.useState('SUBSCRIBE');
-  const [countryName, setCountryName] = React.useState('SUBSCRIBE');
-  const [line1Name, setLine1Name] = React.useState('SUBSCRIBE');
-  const [stateName, setStateName] = React.useState('SUBSCRIBE');
-  const [postalCodeName, setPostalCodeName] = React.useState('SUBSCRIBE');
+  const [cityName, setCityName] = React.useState('');
+  const [countryName, setCountryName] = React.useState('');
+  const [line1Name, setLine1Name] = React.useState('');
+  const [stateName, setStateName] = React.useState('');
+  const [postalCodeName, setPostalCodeName] = React.useState('');
   (async () => {
     const userProfile_data = await userProfile();
     console.log(userProfile_data);
@@ -161,7 +162,7 @@ const ProjectPayment = (props) => {
     setLine1Name(userProfile_data?.['billing_address']?.['line1']);
     setPostalCodeName(userProfile_data?.['billing_address']?.['postal_code']);
   })();
-  console.log(stateName);
+
   useEffect(() => {
     var selectedPlanType;
     if (location.state['duration'] == false) {
@@ -404,7 +405,7 @@ const ProjectPayment = (props) => {
     );
 
     // setTokenID(token?.["id"]);
-    console.log(token?.['id']);
+    // console.log(token?.['id']);
     const addCardResponse = await client.post(
       endpoint.addCard,
       {
@@ -425,7 +426,7 @@ const ProjectPayment = (props) => {
         timeout: 480000,
       }
     );
-    console.log(addCardResponse?.['status']);
+    // console.log(addCardResponse?.['status']);
     setAddCardResponseID(addCardResponse?.['status']);
     const subscribeData = await client.post(
       endpoint.subscribe,
@@ -440,7 +441,7 @@ const ProjectPayment = (props) => {
         timeout: 480000,
       }
     );
-    console.log(subscribeData);
+    // console.log(subscribeData);
     if (
       billingDetailsRef.current.isValid &&
       cardDetailsRef.current.isValid &&
@@ -452,7 +453,7 @@ const ProjectPayment = (props) => {
   };
 
   const initiatePaymentProcess2 = (billingDetails, token) => {
-    console.log('enter 2');
+    // console.log('enter 2');
     confirmPayment({
       // addCardResponse: addCardResponse,
       token: token,
@@ -646,18 +647,18 @@ const ProjectPayment = (props) => {
       <div className="w-full flex flex-row p-12 h-full mt-14">
         {basicProductData && (
           <div className="flex-1 mr-6 px-6">
-            {canShowAutoPopulationButton() && (
+            {/* {canShowAutoPopulationButton() && (
               <button
                 className="p-1 bg-neutral-gray6 rounded-md mb-2"
                 onClick={(e) => {
                   billingDetailsRef?.current?.setValues({
-                    fullName: 'Aakash22',
+                    fullName: '',
                     country: countryName,
                     addressLine1: line1Name,
                     zip: postalCodeName,
                     city: cityName,
                     state: stateName,
-                    email: 'aakashchid02@gmail.com',
+                    email: '',
                   });
                   cardDetailsRef?.current?.setValues({
                     cardHolderName: 'Aakash Test',
@@ -666,7 +667,7 @@ const ProjectPayment = (props) => {
               >
                 <p className="text-overline2">Populate data</p>
               </button>
-            )}
+            )} */}
 
             <BillingDetailsForm
               formRef={billingDetailsRef}

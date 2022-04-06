@@ -1,16 +1,16 @@
-import { useStripe } from "@stripe/react-stripe-js";
-import _ from "lodash";
-import { useMutation, useQuery, useQueryClient } from "react-query";
-import { useHistory, useParams } from "react-router-dom";
-import { useRecoilValue } from "recoil";
-import Messages from "../shared/messages";
-import { getAccessToken } from "../shared/storage";
+import { useStripe } from '@stripe/react-stripe-js';
+import _ from 'lodash';
+import { useMutation, useQuery, useQueryClient } from 'react-query';
+import { useHistory, useParams } from 'react-router-dom';
+import { useRecoilValue } from 'recoil';
+import Messages from '../shared/messages';
+import { getAccessToken } from '../shared/storage';
 
-import client, { endpoint } from "../shared/network/client";
-import { clearQueryCache, queries } from "../shared/network/queryClient";
-import routes from "../shared/routes";
-import { clearSession, setAccessToken } from "../shared/storage";
-import { getApiError, delay } from "../shared/utils";
+import client, { endpoint } from '../shared/network/client';
+import { clearQueryCache, queries } from '../shared/network/queryClient';
+import routes from '../shared/routes';
+import { clearSession, setAccessToken } from '../shared/storage';
+import { getApiError, delay } from '../shared/utils';
 
 const getProducts = async () => {
   try {
@@ -118,7 +118,7 @@ const confirmPayment = async ({
   secret,
   stripe,
 }) => {
-  console.log("enter confirm payment");
+  console.log(addCardResponse);
   return addCardResponse;
   try {
     const result = await client.post(
@@ -156,7 +156,7 @@ export const useConfirmPayment = () => {
 
   return useMutation(confirmPayment, {
     onSuccess: (data) => {
-      console.log(data);
+      // console.log(data);
       // if (data?.paymentIntent?.status?.toLowerCase() === "succeeded") {
       //   queryClient.invalidateQueries(`${queries.projects}-${projectId}`);
       // }

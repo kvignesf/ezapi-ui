@@ -6,6 +6,7 @@ import Card from '@material-ui/core/Card';
 import Dashboard from './Dashboard';
 import { useGetOrders } from './Orders/ordersQueries';
 // import EmptyLogo from "../static/images/empty-state.svg";
+import { ReactComponent as BestValueIcon } from './static/images/BestValue.svg';
 import Colors from './shared/colors';
 import OrderRow from './Orders/OrderRow';
 import ErrorWithMessage from './shared/components/ErrorWithMessage';
@@ -52,6 +53,7 @@ import axios from 'axios';
 import ProductDetails from './ProjectPayment/ProductDetails';
 import selectedTypeButton from './ProjectPayment/ProjectPayment2';
 import { getAccessToken } from './shared/storage';
+import { red } from '@material-ui/core/colors';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -62,7 +64,7 @@ const useStyles = makeStyles((theme) => ({
   totalTable: {
     minWidth: 650,
     marginBottom: 15,
-    backgroundColor: 'lightblue',
+    backgroundColor: '#0971f1',
     borderRadius: 5,
   },
 }));
@@ -87,7 +89,7 @@ const userProfile = async () => {
     // console.lo g(data);
     return data;
   } catch (error) {
-    throw getApiError(error);
+    // throw getApiError(error);
   }
 };
 
@@ -279,13 +281,11 @@ const Pricing = () => {
   (async () => {
     var alreadySubscribed;
     const userProfile_data = await userProfile();
-    // console.log(userProfile_data);
+    console.log(userProfile_data);
     if (userProfile_data != undefined) {
-      console.log('in');
       if (userProfile_data['subscribed_price'] == '') {
-        console.log('empty');
         alreadySubscribed = 'Trial';
-        setTrialButton('Currently Subscribed');
+        setTrialButton('Subscribed');
       } else {
         setTrialButton('Subscribe');
       }
@@ -295,8 +295,7 @@ const Pricing = () => {
         userProfile_data['subscribed_subscribed_priceproduct'] ==
           'price_1KbgKaDXX1U3xHmPYs8KuyFV'
       ) {
-        console.log('basic');
-        setBasicButton('Currently Subscribed');
+        setBasicButton('Subscribed');
         alreadySubscribed = 'Basic';
       } else {
         setBasicButton('Subscribe');
@@ -306,8 +305,7 @@ const Pricing = () => {
           'price_1KbgTiDXX1U3xHmPCHjkKqGN' ||
         userProfile_data['subscribed_price'] == 'price_1KbgTiDXX1U3xHmPOwGrKyBp'
       ) {
-        console.log('prooo');
-        setProButton('Currently Subscribed');
+        setProButton('Subscribed');
         alreadySubscribed = 'Pro';
       } else {
         setProButton('Subscribe');
@@ -398,11 +396,11 @@ const Pricing = () => {
   function handleSwitchChange(event) {
     setDurationMY(event.target.checked);
     if (durationMY == false) {
-      document.getElementById('yr').style.color = 'blue';
+      document.getElementById('yr').style.color = '#c72c71';
       document.getElementById('mo').style.color = 'black';
     } else if (durationMY == true) {
       document.getElementById('yr').style.color = 'black';
-      document.getElementById('mo').style.color = 'blue';
+      document.getElementById('mo').style.color = '#c72c71';
     }
   }
 
@@ -410,10 +408,10 @@ const Pricing = () => {
     <Dashboard selectedIndex={3}>
       <div className="flex flex-col items-center justify-center ">
         {' '}
-        <div className="flex flex-col w-3/4 items-center justify-center  h-full">
+        <div className="flex flex-col  items-center justify-center  h-full">
           <div id="heading" className="container mx-auto py-4">
             {' '}
-            <h1 className="text-center">
+            <h1 className=" text-customGray text-4xl font-sans font-medium tracking-wide text-center">
               The Right Pricing Plan for Your Business
             </h1>
           </div>
@@ -421,7 +419,8 @@ const Pricing = () => {
           <div id="durationMY" className="container mx-auto py-4 ">
             <div className="flex justify-center ">
               {' '}
-              <div id="mo" className="mt-1.5 text-blue-500">
+              <div id="mo" style={{ color: '#c72c71' }} className="mt-1.5">
+                {/* <text style={{ color: '#c72c71' }}>Monthly</text> */}
                 Monthly
               </div>
               <Switch
@@ -436,25 +435,52 @@ const Pricing = () => {
           </div>
 
           <div id="pricingTypeCards" className="container mx-auto   p-2 ">
-            <div className="grid grid-cols-5 gap-5   ">
-              <Grid>
-                <Button onClick={handleUnsubscribe}>unsubscribe</Button>
+            {durationMY ? (
+              <div className="grid grid-cols-11 gap-5    ">
+                <Grid className="col-start-6 col-span-2 ">
+                  <div className="flex  justify-center ">
+                    <BestValueIcon />
+                  </div>
+                </Grid>
+                <Grid className="col-start-8 col-span-2 ">
+                  {' '}
+                  <div className="flex  justify-center ">
+                    <BestValueIcon />
+                  </div>
+                </Grid>
+              </div>
+            ) : null}
+
+            <div className="grid grid-cols-11 gap-5   ">
+              <Grid className="col-span-3 ...">
+                <button
+                  style={{ color: 'black', background: 'red' }}
+                  onClick={handleUnsubscribe}
+                >
+                  unsubscribe
+                </button>
               </Grid>
               {tiers.map((tier, index) => (
-                <Grid item key={tier.title}>
+                <Grid className="col-span-2 " item key={tier.title}>
                   <Card className="flex flex-col h-full self-center">
-                    <div className="flex justify-center ...">
-                      {' '}
-                      {durationMY & (index == 1 || index == 2) ? (
-                        <img src={bestValueLogo} alt="logo" />
-                      ) : null}
-                    </div>
+                    <div className="flex justify-center ..."></div>
                     <div className="flex justify-center ...">
                       {' '}
                       <img src={tier.logo} alt="logo" />
-                    </div>
-
+                    </div>{' '}
                     <CardHeader
+                      style={{
+                        color:
+                          index == 0
+                            ? '#2FDAA1'
+                            : index == 1
+                            ? '#9085D3'
+                            : index == 2
+                            ? '#40A3E4'
+                            : index == 3
+                            ? '#EC6A6C'
+                            : 'red',
+                      }}
                       title={tier.title}
                       titleTypographyProps={{ align: 'center' }}
                     />
@@ -466,10 +492,39 @@ const Pricing = () => {
                           alignItems: 'baseline',
                         }}
                       >
-                        <Typography component="h4" variant="h6" color="#2FDAA1">
+                        <Typography
+                          component="h4"
+                          variant="h6"
+                          style={{
+                            color:
+                              index == 0
+                                ? '#2FDAA1'
+                                : index == 1
+                                ? '#9085D3'
+                                : index == 2
+                                ? '#40A3E4'
+                                : index == 3
+                                ? '#EC6A6C'
+                                : 'red',
+                          }}
+                        >
                           ${tier.price}
                         </Typography>
-                        <Typography variant="h6" color="text.secondary">
+                        <Typography
+                          variant="h6"
+                          style={{
+                            color:
+                              index == 0
+                                ? '#2FDAA1'
+                                : index == 1
+                                ? '#9085D3'
+                                : index == 2
+                                ? '#40A3E4'
+                                : index == 3
+                                ? '#EC6A6C'
+                                : '#40A3E4',
+                          }}
+                        >
                           {index != 3 &&
                             (durationMY ? <div>/yr</div> : <div>/mo</div>)}
                         </Typography>
@@ -477,10 +532,22 @@ const Pricing = () => {
                       <ul className="flex flex-col h-3">
                         {tier.description.map((line) => (
                           <Typography
-                            component="li"
+                            // component="li"
                             variant="subtitle1"
                             align="center"
                             key={line}
+                            style={{
+                              color:
+                                index == 0
+                                  ? '#2FDAA1'
+                                  : index == 1
+                                  ? '#9085D3'
+                                  : index == 2
+                                  ? '#40A3E4'
+                                  : index == 3
+                                  ? '#EC6A6C'
+                                  : '#40A3E4',
+                            }}
                           >
                             {line}
                           </Typography>
@@ -489,11 +556,20 @@ const Pricing = () => {
                     </CardContent>
                     <CardActions className="flex my-10 ">
                       <Button
+                        style={{
+                          color: 'white',
+
+                          background:
+                            tier.buttonText == 'Subscribed'
+                              ? '#c72c71'
+                              : '#0971f1',
+                        }}
                         onClick={() => {
                           handleClick(tier['title'], tier['price']);
                         }}
+                        disabled={tier.buttonText == 'Subscribed'}
                         fullWidth
-                        variant={tier.buttonVariant}
+                        variant="outlined"
                       >
                         {tier.buttonText}
                       </Button>
@@ -507,69 +583,95 @@ const Pricing = () => {
           <div id="pricingDataTables" className="container mx-auto   p-2 ">
             <Card className="p-2 mb-3">
               <div className="bg-gray-100">
-                <h4 className="px-2" align="left">
+                <h4
+                  className="text-neutral-gray2 uppercase text-base tracking-normal font-bold px-2 "
+                  align="left"
+                >
                   {headings[0]}
                 </h4>
               </div>
-              <div className="grid grid-cols-5 pt-2 gap-4">
-                <Grid item>
+              <div className="grid grid-flow-row grid-cols-11 pt-2 gap-4">
+                <Grid item className="col-span-3">
                   {rows[0].map((row) => (
-                    <h6 className=" px-2 py-1" align="left">
+                    <h6
+                      className=" uppercase text-base tracking-normal font-medium px-2 py-4"
+                      align="left"
+                    >
                       {row['name']}
                     </h6>
                   ))}
                 </Grid>
-                <Grid item>
+                <Grid className="col-span-2" item>
                   {rows[0].map((row) => (
-                    <div className=" px-2 py-1" align="center">
+                    <div
+                      className="uppercase text-base tracking-normal font-medium px-2 py-4"
+                      align="center"
+                    >
                       {row['trial']}
                     </div>
                   ))}
                 </Grid>
 
-                <Grid item>
+                <Grid className="col-span-2" item>
                   {rows[0].map((row) => (
-                    <div className=" px-2 py-1" align="center">
+                    <div
+                      className="uppercase text-base tracking-normal font-medium px-2 py-4"
+                      align="center"
+                    >
                       {row['basic']}
                     </div>
                   ))}
                 </Grid>
-                <Grid item>
+                <Grid className="col-span-2" item>
                   {rows[0].map((row) => (
-                    <div className=" px-2 py-1" align="center">
+                    <div
+                      className="uppercase text-base tracking-normal font-medium px-2 py-4"
+                      align="center"
+                    >
                       {row['pro']}
                     </div>
                   ))}
                 </Grid>
-                <Grid item>
+                <Grid className="col-span-2" item>
                   {rows[0].map((row) => (
-                    <div className=" px-2 py-1" align="center">
+                    <div
+                      className="uppercase text-base tracking-normal font-medium px-2 py-4"
+                      align="center"
+                    >
                       {row['enterprise']}
                     </div>
                   ))}
                 </Grid>
               </div>
-
-              {/* </TableBody> */}
             </Card>
 
             <Card className="p-2 mb-3">
               <div className="bg-gray-100">
-                <h4 className="px-2" align="left">
+                <h4
+                  className="text-neutral-gray2 uppercase text-base tracking-normal font-bold px-2"
+                  align="left"
+                >
                   {headings[1]}
                 </h4>
               </div>
-              <div className="grid grid-cols-5 pt-2  gap-4">
-                <Grid item>
+              <div className="grid grid-flow-row grid-cols-11 pt-2 gap-4">
+                <Grid item className="col-span-3">
                   {rows[1].map((row) => (
-                    <h6 className=" px-2 py-1" v align="left">
+                    <h6
+                      className=" uppercase text-base tracking-normal font-medium px-2 py-4"
+                      v
+                      align="left"
+                    >
                       {row['name']}
                     </h6>
                   ))}
                 </Grid>
-                <Grid item>
+                <Grid className="col-span-2" item>
                   {rows[1].map((row) => (
-                    <div className=" px-2 py-1" align="center">
+                    <div
+                      className=" uppercase text-base tracking-normal font-medium px-2 py-4"
+                      align="center"
+                    >
                       {' '}
                       {row['trial'] == true ? (
                         <img src={tickLogo} />
@@ -580,9 +682,12 @@ const Pricing = () => {
                   ))}
                 </Grid>
 
-                <Grid item>
+                <Grid className="col-span-2" item>
                   {rows[1].map((row) => (
-                    <div className=" px-2 py-1" align="center">
+                    <div
+                      className="uppercase text-base tracking-normal font-medium px-2 py-4"
+                      align="center"
+                    >
                       {' '}
                       {row['basic'] == true ? (
                         <img src={tickLogo} />
@@ -592,9 +697,12 @@ const Pricing = () => {
                     </div>
                   ))}
                 </Grid>
-                <Grid item>
+                <Grid className="col-span-2" item>
                   {rows[1].map((row) => (
-                    <div className=" px-2 py-1" align="center">
+                    <div
+                      className="uppercase text-base tracking-normal font-medium px-2 py-4"
+                      align="center"
+                    >
                       {' '}
                       {row['pro'] == true ? (
                         <img src={tickLogo} />
@@ -604,9 +712,12 @@ const Pricing = () => {
                     </div>
                   ))}
                 </Grid>
-                <Grid item>
+                <Grid className="col-span-2" item>
                   {rows[1].map((row) => (
-                    <div className=" px-2 py-1" align="center">
+                    <div
+                      className="uppercase text-base tracking-normal font-medium px-2 py-4"
+                      align="center"
+                    >
                       {' '}
                       {row['enterprise'] == true ? (
                         <img src={tickLogo} />
@@ -621,21 +732,30 @@ const Pricing = () => {
 
             <Card className="p-2 mb-3">
               <div className="bg-gray-100">
-                <h4 className="px-2" align="left">
+                <h4
+                  className="text-neutral-gray2 uppercase text-base tracking-normal font-bold px-2 "
+                  align="left"
+                >
                   {headings[2]}
                 </h4>
               </div>
-              <div className="grid grid-cols-5 pt-2  gap-4">
-                <Grid item>
+              <div className="grid grid-flow-row grid-cols-11 pt-2 gap-4">
+                <Grid item className="col-span-3">
                   {rows[2].map((row) => (
-                    <h6 className="px-2 py-1" align="left">
+                    <h6
+                      className="uppercase text-base tracking-normal font-medium px-2 py-4"
+                      align="left"
+                    >
                       {row['name']}
                     </h6>
                   ))}
                 </Grid>
-                <Grid item>
+                <Grid item className="col-span-2">
                   {rows[2].map((row) => (
-                    <div className=" px-2 py-1" align="center">
+                    <div
+                      className="uppercase text-base tracking-normal font-medium px-2 py-4"
+                      align="center"
+                    >
                       {' '}
                       {row['trial'] == true ? (
                         <img src={tickLogo} />
@@ -646,9 +766,12 @@ const Pricing = () => {
                   ))}
                 </Grid>
 
-                <Grid item>
+                <Grid className="col-span-2" item>
                   {rows[2].map((row) => (
-                    <div className=" px-2 py-1" align="center">
+                    <div
+                      className="uppercase text-base tracking-normal font-medium px-2 py-4"
+                      align="center"
+                    >
                       {' '}
                       {row['basic'] == true ? (
                         <img src={tickLogo} />
@@ -658,9 +781,12 @@ const Pricing = () => {
                     </div>
                   ))}
                 </Grid>
-                <Grid item>
+                <Grid className="col-span-2" item>
                   {rows[2].map((row) => (
-                    <div className=" px-2 py-1" align="center">
+                    <div
+                      className="uppercase text-base tracking-normal font-medium px-2 py-4"
+                      align="center"
+                    >
                       {' '}
                       {row['pro'] == true ? (
                         <img src={tickLogo} />
@@ -670,9 +796,12 @@ const Pricing = () => {
                     </div>
                   ))}
                 </Grid>
-                <Grid item>
+                <Grid className="col-span-2" item>
                   {rows[2].map((row) => (
-                    <div className=" px-2 py-1" align="center">
+                    <div
+                      className="uppercase text-base tracking-normal font-medium px-2 py-4"
+                      align="center"
+                    >
                       {' '}
                       {row['enterprise'] == true ? (
                         <img src={tickLogo} />
@@ -687,43 +816,61 @@ const Pricing = () => {
 
             <Card className="p-2 mb-3">
               <div className="bg-gray-100">
-                <h4 className="px-2" align="left">
+                <h4
+                  className="text-neutral-gray2 uppercase text-base tracking-normal font-bold px-2 "
+                  align="left"
+                >
                   {headings[3]}
                 </h4>
               </div>
-              <div className="grid grid-cols-5 pt-2  gap-4">
-                <Grid item>
+              <div className="grid grid-flow-row grid-cols-11 pt-2 gap-4">
+                <Grid item className="col-span-3">
                   {rows[3].map((row) => (
-                    <h6 className=" px-2 py-1" align="left">
+                    <h6
+                      className="uppercase text-base tracking-normal font-medium px-2 py-4"
+                      align="left"
+                    >
                       {row['name']}
                     </h6>
                   ))}
                 </Grid>
-                <Grid item>
+                <Grid className="col-span-2" item>
                   {rows[3].map((row) => (
-                    <div className=" px-2 py-1" align="center">
+                    <div
+                      className="uppercase text-base tracking-normal font-medium px-2 py-4"
+                      align="center"
+                    >
                       {row['trial']}
                     </div>
                   ))}
                 </Grid>
 
-                <Grid item>
+                <Grid className="col-span-2" item>
                   {rows[3].map((row) => (
-                    <div className=" px-2 py-1" align="center">
+                    <div
+                      className="uppercase text-base tracking-normal font-medium px-2 py-4"
+                      align="center"
+                    >
                       {row['basic']}
                     </div>
                   ))}
                 </Grid>
-                <Grid item>
+                <Grid className="col-span-2" item>
                   {rows[3].map((row) => (
-                    <div className=" px-2 py-1" align="center">
+                    <div
+                      className="uppercase text-base tracking-normal font-medium px-2 py-4"
+                      align="center"
+                    >
                       {row['pro']}
                     </div>
                   ))}
                 </Grid>
-                <Grid item>
+                <Grid className="col-span-2" item>
                   {rows[3].map((row) => (
-                    <div className=" px-2 py-1" align="center">
+                    <div
+                      className="uppercase text-base tracking-normal font-medium px-2 py-4"
+                      align="center"
+                    >
                       {row['enterprise']}
                     </div>
                   ))}
