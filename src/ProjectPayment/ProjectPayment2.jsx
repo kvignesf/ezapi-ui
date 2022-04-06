@@ -1,7 +1,10 @@
-import React, { useState, useEffect, useRef } from "react";
-import { useHistory, useParams } from "react-router-dom";
-import _ from "lodash";
-import ArrowBackIcon from "@material-ui/icons/ArrowBack";
+import React, { useState, useEffect, useRef } from 'react';
+import { useHistory, useLocation, useParams } from 'react-router-dom';
+import _ from 'lodash';
+import ArrowBackIcon from '@material-ui/icons/ArrowBack';
+import client, { endpoint } from '../shared/network/client';
+import { getApiError } from '../shared/utils';
+
 import {
   CircularProgress,
   Dialog,
@@ -9,27 +12,30 @@ import {
   Menu,
   MenuItem,
   Tooltip,
-} from "@material-ui/core";
+} from '@material-ui/core';
 import {
   CardElement,
   Elements,
   useElements,
   useStripe,
-} from "@stripe/react-stripe-js";
-import { loadStripe } from "@stripe/stripe-js";
+} from '@stripe/react-stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
 
-import AppIcon from "../shared/components/AppIcon";
-import InitialsAvatar from "../shared/components/InitialsAvatar";
-import LoaderWithMessage from "../shared/components/LoaderWithMessage";
-import ErrorWithMessage from "../shared/components/ErrorWithMessage";
+import AppIcon from '../shared/components/AppIcon';
+import InitialsAvatar from '../shared/components/InitialsAvatar';
+import LoaderWithMessage from '../shared/components/LoaderWithMessage';
+import ErrorWithMessage from '../shared/components/ErrorWithMessage';
 import {
   useFetchProjectDetails,
   useSubmitProject,
-} from "../Project/projectQueries";
-import { useCanEdit } from "../shared/utils";
-import { getFirstName, getLastName, getEmailId } from "../shared/storage";
-import Colors from "../shared/colors";
-import { useLogout } from "../shared/query/authQueries";
+} from '../Project/projectQueries';
+import {
+  generateSyncOperationResponseRequest,
+  useCanEdit,
+} from '../shared/utils';
+import { getFirstName, getLastName, getEmailId } from '../shared/storage';
+import Colors from '../shared/colors';
+import { useLogout } from '../shared/query/authQueries';
 import {
   useConfirmPayment,
   useGetBasicProduct,
@@ -37,20 +43,30 @@ import {
   useGetProducts,
   useInitiatePayment,
   useMakePayment,
-} from "./paymentQueries";
-import BillingDetailsForm from "./BillingDetailsForm";
-import CardDetailsForm from "./CardDetailsForm";
-import ProductDetails from "./ProductDetails";
-import PaymentStatusDialog from "./PaymentStatusDialog";
-import { PaymentStatus } from "./paymentUtils";
-import routes, { generateRoute } from "../shared/routes";
-import { useQueryClient } from "react-query";
-import { queries } from "../shared/network/queryClient";
-import PublishStatusDialog from "./PublishStatusDialog";
-import ProfileMenu from "../shared/components/ProfileMenu";
-import EzapiLogo from "../shared/components/EzapiLogo";
-import EzapiFooter from "../shared/components/EzapiFooter";
-
+} from './paymentQueries';
+import BillingDetailsForm from './BillingDetailsForm';
+import { useMutation, useQuery } from 'react-query';
+import CardDetailsForm from './CardDetailsForm';
+import ProductDetails from './ProductDetails';
+import PaymentStatusDialog from './PaymentStatusDialog';
+import { PaymentStatus } from './paymentUtils';
+import routes, { generateRoute } from '../shared/routes';
+import { useQueryClient } from 'react-query';
+import { queries } from '../shared/network/queryClient';
+import PublishStatusDialog from './PublishStatusDialog';
+import ProfileMenu from '../shared/components/ProfileMenu';
+import EzapiLogo from '../shared/components/EzapiLogo';
+import EzapiFooter from '../shared/components/EzapiFooter';
+import { getAccessToken } from '../shared/storage';
+const userProfile = async () => {
+  try {
+    const { data } = await client.get(endpoint.userProfile);
+    // console.lo g(data);
+    return data;
+  } catch (error) {
+    throw getApiError(error);
+  }
+};
 const Header = ({
   projectDetails,
   logoutMutation: { isLoading: isLoggingOut, mutate: logout },
@@ -72,7 +88,7 @@ const Header = ({
     <header className="fixed top-0 w-full z-999 px-2 border-b-2 flex flex-row justify-between items-center bg-white">
       <div className="flex flex-row py-2 items-center">
         <AppIcon
-          style={{ marginRight: "1rem" }}
+          style={{ marginRight: '1rem' }}
           onClick={(event) => {
             event?.preventDefault();
             event?.stopPropagation();
@@ -112,8 +128,54 @@ const Header = ({
     </header>
   );
 };
+const pricingData = async () => {
+  const { data } = await client.get(endpoint.products2);
+  // priceIDFinder(data);
+  // console.log(data);
+  return data;
+};
+export const usePricingData = () => {
+  return useQuery([queries.products], pricingData, {
+    refetchOnWindowFocus: false,
+  });
+};
 
-const ProjectPayment = () => {
+const ProjectPayment = (props) => {
+  const location = useLocation();
+  const [durationDefault, setDurationDefault] = React.useState(false);
+  const [typeDefault, setTypeDefault] = React.useState(false);
+  const [priceDefault, setPriceDefault] = React.useState();
+  const [addCardResponseID, setAddCardResponseID] = React.useState();
+  const [cityName, setCityName] = React.useState('SUBSCRIBE');
+  const [countryName, setCountryName] = React.useState('SUBSCRIBE');
+  const [line1Name, setLine1Name] = React.useState('SUBSCRIBE');
+  const [stateName, setStateName] = React.useState('SUBSCRIBE');
+  const [postalCodeName, setPostalCodeName] = React.useState('SUBSCRIBE');
+  (async () => {
+    const userProfile_data = await userProfile();
+    console.log(userProfile_data);
+    console.log(userProfile_data?.['billing_address']?.['city']);
+    setCityName(userProfile_data?.['billing_address']?.['city']);
+    setCountryName(userProfile_data?.['billing_address']?.['country']);
+    setStateName(userProfile_data?.['billing_address']?.['state']);
+    setLine1Name(userProfile_data?.['billing_address']?.['line1']);
+    setPostalCodeName(userProfile_data?.['billing_address']?.['postal_code']);
+  })();
+  console.log(stateName);
+  useEffect(() => {
+    var selectedPlanType;
+    if (location.state['duration'] == false) {
+      selectedPlanType = 'mo';
+    } else {
+      selectedPlanType = 'yr';
+    }
+    setDurationDefault(selectedPlanType);
+    setTypeDefault(location.state['type']);
+    setPriceDefault(location.state['price']);
+  }, [location]);
+
+  console.log(durationDefault, typeDefault);
+
   const { projectId } = useParams();
   const history = useHistory();
   const {
@@ -147,6 +209,7 @@ const ProjectPayment = () => {
     data: null,
     type: null,
   });
+  const [tokenID, setTokenID] = useState();
   const billingDetailsRef = useRef();
   const cardDetailsRef = useRef();
   const stripe = useStripe();
@@ -207,7 +270,7 @@ const ProjectPayment = () => {
       !_.isEmpty(initiatePaymentData?.clientSecret)
     ) {
       confirmPayment({
-        secret: initiatePaymentData?.clientSecret,
+        token: tokenID,
         card: elements.getElement(CardElement),
         billingDetails: billingDetailsRef?.current?.values,
         // billingDetails: {},
@@ -249,14 +312,14 @@ const ProjectPayment = () => {
 
       // Project is not valid state
       if (
-        projectDetails?.status?.toLowerCase() !== "in_progress" &&
-        projectDetails?.status?.toLowerCase() !== "complete"
+        projectDetails?.status?.toLowerCase() !== 'in_progress' &&
+        projectDetails?.status?.toLowerCase() !== 'complete'
       ) {
         navigateBack();
       }
 
       // Cannot make payment
-      if (projectDetails?.projectBillingPlan?.toLowerCase() !== "none") {
+      if (projectDetails?.projectBillingPlan?.toLowerCase() !== 'none') {
         navigateBack();
       }
     }
@@ -264,7 +327,7 @@ const ProjectPayment = () => {
 
   useEffect(() => {
     // User no access
-    if (projectDetailsError?.message?.toLowerCase() === "no_access") {
+    if (projectDetailsError?.message?.toLowerCase() === 'no_access') {
       navigateBack();
     }
   }, [projectDetailsError]);
@@ -281,27 +344,128 @@ const ProjectPayment = () => {
     }
   }, [isConfirmPaymentSuccess, confirmPaymentData]);
 
-  const initiatePaymentProcess = (billingDetails) => {
-    if (_.isEmpty(initiatePaymentData?.clientSecret)) {
-      initiatePayment({
-        projectId,
-        productId: basicProductData?.product?.productId,
-        billingDetails,
-        // orderId,
-      });
-    } else {
-      confirmPayment({
-        secret: initiatePaymentData?.clientSecret,
-        card: elements.getElement(CardElement),
-        billingDetails: billingDetailsRef?.current?.values,
-        stripe,
+  const acc_token = getAccessToken();
+  console.log(acc_token);
+
+  const { data: pricing_data } = usePricingData();
+  var priceIDData = '';
+  function priceIDFinder(type, duration) {
+    if (!_.isEmpty(pricing_data?.products)) {
+      pricing_data['products'].map((item, index) => {
+        if (type == item['plan_name']) {
+          durationFinder(item, duration);
+        }
       });
     }
+  }
+  function durationFinder(item, duration) {
+    if (_.isEmpty(item['stripe'])) {
+      return 'Trial cant be subscribed';
+    }
+    item['stripe'].map((item2, index2) => {
+      if (duration == item2['plan_interval']) {
+        // console.log(item2["price_id"]);
+        priceIDData = item2['price_id'];
+        return item2['price_id'];
+      }
+    });
+  }
+
+  const initiatePaymentProcess = async (billingDetails, type, duration) => {
+    switch (type) {
+      case 10:
+        type = 'Trial';
+        break;
+      case 20:
+        type = 'Basic';
+        break;
+      case 30:
+        type = 'Pro';
+        break;
+    }
+    switch (duration) {
+      case 10:
+        duration = 'month';
+        break;
+      case 20:
+        duration = 'year';
+        break;
+    }
+
+    priceIDFinder(type, duration);
+
+    const { token, error } = await stripe.createToken(
+      elements.getElement(CardElement),
+      {
+        headers: {
+          Authorization: process.env.REACT_APP_STRIPE_KEY,
+        },
+      }
+    );
+
+    // setTokenID(token?.["id"]);
+    console.log(token?.['id']);
+    const addCardResponse = await client.post(
+      endpoint.addCard,
+      {
+        stripe_token: token['id'],
+        billing_address: {
+          city: billingDetails?.city,
+          country: billingDetails?.country,
+          line1: billingDetails?.addressLine1,
+          line2: billingDetails?.addressLine2,
+          state: billingDetails?.state,
+          postal_code: billingDetails?.zip,
+        },
+      },
+      {
+        headers: {
+          Authorization: acc_token,
+        },
+        timeout: 480000,
+      }
+    );
+    console.log(addCardResponse?.['status']);
+    setAddCardResponseID(addCardResponse?.['status']);
+    const subscribeData = await client.post(
+      endpoint.subscribe,
+      {
+        update_plan: true,
+        price_id: priceIDData,
+      },
+      {
+        headers: {
+          Authorization: acc_token,
+        },
+        timeout: 480000,
+      }
+    );
+    console.log(subscribeData);
+    if (
+      billingDetailsRef.current.isValid &&
+      cardDetailsRef.current.isValid &&
+      billingDetailsRef?.current?.values?.fullName &&
+      billingDetailsRef?.current?.values?.addressLine1
+    ) {
+      initiatePaymentProcess2(billingDetailsRef.current.values, token?.['id']);
+    }
+  };
+
+  const initiatePaymentProcess2 = (billingDetails, token) => {
+    console.log('enter 2');
+    confirmPayment({
+      // addCardResponse: addCardResponse,
+      token: token,
+      card: elements.getElement(CardElement),
+      billingDetails: billingDetailsRef?.current?.values,
+      stripe,
+    });
   };
 
   const navigateBack = () => {
     // history.goBack();
-    history.replace(generateRoute(routes.projects, projectId));
+    // history.replace(generateRoute(routes.projects, projectId));
+    history.push(routes.payment);
   };
 
   const navigateToDashboard = () => {
@@ -335,7 +499,7 @@ const ProjectPayment = () => {
   const isPaymentSuccess = () => {
     return (
       isConfirmPaymentSuccess &&
-      confirmPaymentData?.paymentIntent?.status === "succeeded"
+      confirmPaymentData?.paymentIntent?.status === 'succeeded'
     );
   };
 
@@ -425,14 +589,8 @@ const ProjectPayment = () => {
     publishProjectData;
 
   const canShowAutoPopulationButton = () => {
-    return false;
-    // const loggedInUserEmailId = getEmailId();
-
-    // return (
-    //   loggedInUserEmailId === "karthik.b@cumulations.com" ||
-    //   loggedInUserEmailId === "madhuworldwide@gmail.com" ||
-    //   loggedInUserEmailId === "dhirajsingh.k@cumulations.com"
-    // );
+    return true;
+    console.log(confirmPaymentMutation);
   };
 
   return (
@@ -452,20 +610,9 @@ const ProjectPayment = () => {
       >
         {shouldShowDialogForPayment() && (
           <PaymentStatusDialog
+            response={addCardResponseID}
             onClose={handleCloseDialog}
-            onButtonClick={() => {
-              if (isPaymentSuccess()) {
-                resetConfirmPayment();
-                resetInitiatePayment();
-                resetVerifyMutation();
-                resetPublishMutation();
-                invalidateProject();
-                navigateBack();
-              } else {
-                handleCloseDialog();
-              }
-            }}
-            initiatePaymentMutation={initiatePaymentMutation}
+            // initiatePaymentMutation={initiatePaymentMutation}
             confirmPaymentMutation={confirmPaymentMutation}
           />
         )}
@@ -496,7 +643,6 @@ const ProjectPayment = () => {
       </Dialog>
 
       <Header projectDetails={projectDetails} logoutMutation={logoutMutation} />
-
       <div className="w-full flex flex-row p-12 h-full mt-14">
         {basicProductData && (
           <div className="flex-1 mr-6 px-6">
@@ -505,17 +651,16 @@ const ProjectPayment = () => {
                 className="p-1 bg-neutral-gray6 rounded-md mb-2"
                 onClick={(e) => {
                   billingDetailsRef?.current?.setValues({
-                    fullName: "Hello",
-                    country: "IN",
-                    country: "IN",
-                    addressLine1: "Test Address",
-                    zip: "560070",
-                    city: "Test City",
-                    state: "Karnataka",
-                    email: "testemail@randomdomain123.com",
+                    fullName: 'Aakash22',
+                    country: countryName,
+                    addressLine1: line1Name,
+                    zip: postalCodeName,
+                    city: cityName,
+                    state: stateName,
+                    email: 'aakashchid02@gmail.com',
                   });
                   cardDetailsRef?.current?.setValues({
-                    cardHolderName: "Test card holder name",
+                    cardHolderName: 'Aakash Test',
                   });
                 }}
               >
@@ -538,23 +683,22 @@ const ProjectPayment = () => {
         {basicProductData && (
           <div className="flex-1">
             <ProductDetails
+              type={typeDefault}
+              duration={durationDefault}
+              priceId={priceDefault}
               product={basicProductData?.product}
               disabled={
                 isInitiatingPayment || isConfirmingPayment || isLoggingOut
               }
               project={projectDetails}
-              onPurchaseClick={() => {
+              onPurchaseClick={(type, duration) => {
                 billingDetailsRef.current.handleSubmit();
                 cardDetailsRef.current.handleSubmit();
-
-                if (
-                  billingDetailsRef.current.isValid &&
-                  cardDetailsRef.current.isValid &&
-                  billingDetailsRef?.current?.values?.fullName &&
-                  billingDetailsRef?.current?.values?.addressLine1
-                ) {
-                  initiatePaymentProcess(billingDetailsRef.current.values);
-                }
+                initiatePaymentProcess(
+                  billingDetailsRef.current.values,
+                  type,
+                  duration
+                );
               }}
             />
           </div>

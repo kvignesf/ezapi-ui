@@ -1,35 +1,37 @@
-import React from "react";
-import { ErrorMessage, Field, Form, Formik, useFormik } from "formik";
-import { MenuItem, Select, TextField } from "@material-ui/core";
-import countryList from "react-select-country-list";
-import PhoneInput from "react-phone-input-2";
-import "react-phone-input-2/lib/style.css";
-import { CountryDropdown, RegionDropdown } from "react-country-region-selector";
+import React from 'react';
+import { ErrorMessage, Field, Form, Formik, useFormik } from 'formik';
+import { MenuItem, Select, TextField } from '@material-ui/core';
+import countryList from 'react-select-country-list';
+import PhoneInput from 'react-phone-input-2';
+import client, { endpoint } from './shared/network/client';
+import 'react-phone-input-2/lib/style.css';
+import { CountryDropdown, RegionDropdown } from 'react-country-region-selector';
+import { getApiError } from './shared/utils';
+import billingDetailsSchema from './ProjectPayment/billingDetailsSchema';
+import { PrimaryButton } from './shared/components/AppButton';
+import classNames from 'classnames';
 
-import billingDetailsSchema from "./billingDetailsSchema";
-import { PrimaryButton } from "../shared/components/AppButton";
-import classNames from "classnames";
-
-const BillingDetailsForm = ({ disabled = false, formRef }) => {
+const BillingPage = ({ disabled = false }) => {
   return (
     <div className="mb-8">
       <p className="text-subtitle1 mb-3">Billing Details</p>
 
       <Formik
         initialValues={{
-          fullName: "",
-          company: "",
-          country: "",
-          addressLine1: "",
-          addressLine2: "",
-          zip: "",
-          city: "",
-          state: "",
-          email: "",
-          phone: "",
+          fullName: '',
+          company: '',
+          country: '',
+          addressLine1: '',
+          addressLine2: '',
+          zip: '',
+          city: '',
+          state: '',
+          email: '',
+          phone: '',
         }}
-        validationSchema={billingDetailsSchema}
-        innerRef={formRef}
+        enableReinitialize
+        // validationSchema={billingDetailsSchema}
+        // innerRef={formRef}
       >
         {({ values, errors, touched, setFieldValue }) => {
           return (
@@ -49,7 +51,7 @@ const BillingDetailsForm = ({ disabled = false, formRef }) => {
                   onKeyUp={(e) => {}}
                   inputProps={{
                     style: {
-                      height: "6px",
+                      height: '6px',
                     },
                   }}
                   as={TextField}
@@ -76,7 +78,7 @@ const BillingDetailsForm = ({ disabled = false, formRef }) => {
                   onKeyUp={(e) => {}}
                   inputProps={{
                     style: {
-                      height: "6px",
+                      height: '6px',
                     },
                   }}
                   as={TextField}
@@ -88,15 +90,15 @@ const BillingDetailsForm = ({ disabled = false, formRef }) => {
 
                 <div
                   className={classNames(
-                    "border-1 rounded-md p-1",
+                    'border-1 rounded-md p-1',
                     {
-                      "border-accent-red":
+                      'border-accent-red':
                         touched?.country && Boolean(errors?.country),
-                      "border-neutral-gray5": !(
+                      'border-neutral-gray5': !(
                         touched?.country && Boolean(errors?.country)
                       ),
                     },
-                    "focus-within:border-brand-primary focus-within:border-2"
+                    'focus-within:border-brand-primary focus-within:border-2'
                   )}
                 >
                   <Field
@@ -109,15 +111,15 @@ const BillingDetailsForm = ({ disabled = false, formRef }) => {
                     error={touched.country && Boolean(errors.country)}
                     helperText={<ErrorMessage name="country" />}
                     style={{
-                      width: "100%",
-                      height: "2.25rem",
+                      width: '100%',
+                      height: '2.25rem',
                     }}
                     as={CountryDropdown}
                     onChange={(v) => {
-                      setFieldValue("country", v);
+                      setFieldValue('country', v);
                     }}
                     valueType="short"
-                    classes={"outline-none"}
+                    classes={'outline-none'}
                     defaultOptionLabel=""
                   />
                 </div>
@@ -125,9 +127,9 @@ const BillingDetailsForm = ({ disabled = false, formRef }) => {
                   <p
                     className="py-1"
                     style={{
-                      fontSize: "0.75rem",
-                      marginLeft: "1rem",
-                      color: "#f44336",
+                      fontSize: '0.75rem',
+                      marginLeft: '1rem',
+                      color: '#f44336',
                     }}
                   >
                     {errors?.country}
@@ -150,7 +152,7 @@ const BillingDetailsForm = ({ disabled = false, formRef }) => {
                   onKeyUp={(e) => {}}
                   inputProps={{
                     style: {
-                      height: "6px",
+                      height: '6px',
                     },
                   }}
                   as={TextField}
@@ -177,7 +179,7 @@ const BillingDetailsForm = ({ disabled = false, formRef }) => {
                   onKeyUp={(e) => {}}
                   inputProps={{
                     style: {
-                      height: "6px",
+                      height: '6px',
                     },
                   }}
                   as={TextField}
@@ -200,17 +202,17 @@ const BillingDetailsForm = ({ disabled = false, formRef }) => {
                     onKeyUp={(e) => {}}
                     inputProps={{
                       style: {
-                        height: "6px",
+                        height: '6px',
                       },
                     }}
                     onChange={(e) => {
                       const re = /^[0-9\b]+$/;
 
                       if (
-                        e?.target?.value?.trim() === "" ||
+                        e?.target?.value?.trim() === '' ||
                         re.test(e?.target?.value)
                       ) {
-                        setFieldValue("zip", e.target.value);
+                        setFieldValue('zip', e.target.value);
                       }
                     }}
                     as={TextField}
@@ -232,7 +234,7 @@ const BillingDetailsForm = ({ disabled = false, formRef }) => {
                     onKeyUp={(e) => {}}
                     inputProps={{
                       style: {
-                        height: "6px",
+                        height: '6px',
                       },
                     }}
                     as={TextField}
@@ -244,15 +246,15 @@ const BillingDetailsForm = ({ disabled = false, formRef }) => {
 
                   <div
                     className={classNames(
-                      "border-1 rounded-md p-1",
+                      'border-1 rounded-md p-1',
                       {
-                        "border-accent-red":
+                        'border-accent-red':
                           touched?.state && Boolean(errors?.state),
-                        "border-neutral-gray5": !(
+                        'border-neutral-gray5': !(
                           touched?.state && Boolean(errors?.state)
                         ),
                       },
-                      "focus-within:border-brand-primary focus-within:border-2"
+                      'focus-within:border-brand-primary focus-within:border-2'
                     )}
                   >
                     <Field
@@ -266,17 +268,17 @@ const BillingDetailsForm = ({ disabled = false, formRef }) => {
                       helperText={<ErrorMessage name="state" />}
                       onKeyUp={(e) => {}}
                       style={{
-                        width: "100%",
-                        height: "2.1rem",
+                        width: '100%',
+                        height: '2.1rem',
                       }}
                       value={values?.state}
                       as={RegionDropdown}
                       country={values?.country}
                       onChange={(v) => {
-                        setFieldValue("state", v);
+                        setFieldValue('state', v);
                       }}
                       countryValueType="short"
-                      classes={"outline-none"}
+                      classes={'outline-none'}
                       defaultOptionLabel=""
                       blankOptionLabel=""
                     />
@@ -285,9 +287,9 @@ const BillingDetailsForm = ({ disabled = false, formRef }) => {
                     <p
                       className="py-1"
                       style={{
-                        fontSize: "0.75rem",
-                        marginLeft: "1rem",
-                        color: "#f44336",
+                        fontSize: '0.75rem',
+                        marginLeft: '1rem',
+                        color: '#f44336',
                       }}
                     >
                       {errors?.state}
@@ -312,7 +314,7 @@ const BillingDetailsForm = ({ disabled = false, formRef }) => {
                     onKeyUp={(e) => {}}
                     inputProps={{
                       style: {
-                        height: "6px",
+                        height: '6px',
                       },
                     }}
                     as={TextField}
@@ -339,13 +341,13 @@ const BillingDetailsForm = ({ disabled = false, formRef }) => {
                     onKeyUp={(e) => {}}
                     inputProps={{
                       style: {
-                        height: "42px",
-                        width: "100%",
+                        height: '42px',
+                        width: '100%',
                       },
                     }}
                     value={values?.phone}
-                    country={"us"}
-                    onChange={(phone) => setFieldValue("phone", phone)}
+                    country={'us'}
+                    onChange={(phone) => setFieldValue('phone', phone)}
                     as={PhoneInput}
                   />
                 </div>
@@ -358,4 +360,4 @@ const BillingDetailsForm = ({ disabled = false, formRef }) => {
   );
 };
 
-export default BillingDetailsForm;
+export default BillingPage;

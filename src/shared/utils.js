@@ -24,6 +24,7 @@ export const isEmailValid = (email) => {
 
 export const isUserLoggedIn = () => {
   const token = getAccessToken();
+  console.log("acc_token: " + token);
 
   return token && !_.isEmpty(token);
 };
@@ -35,7 +36,7 @@ export const getApiError = (error) => {
     if (url && url === endpoint.login) {
       return new Error(Messages.NO_USER_DETAILS);
     }
-    
+
     if (url && url === endpoint.publishProject) {
       return error;
     }
@@ -52,7 +53,7 @@ export const getApiError = (error) => {
       return new Error(error?.response?.data?.message);
     }
 
-    if(url && !_.isEmpty(url) && url.includes("/upload_To_GCP")){
+    if (url && !_.isEmpty(url) && url.includes("/upload_To_GCP")) {
       return new Error(error?.response?.data?.message);
     }
     return new Error(Messages.INVALID_DATA);

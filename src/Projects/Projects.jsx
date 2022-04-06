@@ -48,7 +48,7 @@ const MembersImages = ({ project, ...rest }) => {
       {...rest}
     >
       {_.isEmpty(project?.members) && loggedInUserId === project?.author ? (
-        <p className='capitalize text-brand-secondary text-overline2'>
+        <p className="capitalize text-brand-secondary text-overline2">
           Invite Collaborators
         </p>
       ) : null}
@@ -88,7 +88,7 @@ const MembersImages = ({ project, ...rest }) => {
       })}
 
       {project?.members?.length > 3 ? (
-        <p className='text-overline2 self-center ml-2'>
+        <p className="text-overline2 self-center ml-2">
           + {project?.members?.length - 3} more
         </p>
       ) : null}
@@ -131,9 +131,9 @@ const ProjectRow = ({
   };
 
   return (
-    <tr className='text-overline2'>
+    <tr className="text-overline2">
       <td
-        className='p-3 text-brand-secondary cursor-pointer'
+        className="p-3 text-brand-secondary cursor-pointer"
         onClick={(event) => {
           event?.preventDefault();
           event?.stopPropagation();
@@ -156,12 +156,12 @@ const ProjectRow = ({
         <TimeAgo date={datetime} />
       </td>
       <td>
-        <p className='text-overline2'>{project?.status}</p>
+        <p className="text-overline2">{project?.status}</p>
       </td>
-      <td align='center'>
-        <div className='flex flex-row items-center gap-2'>
+      <td align="center">
+        <div className="flex flex-row items-center gap-2">
           {/* Codegen download */}
-          <div className='w-8'>
+          <div className="w-8">
             {project?.status?.toLowerCase() === "complete" &&
               project?.projectType?.toLowerCase() !== "schema" &&
               !isDownloadingCodegen && (
@@ -201,7 +201,7 @@ const ProjectRow = ({
           {project?.status?.toLowerCase() === "complete" &&
             project?.publishStatus?.SpecGeneration?.success &&
             !isDownloadingSpecs && (
-              <Tooltip title='Download Specs'>
+              <Tooltip title="Download Specs">
                 <div
                   style={{
                     width: "32px",
@@ -210,8 +210,8 @@ const ProjectRow = ({
                 >
                   <img
                     src={Logo}
-                    alt='ezapi logo'
-                    className='cursor-pointer'
+                    alt="ezapi logo"
+                    className="cursor-pointer"
                     onClick={(e) => {
                       e?.preventDefault();
                       e?.stopPropagation();
@@ -240,7 +240,7 @@ const ProjectRow = ({
                   onDownloadArtifact();
                 }}
               >
-                <Tooltip title='Download Artifacts'>
+                <Tooltip title="Download Artifacts">
                   <SystemUpdateAltIcon
                     style={{ color: Colors.brand.primary }}
                   />
@@ -254,7 +254,7 @@ const ProjectRow = ({
         </div>
       </td>
 
-      <td align='center'>
+      <td align="center">
         <AppIcon onClick={handleOnOptionsClick}>
           <MoreVertIcon />
         </AppIcon>
@@ -385,10 +385,10 @@ const Content = ({ showCreateProjectDialog }) => {
   }
 
   return (
-    <div className='p-3 h-full'>
+    <div className="p-3 h-full">
       <Dialog
         onClose={handleCloseDialog}
-        aria-labelledby='projects-dialog'
+        aria-labelledby="projects-dialog"
         open={dialog?.show ?? false}
         fullWidth
         PaperProps={{
@@ -414,20 +414,20 @@ const Content = ({ showCreateProjectDialog }) => {
       </Dialog>
 
       {projects && !_.isEmpty(projects) && (
-        <table className='w-full'>
-          <tr className='mr-16 bg-neutral-gray6 w-full text-left text-neutral-gray4 text-mediumLabel'>
-            <th className='p-2 w-1/5 rounded-tl-md rounded-bl-md'>
+        <table className="w-full">
+          <tr className="mr-16 bg-neutral-gray6 w-full text-left text-neutral-gray4 text-mediumLabel">
+            <th className="p-2 w-1/5 rounded-tl-md rounded-bl-md">
               API PROJECT
             </th>
-            <th className=''>COLLABORATORS</th>
-            <th className=''>LAST ACTIVITY</th>
-            <th className=''>STATUS</th>
-            <th className=''>ARTIFACTS</th>
-            <th className='rounded-tr-md rounded-br-md text-center'>
+            <th className="">COLLABORATORS</th>
+            <th className="">LAST ACTIVITY</th>
+            <th className="">STATUS</th>
+            <th className="">ARTIFACTS</th>
+            <th className="rounded-tr-md rounded-br-md text-center">
               {isFetchingProjectsBg ? (
-                <CircularProgress size='20px' />
+                <CircularProgress size="20px" />
               ) : (
-                <Tooltip title='Refresh list'>
+                <Tooltip title="Refresh list">
                   <ReplayIcon
                     style={{
                       width: "20px",
@@ -464,16 +464,16 @@ const Content = ({ showCreateProjectDialog }) => {
       {/* Empty state */}
       {!projects ||
         (_.isEmpty(projects) && (
-          <div className='h-full flex flex-col items-center justify-center'>
+          <div className="h-full flex flex-col items-center justify-center">
             <img
               src={EmptyLogo}
-              className='mb-4'
+              className="mb-4"
               style={{ width: "100px", height: "100px" }}
             />
 
-            <h5 className='mb-3'>No API project available</h5>
+            <h5 className="mb-3">No API project available</h5>
 
-            <h6 className='mb-11 text-neutral-gray3'>
+            <h6 className="mb-11 text-neutral-gray3">
               Start creating a new API project
             </h6>
 

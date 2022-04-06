@@ -50,30 +50,30 @@ const Login = () => {
   }
 
   return (
-    <div className='h-screen flex justify-center items-center'>
-      <Card className='w-1/2 max-w-sm flex flex-col justify-center items-center p-5'>
+    <div className="h-screen flex justify-center items-center">
+      <Card className="w-1/2 max-w-sm flex flex-col justify-center items-center p-5">
         <img
           src={Logo}
-          alt='ezapi logo'
-          className='mb-4 p-3'
+          alt="ezapi logo"
+          className="mb-4 p-3"
           style={{ maxWidth: "128px" }}
         />
 
         {!isLoggingIn && (
-          <div className='mb-2'>
+          <div className="mb-2">
             <LinkedIn
               clientId={Constants.linkedClientId}
               onFailure={handleFailure}
               onSuccess={handleSuccess}
               redirectUri={encodeURIComponent(redirect_uri)}
               redirectPath={"/signin"}
-              scope='r_liteprofile r_emailaddress'
+              scope="r_liteprofile r_emailaddress"
             >
               <img
                 src={linkedin}
-                alt='Log in with Linked In'
+                alt="Log in with Linked In"
                 style={{ maxWidth: "180px" }}
-                className='w-full'
+                className="w-full"
               />
             </LinkedIn>
           </div>
@@ -86,7 +86,7 @@ const Login = () => {
         )}
 
         {loginError && (
-          <p className='text-overline2 text-accent-red'>
+          <p className="text-overline2 text-accent-red">
             {loginError?.message}
           </p>
         )}
