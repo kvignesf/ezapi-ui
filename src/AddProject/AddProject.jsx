@@ -386,7 +386,27 @@ const AddProject = ({ onClose, onSuccess }) => {
                 </Alert>
               </Snackbar>
             )}
-
+            
+            {exportDBError && (
+              <p className="text-overline2 text-accent-red my-2">
+                {`Failed to export db - ${exportDBError?.message}`}
+              </p>
+            )}
+            {uploadProjectKeyError && (
+              <p className="text-overline2 text-accent-red my-2">
+                {`Failed to upload key - ${uploadProjectKeyError?.message}`}
+              </p>
+            )}
+            {uploadProjectCertificateError && (
+              <p className="text-overline2 text-accent-red my-2">
+                {`Failed to upload certificate - ${uploadProjectCertificateError?.message}`}
+              </p>
+            )}
+            {uploadProjectCACertificateError && (
+              <p className="text-overline2 text-accent-red my-2">
+                {`Failed to upload caCertificate - ${uploadProjectCACertificateError?.message}`}
+              </p>
+            )}
             {uploadSpecsError && (
               <p className="text-overline2 text-accent-red my-2">
                 {`Failed to upload specs - ${uploadSpecsError?.message}`}
