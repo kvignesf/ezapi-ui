@@ -89,18 +89,24 @@ const initiatePayment = async ({
         },
       }
     );
-    console.log(addCardResponse.data);
-    if (addCardResponse.ok) {
-      console.log(addCardResponse.json());
-    }
-    await delay(2000);
-    console.log(addCardResponse);
+
+    console.log(addCardResponse?.['data']?.['card']?.['id']);
+    const defaultCardResponse = await client.post(
+      endpoint.defaultCard,
+      {
+        cardId: addCardResponse?.['data']?.['card']?.['id'],
+      },
+      {
+        headers: {
+          Authorization: acc_token,
+        },
+      }
+    );
+    console.log(defaultCardResponse);
     return addCardResponse;
   } catch (error) {
-    // console.log('inside error');
-    // console.log(error.message);
-    // console.log(error);
-
+    console.log('error hereee!');
+    console.log(error);
     throw getApiError(error);
   }
 };
