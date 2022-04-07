@@ -314,12 +314,16 @@ const Pricing = () => {
   })();
 
   // console.log(tiers);
-  const handleClick = (title, price) => {
-    history.push({
-      pathname: routes.payment,
-      // search: title,
-      state: { type: title, duration: durationMY, price: price },
-    });
+  const handleClick = (title, price, buttonTextType) => {
+    if (buttonTextType == 'Subscribe') {
+      history.push({
+        pathname: routes.payment,
+        // search: title,
+        state: { type: title, duration: durationMY, price: price },
+      });
+    } else if (buttonTextType == 'CONTACT US') {
+      window.open('https://www.ezapi.ai/contact');
+    }
   };
 
   const { data: pricing_data } = usePricingData();
@@ -565,7 +569,11 @@ const Pricing = () => {
                               : '#0971f1',
                         }}
                         onClick={() => {
-                          handleClick(tier['title'], tier['price']);
+                          handleClick(
+                            tier['title'],
+                            tier['price'],
+                            tier.buttonText
+                          );
                         }}
                         disabled={tier.buttonText == 'Subscribed'}
                         fullWidth

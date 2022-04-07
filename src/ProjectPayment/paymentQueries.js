@@ -11,6 +11,7 @@ import { clearQueryCache, queries } from '../shared/network/queryClient';
 import routes from '../shared/routes';
 import { clearSession, setAccessToken } from '../shared/storage';
 import { getApiError, delay } from '../shared/utils';
+import { CircleNotificationsOutlined } from '@mui/icons-material';
 
 const getProducts = async () => {
   try {
@@ -63,11 +64,7 @@ export const useGetBillingDetails = () => {
   return useMutation(getBillingDetails);
 };
 
-const initiatePayment = async ({
-  token,
-
-  billingDetails,
-}) => {
+const initiatePayment = async ({ token, priceIDData, billingDetails }) => {
   // return true;
   try {
     const addCardResponse = await client.post(
@@ -89,12 +86,12 @@ const initiatePayment = async ({
         },
       }
     );
-
-    console.log(addCardResponse?.['data']?.['card']?.['id']);
-    const defaultCardResponse = await client.post(
-      endpoint.defaultCard,
+    // await delay(10000);
+    const subscribeData = await client.post(
+      endpoint.subscribe,
       {
-        cardId: addCardResponse?.['data']?.['card']?.['id'],
+        update_plan: true,
+        price_id: priceIDData,
       },
       {
         headers: {
@@ -102,14 +99,36 @@ const initiatePayment = async ({
         },
       }
     );
-    console.log(defaultCardResponse);
-    return addCardResponse;
+    console.log(addCardResponse);
+    console.log(subscribeData);
+    return [addCardResponse, subscribeData];
   } catch (error) {
-    console.log('error hereee!');
-    console.log(error);
     throw getApiError(error);
   }
 };
+
+// const initiatePayment2 = async ({ initiatePaymentData }) => {
+//   // return true;
+//   try {
+//     const defaultCardResponse = await client.post(
+//       endpoint.defaultCard,
+//       {
+//         cardId: initiatePaymentData?.['data']?.['card']?.['id'],
+//       },
+//       {
+//         headers: {
+//           Authorization: acc_token,
+//         },
+//       }
+//     );
+
+//     await delay(2000);
+
+//     return initiatePayment2;
+//   } catch (error) {
+//     throw getApiError(error);
+//   }
+// };
 
 export const useInitiatePayment = () => {
   return useMutation(initiatePayment);
@@ -125,7 +144,7 @@ const confirmPayment = async ({
   secret,
   stripe,
 }) => {
-  console.log(token);
+  // console.log(token);
   try {
     const subscribeData = await client.post(
       endpoint.subscribe,
@@ -137,11 +156,10 @@ const confirmPayment = async ({
         headers: {
           Authorization: acc_token,
         },
-        timeout: 480000,
       }
     );
 
-    await delay(2000);
+    await delay(10000);
 
     return subscribeData;
   } catch (error) {

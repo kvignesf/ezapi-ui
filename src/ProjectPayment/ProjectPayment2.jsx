@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useHistory, useLocation, useParams } from 'react-router-dom';
 import _ from 'lodash';
+import { delay } from '../shared/utils';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import client, { endpoint } from '../shared/network/client';
 import { getApiError } from '../shared/utils';
@@ -203,6 +204,7 @@ const ProjectPayment = (props) => {
     data: basicProductData,
   } = useGetBasicProduct();
   const initiatePaymentMutation = useInitiatePayment();
+
   const confirmPaymentMutation = useConfirmPayment();
   const [userRole, setRole] = useState(null);
   const [dialog, setDialog] = useState({
@@ -223,13 +225,6 @@ const ProjectPayment = (props) => {
     mutate: initiatePayment,
     reset: resetInitiatePayment,
   } = initiatePaymentMutation;
-  console.log(
-    initiatePaymentMutation.isLoading,
-    initiatePaymentMutation.error,
-    initiatePaymentMutation.data,
-    isInitiatePaymentSuccess,
-    initiatePaymentData?.['status']
-  );
   const {
     isLoading: isConfirmingPayment,
     error: confirmPaymentError,
@@ -238,6 +233,7 @@ const ProjectPayment = (props) => {
     mutate: confirmPayment,
     reset: resetConfirmPayment,
   } = confirmPaymentMutation;
+  console.log(initiatePaymentData);
   const queryClient = useQueryClient();
   const { verifyProjectMutation, publishProjectMutation } =
     useSubmitProject(projectId);
@@ -423,28 +419,16 @@ const ProjectPayment = (props) => {
     }
   };
 
-  const initiatePaymentProcess2 = (billingDetails, token) => {
+  const initiatePaymentProcess2 = async (billingDetails, token) => {
     initiatePayment({
       token: token,
+      priceIDData: priceIDData,
       billingDetails: billingDetailsRef?.current?.values,
-      // projectId,
-      // productId: basicProductData?.product?.productId,
-      // billingDetails,
-      // orderId,
     });
-    if (isInitiatePaymentSuccess) {
-      confirmPayment({
-        // secret: initiatePaymentData?.clientSecret,
-        priceIDData: priceIDData,
-        token: token,
-        card: elements.getElement(CardElement),
-        billingDetails: billingDetailsRef?.current?.values,
-        stripe,
-      });
-    }
 
     // confirmPayment({
-    //   // addCardResponse: addCardResponse,
+    //   // secret: initiatePaymentData?.clientSecret,
+    //   priceIDData: priceIDData,
     //   token: token,
     //   card: elements.getElement(CardElement),
     //   billingDetails: billingDetailsRef?.current?.values,

@@ -42,9 +42,9 @@ const PaymentStatusDialog = ({
     // }
     return (
       isInitiatePaymentSuccess &&
-      initiatePaymentData?.['status'] == 200 &&
-      confirmPaymentData?.['status'] == 200 &&
-      !(initiatePaymentError || confirmPaymentError)
+      initiatePaymentData?.[0]['status'] == 200 &&
+      initiatePaymentData?.[1]['status'] == 200 &&
+      !initiatePaymentError
     );
   };
 
