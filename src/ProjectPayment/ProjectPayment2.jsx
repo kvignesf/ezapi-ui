@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useHistory, useLocation, useParams } from 'react-router-dom';
 import _ from 'lodash';
+import { delay } from '../shared/utils';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import client, { endpoint } from '../shared/network/client';
 import { getApiError } from '../shared/utils';
@@ -203,6 +204,7 @@ const ProjectPayment = (props) => {
     data: basicProductData,
   } = useGetBasicProduct();
   const initiatePaymentMutation = useInitiatePayment();
+
   const confirmPaymentMutation = useConfirmPayment();
   const [userRole, setRole] = useState(null);
   const [dialog, setDialog] = useState({
@@ -223,13 +225,6 @@ const ProjectPayment = (props) => {
     mutate: initiatePayment,
     reset: resetInitiatePayment,
   } = initiatePaymentMutation;
-  console.log(
-    initiatePaymentMutation.isLoading,
-    initiatePaymentMutation.error,
-    initiatePaymentMutation.data,
-    initiatePaymentMutation.isSuccess,
-    initiatePaymentData?.['status']
-  );
   const {
     isLoading: isConfirmingPayment,
     error: confirmPaymentError,
@@ -238,6 +233,7 @@ const ProjectPayment = (props) => {
     mutate: confirmPayment,
     reset: resetConfirmPayment,
   } = confirmPaymentMutation;
+  console.log(initiatePaymentData);
   const queryClient = useQueryClient();
   const { verifyProjectMutation, publishProjectMutation } =
     useSubmitProject(projectId);
@@ -413,29 +409,6 @@ const ProjectPayment = (props) => {
 
     setTokenID(token?.['id']);
 
-    // const addCardResponse = await client.post(
-    //   endpoint.addCard,
-    //   {
-    //     stripe_token: token['id'],
-    //     billing_address: {
-    //       city: billingDetails?.city,
-    //       country: billingDetails?.country,
-    //       line1: billingDetails?.addressLine1,
-    //       line2: billingDetails?.addressLine2,
-    //       state: billingDetails?.state,
-    //       postal_code: billingDetails?.zip,
-    //     },
-    //   },
-    //   {
-    //     headers: {
-    //       Authorization: acc_token,
-    //     },
-    //     timeout: 480000,
-    //   }
-    // );
-    // console.log(addCardResponse?.['status']);
-    // setAddCardResponseID(addCardResponse?.['status']);
-
     if (
       billingDetailsRef.current.isValid &&
       cardDetailsRef.current.isValid &&
@@ -446,30 +419,16 @@ const ProjectPayment = (props) => {
     }
   };
 
-  const initiatePaymentProcess2 = (billingDetails, token) => {
-    console.log('2ndd');
-
+  const initiatePaymentProcess2 = async (billingDetails, token) => {
     initiatePayment({
       token: token,
+      priceIDData: priceIDData,
       billingDetails: billingDetailsRef?.current?.values,
-      // projectId,
-      // productId: basicProductData?.product?.productId,
-      // billingDetails,
-      // orderId,
     });
-    if (true) {
-      confirmPayment({
-        // secret: initiatePaymentData?.clientSecret,
-        priceIDData: priceIDData,
-        token: token,
-        card: elements.getElement(CardElement),
-        billingDetails: billingDetailsRef?.current?.values,
-        stripe,
-      });
-    }
 
     // confirmPayment({
-    //   // addCardResponse: addCardResponse,
+    //   // secret: initiatePaymentData?.clientSecret,
+    //   priceIDData: priceIDData,
     //   token: token,
     //   card: elements.getElement(CardElement),
     //   billingDetails: billingDetailsRef?.current?.values,
@@ -589,12 +548,11 @@ const ProjectPayment = (props) => {
   }
 
   const shouldShowDialogForPayment = () =>
-    // isInitiatingPayment ||
-    // initiatePaymentError ||
-    isConfirmingPayment ||
-    confirmPaymentError ||
-    confirmPaymentData ||
-    isConfirmPaymentSuccess;
+    isInitiatingPayment || initiatePaymentError || isInitiatePaymentSuccess;
+  // isConfirmingPayment ||
+  // confirmPaymentError ||
+  // confirmPaymentData ||
+  // isConfirmPaymentSuccess;
 
   const shouldShowDialogForPublish = () =>
     isVerifyingProject ||
@@ -643,58 +601,12 @@ const ProjectPayment = (props) => {
             confirmPaymentMutation={confirmPaymentMutation}
           />
         )}
-
-        {shouldShowDialogForPublish() && (
-          <PublishStatusDialog
-            onClose={() => {
-              resetConfirmPayment();
-              resetInitiatePayment();
-              resetVerifyMutation();
-              resetPublishMutation();
-              invalidateProject();
-              navigateToDashboard();
-            }}
-            onButtonClick={() => {
-              resetConfirmPayment();
-              resetInitiatePayment();
-              resetVerifyMutation();
-              resetPublishMutation();
-              invalidateProject();
-              navigateToDashboard();
-            }}
-            project={projectDetails}
-            verifyProjectMutation={verifyProjectMutation}
-            publishProjectMutation={publishProjectMutation}
-          />
-        )}
       </Dialog>
 
       <Header projectDetails={projectDetails} logoutMutation={logoutMutation} />
       <div className="w-full flex flex-row p-12 h-full mt-14">
         {basicProductData && (
           <div className="flex-1 mr-6 px-6">
-            {/* {canShowAutoPopulationButton() && (
-              <button
-                className="p-1 bg-neutral-gray6 rounded-md mb-2"
-                onClick={(e) => {
-                  billingDetailsRef?.current?.setValues({
-                    fullName: '',
-                    country: countryName,
-                    addressLine1: line1Name,
-                    zip: postalCodeName,
-                    city: cityName,
-                    state: stateName,
-                    email: '',
-                  });
-                  cardDetailsRef?.current?.setValues({
-                    cardHolderName: 'Aakash Test',
-                  });
-                }}
-              >
-                <p className="text-overline2">Populate data</p>
-              </button>
-            )} */}
-
             <BillingDetailsForm
               formRef={billingDetailsRef}
               disabled={isInitiatingPayment || isConfirmingPayment}

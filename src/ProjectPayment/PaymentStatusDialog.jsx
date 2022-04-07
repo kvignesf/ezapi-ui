@@ -41,9 +41,10 @@ const PaymentStatusDialog = ({
     //   return false;
     // }
     return (
-      isConfirmPaymentSuccess &&
-      confirmPaymentData?.['status'] == 200 &&
-      !(initiatePaymentError || confirmPaymentError)
+      isInitiatePaymentSuccess &&
+      initiatePaymentData?.[0]['status'] == 200 &&
+      initiatePaymentData?.[1]['status'] == 200 &&
+      !initiatePaymentError
     );
   };
 
@@ -51,7 +52,8 @@ const PaymentStatusDialog = ({
     if (isInitiatingPayment) {
       return 'Initialising Payment';
     } else if (initiatePaymentError) {
-      return initiatePaymentError?.message;
+      // console.log(initiatePaymentError);
+      return initiatePaymentError.message;
     } else if (isConfirmingPayment) {
       return 'Confirming Payment';
     } else if (isPaymentSuccess()) {
@@ -73,10 +75,8 @@ const PaymentStatusDialog = ({
         <p className="text-subtitle2">
           {isInitiatingPayment
             ? 'Payment Initialisation'
-            : initiatePaymentError || confirmPaymentError
+            : initiatePaymentError
             ? 'Payment Failure'
-            : isConfirmingPayment
-            ? 'Payment Confirmation'
             : isPaymentSuccess()
             ? 'Payment Success'
             : 'Payment Failure'}
