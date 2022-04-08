@@ -64,8 +64,14 @@ export const useGetBillingDetails = () => {
   return useMutation(getBillingDetails);
 };
 
-const initiatePayment = async ({ token, priceIDData, billingDetails }) => {
+const initiatePayment = async ({
+  currentPlan,
+  token,
+  priceIDData,
+  billingDetails,
+}) => {
   // return true;
+  var update_planFlag;
   try {
     const addCardResponse = await client.post(
       endpoint.addCard,
@@ -87,10 +93,15 @@ const initiatePayment = async ({ token, priceIDData, billingDetails }) => {
       }
     );
     // await delay(10000);
+    if (currentPlan == '') {
+      update_planFlag = false;
+    } else {
+      update_planFlag = true;
+    }
     const subscribeData = await client.post(
       endpoint.subscribe,
       {
-        update_plan: true,
+        update_plan: update_planFlag,
         price_id: priceIDData,
       },
       {

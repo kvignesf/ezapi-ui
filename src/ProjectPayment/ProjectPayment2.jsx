@@ -62,11 +62,9 @@ import { getAccessToken } from '../shared/storage';
 const userProfile = async () => {
   try {
     const { data } = await client.get(endpoint.userProfile);
-    // console.lo g(data);
+
     return data;
-  } catch (error) {
-    // throw getApiError(error);
-  }
+  } catch (error) {}
 };
 const Header = ({
   projectDetails,
@@ -147,6 +145,7 @@ const ProjectPayment = (props) => {
   const [durationDefault, setDurationDefault] = React.useState(false);
   const [typeDefault, setTypeDefault] = React.useState(false);
   const [priceDefault, setPriceDefault] = React.useState();
+  const [currentPlan, setCurrentPlan] = React.useState();
   const [addCardResponseID, setAddCardResponseID] = React.useState();
   const [cityName, setCityName] = React.useState('');
   const [countryName, setCountryName] = React.useState('');
@@ -162,18 +161,19 @@ const ProjectPayment = (props) => {
     setStateName(userProfile_data?.['billing_address']?.['state']);
     setLine1Name(userProfile_data?.['billing_address']?.['line1']);
     setPostalCodeName(userProfile_data?.['billing_address']?.['postal_code']);
+    setCurrentPlan(userProfile_data?.['']);
   })();
 
   useEffect(() => {
     var selectedPlanType;
-    if (location.state['duration'] == false) {
+    if (location.state?.['duration'] == false) {
       selectedPlanType = 'mo';
     } else {
       selectedPlanType = 'yr';
     }
     setDurationDefault(selectedPlanType);
-    setTypeDefault(location.state['type']);
-    setPriceDefault(location.state['price']);
+    setTypeDefault(location.state?.['type']);
+    setPriceDefault(location.state?.['price']);
   }, [location]);
 
   // console.log(durationDefault, typeDefault);
@@ -421,6 +421,7 @@ const ProjectPayment = (props) => {
 
   const initiatePaymentProcess2 = async (billingDetails, token) => {
     initiatePayment({
+      currentPlan: currentPlan,
       token: token,
       priceIDData: priceIDData,
       billingDetails: billingDetailsRef?.current?.values,
@@ -437,8 +438,6 @@ const ProjectPayment = (props) => {
   };
 
   const navigateBack = () => {
-    // history.goBack();
-    // history.replace(generateRoute(routes.projects, projectId));
     history.push(routes.pricing);
   };
 
@@ -454,6 +453,8 @@ const ProjectPayment = (props) => {
     if (isPaymentSuccess()) {
       resetConfirmPayment();
       resetInitiatePayment();
+      resetVerifyMutation();
+      resetPublishMutation();
       invalidateProject();
       navigateBack();
       return;
@@ -468,7 +469,7 @@ const ProjectPayment = (props) => {
       type: null,
       data: null,
     });
-    history.push(routes.pricing);
+    history.push(routes.payment);
   };
 
   const isPaymentSuccess = () => {
@@ -585,18 +586,16 @@ const ProjectPayment = (props) => {
         {shouldShowDialogForPayment() && (
           <PaymentStatusDialog
             onButtonClick={() => {
-              if (isPaymentSuccess()) {
-                resetConfirmPayment();
+              if (isInitiatePaymentSuccess) {
                 resetInitiatePayment();
-                resetVerifyMutation();
-                resetPublishMutation();
-                invalidateProject();
-                navigateBack();
+                history.push(routes.pricing);
               } else {
-                handleCloseDialog();
+                resetInitiatePayment();
               }
             }}
-            onClose={handleCloseDialog}
+            onClose={() => {
+              resetInitiatePayment();
+            }}
             initiatePaymentMutation={initiatePaymentMutation}
             confirmPaymentMutation={confirmPaymentMutation}
           />
