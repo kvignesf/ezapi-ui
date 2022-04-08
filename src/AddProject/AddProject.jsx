@@ -10,7 +10,8 @@ import Button from "@mui/material/Button";
 import CloseIcon from "@material-ui/icons/Close";
 import { useRecoilState } from "recoil";
 import _ from "lodash";
-
+import { useHistory } from "react-router-dom";
+import routes from "../shared/routes";
 import AppIcon from "../shared/components/AppIcon";
 import { PrimaryButton, TextButton } from "../shared/components/AppButton";
 import LoaderWithMessage from "../shared/components/LoaderWithMessage";
@@ -39,10 +40,10 @@ import Snackbar from "@material-ui/core/Snackbar";
 import MuiAlert from "@material-ui/lab/Alert";
 import { getUserId } from "../shared/storage";
 
-
 const AddProject = ({ onClose, onSuccess }) => {
   const [currentTab, setTab] = useState(0);
   const [connectDatabaseTab, setConnectDatabaseTab] = useState(0);
+  const history = useHistory();
   const [open, setOpen] = React.useState(false);
   const loggedInUserId = getUserId();
 
@@ -219,7 +220,7 @@ const AddProject = ({ onClose, onSuccess }) => {
         projectId: loggedInUserId,
         file: projectDetails?.keys[0],
         userId: loggedInUserId,
-        test: true
+        test: true,
       });
     } else {
       let payload = {
@@ -386,7 +387,7 @@ const AddProject = ({ onClose, onSuccess }) => {
                 </Alert>
               </Snackbar>
             )}
-            
+
             {exportDBError && (
               <p className="text-overline2 text-accent-red my-2">
                 {`Failed to export db - ${exportDBError?.message}`}
@@ -467,12 +468,22 @@ const AddProject = ({ onClose, onSuccess }) => {
                 onClick={() => {
                   if (currentTab === 0 || currentTab === 1) {
                     handleNext();
+                  } else if (
+                    projectDetailsError?.message ==
+                    "Your 2 free Projects limit is exhausted, please purchase paid plan to publish."
+                  ) {
+                    history.push(routes.pricing);
                   } else {
                     handleDone();
                   }
                 }}
               >
-                {currentTab === 0 || currentTab === 1 ? "Next" : "Done"}
+                {currentTab === 0 || currentTab === 1
+                  ? "Next"
+                  : projectDetailsError?.message ==
+                    "Your 2 free Projects limit is exhausted, please purchase paid plan to publish."
+                  ? "Upgrade"
+                  : "Done"}
               </PrimaryButton>
             </div>
           </>
@@ -504,12 +515,18 @@ const AddProject = ({ onClose, onSuccess }) => {
 
       {isUploadingProjectKey && (
         <div className="my-7">
-          <LoaderWithMessage message="Using Connection KeyCredentials" contained />
+          <LoaderWithMessage
+            message="Using Connection KeyCredentials"
+            contained
+          />
         </div>
       )}
       {isUploadingProjectCertificate && (
         <div className="my-7">
-          <LoaderWithMessage message="Using Connection CertCredentials" contained />
+          <LoaderWithMessage
+            message="Using Connection CertCredentials"
+            contained
+          />
         </div>
       )}
       {isUploadingProjectCACertificate && (
@@ -528,10 +545,7 @@ const AddProject = ({ onClose, onSuccess }) => {
 
       {isMatchingAi && (
         <div className="my-7">
-          <LoaderWithMessage
-            message="Running AI Matcher"
-            contained
-          />
+          <LoaderWithMessage message="Running AI Matcher" contained />
         </div>
       )}
     </div>
