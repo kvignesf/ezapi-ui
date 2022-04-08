@@ -1,16 +1,16 @@
 const routes = Object.freeze({
-  root: "/",
-  signIn: "/signin",
-  projects: "/projects",
-  orders: "/orders",
-  pricing: "/pricing",
+  root: '/',
+  signIn: '/signin',
+  projects: '/projects',
+  orders: '/orders',
+  pricing: '/pricingpage',
   // payment: "/projects/:projectId/payment",
-  payment: "/projects/payment",
-  paymentForOrder: "/projects/:projectId/payment/:orderId?",
-  billing: "/billing",
-  project: "/projects/:projectId",
-  privacy: "/privacy",
-  contact: "/contact",
+  payment: '/payment',
+  paymentForOrder: '/projects/:projectId/payment/:orderId?',
+  billing: '/billing',
+  project: '/projects/:projectId',
+  privacy: '/privacy',
+  contact: '/contact',
 });
 
 export const generateRoute = (route, data) => {
@@ -21,7 +21,7 @@ export const generateRoute = (route, data) => {
   } else if (route === routes.paymentForOrder) {
     return `${routes.projects}/${data?.projectId}/payment/${data?.orderId}`;
   }
-  return "/";
+  return '/';
 };
 
 export default routes;

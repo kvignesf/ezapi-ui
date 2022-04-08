@@ -253,15 +253,14 @@ const Pricing = () => {
         enterprise: true,
       },
       {
-        name: 'MYSQL',
+        name: 'Postgres',
         trial: '',
         basic: '',
         pro: '',
         enterprise: true,
       },
-
       {
-        name: 'Postgres',
+        name: 'MYSQL',
         trial: '',
         basic: '',
         pro: '',
@@ -361,8 +360,8 @@ const Pricing = () => {
       );
       dataTransferTemp3C[index].push(
         item['connectors']['ms_sql'],
-        item['connectors']['my_sql'],
-        item['connectors']['postgres']
+        item['connectors']['postgres'],
+        item['connectors']['my_sql']
       );
       dataTransferTemp4V[index].push(item['validity']);
     });
@@ -410,9 +409,9 @@ const Pricing = () => {
 
   return (
     <Dashboard selectedIndex={3}>
-      <div className="flex flex-col items-center justify-center ">
+      <div className="flex flex-col items-center justify-center w-full  ">
         {' '}
-        <div className="flex flex-col  items-center justify-center  h-full">
+        <div className="flex flex-col  items-center justify-center w-full px-3 h-full">
           <div id="heading" className="container mx-auto py-4">
             {' '}
             <h1 className=" text-customGray text-4xl font-sans font-medium tracking-wide text-center">
@@ -438,7 +437,7 @@ const Pricing = () => {
             </div>
           </div>
 
-          <div id="pricingTypeCards" className="container mx-auto   p-2 ">
+          <div id="pricingTypeCards1" className="container mx-auto   p-2 ">
             {durationMY ? (
               <div className="grid grid-cols-11 gap-5    ">
                 <Grid className="col-start-6 col-span-2 ">
@@ -457,12 +456,12 @@ const Pricing = () => {
 
             <div className="grid grid-cols-11 gap-5   ">
               <Grid className="col-span-3 ...">
-                <button
+                {/* <button
                   style={{ color: 'black', background: 'red' }}
                   onClick={handleUnsubscribe}
                 >
                   unsubscribe
-                </button>
+                </button> */}
               </Grid>
               {tiers.map((tier, index) => (
                 <Grid className="col-span-2 " item key={tier.title}>
@@ -602,7 +601,7 @@ const Pricing = () => {
                 <Grid item className="col-span-3">
                   {rows[0].map((row) => (
                     <h6
-                      className=" uppercase text-base tracking-normal font-medium px-2 py-4"
+                      className=" uppercase text-base tracking-normal font-medium px-2 py-2"
                       align="left"
                     >
                       {row['name']}
@@ -612,7 +611,7 @@ const Pricing = () => {
                 <Grid className="col-span-2" item>
                   {rows[0].map((row) => (
                     <div
-                      className="uppercase text-base tracking-normal font-medium px-2 py-4"
+                      className="uppercase text-base tracking-normal font-medium px-2 py-2"
                       align="center"
                     >
                       {row['trial']}
@@ -623,7 +622,7 @@ const Pricing = () => {
                 <Grid className="col-span-2" item>
                   {rows[0].map((row) => (
                     <div
-                      className="uppercase text-base tracking-normal font-medium px-2 py-4"
+                      className="uppercase text-base tracking-normal font-medium px-2 py-2"
                       align="center"
                     >
                       {row['basic']}
@@ -633,7 +632,7 @@ const Pricing = () => {
                 <Grid className="col-span-2" item>
                   {rows[0].map((row) => (
                     <div
-                      className="uppercase text-base tracking-normal font-medium px-2 py-4"
+                      className="uppercase text-base tracking-normal font-medium px-2 py-2"
                       align="center"
                     >
                       {row['pro']}
@@ -643,7 +642,7 @@ const Pricing = () => {
                 <Grid className="col-span-2" item>
                   {rows[0].map((row) => (
                     <div
-                      className="uppercase text-base tracking-normal font-medium px-2 py-4"
+                      className="uppercase text-base tracking-normal font-medium px-2 py-2"
                       align="center"
                     >
                       {row['enterprise']}
@@ -666,7 +665,7 @@ const Pricing = () => {
                 <Grid item className="col-span-3">
                   {rows[1].map((row) => (
                     <h6
-                      className=" uppercase text-base tracking-normal font-medium px-2 py-4"
+                      className=" uppercase text-base tracking-normal font-medium px-2 py-2"
                       v
                       align="left"
                     >
@@ -677,7 +676,7 @@ const Pricing = () => {
                 <Grid className="col-span-2" item>
                   {rows[1].map((row) => (
                     <div
-                      className=" uppercase text-base tracking-normal font-medium px-2 py-4"
+                      className=" uppercase text-base tracking-normal font-medium px-2 py-2"
                       align="center"
                     >
                       {' '}
@@ -693,7 +692,7 @@ const Pricing = () => {
                 <Grid className="col-span-2" item>
                   {rows[1].map((row) => (
                     <div
-                      className="uppercase text-base tracking-normal font-medium px-2 py-4"
+                      className="uppercase text-base tracking-normal font-medium px-2 py-2"
                       align="center"
                     >
                       {' '}
@@ -708,7 +707,7 @@ const Pricing = () => {
                 <Grid className="col-span-2" item>
                   {rows[1].map((row) => (
                     <div
-                      className="uppercase text-base tracking-normal font-medium px-2 py-4"
+                      className="uppercase text-base tracking-normal font-medium px-2 py-2"
                       align="center"
                     >
                       {' '}
@@ -723,7 +722,7 @@ const Pricing = () => {
                 <Grid className="col-span-2" item>
                   {rows[1].map((row) => (
                     <div
-                      className="uppercase text-base tracking-normal font-medium px-2 py-4"
+                      className="uppercase text-base tracking-normal font-medium px-2 py-2"
                       align="center"
                     >
                       {' '}
@@ -751,7 +750,7 @@ const Pricing = () => {
                 <Grid item className="col-span-3">
                   {rows[2].map((row) => (
                     <h6
-                      className="uppercase text-base tracking-normal font-medium px-2 py-4"
+                      className="uppercase text-base tracking-normal font-medium px-2 py-2"
                       align="left"
                     >
                       {row['name']}
@@ -761,7 +760,7 @@ const Pricing = () => {
                 <Grid item className="col-span-2">
                   {rows[2].map((row) => (
                     <div
-                      className="uppercase text-base tracking-normal font-medium px-2 py-4"
+                      className="uppercase text-base tracking-normal font-medium px-2 py-2"
                       align="center"
                     >
                       {' '}
@@ -777,7 +776,7 @@ const Pricing = () => {
                 <Grid className="col-span-2" item>
                   {rows[2].map((row) => (
                     <div
-                      className="uppercase text-base tracking-normal font-medium px-2 py-4"
+                      className="uppercase text-base tracking-normal font-medium px-2 py-2"
                       align="center"
                     >
                       {' '}
@@ -792,7 +791,7 @@ const Pricing = () => {
                 <Grid className="col-span-2" item>
                   {rows[2].map((row) => (
                     <div
-                      className="uppercase text-base tracking-normal font-medium px-2 py-4"
+                      className="uppercase text-base tracking-normal font-medium px-2 py-2"
                       align="center"
                     >
                       {' '}
@@ -807,7 +806,7 @@ const Pricing = () => {
                 <Grid className="col-span-2" item>
                   {rows[2].map((row) => (
                     <div
-                      className="uppercase text-base tracking-normal font-medium px-2 py-4"
+                      className="uppercase text-base tracking-normal font-medium px-2 py-2"
                       align="center"
                     >
                       {' '}
@@ -835,7 +834,7 @@ const Pricing = () => {
                 <Grid item className="col-span-3">
                   {rows[3].map((row) => (
                     <h6
-                      className="uppercase text-base tracking-normal font-medium px-2 py-4"
+                      className="uppercase text-base tracking-normal font-medium px-2 py-2"
                       align="left"
                     >
                       {row['name']}
@@ -845,7 +844,7 @@ const Pricing = () => {
                 <Grid className="col-span-2" item>
                   {rows[3].map((row) => (
                     <div
-                      className="uppercase text-base tracking-normal font-medium px-2 py-4"
+                      className="uppercase text-base tracking-normal font-medium px-2 py-2"
                       align="center"
                     >
                       {row['trial']}
@@ -856,7 +855,7 @@ const Pricing = () => {
                 <Grid className="col-span-2" item>
                   {rows[3].map((row) => (
                     <div
-                      className="uppercase text-base tracking-normal font-medium px-2 py-4"
+                      className="uppercase text-base tracking-normal font-medium px-2 py-2"
                       align="center"
                     >
                       {row['basic']}
@@ -866,7 +865,7 @@ const Pricing = () => {
                 <Grid className="col-span-2" item>
                   {rows[3].map((row) => (
                     <div
-                      className="uppercase text-base tracking-normal font-medium px-2 py-4"
+                      className="uppercase text-base tracking-normal font-medium px-2 py-2"
                       align="center"
                     >
                       {row['pro']}
@@ -876,7 +875,7 @@ const Pricing = () => {
                 <Grid className="col-span-2" item>
                   {rows[3].map((row) => (
                     <div
-                      className="uppercase text-base tracking-normal font-medium px-2 py-4"
+                      className="uppercase text-base tracking-normal font-medium px-2 py-2"
                       align="center"
                     >
                       {row['enterprise']}
@@ -887,6 +886,132 @@ const Pricing = () => {
 
               {/* </TableBody> */}
             </Card>
+          </div>
+
+          <div id="pricingTypeCards2" className="container mx-auto   p-2 ">
+            {durationMY ? (
+              <div className="grid grid-cols-11 gap-5    ">
+                <Grid className="col-start-6 col-span-2 ">
+                  <div className="flex  justify-center ">
+                    <BestValueIcon />
+                  </div>
+                </Grid>
+                <Grid className="col-start-8 col-span-2 ">
+                  {' '}
+                  <div className="flex  justify-center ">
+                    <BestValueIcon />
+                  </div>
+                </Grid>
+              </div>
+            ) : null}
+
+            <div className="grid grid-cols-11 gap-5   ">
+              <Grid className="col-span-3 ...">
+                <button
+                  style={{ color: 'black', background: 'red' }}
+                  onClick={handleUnsubscribe}
+                >
+                  unsubscribe
+                </button>
+              </Grid>
+              {tiers.map((tier, index) => (
+                <Grid className="col-span-2 " item key={tier.title}>
+                  <Card className="flex flex-col h-full self-center">
+                    {/* <div className="flex justify-center ..."></div> */}
+                    {/* <div className="flex justify-center ...">
+                      {' '}
+                      <img src={tier.logo} alt="logo" />
+                    </div>{' '} */}
+                    <CardActions className="flex ">
+                      <Button
+                        style={{
+                          color: 'white',
+
+                          background:
+                            tier.buttonText == 'Subscribed'
+                              ? '#c72c71'
+                              : '#0971f1',
+                        }}
+                        onClick={() => {
+                          handleClick(
+                            tier['title'],
+                            tier['price'],
+                            tier.buttonText
+                          );
+                        }}
+                        disabled={tier.buttonText == 'Subscribed'}
+                        fullWidth
+                        variant="outlined"
+                      >
+                        {tier.buttonText}
+                      </Button>
+                    </CardActions>
+                    <CardHeader
+                      style={{
+                        color:
+                          index == 0
+                            ? '#2FDAA1'
+                            : index == 1
+                            ? '#9085D3'
+                            : index == 2
+                            ? '#40A3E4'
+                            : index == 3
+                            ? '#EC6A6C'
+                            : 'red',
+                      }}
+                      title={tier.title}
+                      titleTypographyProps={{ align: 'center' }}
+                    />
+                    <CardContent className="flex flex-col">
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          justifyContent: 'center',
+                          alignItems: 'baseline',
+                        }}
+                      >
+                        <Typography
+                          component="h4"
+                          variant="h6"
+                          style={{
+                            color:
+                              index == 0
+                                ? '#2FDAA1'
+                                : index == 1
+                                ? '#9085D3'
+                                : index == 2
+                                ? '#40A3E4'
+                                : index == 3
+                                ? '#EC6A6C'
+                                : 'red',
+                          }}
+                        >
+                          ${tier.price}
+                        </Typography>
+                        <Typography
+                          variant="h6"
+                          style={{
+                            color:
+                              index == 0
+                                ? '#2FDAA1'
+                                : index == 1
+                                ? '#9085D3'
+                                : index == 2
+                                ? '#40A3E4'
+                                : index == 3
+                                ? '#EC6A6C'
+                                : '#40A3E4',
+                          }}
+                        >
+                          {index != 3 &&
+                            (durationMY ? <div>/yr</div> : <div>/mo</div>)}
+                        </Typography>
+                      </Box>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </div>
           </div>
         </div>
       </div>
