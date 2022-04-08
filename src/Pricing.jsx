@@ -333,15 +333,15 @@ const Pricing = () => {
     pricing_data['products'].map((item, index) => {
       if (durationMY == false) {
         tiers[1]['price'] =
-          pricing_data['products'][0]['stripe'][0]['plan_price'];
+          pricing_data?.['products']?.[0]?.['stripe']?.[0]?.['plan_price'];
         tiers[2]['price'] =
-          pricing_data['products'][1]['stripe'][1]['plan_price'];
+          pricing_data?.['products']?.[1]?.['stripe']?.[1]?.['plan_price'];
       }
       if (durationMY == true) {
         tiers[1]['price'] =
-          pricing_data['products'][0]['stripe'][1]['plan_price'];
+          pricing_data?.['products']?.[0]?.['stripe']?.[1]?.['plan_price'];
         tiers[2]['price'] =
-          pricing_data['products'][1]['stripe'][0]['plan_price'];
+          pricing_data?.['products']?.[1]?.['stripe']?.[0]?.['plan_price'];
       }
 
       dataTransferTemp[index].push(
