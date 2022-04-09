@@ -31,7 +31,7 @@ import InviteCollaborators from "../shared/components/InviteCollaborators";
 import TabLabel from "../shared/components/TabLabel";
 import Messages from "../shared/messages";
 import { withStyles } from "@material-ui/core/styles";
-import { useDatabaseConnection } from "./addProjectQuery";
+import { useUserProfile, usePricingData} from "./addProjectQuery";
 import client, { endpoint } from '../shared/network/client';
 import { queries } from '../shared/network/queryClient';
 
@@ -65,32 +65,34 @@ const ConnectDatabase = ({
     [] // will be created only once initially
   );
   
-  const pricingData = async () => {
-    const { data } = await client.get(endpoint.products2);
+//   const pricingData = async () => {
+//     const { data } = await client.get(endpoint.products2);
   
-    return data;
-  };
+//     return data;
+//   };
   
-  const userProfile = async () => {
-    try {
-      const { data } = await client.get(endpoint.userProfile);
-      return data;
-    } catch (error) {
-      // throw getApiError(error);
-    }
-  };
+//   const userProfile = async () => {
+//     try {
+//       const { data } = await client.get(endpoint.userProfile);
+//       return data;
+//     } catch (error) {
+//       // throw getApiError(error);
+//     }
+//   };
 
- const usePricingData = () => {
-    return useQuery([queries.products], pricingData, {
-      refetchOnWindowFocus: false,
-    });
-  };
+//  const usePricingData = () => {
+//     return useQuery([queries.products], pricingData, {
+//       refetchOnWindowFocus: false,
+//       fetchPolicy: "no-cache", 
+//     });
+//   };
   
- const useUserProfile = () => {
-    return useQuery([queries.userProfile], userProfile, {
-      refetchOnWindowFocus: false,
-    });
-  };
+//  const useUserProfile = () => {
+//     return useQuery([queries.userProfile], userProfile, {
+//       refetchOnWindowFocus: false,
+//       fetchPolicy: "no-cache", 
+//     });
+//   };
   
   const debouncedSetHost = useCallback(
     debounce((nextValue) => {
@@ -426,9 +428,9 @@ const ConnectDatabase = ({
     { value: "postgres", label: "Postgres", check: "postgres" },
   ];
 
-  const { data: pricing_data } = usePricingData();
-  const { data: userProfile_data } = useUserProfile();
-  const connectors = pricing_data["products"].filter((item)=> item["stripe_product_id"] == userProfile_data["subscribed_plan"])[0]["connectors"]
+  // const { data: pricing_data } = usePricingData();
+  // const { data: userProfile_data } = useUserProfile();
+  // const connectors = pricing_data["products"].filter((item)=> item["stripe_product_id"] == userProfile_data["subscribed_plan"])[0]["connectors"]
 
   return (
     <div className="p-4" style={{ height: "300px", overflowY: "scroll" }}>
@@ -511,9 +513,13 @@ const ConnectDatabase = ({
                           
                         >
                           <option  value="" label="Select db type"/>
-                          {databaseTypes?.filter((item)=>  connectors[item.check] ).map((item)=>{
+                          <option  value="mysql" label="MySQL"/>
+                          <option  value="mssql" label="SQL Server"/>
+                          <option  value="postgres" label="Postgres"/>
+
+                          {/* {databaseTypes?.filter((item)=>  connectors[item.check] ).map((item)=>{
                             return <option  value={item.value} label={item.label}/>
-                          })}
+                          })} */}
                         </select>
                         
                       </Grid>
