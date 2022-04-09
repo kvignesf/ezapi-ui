@@ -32,6 +32,11 @@ import TabLabel from "../shared/components/TabLabel";
 import Messages from "../shared/messages";
 import { withStyles } from "@material-ui/core/styles";
 import { useDatabaseConnection } from "./addProjectQuery";
+import client, { endpoint } from '../shared/network/client';
+import { queries } from '../shared/network/queryClient';
+
+import { useQuery } from 'react-query';
+import { array } from "yup";
 
 const ConnectDatabase = ({
   formRef,
@@ -59,7 +64,34 @@ const ConnectDatabase = ({
     }, 300),
     [] // will be created only once initially
   );
+  
+  const pricingData = async () => {
+    const { data } = await client.get(endpoint.products2);
+  
+    return data;
+  };
+  
+  const userProfile = async () => {
+    try {
+      const { data } = await client.get(endpoint.userProfile);
+      return data;
+    } catch (error) {
+      // throw getApiError(error);
+    }
+  };
 
+ const usePricingData = () => {
+    return useQuery([queries.products], pricingData, {
+      refetchOnWindowFocus: false,
+    });
+  };
+  
+ const useUserProfile = () => {
+    return useQuery([queries.userProfile], userProfile, {
+      refetchOnWindowFocus: false,
+    });
+  };
+  
   const debouncedSetHost = useCallback(
     debounce((nextValue) => {
       resetProjectApiState();
@@ -388,6 +420,16 @@ const ConnectDatabase = ({
     },
   })(Tabs);
 
+  const databaseTypes = [
+    { value: "mysql", label: "MySQL", check: "my_sql"},
+    { value: "mssql", label: "SQL Server", check: "ms_sql"},
+    { value: "postgres", label: "Postgres", check: "postgres" },
+  ];
+
+  const { data: pricing_data } = usePricingData();
+  const { data: userProfile_data } = useUserProfile();
+  const connectors = pricing_data["products"].filter((item)=> item["stripe_product_id"] == userProfile_data["subscribed_plan"])[0]["connectors"]
+
   return (
     <div className="p-4" style={{ height: "300px", overflowY: "scroll" }}>
       {/* <Scrollbar className="max-h-60" alwaysShowTracks={true}> */}
@@ -448,22 +490,6 @@ const ConnectDatabase = ({
                 }) => (
                   <Form>
                     <Grid container spacing={2}>
-                      {/* <Field
-                        id='name'
-                        name='serverType'
-                        fullWidth
-                        color='primary'
-                        error={touched.name && Boolean(errors.name)}
-                        helperText={<ErrorMessage name='name' />}
-                        onKeyUp={(e) => {
-                          const { value } = e.target;
-                          debouncedSetName(value);
-                        }}
-                        variant='outlined'
-                        inputProps={{ maxLength: 24 }}
-                        // disabled={addProjectMutation?.isSuccess}
-                        as={Select}
-                      /> */}
                       <Grid item xs={12}>
                         <select
                           name="type"
@@ -482,22 +508,14 @@ const ConnectDatabase = ({
                             color: "primary",
                             backgroundColor: "#ffffff",
                           }}
+                          
                         >
-                          <option value="" label="Select db type" />
-                          <option value="mysql" label="MySQL" />
-                          <option value="mssql" label="SQL Server" />
-                          <option value="mongo" label="Mongo" />
-                          <option value="postgres" label="Postgres" />
+                          <option  value="" label="Select db type"/>
+                          {databaseTypes?.filter((item)=>  connectors[item.check] ).map((item)=>{
+                            return <option  value={item.value} label={item.label}/>
+                          })}
                         </select>
-                        {/* <Field
-                            name="servername"
-                            component={CustomizedSelectForFormik}
-                          >
-                            <MenuItem value="mysql">MySQL</MenuItem>
-                            <MenuItem value="mssql">SQL Server</MenuItem>
-                            <MenuItem value="mongo">Mongo</MenuItem>
-                            <MenuItem value="postgres">Postgres</MenuItem>
-                          </Field> */}
+                        
                       </Grid>
                       <Grid item xs={6}>
                         <p className="text-mediumLabel mb-2">Host</p>
