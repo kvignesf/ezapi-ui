@@ -1,162 +1,56 @@
-import React from 'react';
-import { Button, CircularProgress, Dialog, Tooltip } from '@material-ui/core';
+import React, { useEffect, useState } from 'react';
+import { Button } from '@material-ui/core';
 import _ from 'lodash';
-import ReplayIcon from '@material-ui/icons/Replay';
 import Card from '@material-ui/core/Card';
 import Dashboard from './Dashboard';
-import { useGetOrders } from './Orders/ordersQueries';
-// import EmptyLogo from "../static/images/empty-state.svg";
 import { ReactComponent as BestValueIcon } from './static/images/BestValue.svg';
-import Colors from './shared/colors';
-import OrderRow from './Orders/OrderRow';
-import ErrorWithMessage from './shared/components/ErrorWithMessage';
-import LoaderWithMessage from './shared/components/LoaderWithMessage';
-import { Class, Unsubscribe } from '@material-ui/icons';
 import Box from '@mui/material/Box';
 import client, { endpoint } from './shared/network/client';
 import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
 import CardHeader from '@mui/material/CardHeader';
-import CssBaseline from '@mui/material/CssBaseline';
-import { clearQueryCache, queries } from './shared/network/queryClient';
+import { queries } from './shared/network/queryClient';
 import Grid from '@mui/material/Grid';
-import StarIcon from '@mui/icons-material/StarBorder';
-import Toolbar from '@mui/material/Toolbar';
-import { useMutation, useQuery, useQueryClient } from 'react-query';
+import { useQuery } from 'react-query';
 import Typography from '@mui/material/Typography';
-import { getApiError } from './shared/utils';
-
-import Link from '@mui/material/Link';
-import GlobalStyles from '@mui/material/GlobalStyles';
-import Container from '@mui/material/Container';
-import Paper from '@material-ui/core/Paper';
-
-import OpacityIcon from '@material-ui/icons/Opacity';
-import Table from '@material-ui/core/Table';
-import TableBody from '@material-ui/core/TableBody';
-import TableCell from '@material-ui/core/TableCell';
-import TableHead from '@material-ui/core/TableHead';
-import TableRow from '@material-ui/core/TableRow';
-import { makeStyles, styled } from '@material-ui/core/styles';
 import { useHistory } from 'react-router-dom';
 import trialLogo from './icons/trial_logo.png';
-import bestValueLogo from './icons/bestValue_logo.png';
 import basicLogo from './icons/basic_logo.png';
 import proLogo from './icons/pro_logo.png';
 import enterpriseLogo from './icons/enterprise_logo.png';
 import tickLogo from './icons/tick_logo.png';
 import crossLogo from './icons/cross_logo.png';
 import Switch from '@mui/material/Switch';
-import routes, { generateRoute } from './shared/routes';
-import BillingPage from './BillingPage';
-import axios from 'axios';
-import ProductDetails from './ProjectPayment/ProductDetails';
-import selectedTypeButton from './ProjectPayment/ProjectPayment2';
+import routes from './shared/routes';
 import { getAccessToken } from './shared/storage';
-import { red } from '@material-ui/core/colors';
-
-const useStyles = makeStyles((theme) => ({
-  root: {
-    width: '100%',
-    marginTop: theme.spacing(3),
-    overflowX: 'auto',
-  },
-  totalTable: {
-    minWidth: 650,
-    marginBottom: 15,
-    backgroundColor: '#0971f1',
-    borderRadius: 5,
-  },
-}));
-
-const StyledTableRow = styled(TableCell)({
-  border: '0px',
-});
-
-const RecieptSubHeadings = styled(TableCell)({
-  borderBottom: '0px',
-});
-
+const acc_token = getAccessToken();
 const pricingData = async () => {
   const { data } = await client.get(endpoint.products2);
-
   return data;
 };
-
 const userProfile = async () => {
   try {
-    const { data } = await client.get(endpoint.userProfile);
-    // console.lo g(data);
-    return data;
-  } catch (error) {
-    // throw getApiError(error);
-  }
-};
+    const { data } = await client.get(endpoint.userProfile, {
+      headers: {
+        Authorization: acc_token,
+      },
+    });
 
+    return data;
+  } catch (error) {}
+};
 export const usePricingData = () => {
   return useQuery([queries.products], pricingData, {
     refetchOnWindowFocus: false,
   });
 };
 
-// export const useUserProfile = () => {
-//   return useQuery([queries.userProfile], userProfile, {
-//     refetchOnWindowFocus: false,
-//   });
-// };
-
-function BillSection(headings, rows, headingIcon) {
-  const classes = useStyles();
-}
-
 const Pricing = () => {
   const history = useHistory();
-  const acc_token = getAccessToken();
   var dataTransferTemp = [[], [], []];
   var dataTransferTemp2AC = [[], [], []];
   var dataTransferTemp3C = [[], [], []];
   var dataTransferTemp4V = [[], [], []];
-  const [durationMY, setDurationMY] = React.useState(false);
-
-  const [trialButton, setTrialButton] = React.useState('SUBSCRIBE');
-  const [basicButton, setBasicButton] = React.useState('SUBSCRIBE');
-  const [proButton, setProButton] = React.useState('SUBSCRIBE');
-  const tiers = [
-    {
-      title: 'Trial',
-      price: '0',
-      description: ['Get the Trial, free'],
-      logo: trialLogo,
-      buttonText: trialButton,
-      buttonVariant: 'outlined',
-    },
-    {
-      title: 'Basic',
-      price: '15',
-      description: ['Everything in Trial, Plus'],
-      buttonText: basicButton,
-      buttonVariant: 'outlined',
-      logo: basicLogo,
-    },
-    {
-      title: 'Pro',
-      price: '30',
-      description: ['Everything in Basic, Plus'],
-      buttonText: proButton,
-      buttonVariant: 'outlined',
-      logo: proLogo,
-    },
-    {
-      title: 'Enterprise',
-      price: 'Custom',
-      description: ['Everything in Pro, Plus'],
-      buttonText: 'CONTACT US',
-      buttonVariant: 'outlined',
-      logo: enterpriseLogo,
-    },
-  ];
-  // const [tiersState, setTiersState] = React.useState();
-
   const headings = ['PROJECTS', 'API LIFECYCLE', 'CONNECTORS', 'VALIDITY'];
   const rows = [
     [
@@ -277,21 +171,60 @@ const Pricing = () => {
       },
     ],
   ];
-  (async () => {
-    var alreadySubscribed;
-    const userProfile_data = await userProfile();
-    // console.log(userProfile_data);
-    if (userProfile_data != undefined) {
-      if (userProfile_data['subscribed_price'] == '') {
+  const [durationMY, setDurationMY] = React.useState(false);
+  const [trialButton, setTrialButton] = React.useState('SUBSCRIBE');
+  const [basicButton, setBasicButton] = React.useState('SUBSCRIBE');
+  const [proButton, setProButton] = React.useState('SUBSCRIBE');
+  const tiers = [
+    {
+      title: 'Trial',
+      price: '0',
+      description: ['Get the Trial, free'],
+      logo: trialLogo,
+      buttonText: trialButton,
+      buttonVariant: 'outlined',
+    },
+    {
+      title: 'Basic',
+      price: '15',
+      description: ['Everything in Trial, Plus'],
+      buttonText: basicButton,
+      buttonVariant: 'outlined',
+      logo: basicLogo,
+    },
+    {
+      title: 'Pro',
+      price: '30',
+      description: ['Everything in Basic, Plus'],
+      buttonText: proButton,
+      buttonVariant: 'outlined',
+      logo: proLogo,
+    },
+    {
+      title: 'Enterprise',
+      price: 'Custom',
+      description: ['Everything in Pro, Plus'],
+      buttonText: 'CONTACT US',
+      buttonVariant: 'outlined',
+      logo: enterpriseLogo,
+    },
+  ];
+
+  const { data } = useQuery('userProfileKey', userProfile, {
+    refetchOnWindowFocus: false,
+  });
+  var alreadySubscribed;
+  useEffect(() => {
+    if (!_.isEmpty(data)) {
+      if (data?.['subscribed_price'] == '') {
         alreadySubscribed = 'Trial';
         setTrialButton('Subscribed');
       } else {
         setTrialButton('Subscribe');
       }
       if (
-        userProfile_data['subscribed_price'] ==
-          'price_1KbgSaDXX1U3xHmP8Jac0qNX' ||
-        userProfile_data['subscribed_subscribed_priceproduct'] ==
+        data?.['subscribed_price'] == 'price_1KbgSaDXX1U3xHmP8Jac0qNX' ||
+        data?.['subscribed_subscribed_priceproduct'] ==
           'price_1KbgKaDXX1U3xHmPYs8KuyFV'
       ) {
         setBasicButton('Subscribed');
@@ -300,9 +233,8 @@ const Pricing = () => {
         setBasicButton('Subscribe');
       }
       if (
-        userProfile_data['subscribed_price'] ==
-          'price_1KbgTiDXX1U3xHmPCHjkKqGN' ||
-        userProfile_data['subscribed_price'] == 'price_1KbgTiDXX1U3xHmPOwGrKyBp'
+        data?.['subscribed_price'] == 'price_1KbgTiDXX1U3xHmPCHjkKqGN' ||
+        data?.['subscribed_price'] == 'price_1KbgTiDXX1U3xHmPOwGrKyBp'
       ) {
         setProButton('Subscribed');
         alreadySubscribed = 'Pro';
@@ -310,14 +242,12 @@ const Pricing = () => {
         setProButton('Subscribe');
       }
     }
-  })();
+  });
 
-  // console.log(tiers);
   const handleClick = (title, price, buttonTextType) => {
     if (buttonTextType == 'Subscribe') {
       history.push({
         pathname: routes.payment,
-        // search: title,
         state: { type: title, duration: durationMY, price: price },
       });
     } else if (buttonTextType == 'CONTACT US') {
@@ -326,7 +256,6 @@ const Pricing = () => {
   };
 
   const { data: pricing_data } = usePricingData();
-  // const { data: userProfile_data } = useUserProfile();
 
   if (!_.isEmpty(pricing_data?.products)) {
     pricing_data['products'].map((item, index) => {
@@ -387,15 +316,15 @@ const Pricing = () => {
       rows[3][i]['pro'] = dataTransferTemp4V[1][i];
     }
   }
-  const handleUnsubscribe = async () => {
-    const { UnsubscribeData } = await client.post(endpoint.unSubscribe, {
-      headers: {
-        Authorization: acc_token,
-      },
-    });
-    history.push(routes.pricing);
-  };
-  const classes = useStyles();
+  // const handleUnsubscribe = async () => {
+  //   const { UnsubscribeData } = await client.post(endpoint.unSubscribe, {
+  //     headers: {
+  //       Authorization: acc_token,
+  //     },
+  //   });
+  //   history.push(routes.pricing);
+  // };
+
   function handleSwitchChange(event) {
     setDurationMY(event.target.checked);
     if (durationMY == false) {
@@ -412,14 +341,14 @@ const Pricing = () => {
       <div className="flex flex-col items-center justify-center w-full  ">
         {' '}
         <div className="flex flex-col  items-center justify-center w-full px-3 h-full">
-          <div id="heading" className="container mx-auto py-4">
+          <div id="heading" className="container mx-auto pt-4">
             {' '}
             <h1 className=" text-customGray text-4xl font-sans font-medium tracking-wide text-center">
               The Right Pricing Plan for Your Business
             </h1>
           </div>
 
-          <div id="durationMY" className="container mx-auto py-4 ">
+          <div id="durationMY" className="container mx-auto p-4 ">
             <div className="flex justify-center ">
               {' '}
               <div id="mo" style={{ color: '#c72c71' }} className="mt-1.5">
@@ -455,14 +384,7 @@ const Pricing = () => {
             ) : null}
 
             <div className="grid grid-cols-11 gap-5   ">
-              <Grid className="col-span-3 ...">
-                {/* <button
-                  style={{ color: 'black', background: 'red' }}
-                  onClick={handleUnsubscribe}
-                >
-                  unsubscribe
-                </button> */}
-              </Grid>
+              <Grid className="col-span-3 ..."></Grid>
               {tiers.map((tier, index) => (
                 <Grid className="col-span-2 " item key={tier.title}>
                   <Card className="flex flex-col h-full self-center">
@@ -557,7 +479,7 @@ const Pricing = () => {
                         ))}
                       </ul>
                     </CardContent>
-                    <CardActions className="flex my-10 ">
+                    <CardActions className="flex mt-10 ">
                       <Button
                         style={{
                           color: 'white',
@@ -587,7 +509,7 @@ const Pricing = () => {
             </div>
           </div>
 
-          <div id="pricingDataTables" className="container mx-auto   p-2 ">
+          <div id="pricingDataTables" className="container mx-auto   px-2 ">
             <Card className="p-2 mb-3">
               <div className="bg-gray-100">
                 <h4
@@ -888,45 +810,16 @@ const Pricing = () => {
             </Card>
           </div>
 
-          <div id="pricingTypeCards2" className="container mx-auto   p-2 ">
-            {durationMY ? (
-              <div className="grid grid-cols-11 gap-5    ">
-                <Grid className="col-start-6 col-span-2 ">
-                  <div className="flex  justify-center ">
-                    <BestValueIcon />
-                  </div>
-                </Grid>
-                <Grid className="col-start-8 col-span-2 ">
-                  {' '}
-                  <div className="flex  justify-center ">
-                    <BestValueIcon />
-                  </div>
-                </Grid>
-              </div>
-            ) : null}
-
+          <div id="pricingTypeCards2" className="container mx-auto   px-2 ">
             <div className="grid grid-cols-11 gap-5   ">
-              <Grid className="col-span-3 ...">
-                <button
-                  style={{ color: 'black', background: 'red' }}
-                  onClick={handleUnsubscribe}
-                >
-                  unsubscribe
-                </button>
-              </Grid>
+              <Grid className="col-span-3 ..."></Grid>
               {tiers.map((tier, index) => (
                 <Grid className="col-span-2 " item key={tier.title}>
-                  <Card className="flex flex-col h-full self-center">
-                    {/* <div className="flex justify-center ..."></div> */}
-                    {/* <div className="flex justify-center ...">
-                      {' '}
-                      <img src={tier.logo} alt="logo" />
-                    </div>{' '} */}
+                  <Card className="flex flex-col self-center">
                     <CardActions className="flex ">
                       <Button
                         style={{
                           color: 'white',
-
                           background:
                             tier.buttonText == 'Subscribed'
                               ? '#c72c71'
@@ -962,7 +855,7 @@ const Pricing = () => {
                       title={tier.title}
                       titleTypographyProps={{ align: 'center' }}
                     />
-                    <CardContent className="flex flex-col">
+                    <CardContent className="flex flex-col ">
                       <Box
                         sx={{
                           display: 'flex',

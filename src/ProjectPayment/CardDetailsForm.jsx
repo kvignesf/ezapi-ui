@@ -26,7 +26,7 @@ const CardDetailsForm = ({ disabled, formRef }) => {
 
       <Formik
         initialValues={{
-          cardHolderName: 'Aakash',
+          cardHolderName: 'Test_CardHolder',
           card: false,
         }}
         validationSchema={cardDetailsSchema}

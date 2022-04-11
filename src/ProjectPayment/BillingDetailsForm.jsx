@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { ErrorMessage, Field, Form, Formik, useFormik } from 'formik';
 import { MenuItem, Select, TextField } from '@material-ui/core';
 import countryList from 'react-select-country-list';
@@ -8,34 +8,42 @@ import { CountryDropdown, RegionDropdown } from 'react-country-region-selector';
 import client, { endpoint } from '../shared/network/client';
 import { getApiError } from '../shared/utils';
 import billingDetailsSchema from './billingDetailsSchema';
+import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { PrimaryButton } from '../shared/components/AppButton';
 import classNames from 'classnames';
+import { getAccessToken } from '../shared/storage';
 
-// const userProfile = async () => {
-//   try {
-//     const { data } = await client.get(endpoint.userProfile);
-//     return data;
-//   } catch (error) {
-//     // throw getApiError(error);
-//   }
-// };
+const acc_token = getAccessToken();
+const userProfile = async () => {
+  try {
+    const { data } = await client.get(endpoint.userProfile, {
+      headers: {
+        Authorization: acc_token,
+      },
+    });
+
+    return data;
+  } catch (error) {}
+};
 
 const BillingDetailsForm = ({ disabled = false, formRef }) => {
-  // const [cityName, setCityName] = React.useState('');
-  // const [countryName, setCountryName] = React.useState('');
-  // const [line1Name, setLine1Name] = React.useState('');
-  // const [stateName, setStateName] = React.useState('');
-  // const [postalCodeName, setPostalCodeName] = React.useState('');
-  // (async () => {
-  //   const userProfile_data = await userProfile();
-  //   console.log(userProfile_data);
-  //   console.log(userProfile_data?.['billing_address']?.['city']);
-  //   setCityName(userProfile_data?.['billing_address']?.['city']);
-  //   setCountryName(userProfile_data?.['billing_address']?.['country']);
-  //   setStateName(userProfile_data?.['billing_address']?.['state']);
-  //   setLine1Name(userProfile_data?.['billing_address']?.['line1']);
-  //   setPostalCodeName(userProfile_data?.['billing_address']?.['postal_code']);
-  // })();
+  const { data } = useQuery('userProfileKey', userProfile, {
+    refetchOnWindowFocus: false,
+  });
+
+  const [cityName, setCityName] = React.useState('');
+  const [countryName, setCountryName] = React.useState('');
+  const [line1Name, setLine1Name] = React.useState('');
+  const [stateName, setStateName] = React.useState('');
+  const [postalCodeName, setPostalCodeName] = React.useState('');
+
+  useEffect(() => {
+    setCityName(data?.['billing_address']?.['city']);
+    setCountryName(data?.['billing_address']?.['country']);
+    setStateName(data?.['billing_address']?.['state']);
+    setLine1Name(data?.['billing_address']?.['line1']);
+    setPostalCodeName(data?.['billing_address']?.['postal_code']);
+  });
 
   return (
     <div className="mb-8">
@@ -43,18 +51,20 @@ const BillingDetailsForm = ({ disabled = false, formRef }) => {
 
       <Formik
         initialValues={{
-          fullName: 'Aakash',
-          country: 'India',
-          addressLine1: 'Adyar',
-          zip: '600041',
-          city: 'Chennai',
-          state: 'Tamil Nadu',
-          email: 'aakashchid02@gmail.com',
+          fullName: 'Test_name',
+          company: 'test_company',
+          country: countryName,
+          addressLine1: line1Name,
+          zip: postalCodeName,
+          city: cityName,
+          state: stateName,
+          email: 'test@gmail.com',
 
-          addressLine2: '',
+          addressLine2: 'test_Line2',
 
-          phone: '',
+          phone: '33333333',
         }}
+        enableReinitialize
         validationSchema={billingDetailsSchema}
         innerRef={formRef}
       >
@@ -68,6 +78,8 @@ const BillingDetailsForm = ({ disabled = false, formRef }) => {
                   id="fullName"
                   name="fullName"
                   fullWidth
+                  // value="fulllnameee"
+                  value={values.fullName}
                   color="primary"
                   variant="outlined"
                   disabled={disabled}

@@ -59,13 +59,18 @@ import ProfileMenu from '../shared/components/ProfileMenu';
 import EzapiLogo from '../shared/components/EzapiLogo';
 import EzapiFooter from '../shared/components/EzapiFooter';
 import { getAccessToken } from '../shared/storage';
-const userProfile = async () => {
-  try {
-    const { data } = await client.get(endpoint.userProfile);
+// const acc_token = getAccessToken();
+// const userProfile = async () => {
+//   try {
+//     const { data } = await client.get(endpoint.userProfile, {
+//       headers: {
+//         Authorization: acc_token,
+//       },
+//     });
 
-    return data;
-  } catch (error) {}
-};
+//     return data;
+//   } catch (error) {}
+// };
 const Header = ({
   projectDetails,
   logoutMutation: { isLoading: isLoggingOut, mutate: logout },
@@ -152,17 +157,6 @@ const ProjectPayment = (props) => {
   const [line1Name, setLine1Name] = React.useState('');
   const [stateName, setStateName] = React.useState('');
   const [postalCodeName, setPostalCodeName] = React.useState('');
-  (async () => {
-    const userProfile_data = await userProfile();
-    // console.log(userProfile_data);
-    // console.log(userProfile_data?.['billing_address']?.['city']);
-    setCityName(userProfile_data?.['billing_address']?.['city']);
-    setCountryName(userProfile_data?.['billing_address']?.['country']);
-    setStateName(userProfile_data?.['billing_address']?.['state']);
-    setLine1Name(userProfile_data?.['billing_address']?.['line1']);
-    setPostalCodeName(userProfile_data?.['billing_address']?.['postal_code']);
-    setCurrentPlan(userProfile_data?.['']);
-  })();
 
   useEffect(() => {
     var selectedPlanType;
@@ -175,8 +169,6 @@ const ProjectPayment = (props) => {
     setTypeDefault(location.state?.['type']);
     setPriceDefault(location.state?.['price']);
   }, [location]);
-
-  // console.log(durationDefault, typeDefault);
 
   const { projectId } = useParams();
   const history = useHistory();
@@ -191,12 +183,7 @@ const ProjectPayment = (props) => {
   });
   const logoutMutation = useLogout();
   const { isLoading: isLoggingOut, mutate: logout } = logoutMutation;
-  // const {
-  //   isLoading: isFetchingProducts,
-  //   isFetching: isFetchingProductsBg,
-  //   error: productsError,
-  //   data: productsData,
-  // } = useGetProducts(projectId);
+
   const {
     isLoading: isFetchingBasicProduct,
     isFetching: isFetchingBasicProductBg,
