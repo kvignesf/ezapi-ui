@@ -1,18 +1,31 @@
 import React from 'react';
 import { CircularProgress, Dialog, Tooltip } from '@material-ui/core';
 import _ from 'lodash';
+import { getAccessToken } from '../shared/storage';
+import client, { endpoint } from '../shared/network/client';
 import ReplayIcon from '@material-ui/icons/Replay';
-
+import MoreVertIcon from '@material-ui/icons/MoreVert';
+import AppIcon from '../shared/components/AppIcon';
 import Dashboard from '../Dashboard';
 import { useGetOrders } from './ordersQueries';
 import EmptyLogo from '../static/images/empty-state.svg';
-
+import Menu from '@material-ui/core/Menu';
+import MenuItem from '@material-ui/core/MenuItem';
 import Colors from '../shared/colors';
 import OrderRow from './OrderRow';
 import ErrorWithMessage from '../shared/components/ErrorWithMessage';
 import LoaderWithMessage from '../shared/components/LoaderWithMessage';
 
 const Content = () => {
+  const acc_token = getAccessToken();
+  const handleUnsubscribe = async () => {
+    const { UnsubscribeData } = await client.post(endpoint.unSubscribe, {
+      headers: {
+        Authorization: acc_token,
+      },
+    });
+  };
+  const [anchorEl, setAnchorEl] = React.useState(null);
   const {
     data: ordersData,
     isLoading: isFetchingOrders,
@@ -20,7 +33,9 @@ const Content = () => {
     isFetching: isFetchingOrdersBg,
     refetch: refetchOrders,
   } = useGetOrders();
-
+  const handleOnOptionsClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
   return (
     <div className="p-3 h-full">
       {/* <Dialog
@@ -60,15 +75,21 @@ const Content = () => {
             {/* <th className='p-2 rounded-tl-md rounded-bl-md uppercase'>
               Project Id
             </th> */}
-            <th className="p-2 rounded-tl-md rounded-bl-md uppercase">
+            {/* <th className="p-2 rounded-tl-md rounded-bl-md uppercase">
               Project Name
-            </th>
+            </th> */}
             <th className="uppercase">Product</th>
             <th className="uppercase">Price</th>
             <th className="uppercase w-64">Payment Status</th>
             <th className="uppercase">Order Id</th>
             <th className="uppercase">Order Date</th>
-            <th className="rounded-tr-md rounded-br-md text-center">
+            <td align="center">
+              <AppIcon onClick={handleOnOptionsClick}>
+                <MoreVertIcon />
+              </AppIcon>
+            </td>
+
+            {/* <th className="rounded-tr-md rounded-br-md text-center">
               {isFetchingOrdersBg ? (
                 <CircularProgress size="20px" />
               ) : (
@@ -88,7 +109,38 @@ const Content = () => {
                   />
                 </Tooltip>
               )}
-            </th>
+            </th> */}
+            <Menu
+              anchorEl={anchorEl}
+              keepMounted
+              open={Boolean(anchorEl)}
+              onClose={() => {
+                setAnchorEl(null);
+              }}
+              // TransitionComponent={Fade}
+              style={{ borderRadius: '1rem' }}
+            >
+              <MenuItem
+                onClick={(e) => {
+                  e?.preventDefault();
+                  e?.stopPropagation();
+                  refetchOrders();
+                  setAnchorEl(null);
+                  // handleOnView(project);
+                }}
+              >
+                Refresh
+              </MenuItem>
+              <MenuItem
+                onClick={() => {
+                  handleUnsubscribe();
+                  setAnchorEl(null);
+                  // handleOnView(project);
+                }}
+              >
+                Unsubscribe
+              </MenuItem>
+            </Menu>
           </tr>
 
           {ordersData?.orders.map((order) => {
