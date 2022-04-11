@@ -470,7 +470,9 @@ const AddProject = ({ onClose, onSuccess }) => {
                     handleNext();
                   } else if (
                     projectDetailsError?.message ==
-                    "Your 2 free Projects limit is exhausted, please purchase paid plan to publish."
+                    "Your 2 free Projects limit is exhausted, please purchase paid plan to publish." || projectDetailsError?.message ==
+                    "You have exceeded the collaborator limit for your plan"
+
                   ) {
                     history.push(routes.pricing);
                   } else {
@@ -481,7 +483,8 @@ const AddProject = ({ onClose, onSuccess }) => {
                 {currentTab === 0 || currentTab === 1
                   ? "Next"
                   : projectDetailsError?.message ==
-                    "Your 2 free Projects limit is exhausted, please purchase paid plan to publish."
+                    "Your 2 free Projects limit is exhausted, please purchase paid plan to publish." || projectDetailsError?.message ==
+                    "You have exceeded the collaborator limit for your plan"
                   ? "Upgrade"
                   : "Done"}
               </PrimaryButton>
