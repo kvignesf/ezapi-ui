@@ -526,19 +526,21 @@ const ConnectDatabase = ({
                           }}
                         >
                           <option value="" label="Select db type" />
-                          {/* <option  value="mysql" label="MySQL"/>
-
-                          <option  value="mssql" label="SQL Server"/>
-                          <option  value="postgres" label="Postgres"/> */}
 
                           {databaseTypes
-                            ?.filter(
-                              (item) => connectors && connectors[item.check]
-                            )
-                            .map((item) => {
-                              return (
-                                <option value={item.value} label={item.label} />
-                              );
+                            ?.map((item) => {
+                              if(connectors){
+                                if(connectors[item.check]){
+                                  return (
+                                      <option value={item.value} label={item.label} />
+                                    );
+                                }
+                                else{
+                                  return (
+                                    <option value={item.value} label={item.label} disabled/>
+                                  );
+                                }
+                              } 
                             })}
                         </select>
                       </Grid>
