@@ -74,7 +74,7 @@ const inviteCollaborators = async ({ id, collaborators }) => {
     return data;
   } catch (error) {
     if (error?.response?.data?.errorType === "COLLABRATOR_LIMIT_REACHED") {
-      throw Error(error?.response?.data?.error);
+      throw Error(error?.response?.data?.message);
     }
     throw getApiError(error);
   }

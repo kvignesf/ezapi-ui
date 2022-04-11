@@ -31,7 +31,12 @@ import InviteCollaborators from "../shared/components/InviteCollaborators";
 import TabLabel from "../shared/components/TabLabel";
 import Messages from "../shared/messages";
 import { withStyles } from "@material-ui/core/styles";
-import { useDatabaseConnection } from "./addProjectQuery";
+import { useUserProfile, usePricingData } from "./addProjectQuery";
+import client, { endpoint } from "../shared/network/client";
+import { queries } from "../shared/network/queryClient";
+
+import { useQuery } from "react-query";
+import { array } from "yup";
 
 const ConnectDatabase = ({
   formRef,
@@ -45,6 +50,8 @@ const ConnectDatabase = ({
   handleTabChange,
 }) => {
   const [projectDetails, setProjectDetails] = useRecoilState(projectAtom);
+  const [connectors, setConnectors] = useState([]);
+
 
   const debouncedSetDatabase = useCallback(
     debounce((nextValue) => {
@@ -59,6 +66,35 @@ const ConnectDatabase = ({
     }, 300),
     [] // will be created only once initially
   );
+
+  //   const pricingData = async () => {
+  //     const { data } = await client.get(endpoint.products2);
+
+  //     return data;
+  //   };
+
+  //   const userProfile = async () => {
+  //     try {
+  //       const { data } = await client.get(endpoint.userProfile);
+  //       return data;
+  //     } catch (error) {
+  //       // throw getApiError(error);
+  //     }
+  //   };
+
+  //  const usePricingData = () => {
+  //     return useQuery([queries.products], pricingData, {
+  //       refetchOnWindowFocus: false,
+  //       fetchPolicy: "no-cache",
+  //     });
+  //   };
+
+  //  const useUserProfile = () => {
+  //     return useQuery([queries.userProfile], userProfile, {
+  //       refetchOnWindowFocus: false,
+  //       fetchPolicy: "no-cache",
+  //     });
+  //   };
 
   const debouncedSetHost = useCallback(
     debounce((nextValue) => {
@@ -178,7 +214,7 @@ const ConnectDatabase = ({
   const handleOnKeysPick = (pickedKeys) => {
     setProjectDetails((currProjectDetails) => {
       const updatedProjectDetails = _.cloneDeep(currProjectDetails);
-      console.log("enterd into fuinction",updatedProjectDetails);
+      console.log("enterd into fuinction", updatedProjectDetails);
       pickedKeys.forEach((pickedKey) => {
         if (
           !_.find(
@@ -187,13 +223,13 @@ const ConnectDatabase = ({
           )
         ) {
           if (!updatedProjectDetails.keys) {
-            console.log("manojjj")
+            console.log("manojjj");
             updatedProjectDetails.keys = [];
           }
-          console.log("prani",updatedProjectDetails.keys);
+          console.log("prani", updatedProjectDetails.keys);
           console.log(pickedKey);
           updatedProjectDetails?.keys?.push(pickedKey);
-          console.log("prani_updated",updatedProjectDetails.keys);
+          console.log("prani_updated", updatedProjectDetails.keys);
         }
       });
 
@@ -206,22 +242,23 @@ const ConnectDatabase = ({
   const handleOnCertificatesPick = (pickedCertificates) => {
     setProjectDetails((currProjectDetails) => {
       const updatedProjectDetails = _.cloneDeep(currProjectDetails);
-      console.log("enterd into fuinction",updatedProjectDetails);
+      console.log("enterd into fuinction", updatedProjectDetails);
       pickedCertificates.forEach((pickedCertificate) => {
         if (
           !_.find(
             updatedProjectDetails.certificates,
-            (existingCertificate) => existingCertificate.name === pickedCertificate.name
+            (existingCertificate) =>
+              existingCertificate.name === pickedCertificate.name
           )
         ) {
           if (!updatedProjectDetails.certificates) {
-            console.log("manojjj")
+            console.log("manojjj");
             updatedProjectDetails.certificates = [];
           }
-          console.log("prani",updatedProjectDetails.certificates);
+          console.log("prani", updatedProjectDetails.certificates);
           console.log(pickedCertificate);
           updatedProjectDetails?.certificates?.push(pickedCertificate);
-          console.log("prani_updated",updatedProjectDetails.certificates);
+          console.log("prani_updated", updatedProjectDetails.certificates);
         }
       });
 
@@ -234,22 +271,23 @@ const ConnectDatabase = ({
   const handleOnCACertificatesPick = (pickedCACertificates) => {
     setProjectDetails((currProjectDetails) => {
       const updatedProjectDetails = _.cloneDeep(currProjectDetails);
-      console.log("enterd into fuinction",updatedProjectDetails);
+      console.log("enterd into fuinction", updatedProjectDetails);
       pickedCACertificates.forEach((pickedCACertificate) => {
         if (
           !_.find(
             updatedProjectDetails.caCertificates,
-            (existingCACertificate) => existingCACertificate.name === pickedCACertificate.name
+            (existingCACertificate) =>
+              existingCACertificate.name === pickedCACertificate.name
           )
         ) {
           if (!updatedProjectDetails.caCertificates) {
-            console.log("manojjj")
+            console.log("manojjj");
             updatedProjectDetails.caCertificates = [];
           }
-          console.log("prani",updatedProjectDetails.caCertificates);
+          console.log("prani", updatedProjectDetails.caCertificates);
           console.log(pickedCACertificate);
           updatedProjectDetails?.caCertificates?.push(pickedCACertificate);
-          console.log("prani_updated",updatedProjectDetails.caCertificates);
+          console.log("prani_updated", updatedProjectDetails.caCertificates);
         }
       });
 
@@ -258,8 +296,6 @@ const ConnectDatabase = ({
 
     resetProjectApiState();
   };
-
-
 
   const handleOnDbsPick = (pickedDbs) => {
     setProjectDetails((currProjectDetails) => {
@@ -388,6 +424,28 @@ const ConnectDatabase = ({
     },
   })(Tabs);
 
+  const databaseTypes = [
+    { value: "mysql", label: "MySQL", check: "my_sql" },
+    { value: "mssql", label: "SQL Server", check: "ms_sql" },
+    { value: "postgres", label: "Postgres", check: "postgres" },
+  ];
+
+  const { data: pricing_data } = usePricingData();
+  const { data: userProfile_data } = useUserProfile();
+
+
+  useEffect(() => {
+    if (pricing_data && userProfile_data) {
+      setConnectors(
+        pricing_data["products"].filter(
+          (item) =>
+            item["stripe_product_id"] == userProfile_data["subscribed_plan"]
+        )[0]["connectors"]
+      );
+    }
+  }, [pricing_data, userProfile_data]);
+
+  console.log("bsiud:", pricing_data);
   return (
     <div className="p-4" style={{ height: "300px", overflowY: "scroll" }}>
       {/* <Scrollbar className="max-h-60" alwaysShowTracks={true}> */}
@@ -448,22 +506,6 @@ const ConnectDatabase = ({
                 }) => (
                   <Form>
                     <Grid container spacing={2}>
-                      {/* <Field
-                        id='name'
-                        name='serverType'
-                        fullWidth
-                        color='primary'
-                        error={touched.name && Boolean(errors.name)}
-                        helperText={<ErrorMessage name='name' />}
-                        onKeyUp={(e) => {
-                          const { value } = e.target;
-                          debouncedSetName(value);
-                        }}
-                        variant='outlined'
-                        inputProps={{ maxLength: 24 }}
-                        // disabled={addProjectMutation?.isSuccess}
-                        as={Select}
-                      /> */}
                       <Grid item xs={12}>
                         <select
                           name="type"
@@ -484,20 +526,23 @@ const ConnectDatabase = ({
                           }}
                         >
                           <option value="" label="Select db type" />
-                          <option value="mysql" label="MySQL" />
-                          <option value="mssql" label="SQL Server" />
-                          <option value="mongo" label="Mongo" />
-                          <option value="postgres" label="Postgres" />
+
+                          {databaseTypes
+                            ?.map((item) => {
+                              if(connectors){
+                                if(connectors[item.check]){
+                                  return (
+                                      <option value={item.value} label={item.label} />
+                                    );
+                                }
+                                else{
+                                  return (
+                                    <option value={item.value} label={item.label} disabled/>
+                                  );
+                                }
+                              } 
+                            })}
                         </select>
-                        {/* <Field
-                            name="servername"
-                            component={CustomizedSelectForFormik}
-                          >
-                            <MenuItem value="mysql">MySQL</MenuItem>
-                            <MenuItem value="mssql">SQL Server</MenuItem>
-                            <MenuItem value="mongo">Mongo</MenuItem>
-                            <MenuItem value="postgres">Postgres</MenuItem>
-                          </Field> */}
                       </Grid>
                       <Grid item xs={6}>
                         <p className="text-mediumLabel mb-2">Host</p>
@@ -616,7 +661,7 @@ const ConnectDatabase = ({
                                 multiple
                                 hidden
                                 onChange={(e) => {
-                                  console.log("entered into Onchange")
+                                  console.log("entered into Onchange");
                                   handleOnKeysPick(Array.from(e.target.files));
                                   e.target.value = "";
                                 }}
@@ -685,7 +730,9 @@ const ConnectDatabase = ({
                                 multiple
                                 hidden
                                 onChange={(e) => {
-                                  handleOnCertificatesPick(Array.from(e.target.files));
+                                  handleOnCertificatesPick(
+                                    Array.from(e.target.files)
+                                  );
                                   e.target.value = "";
                                 }}
                               />
@@ -704,31 +751,35 @@ const ConnectDatabase = ({
                                     alwaysShowTracks={true}
                                   >
                                     <ul>
-                                      {projectDetails?.certificates?.map((file) => {
-                                        return (
-                                          <li key={file.name}>
-                                            <div className="rounded-md border bg-neutral-gray7 p-2 mb-2 flex flex-row items-center justify-between">
-                                              <p className="text-overline2">
-                                                {file.name}{" "}
-                                                {Math.round(file.size / 1024)}{" "}
-                                                KB
-                                              </p>
-                                              <AppIcon
-                                                aria-label="remove"
-                                                onClick={() => {
-                                                  removeSelectedCertificate(file.name);
-                                                }}
-                                                style={{
-                                                  width: "18px",
-                                                  height: "18px",
-                                                }}
-                                              >
-                                                <CloseIcon />
-                                              </AppIcon>
-                                            </div>
-                                          </li>
-                                        );
-                                      })}
+                                      {projectDetails?.certificates?.map(
+                                        (file) => {
+                                          return (
+                                            <li key={file.name}>
+                                              <div className="rounded-md border bg-neutral-gray7 p-2 mb-2 flex flex-row items-center justify-between">
+                                                <p className="text-overline2">
+                                                  {file.name}{" "}
+                                                  {Math.round(file.size / 1024)}{" "}
+                                                  KB
+                                                </p>
+                                                <AppIcon
+                                                  aria-label="remove"
+                                                  onClick={() => {
+                                                    removeSelectedCertificate(
+                                                      file.name
+                                                    );
+                                                  }}
+                                                  style={{
+                                                    width: "18px",
+                                                    height: "18px",
+                                                  }}
+                                                >
+                                                  <CloseIcon />
+                                                </AppIcon>
+                                              </div>
+                                            </li>
+                                          );
+                                        }
+                                      )}
                                     </ul>
                                   </Scrollbar>
                                 </div>
@@ -753,7 +804,9 @@ const ConnectDatabase = ({
                                 multiple
                                 hidden
                                 onChange={(e) => {
-                                  handleOnCACertificatesPick(Array.from(e.target.files));
+                                  handleOnCACertificatesPick(
+                                    Array.from(e.target.files)
+                                  );
                                   e.target.value = "";
                                 }}
                               />
@@ -772,31 +825,35 @@ const ConnectDatabase = ({
                                     alwaysShowTracks={true}
                                   >
                                     <ul>
-                                      {projectDetails?.caCertificates?.map((file) => {
-                                        return (
-                                          <li key={file.name}>
-                                            <div className="rounded-md border bg-neutral-gray7 p-2 mb-2 flex flex-row items-center justify-between">
-                                              <p className="text-overline2">
-                                                {file.name}{" "}
-                                                {Math.round(file.size / 1024)}{" "}
-                                                KB
-                                              </p>
-                                              <AppIcon
-                                                aria-label="remove"
-                                                onClick={() => {
-                                                  removeSelectedCACertificate(file.name);
-                                                }}
-                                                style={{
-                                                  width: "18px",
-                                                  height: "18px",
-                                                }}
-                                              >
-                                                <CloseIcon />
-                                              </AppIcon>
-                                            </div>
-                                          </li>
-                                        );
-                                      })}
+                                      {projectDetails?.caCertificates?.map(
+                                        (file) => {
+                                          return (
+                                            <li key={file.name}>
+                                              <div className="rounded-md border bg-neutral-gray7 p-2 mb-2 flex flex-row items-center justify-between">
+                                                <p className="text-overline2">
+                                                  {file.name}{" "}
+                                                  {Math.round(file.size / 1024)}{" "}
+                                                  KB
+                                                </p>
+                                                <AppIcon
+                                                  aria-label="remove"
+                                                  onClick={() => {
+                                                    removeSelectedCACertificate(
+                                                      file.name
+                                                    );
+                                                  }}
+                                                  style={{
+                                                    width: "18px",
+                                                    height: "18px",
+                                                  }}
+                                                >
+                                                  <CloseIcon />
+                                                </AppIcon>
+                                              </div>
+                                            </li>
+                                          );
+                                        }
+                                      )}
                                     </ul>
                                   </Scrollbar>
                                 </div>

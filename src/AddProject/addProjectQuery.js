@@ -14,6 +14,35 @@ import { getUserId } from '../shared/storage';
 
 let keyPath, certPath, caCertPath, savedProjectId;
 
+const pricingData = async () => {
+  const { data } = await client.get(endpoint.products2);
+
+  return data;
+};
+
+const userProfile = async () => {
+  try {
+    const { data } = await client.get(endpoint.userProfile);
+    return data;
+  } catch (error) {
+    // throw getApiError(error);
+  }
+};
+
+export const usePricingData = () => {
+  return useQuery([queries.products], pricingData, {
+    refetchOnWindowFocus: false,
+    fetchPolicy: "no-cache", 
+  });
+};
+
+export const useUserProfile = () => {
+  return useQuery([queries.userProfile], userProfile, {
+    refetchOnWindowFocus: false,
+    fetchPolicy: "no-cache", 
+  });
+};
+
 const exportDBSchema = async ({
   projectId,
   sslMode,
