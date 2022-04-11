@@ -472,7 +472,6 @@ const AddProject = ({ onClose, onSuccess }) => {
                     projectDetailsError?.message ==
                     "Your 2 free Projects limit is exhausted, please purchase paid plan to publish." || projectDetailsError?.message ==
                     "You have exceeded the collaborator limit for your plan"
-
                   ) {
                     history.push(routes.pricing);
                   } else {

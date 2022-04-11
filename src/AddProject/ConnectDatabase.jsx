@@ -50,7 +50,7 @@ const ConnectDatabase = ({
   handleTabChange,
 }) => {
   const [projectDetails, setProjectDetails] = useRecoilState(projectAtom);
-  const [connectors, setConnectors] = useState([]);
+  const [connectors, setConnectors] = useState({ms_sql: true, my_sql: false, postgres: false});
 
 
   const debouncedSetDatabase = useCallback(
@@ -445,7 +445,6 @@ const ConnectDatabase = ({
     }
   }, [pricing_data, userProfile_data]);
 
-  console.log("bsiud:", pricing_data);
   return (
     <div className="p-4" style={{ height: "300px", overflowY: "scroll" }}>
       {/* <Scrollbar className="max-h-60" alwaysShowTracks={true}> */}
