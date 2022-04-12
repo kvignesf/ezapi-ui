@@ -438,7 +438,7 @@ const ConnectDatabase = ({
 
   useEffect(() => {
     if (pricing_data && userProfile_data) {
-      if (userProfile_data["plan_name"] == "null") {
+      if (userProfile_data["plan_name"] == null) {
         setConnectors({ ms_sql: true, my_sql: false, postgres: false });
       } else {
         setConnectors(
