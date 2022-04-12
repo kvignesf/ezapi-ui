@@ -45,25 +45,32 @@ const OrderRow = ({ order }) => {
       >
         {order?.projectData?.projectName}
       </td> */}
-      <td className="py-3">{order?.productName}</td>
-      <td className="py-3">${order?.productPrice}</td>
+      {/* <td className="py-3">{order?.productName}</td> */}
+      <td className="p-3">dummyData</td>
+      <td className="py-3">${order?.amount}</td>
+      {/* <td className="py-3">{order?.description}</td> */}
       <td
-      // className={classNames({
-      //   "hover:opacity-75 cursor-pointer": isOrderInOtherState(order),
-      // })}
-      // onClick={(e) => {
-      //   e?.preventDefault();
-      //   e?.stopPropagation();
+        className={classNames({
+          'hover:opacity-75 cursor-pointer': isOrderInOtherState(order),
+        })}
+        onClick={(e) => {
+          e?.preventDefault();
+          e?.stopPropagation();
 
-      //   if (isOrderInOtherState(order)) {
-      //     navigateToOrderRetry();
-      //   }
-      // }}
+          if (isOrderInOtherState(order)) {
+            navigateToOrderRetry();
+          }
+        }}
       >
         <OrderStatus order={order} onRetry={navigateToOrderRetry} />
       </td>
-      <td>{order?.orderId}</td>
-      <td>{orderCreatedDate}</td>
+      <td className="text-clip overflow-hidden ...">{order?.id}</td>
+      <td>{order?.created}</td>
+      <td className="text-clip overflow-hidden ...">
+        <a className=" text-blue-500" target="_blank" href={order?.receipt_url}>
+          Click Here
+        </a>
+      </td>
     </tr>
   );
 };
