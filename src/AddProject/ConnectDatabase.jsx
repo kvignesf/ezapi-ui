@@ -50,8 +50,11 @@ const ConnectDatabase = ({
   handleTabChange,
 }) => {
   const [projectDetails, setProjectDetails] = useRecoilState(projectAtom);
-  const [connectors, setConnectors] = useState({ms_sql: true, my_sql: false, postgres: false});
-
+  const [connectors, setConnectors] = useState({
+    ms_sql: true,
+    my_sql: false,
+    postgres: false,
+  });
 
   const debouncedSetDatabase = useCallback(
     debounce((nextValue) => {
@@ -433,15 +436,17 @@ const ConnectDatabase = ({
   const { data: pricing_data } = usePricingData();
   const { data: userProfile_data } = useUserProfile();
 
-
   useEffect(() => {
     if (pricing_data && userProfile_data) {
-      setConnectors(
-        pricing_data["products"].filter(
-          (item) =>
-            item["plan_name"] == userProfile_data["plan_name"]
-        )[0]["connectors"]
-      );
+      if (userProfile_data["plan_name"] == "null") {
+        setConnectors({ ms_sql: true, my_sql: false, postgres: false });
+      } else {
+        setConnectors(
+          pricing_data["products"].filter(
+            (item) => item["plan_name"] == userProfile_data["plan_name"]
+          )[0]["connectors"]
+        );
+      }
     }
   }, [pricing_data, userProfile_data]);
 
@@ -526,21 +531,26 @@ const ConnectDatabase = ({
                         >
                           <option value="" label="Select db type" />
 
-                          {databaseTypes
-                            ?.map((item) => {
-                              if(connectors){
-                                if(connectors[item.check]){
-                                  return (
-                                      <option value={item.value} label={item.label} />
-                                    );
-                                }
-                                else{
-                                  return (
-                                    <option value={item.value} label={item.label} disabled/>
-                                  );
-                                }
-                              } 
-                            })}
+                          {databaseTypes?.map((item) => {
+                            if (connectors) {
+                              if (connectors[item.check]) {
+                                return (
+                                  <option
+                                    value={item.value}
+                                    label={item.label}
+                                  />
+                                );
+                              } else {
+                                return (
+                                  <option
+                                    value={item.value}
+                                    label={item.label}
+                                    disabled
+                                  />
+                                );
+                              }
+                            }
+                          })}
                         </select>
                       </Grid>
                       <Grid item xs={6}>
