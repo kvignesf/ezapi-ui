@@ -945,11 +945,33 @@ const ConnectDatabase = ({
                             backgroundColor: "#ffffff",
                           }}
                         >
-                          <option value="" label="Select db type" />
+                          {/* <option value="" label="Select db type" />
                           <option value="mysql" label="MySQL" />
                           <option value="mssql" label="SQL Server" />
                           <option value="mongo" label="Mongo" />
-                          <option value="postgres" label="Postgres" />
+                          <option value="postgres" label="Postgres" /> */}
+                          <option value="" label="Select db type" />
+
+                          {databaseTypes?.map((item) => {
+                            if (connectors) {
+                              if (connectors[item.check]) {
+                                return (
+                                  <option
+                                    value={item.value}
+                                    label={item.label}
+                                  />
+                                );
+                              } else {
+                                return (
+                                  <option
+                                    value={item.value}
+                                    label={item.label}
+                                    disabled
+                                  />
+                                );
+                              }
+                            }
+                          })}
                         </select>
                       </Grid>
                       <Grid item xs={12}>
