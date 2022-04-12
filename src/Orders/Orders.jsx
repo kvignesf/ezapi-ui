@@ -69,20 +69,21 @@ const Content = () => {
 
       {fetchOrdersError && <ErrorWithMessage message="Failed to load orders" />}
 
-      {!_.isEmpty(ordersData?.orders) && (
-        <table className="w-full">
-          <tr className="mr-16  bg-neutral-gray6 w-full text-left text-neutral-gray4 text-mediumLabel">
-            {/* <th className='p-2 rounded-tl-md rounded-bl-md uppercase'>
+      {!_.isEmpty(ordersData) && (
+        <table className="w-full table-fixed">
+          <tr className=" bg-neutral-gray6  text-left w-full text-neutral-gray4 text-mediumLabel ">
+            {/* <th className="p-2 rounded-tl-md rounded-bl-md uppercase">
               Project Id
             </th> */}
             {/* <th className="p-2 rounded-tl-md rounded-bl-md uppercase">
               Project Name
             </th> */}
-            <th className="uppercase">Product</th>
-            <th className="uppercase">Price</th>
-            <th className="uppercase w-64">Payment Status</th>
-            <th className="uppercase">Order Id</th>
-            <th className="uppercase">Order Date</th>
+            <th className="p-2 w-36 uppercase">Subscription</th>
+            <th className="uppercase w-22">Price</th>
+            <th className="uppercase w-40 ">Payment Status</th>
+            <th className="  uppercase w-72 ">Order Id</th>
+            <th className=" uppercase w-40">Order Date</th>
+            <th className=" uppercase w-40">Invoice</th>
             <td align="center">
               <AppIcon onClick={handleOnOptionsClick}>
                 <MoreVertIcon />
@@ -143,14 +144,14 @@ const Content = () => {
             </Menu>
           </tr>
 
-          {ordersData?.orders.map((order) => {
+          {ordersData.map((order) => {
             return <OrderRow order={order} />;
           })}
         </table>
       )}
 
       {/* Empty state */}
-      {_.isEmpty(ordersData?.orders) && (
+      {_.isEmpty(ordersData) && (
         <div className="h-full flex flex-col items-center justify-center">
           <img
             src={EmptyLogo}
