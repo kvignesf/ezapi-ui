@@ -439,7 +439,7 @@ const ConnectDatabase = ({
       setConnectors(
         pricing_data["products"].filter(
           (item) =>
-            item["stripe_product_id"] == userProfile_data["subscribed_plan"]
+            item["plan_name"] == userProfile_data["plan_name"]
         )[0]["connectors"]
       );
     }
