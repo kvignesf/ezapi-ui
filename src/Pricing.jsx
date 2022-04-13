@@ -217,7 +217,7 @@ const Pricing = () => {
   ];
 
   const { data: userProfileData } = useUserProfile();
-  console.log(userProfileData);
+  // console.log(userProfileData);
   var alreadySubscribed;
   useEffect(() => {
     if (!_.isEmpty(userProfileData)) {
@@ -264,14 +264,16 @@ const Pricing = () => {
   };
 
   const { data: productsData } = useProducts();
-  console.log(productsData);
+  // console.log(productsData);
   if (!_.isEmpty(productsData?.products)) {
     productsData['products'].map((item, index) => {
       if (durationMY == false) {
-        tiers[1]['price'] =
-          productsData?.['products']?.[0]?.['stripe']?.[0]?.['plan_price'];
-        tiers[2]['price'] =
-          productsData?.['products']?.[1]?.['stripe']?.[1]?.['plan_price'];
+        item?.['stripe'].map((item, index) => {
+          if (item['plan_interval'] == 'month') {
+            tiers[1]['price'] = item?.['plan_price'];
+            tiers[2]['price'] = item?.['plan_price'];
+          }
+        });
       }
       if (durationMY == true) {
         tiers[1]['price'] =
@@ -324,14 +326,6 @@ const Pricing = () => {
       rows[3][i]['pro'] = dataTransferTemp4V[1][i];
     }
   }
-  // const handleUnsubscribe = async () => {
-  //   const { UnsubscribeData } = await client.post(endpoint.unSubscribe, {
-  //     headers: {
-  //       Authorization: acc_token,
-  //     },
-  //   });
-  //   history.push(routes.pricing);
-  // };
 
   function handleSwitchChange(event) {
     setDurationMY(event.target.checked);
