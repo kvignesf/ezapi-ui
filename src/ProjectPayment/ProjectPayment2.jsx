@@ -59,18 +59,8 @@ import ProfileMenu from '../shared/components/ProfileMenu';
 import EzapiLogo from '../shared/components/EzapiLogo';
 import EzapiFooter from '../shared/components/EzapiFooter';
 import { getAccessToken } from '../shared/storage';
-// const acc_token = getAccessToken();
-// const userProfile = async () => {
-//   try {
-//     const { data } = await client.get(endpoint.userProfile, {
-//       headers: {
-//         Authorization: acc_token,
-//       },
-//     });
+const acc_token = getAccessToken();
 
-//     return data;
-//   } catch (error) {}
-// };
 const Header = ({
   projectDetails,
   logoutMutation: { isLoading: isLoggingOut, mutate: logout },
@@ -146,6 +136,23 @@ export const usePricingData = () => {
 };
 
 const ProjectPayment = (props) => {
+  const userProfile = async () => {
+    try {
+      const { data } = await client.get(endpoint.userProfile, {
+        headers: {
+          Authorization: acc_token,
+        },
+      });
+
+      return data;
+    } catch (error) {}
+  };
+  const { data } = useQuery('userProfileKey', userProfile, {
+    refetchOnWindowFocus: false,
+  });
+  useEffect(() => {
+    setCurrentPlan(data['subscribed_price']);
+  });
   const location = useLocation();
   const [durationDefault, setDurationDefault] = React.useState(false);
   const [typeDefault, setTypeDefault] = React.useState(false);

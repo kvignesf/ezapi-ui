@@ -24,9 +24,16 @@ import Switch from '@mui/material/Switch';
 import routes from './shared/routes';
 import { getAccessToken } from './shared/storage';
 const acc_token = getAccessToken();
-const pricingData = async () => {
-  const { data } = await client.get(endpoint.products2);
-  return data;
+const products = async () => {
+  try {
+    const { data } = await client.get(endpoint.products2);
+    return data;
+  } catch (error) {}
+};
+export const useProducts = () => {
+  return useQuery([queries.products], products, {
+    refetchOnWindowFocus: false,
+  });
 };
 const userProfile = async () => {
   try {
@@ -39,12 +46,11 @@ const userProfile = async () => {
     return data;
   } catch (error) {}
 };
-export const usePricingData = () => {
-  return useQuery([queries.products], pricingData, {
+export const useUserProfile = () => {
+  return useQuery([queries.userProfile], userProfile, {
     refetchOnWindowFocus: false,
   });
 };
-
 const Pricing = () => {
   const history = useHistory();
   var dataTransferTemp = [[], [], []];
@@ -187,7 +193,7 @@ const Pricing = () => {
     {
       title: 'Basic',
       price: '15',
-      description: ['Everything in Trial, Plus'],
+      description: ['Everything in Trial +'],
       buttonText: basicButton,
       buttonVariant: 'outlined',
       logo: basicLogo,
@@ -195,7 +201,7 @@ const Pricing = () => {
     {
       title: 'Pro',
       price: '30',
-      description: ['Everything in Basic, Plus'],
+      description: ['Everything in Basic +'],
       buttonText: proButton,
       buttonVariant: 'outlined',
       logo: proLogo,
@@ -203,28 +209,28 @@ const Pricing = () => {
     {
       title: 'Enterprise',
       price: 'Custom',
-      description: ['Everything in Pro, Plus'],
+      description: ['Everything in Pro +'],
       buttonText: 'CONTACT US',
       buttonVariant: 'outlined',
       logo: enterpriseLogo,
     },
   ];
 
-  const { data } = useQuery('userProfileKey', userProfile, {
-    refetchOnWindowFocus: false,
-  });
+  const { data: userProfileData } = useUserProfile();
+  console.log(userProfileData);
   var alreadySubscribed;
   useEffect(() => {
-    if (!_.isEmpty(data)) {
-      if (data?.['subscribed_price'] == '') {
+    if (!_.isEmpty(userProfileData)) {
+      if (userProfileData?.['subscribed_price'] == '') {
         alreadySubscribed = 'Trial';
         setTrialButton('Subscribed');
       } else {
         setTrialButton('Subscribe');
       }
       if (
-        data?.['subscribed_price'] == 'price_1KbgSaDXX1U3xHmP8Jac0qNX' ||
-        data?.['subscribed_subscribed_priceproduct'] ==
+        userProfileData?.['subscribed_price'] ==
+          'price_1KbgSaDXX1U3xHmP8Jac0qNX' ||
+        userProfileData?.['subscribed_subscribed_priceproduct'] ==
           'price_1KbgKaDXX1U3xHmPYs8KuyFV'
       ) {
         setBasicButton('Subscribed');
@@ -233,8 +239,10 @@ const Pricing = () => {
         setBasicButton('Subscribe');
       }
       if (
-        data?.['subscribed_price'] == 'price_1KbgTiDXX1U3xHmPCHjkKqGN' ||
-        data?.['subscribed_price'] == 'price_1KbgTiDXX1U3xHmPOwGrKyBp'
+        userProfileData?.['subscribed_price'] ==
+          'price_1KbgTiDXX1U3xHmPCHjkKqGN' ||
+        userProfileData?.['subscribed_price'] ==
+          'price_1KbgTiDXX1U3xHmPOwGrKyBp'
       ) {
         setProButton('Subscribed');
         alreadySubscribed = 'Pro';
@@ -255,21 +263,21 @@ const Pricing = () => {
     }
   };
 
-  const { data: pricing_data } = usePricingData();
-
-  if (!_.isEmpty(pricing_data?.products)) {
-    pricing_data['products'].map((item, index) => {
+  const { data: productsData } = useProducts();
+  console.log(productsData);
+  if (!_.isEmpty(productsData?.products)) {
+    productsData['products'].map((item, index) => {
       if (durationMY == false) {
         tiers[1]['price'] =
-          pricing_data?.['products']?.[0]?.['stripe']?.[0]?.['plan_price'];
+          productsData?.['products']?.[0]?.['stripe']?.[0]?.['plan_price'];
         tiers[2]['price'] =
-          pricing_data?.['products']?.[1]?.['stripe']?.[1]?.['plan_price'];
+          productsData?.['products']?.[1]?.['stripe']?.[1]?.['plan_price'];
       }
       if (durationMY == true) {
         tiers[1]['price'] =
-          pricing_data?.['products']?.[0]?.['stripe']?.[1]?.['plan_price'];
+          productsData?.['products']?.[0]?.['stripe']?.[1]?.['plan_price'];
         tiers[2]['price'] =
-          pricing_data?.['products']?.[1]?.['stripe']?.[0]?.['plan_price'];
+          productsData?.['products']?.[1]?.['stripe']?.[0]?.['plan_price'];
       }
 
       dataTransferTemp[index].push(
@@ -335,7 +343,9 @@ const Pricing = () => {
       document.getElementById('mo').style.color = '#c72c71';
     }
   }
-
+  function numberWithCommas(x) {
+    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }
   return (
     <Dashboard selectedIndex={3}>
       <div className="flex flex-col items-center justify-center w-full  ">
@@ -433,7 +443,11 @@ const Pricing = () => {
                                 : 'red',
                           }}
                         >
-                          ${tier.price}
+                          {index == 3 ? (
+                            <div>{tier.price}</div>
+                          ) : (
+                            <div>${numberWithCommas(tier.price)}</div>
+                          )}
                         </Typography>
                         <Typography
                           variant="h6"
@@ -451,6 +465,7 @@ const Pricing = () => {
                           }}
                         >
                           {index != 3 &&
+                            index != 0 &&
                             (durationMY ? <div>/yr</div> : <div>/mo</div>)}
                         </Typography>
                       </Box>
@@ -479,7 +494,7 @@ const Pricing = () => {
                         ))}
                       </ul>
                     </CardContent>
-                    <CardActions className="flex mt-10 ">
+                    <CardActions className="flex mt-7 ">
                       <Button
                         style={{
                           color: 'white',
@@ -879,7 +894,11 @@ const Pricing = () => {
                                 : 'red',
                           }}
                         >
-                          ${tier.price}
+                          {index == 3 ? (
+                            <div>{tier.price}</div>
+                          ) : (
+                            <div>${numberWithCommas(tier.price)}</div>
+                          )}
                         </Typography>
                         <Typography
                           variant="h6"
@@ -897,6 +916,7 @@ const Pricing = () => {
                           }}
                         >
                           {index != 3 &&
+                            index != 0 &&
                             (durationMY ? <div>/yr</div> : <div>/mo</div>)}
                         </Typography>
                       </Box>
@@ -911,5 +931,4 @@ const Pricing = () => {
     </Dashboard>
   );
 };
-
 export default Pricing;
