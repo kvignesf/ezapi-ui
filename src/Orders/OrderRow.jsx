@@ -46,10 +46,15 @@ const OrderRow = ({ order }) => {
         {order?.projectData?.projectName}
       </td> */}
       {/* <td className="py-3">{order?.productName}</td> */}
-      <td className="p-3">dummyData</td>
-      <td className="py-3">${order?.amount}</td>
+      {/* <td className="p-3">dummyData</td> */}
+      <td align="left" className="text-clip overflow-hidden ...">
+        {order?.id}
+      </td>
+      <td align="left">{order?.created}</td>
+
       {/* <td className="py-3">{order?.description}</td> */}
       <td
+        align="center"
         className={classNames({
           'hover:opacity-75 cursor-pointer': isOrderInOtherState(order),
         })}
@@ -64,9 +69,10 @@ const OrderRow = ({ order }) => {
       >
         <OrderStatus order={order} onRetry={navigateToOrderRetry} />
       </td>
-      <td className="text-clip overflow-hidden ...">{order?.id}</td>
-      <td>{order?.created}</td>
-      <td className="text-clip overflow-hidden ...">
+      <td align="left" className="py-3">
+        ${order?.amount}
+      </td>
+      <td align="left" className="text-clip overflow-hidden ...">
         <a className=" text-blue-500" target="_blank" href={order?.receipt_url}>
           Click Here
         </a>
