@@ -187,7 +187,7 @@ const Pricing = () => {
     {
       title: 'Basic',
       price: '15',
-      description: ['Everything in Trial, Plus'],
+      description: ['Everything in Trial +'],
       buttonText: basicButton,
       buttonVariant: 'outlined',
       logo: basicLogo,
@@ -195,7 +195,7 @@ const Pricing = () => {
     {
       title: 'Pro',
       price: '30',
-      description: ['Everything in Basic, Plus'],
+      description: ['Everything in Basic +'],
       buttonText: proButton,
       buttonVariant: 'outlined',
       logo: proLogo,
@@ -203,7 +203,7 @@ const Pricing = () => {
     {
       title: 'Enterprise',
       price: 'Custom',
-      description: ['Everything in Pro, Plus'],
+      description: ['Everything in Pro +'],
       buttonText: 'CONTACT US',
       buttonVariant: 'outlined',
       logo: enterpriseLogo,
@@ -335,7 +335,9 @@ const Pricing = () => {
       document.getElementById('mo').style.color = '#c72c71';
     }
   }
-
+  function numberWithCommas(x) {
+    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }
   return (
     <Dashboard selectedIndex={3}>
       <div className="flex flex-col items-center justify-center w-full  ">
@@ -433,7 +435,11 @@ const Pricing = () => {
                                 : 'red',
                           }}
                         >
-                          ${tier.price}
+                          {index == 3 ? (
+                            <div>{tier.price}</div>
+                          ) : (
+                            <div>${numberWithCommas(tier.price)}</div>
+                          )}
                         </Typography>
                         <Typography
                           variant="h6"
@@ -451,6 +457,7 @@ const Pricing = () => {
                           }}
                         >
                           {index != 3 &&
+                            index != 0 &&
                             (durationMY ? <div>/yr</div> : <div>/mo</div>)}
                         </Typography>
                       </Box>
@@ -479,7 +486,7 @@ const Pricing = () => {
                         ))}
                       </ul>
                     </CardContent>
-                    <CardActions className="flex mt-10 ">
+                    <CardActions className="flex mt-7 ">
                       <Button
                         style={{
                           color: 'white',
@@ -879,7 +886,11 @@ const Pricing = () => {
                                 : 'red',
                           }}
                         >
-                          ${tier.price}
+                          {index == 3 ? (
+                            <div>{tier.price}</div>
+                          ) : (
+                            <div>${numberWithCommas(tier.price)}</div>
+                          )}
                         </Typography>
                         <Typography
                           variant="h6"
@@ -897,6 +908,7 @@ const Pricing = () => {
                           }}
                         >
                           {index != 3 &&
+                            index != 0 &&
                             (durationMY ? <div>/yr</div> : <div>/mo</div>)}
                         </Typography>
                       </Box>
