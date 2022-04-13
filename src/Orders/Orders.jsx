@@ -130,19 +130,28 @@ const Content = () => {
 
       {!_.isEmpty(ordersData) && (
         <table className="w-full table-fixed">
-          <tr className=" bg-neutral-gray6  text-left w-full text-neutral-gray4 text-mediumLabel ">
+          <tr className=" bg-neutral-gray6  text-center w-full text-neutral-gray4 text-mediumLabel ">
             {/* <th className="p-2 rounded-tl-md rounded-bl-md uppercase">
               Project Id
             </th> */}
             {/* <th className="p-2 rounded-tl-md rounded-bl-md uppercase">
               Project Name
             </th> */}
-            <th className="p-2 w-36 uppercase">Subscription</th>
-            <th className="uppercase w-22">Price</th>
-            <th className="uppercase w-40 ">Payment Status</th>
-            <th className="  uppercase w-72 ">Order Id</th>
-            <th className=" uppercase w-40">Order Date</th>
-            <th className=" uppercase w-30">Invoice</th>
+            <th align="left" className="  uppercase w-72 ">
+              Order Id
+            </th>
+            <th align="left" className=" uppercase w-30">
+              Order Date
+            </th>
+            <th className="uppercase w-56 ">Payment Status</th>
+            <th align="left" className="uppercase w-30">
+              Price
+            </th>
+            <th align="left" className=" uppercase w-30">
+              Invoice
+            </th>
+            {/* <th className="p-2 w-36 uppercase">Subscription</th> */}
+
             <td className="">
               <AppIcon onClick={handleOnOptionsClick}>
                 <MoreVertIcon />
