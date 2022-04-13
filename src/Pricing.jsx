@@ -224,8 +224,7 @@ const Pricing = () => {
       }
       if (
         data?.['subscribed_price'] == 'price_1KbgSaDXX1U3xHmP8Jac0qNX' ||
-        data?.['subscribed_subscribed_priceproduct'] ==
-          'price_1KbgKaDXX1U3xHmPYs8KuyFV'
+        data?.['subscribed_price'] == 'price_1KbgKaDXX1U3xHmPYs8KuyFV'
       ) {
         setBasicButton('Subscribed');
         alreadySubscribed = 'Basic';
