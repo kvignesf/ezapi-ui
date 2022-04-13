@@ -151,7 +151,7 @@ const ProjectPayment = (props) => {
     refetchOnWindowFocus: false,
   });
   useEffect(() => {
-    setCurrentPlan(data?.['subscribed_price']);
+    setCurrentPlan(data['subscribed_price']);
   });
   const location = useLocation();
   const [durationDefault, setDurationDefault] = React.useState(false);
