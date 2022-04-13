@@ -24,16 +24,9 @@ import Switch from '@mui/material/Switch';
 import routes from './shared/routes';
 import { getAccessToken } from './shared/storage';
 const acc_token = getAccessToken();
-const products = async () => {
-  try {
-    const { data } = await client.get(endpoint.products2);
-    return data;
-  } catch (error) {}
-};
-export const useProducts = () => {
-  return useQuery([queries.products], products, {
-    refetchOnWindowFocus: false,
-  });
+const pricingData = async () => {
+  const { data } = await client.get(endpoint.products2);
+  return data;
 };
 const userProfile = async () => {
   try {
@@ -46,11 +39,12 @@ const userProfile = async () => {
     return data;
   } catch (error) {}
 };
-export const useUserProfile = () => {
-  return useQuery([queries.userProfile], userProfile, {
+export const usePricingData = () => {
+  return useQuery([queries.products], pricingData, {
     refetchOnWindowFocus: false,
   });
 };
+
 const Pricing = () => {
   const history = useHistory();
   var dataTransferTemp = [[], [], []];
@@ -216,21 +210,21 @@ const Pricing = () => {
     },
   ];
 
-  const { data: userProfileData } = useUserProfile();
-  console.log(userProfileData);
+  const { data } = useQuery('userProfileKey', userProfile, {
+    refetchOnWindowFocus: false,
+  });
   var alreadySubscribed;
   useEffect(() => {
-    if (!_.isEmpty(userProfileData)) {
-      if (userProfileData?.['subscribed_price'] == '') {
+    if (!_.isEmpty(data)) {
+      if (data?.['subscribed_price'] == '') {
         alreadySubscribed = 'Trial';
         setTrialButton('Subscribed');
       } else {
         setTrialButton('Subscribe');
       }
       if (
-        userProfileData?.['subscribed_price'] ==
-          'price_1KbgSaDXX1U3xHmP8Jac0qNX' ||
-        userProfileData?.['subscribed_subscribed_priceproduct'] ==
+        data?.['subscribed_price'] == 'price_1KbgSaDXX1U3xHmP8Jac0qNX' ||
+        data?.['subscribed_subscribed_priceproduct'] ==
           'price_1KbgKaDXX1U3xHmPYs8KuyFV'
       ) {
         setBasicButton('Subscribed');
@@ -239,10 +233,8 @@ const Pricing = () => {
         setBasicButton('Subscribe');
       }
       if (
-        userProfileData?.['subscribed_price'] ==
-          'price_1KbgTiDXX1U3xHmPCHjkKqGN' ||
-        userProfileData?.['subscribed_price'] ==
-          'price_1KbgTiDXX1U3xHmPOwGrKyBp'
+        data?.['subscribed_price'] == 'price_1KbgTiDXX1U3xHmPCHjkKqGN' ||
+        data?.['subscribed_price'] == 'price_1KbgTiDXX1U3xHmPOwGrKyBp'
       ) {
         setProButton('Subscribed');
         alreadySubscribed = 'Pro';
@@ -263,21 +255,21 @@ const Pricing = () => {
     }
   };
 
-  const { data: productsData } = useProducts();
-  console.log(productsData);
-  if (!_.isEmpty(productsData?.products)) {
-    productsData['products'].map((item, index) => {
+  const { data: pricing_data } = usePricingData();
+
+  if (!_.isEmpty(pricing_data?.products)) {
+    pricing_data['products'].map((item, index) => {
       if (durationMY == false) {
         tiers[1]['price'] =
-          productsData?.['products']?.[0]?.['stripe']?.[0]?.['plan_price'];
+          pricing_data?.['products']?.[0]?.['stripe']?.[0]?.['plan_price'];
         tiers[2]['price'] =
-          productsData?.['products']?.[1]?.['stripe']?.[1]?.['plan_price'];
+          pricing_data?.['products']?.[1]?.['stripe']?.[1]?.['plan_price'];
       }
       if (durationMY == true) {
         tiers[1]['price'] =
-          productsData?.['products']?.[0]?.['stripe']?.[1]?.['plan_price'];
+          pricing_data?.['products']?.[0]?.['stripe']?.[1]?.['plan_price'];
         tiers[2]['price'] =
-          productsData?.['products']?.[1]?.['stripe']?.[0]?.['plan_price'];
+          pricing_data?.['products']?.[1]?.['stripe']?.[0]?.['plan_price'];
       }
 
       dataTransferTemp[index].push(
@@ -931,4 +923,5 @@ const Pricing = () => {
     </Dashboard>
   );
 };
+
 export default Pricing;
