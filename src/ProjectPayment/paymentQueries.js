@@ -92,7 +92,7 @@ const initiatePayment = async ({
         },
       }
     );
-    await delay(5000);
+    await delay(1000);
     console.log(currentPlan);
     if (currentPlan == '') {
       update_planFlag = false;

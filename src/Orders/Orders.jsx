@@ -37,7 +37,7 @@ const Content = () => {
           },
         }
       );
-      console.log(status);
+      // console.log(status);
       if (status == 200 || status == '200') {
         setStatus(true);
         setFailureAlert(false);
@@ -140,10 +140,12 @@ const Content = () => {
             <th align="left" className="  uppercase w-72 ">
               Order Id
             </th>
-            <th align="left" className=" uppercase w-30">
+            <th align="left" className=" uppercase w-36">
               Order Date
             </th>
-            <th className="uppercase w-56 ">Payment Status</th>
+            <th align="left" className="uppercase w-48 ">
+              Payment Status
+            </th>
             <th align="left" className="uppercase w-30">
               Price
             </th>
@@ -189,7 +191,7 @@ const Content = () => {
               // TransitionComponent={Fade}
               style={{ borderRadius: '1rem' }}
             >
-              <MenuItem
+              {/* <MenuItem
                 onClick={(e) => {
                   e?.preventDefault();
                   e?.stopPropagation();
@@ -199,7 +201,7 @@ const Content = () => {
                 }}
               >
                 Refresh
-              </MenuItem>
+              </MenuItem> */}
               <MenuItem
                 onClick={() => {
                   setSuccessAlert(false);
@@ -208,7 +210,7 @@ const Content = () => {
                   setFailureAlert(false);
                 }}
               >
-                Unsubscribe
+                Cancel Subscription
               </MenuItem>
             </Menu>
           </tr>
