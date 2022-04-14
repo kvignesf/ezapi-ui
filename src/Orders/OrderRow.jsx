@@ -1,6 +1,6 @@
 import React from 'react';
 import { useHistory } from 'react-router-dom';
-
+import Alert from '@mui/material/Alert';
 import OrderStatus from './OrderStatus';
 import routes, { generateRoute } from '../shared/routes';
 import { isOrderInOtherState } from '../shared/utils';
@@ -22,13 +22,10 @@ const OrderRow = ({ order }) => {
   };
 
   const navigateToOrderRetry = () => {
-    history.push(
-      // generateRoute(routes.paymentForOrder, {
-      //   projectId: order?.projectData?.projectId,
-      //   orderId: order?.orderId,
-      // })
-      generateRoute(routes.payment, order?.projectData?.projectId)
-    );
+    history.push({
+      pathname: routes.payment,
+      state: { type: 'Basic', duration: false, price: '699' },
+    });
   };
 
   return (
@@ -54,7 +51,7 @@ const OrderRow = ({ order }) => {
 
       {/* <td className="py-3">{order?.description}</td> */}
       <td
-        align="center"
+        align="left"
         className={classNames({
           'hover:opacity-75 cursor-pointer': isOrderInOtherState(order),
         })}
@@ -67,7 +64,11 @@ const OrderRow = ({ order }) => {
           }
         }}
       >
-        <OrderStatus order={order} onRetry={navigateToOrderRetry} />
+        <OrderStatus
+          order={order}
+          onRetry={navigateToOrderRetry}
+          description={order?.failure_message}
+        />
       </td>
       <td align="left" className="py-3">
         ${order?.amount}

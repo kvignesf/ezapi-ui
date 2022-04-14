@@ -150,9 +150,8 @@ const ProjectPayment = (props) => {
   const { data } = useQuery('userProfileKey', userProfile, {
     refetchOnWindowFocus: false,
   });
-  useEffect(() => {
-    setCurrentPlan(data['subscribed_price']);
-  });
+  console.log(data?.['subscribed_price']);
+
   const location = useLocation();
   const [durationDefault, setDurationDefault] = React.useState(false);
   const [typeDefault, setTypeDefault] = React.useState(false);
@@ -164,7 +163,9 @@ const ProjectPayment = (props) => {
   const [line1Name, setLine1Name] = React.useState('');
   const [stateName, setStateName] = React.useState('');
   const [postalCodeName, setPostalCodeName] = React.useState('');
-
+  useEffect(() => {
+    setCurrentPlan(data?.['subscribed_price']);
+  });
   useEffect(() => {
     var selectedPlanType;
     if (location.state?.['duration'] == false) {
@@ -227,7 +228,7 @@ const ProjectPayment = (props) => {
     mutate: confirmPayment,
     reset: resetConfirmPayment,
   } = confirmPaymentMutation;
-  console.log(initiatePaymentData);
+  // console.log(initiatePaymentData);
   const queryClient = useQueryClient();
   const { verifyProjectMutation, publishProjectMutation } =
     useSubmitProject(projectId);
