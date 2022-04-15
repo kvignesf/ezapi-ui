@@ -18,21 +18,6 @@ import { isUserLoggedIn } from '../shared/utils';
 import { useQuery } from 'react-query';
 
 const Login = () => {
-  const acc_token = getAccessToken();
-  const userProfile = async () => {
-    try {
-      const { data } = await client.get(endpoint.userProfile, {
-        headers: {
-          Authorization: acc_token,
-        },
-      });
-
-      return data;
-    } catch (error) {}
-  };
-  const { data } = useQuery('userProfileKey', userProfile, {
-    refetchOnWindowFocus: false,
-  });
   const history = useHistory();
   const redirect_uri = `${window.location.origin}/linkedin`;
 
