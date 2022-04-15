@@ -172,6 +172,7 @@ const Pricing = () => {
     ],
   ];
   const [durationMY, setDurationMY] = React.useState(false);
+
   const [trialButton, setTrialButton] = React.useState('SUBSCRIBE');
   const [basicButton, setBasicButton] = React.useState('SUBSCRIBE');
   const [proButton, setProButton] = React.useState('SUBSCRIBE');
@@ -216,29 +217,36 @@ const Pricing = () => {
   var alreadySubscribed;
   useEffect(() => {
     if (!_.isEmpty(data)) {
-      if (data?.['subscribed_price'] == '') {
-        alreadySubscribed = 'Trial';
-        setTrialButton('Subscribed');
-      } else {
-        setTrialButton('Subscribe');
-      }
-      if (
-        data?.['subscribed_price'] == 'price_1KbgSaDXX1U3xHmP8Jac0qNX' ||
-        data?.['subscribed_price'] == 'price_1KbgKaDXX1U3xHmPYs8KuyFV'
-      ) {
-        setBasicButton('Subscribed');
-        alreadySubscribed = 'Basic';
-      } else {
+      if (data?.['plan_name'] == null) {
+        // setTrialButton2(false);
+        setTrialButton('Expired');
         setBasicButton('Subscribe');
-      }
-      if (
-        data?.['subscribed_price'] == 'price_1KbgTiDXX1U3xHmPCHjkKqGN' ||
-        data?.['subscribed_price'] == 'price_1KbgTiDXX1U3xHmPOwGrKyBp'
-      ) {
-        setProButton('Subscribed');
-        alreadySubscribed = 'Pro';
-      } else {
         setProButton('Subscribe');
+      } else {
+        if (data?.['subscribed_price'] == '') {
+          alreadySubscribed = 'Trial';
+          setTrialButton('Subscribed');
+        } else {
+          setTrialButton('Subscribe');
+        }
+        if (
+          data?.['subscribed_price'] == 'price_1KbgSaDXX1U3xHmP8Jac0qNX' ||
+          data?.['subscribed_price'] == 'price_1KbgKaDXX1U3xHmPYs8KuyFV'
+        ) {
+          setBasicButton('Subscribed');
+          alreadySubscribed = 'Basic';
+        } else {
+          setBasicButton('Subscribe');
+        }
+        if (
+          data?.['subscribed_price'] == 'price_1KbgTiDXX1U3xHmPCHjkKqGN' ||
+          data?.['subscribed_price'] == 'price_1KbgTiDXX1U3xHmPOwGrKyBp'
+        ) {
+          setProButton('Subscribed');
+          alreadySubscribed = 'Pro';
+        } else {
+          setProButton('Subscribe');
+        }
       }
     }
   });
@@ -488,11 +496,18 @@ const Pricing = () => {
                     <CardActions className="flex mt-7 ">
                       <Button
                         style={{
-                          color: 'white',
+                          color:
+                            tier.buttonText == 'Subscribed'
+                              ? 'white'
+                              : tier.buttonText == 'Expired'
+                              ? 'black'
+                              : 'white',
 
                           background:
                             tier.buttonText == 'Subscribed'
                               ? '#c72c71'
+                              : tier.buttonText == 'Expired'
+                              ? '#9f9f9f'
                               : '#0971f1',
                         }}
                         onClick={() => {
@@ -502,7 +517,10 @@ const Pricing = () => {
                             tier.buttonText
                           );
                         }}
-                        disabled={tier.buttonText == 'Subscribed'}
+                        disabled={
+                          tier.buttonText == 'Subscribed' ||
+                          tier.buttonText == 'Expired'
+                        }
                         fullWidth
                         variant="outlined"
                       >
@@ -825,10 +843,18 @@ const Pricing = () => {
                     <CardActions className="flex ">
                       <Button
                         style={{
-                          color: 'white',
+                          color:
+                            tier.buttonText == 'Subscribed'
+                              ? 'white'
+                              : tier.buttonText == 'Expired'
+                              ? 'black'
+                              : 'white',
+
                           background:
                             tier.buttonText == 'Subscribed'
                               ? '#c72c71'
+                              : tier.buttonText == 'Expired'
+                              ? '#9f9f9f'
                               : '#0971f1',
                         }}
                         onClick={() => {
@@ -838,7 +864,10 @@ const Pricing = () => {
                             tier.buttonText
                           );
                         }}
-                        disabled={tier.buttonText == 'Subscribed'}
+                        disabled={
+                          tier.buttonText == 'Subscribed' ||
+                          tier.buttonText == 'Expired'
+                        }
                         fullWidth
                         variant="outlined"
                       >
