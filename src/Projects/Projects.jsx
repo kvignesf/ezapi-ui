@@ -7,12 +7,14 @@ import _ from 'lodash';
 import classNames from 'classnames';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
+// import client, { endpoint } from './shared/network/client';
 import Fade from '@material-ui/core/Fade';
 import { CircularProgress, Dialog, Tooltip } from '@material-ui/core';
 import { useHistory } from 'react-router';
 import CodeIcon from '@material-ui/icons/Code';
+import { useQuery } from 'react-query';
 import ReplayIcon from '@material-ui/icons/Replay';
-
+import client, { endpoint } from '../shared/network/client';
 import Dashboard from '../Dashboard';
 import AppIcon from '../shared/components/AppIcon';
 import AddProject from '../AddProject';
@@ -22,6 +24,7 @@ import InitialsAvatar from '../shared/components/InitialsAvatar';
 import Colors from '../shared/colors';
 import RenameProject from './RenameProject/RenameProject';
 import DeleteProject from './DeleteProject/DeleteProject';
+
 import {
   useDownloadArtifacts,
   useDownloadCodegen,
@@ -35,7 +38,7 @@ import { getUserId } from '../shared/storage';
 import routes, { generateRoute } from '../shared/routes';
 import Logo from '../static/images/logo/svg.svg';
 import { useCanEdit } from '../shared/utils';
-
+import { getAccessToken } from '../shared/storage';
 const MembersImages = ({ project, ...rest }) => {
   const loggedInUserId = getUserId();
   const userId = getUserId();
