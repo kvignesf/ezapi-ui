@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
 import GetAppIcon from '@material-ui/icons/GetApp';
 import SystemUpdateAltIcon from '@material-ui/icons/SystemUpdateAlt';
@@ -10,7 +10,8 @@ import MenuItem from '@material-ui/core/MenuItem';
 // import client, { endpoint } from './shared/network/client';
 import Fade from '@material-ui/core/Fade';
 import { CircularProgress, Dialog, Tooltip } from '@material-ui/core';
-import { useHistory } from 'react-router';
+// import { useHistory } from 'react-router';
+import { useHistory, useLocation } from 'react-router-dom';
 import CodeIcon from '@material-ui/icons/Code';
 import { useQuery } from 'react-query';
 import ReplayIcon from '@material-ui/icons/Replay';
@@ -494,6 +495,41 @@ const Content = ({ showCreateProjectDialog }) => {
 };
 
 const Projects = () => {
+  const [allow, setAllow] = React.useState(true);
+  const location = useLocation();
+  useEffect(
+    () => {
+      // console.log(locatison.state?.['allow']);
+      if (location.state?.['allow'] == true) {
+        setAllow(true);
+      } else {
+        setAllow(false);
+      }
+    },
+    [location],
+    []
+  );
+  const history = useHistory();
+  const acc_token = getAccessToken();
+  const userProfile = async () => {
+    try {
+      const { data } = await client.get(endpoint.userProfile, {
+        headers: {
+          Authorization: acc_token,
+        },
+      });
+
+      return data;
+    } catch (error) {}
+  };
+  const { data } = useQuery('userProfileKey', userProfile, {
+    refetchOnWindowFocus: false,
+  });
+  // console.log(allow);
+  if (data?.['plan_name'] == null && !allow) {
+    // console.log('in');
+    history.push(routes.pricing);
+  }
   return (
     <Dashboard selectedIndex={1}>
       <Content />
