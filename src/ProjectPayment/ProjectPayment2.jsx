@@ -150,7 +150,7 @@ const ProjectPayment = (props) => {
   const { data } = useQuery('userProfileKey', userProfile, {
     refetchOnWindowFocus: false,
   });
-  console.log(data?.['subscribed_price']);
+  // console.log(data?.['subscribed_price']);
 
   const location = useLocation();
   const [durationDefault, setDurationDefault] = React.useState(false);
@@ -168,6 +168,7 @@ const ProjectPayment = (props) => {
   });
   useEffect(() => {
     var selectedPlanType;
+    console.log(location.state?.['duration']);
     if (location.state?.['duration'] == false) {
       selectedPlanType = 'mo';
     } else {

@@ -74,13 +74,17 @@ const Dashboard = ({ selectedIndex, children, pricingDefaultCheck }) => {
   const lastName = getLastName();
 
   const handleSideMenuItemClick = (index) => {
-    console.log(index);
+    // console.log(index);
     if (index !== selectedIndex) {
       if (index === 0) {
         // Show add new project dialog
         showAddProjectDialog();
       } else if (index === 1) {
-        history.push(routes.projects);
+        history.push({
+          pathname: routes.projects,
+          state: { allow: true },
+        });
+        // history.push(routes.projects);
       } else if (index === 2) {
         history.push(routes.orders);
       } else if (index === 3) {
@@ -89,11 +93,6 @@ const Dashboard = ({ selectedIndex, children, pricingDefaultCheck }) => {
     }
   };
 
-  // if (data?.['plan_name'] == null && pricingDefaultCheck == false) {
-  //   setCounter(1)
-  //   console.log('in');
-  //   handleSideMenuItemClick(3);
-  // }
   const showAddProjectDialog = () => {
     setDialog({
       show: true,

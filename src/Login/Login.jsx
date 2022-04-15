@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import Card from '@material-ui/core/Card';
 import { LinkedIn } from 'react-linkedin-login-oauth2';
 import linkedin from 'react-linkedin-login-oauth2/assets/linkedin.png';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { getAccessToken } from '../shared/storage';
 import Logo from '../static/images/logo/png.png';
@@ -16,7 +16,7 @@ import { CircularProgress } from '@material-ui/core';
 import _ from 'lodash';
 import { isUserLoggedIn } from '../shared/utils';
 import { useQuery } from 'react-query';
-
+const acc_token = getAccessToken();
 const Login = () => {
   const history = useHistory();
   const redirect_uri = `${window.location.origin}/linkedin`;
@@ -37,7 +37,10 @@ const Login = () => {
 
   useEffect(() => {
     if (isUserLoggedIn()) {
-      history.replace(routes.projects);
+      history.push({
+        pathname: routes.projects,
+        state: { allow: false },
+      });
     }
   }, []);
 
@@ -47,7 +50,10 @@ const Login = () => {
   };
 
   if (isLoginSuccess && !isLoggingIn && !loginError) {
-    history.replace(routes.projects);
+    history.replace({
+      pathname: routes.projects,
+      state: { allow: false },
+    });
     return null;
   }
 
