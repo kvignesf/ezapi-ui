@@ -52,11 +52,7 @@ const Login = () => {
 
   useEffect(() => {
     if (isUserLoggedIn()) {
-      if (data?.['plan_name'] == null) {
-        history.replace(routes.pricing);
-      } else {
-        history.replace(routes.projects);
-      }
+      history.replace(routes.projects);
     }
   }, []);
 
@@ -66,12 +62,7 @@ const Login = () => {
   };
 
   if (isLoginSuccess && !isLoggingIn && !loginError) {
-    if (data?.['plan_name'] == null) {
-      history.replace(routes.pricing);
-    } else {
-      history.replace(routes.projects);
-    }
-
+    history.replace(routes.projects);
     return null;
   }
 
