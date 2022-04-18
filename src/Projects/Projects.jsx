@@ -495,15 +495,16 @@ const Content = ({ showCreateProjectDialog }) => {
 };
 
 const Projects = () => {
-  const [allow, setAllow] = React.useState(true);
+  const [stay, setStay] = React.useState(true);
+  const [renderNow, setRenderNow] = React.useState(false);
   const location = useLocation();
   useEffect(
     () => {
       // console.log(locatison.state?.['allow']);
       if (location.state?.['allow'] == true) {
-        setAllow(true);
+        setStay(true);
       } else {
-        setAllow(false);
+        setStay(false);
       }
     },
     [location],
@@ -525,15 +526,26 @@ const Projects = () => {
   const { data } = useQuery('userProfileKey', userProfile, {
     refetchOnWindowFocus: false,
   });
-  // console.log(allow);
-  if (data?.['plan_name'] == null && !allow) {
-    // console.log('in');
+  console.log(data?.['plan_name']);
+  console.log(stay);
+
+  if (data?.['plan_name'] === null && !stay) {
+    console.log('in');
     history.push(routes.pricing);
+    // setRenderNow(false);
   }
+  // else {
+  //   setRenderNow(true);
+  // }
   return (
-    <Dashboard selectedIndex={1}>
-      <Content />
-    </Dashboard>
+    <>
+      {' '}
+      {
+        <Dashboard selectedIndex={1}>
+          <Content />
+        </Dashboard>
+      }
+    </>
   );
 };
 

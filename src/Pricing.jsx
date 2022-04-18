@@ -172,7 +172,6 @@ const Pricing = () => {
     ],
   ];
   const [durationMY, setDurationMY] = React.useState(false);
-
   const [trialButton, setTrialButton] = React.useState('SUBSCRIBE');
   const [basicButton, setBasicButton] = React.useState('SUBSCRIBE');
   const [proButton, setProButton] = React.useState('SUBSCRIBE');
@@ -214,39 +213,31 @@ const Pricing = () => {
   const { data } = useQuery('userProfileKey', userProfile, {
     refetchOnWindowFocus: false,
   });
-  var alreadySubscribed;
+
   useEffect(() => {
     if (!_.isEmpty(data)) {
-      if (data?.['plan_name'] == null) {
-        // setTrialButton2(false);
-        setTrialButton('Expired');
-        setBasicButton('Subscribe');
-        setProButton('Subscribe');
+      if (data?.['subscribed_price'] == '') {
+        if (data?.['plan_name'] != 'Trial') {
+          setTrialButton('Expired');
+        } else if (data?.['plan_name'] == 'Trial') setTrialButton('Subscribed');
       } else {
-        if (data?.['subscribed_price'] == '') {
-          alreadySubscribed = 'Trial';
-          setTrialButton('Subscribed');
-        } else {
-          setTrialButton('Subscribe');
-        }
-        if (
-          data?.['subscribed_price'] == 'price_1KbgSaDXX1U3xHmP8Jac0qNX' ||
-          data?.['subscribed_price'] == 'price_1KbgKaDXX1U3xHmPYs8KuyFV'
-        ) {
-          setBasicButton('Subscribed');
-          alreadySubscribed = 'Basic';
-        } else {
-          setBasicButton('Subscribe');
-        }
-        if (
-          data?.['subscribed_price'] == 'price_1KbgTiDXX1U3xHmPCHjkKqGN' ||
-          data?.['subscribed_price'] == 'price_1KbgTiDXX1U3xHmPOwGrKyBp'
-        ) {
-          setProButton('Subscribed');
-          alreadySubscribed = 'Pro';
-        } else {
-          setProButton('Subscribe');
-        }
+        setTrialButton('Expired');
+      }
+      if (
+        data?.['subscribed_price'] == 'price_1KbgSaDXX1U3xHmP8Jac0qNX' ||
+        data?.['subscribed_price'] == 'price_1KbgKaDXX1U3xHmPYs8KuyFV'
+      ) {
+        setBasicButton('Subscribed');
+      } else {
+        setBasicButton('Subscribe');
+      }
+      if (
+        data?.['subscribed_price'] == 'price_1KbgTiDXX1U3xHmPCHjkKqGN' ||
+        data?.['subscribed_price'] == 'price_1KbgTiDXX1U3xHmPOwGrKyBp'
+      ) {
+        setProButton('Subscribed');
+      } else {
+        setProButton('Subscribe');
       }
     }
   });

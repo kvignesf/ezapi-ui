@@ -422,15 +422,6 @@ const ProjectPayment = (props) => {
       priceIDData: priceIDData,
       billingDetails: billingDetailsRef?.current?.values,
     });
-
-    // confirmPayment({
-    //   // secret: initiatePaymentData?.clientSecret,
-    //   priceIDData: priceIDData,
-    //   token: token,
-    //   card: elements.getElement(CardElement),
-    //   billingDetails: billingDetailsRef?.current?.values,
-    //   stripe,
-    // });
   };
 
   const navigateBack = () => {

@@ -26,10 +26,11 @@ import { isPartialMatch } from '../shared/utils';
 
 const Content = () => {
   const [status, setStatus] = React.useState(false);
+  const [data, setData] = React.useState();
   const acc_token = getAccessToken();
   const handleUnsubscribe = async () => {
     try {
-      const { UnsubscribeData, status } = await client.post(
+      const { unsubscribeData, status } = await client.post(
         endpoint.unSubscribe,
         {
           headers: {
@@ -43,8 +44,10 @@ const Content = () => {
         setFailureAlert(false);
         setSuccessAlert(true);
       }
+      // return unsubscrifbeData;
     } catch (error) {
       if (error.response.status == 400) {
+        setData(error.response.data);
         setStatus(false);
         setFailureAlert(true);
         setSuccessAlert(false);
@@ -294,24 +297,24 @@ const Content = () => {
                 {successAlert && (
                   <Snackbar
                     open={successAlert}
-                    autoHideDuration={1000}
+                    autoHideDuration={3000}
                     onClose={handleClose}
                     // action={action}
                   >
                     <Alert severity="success" sx={{ width: '100%' }}>
-                      Successfully Unsubscribed
+                      Successfully Cancelled Subscription
                     </Alert>
                   </Snackbar>
                 )}
                 {failureAlert && (
                   <Snackbar
                     open={failureAlert}
-                    autoHideDuration={1000}
+                    autoHideDuration={3000}
                     onClose={handleClose}
                     // action={action}
                   >
                     <Alert severity="error" sx={{ width: '100%' }}>
-                      Already in Trial
+                      {data?.message}
                     </Alert>
                   </Snackbar>
                 )}
