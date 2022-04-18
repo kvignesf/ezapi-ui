@@ -60,7 +60,7 @@ const PaymentStatusDialog = ({
       return 'Payment successful';
     } else if (!isPaymentSuccess()) {
       return (
-        confirmPaymentData?.error?.message + ' Please try again!!!!!!!1.' ??
+        confirmPaymentData?.error?.message + ' Please try again!' ??
         confirmPaymentError?.message + ' Please try again.' ??
         Messages.PAYMENT_RETRY
       );
