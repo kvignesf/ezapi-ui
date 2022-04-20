@@ -59,18 +59,8 @@ import ProfileMenu from '../shared/components/ProfileMenu';
 import EzapiLogo from '../shared/components/EzapiLogo';
 import EzapiFooter from '../shared/components/EzapiFooter';
 import { getAccessToken } from '../shared/storage';
-// const acc_token = getAccessToken();
-// const userProfile = async () => {
-//   try {
-//     const { data } = await client.get(endpoint.userProfile, {
-//       headers: {
-//         Authorization: acc_token,
-//       },
-//     });
+const acc_token = getAccessToken();
 
-//     return data;
-//   } catch (error) {}
-// };
 const Header = ({
   projectDetails,
   logoutMutation: { isLoading: isLoggingOut, mutate: logout },
@@ -146,6 +136,22 @@ export const usePricingData = () => {
 };
 
 const ProjectPayment = (props) => {
+  const userProfile = async () => {
+    try {
+      const { data } = await client.get(endpoint.userProfile, {
+        headers: {
+          Authorization: acc_token,
+        },
+      });
+
+      return data;
+    } catch (error) {}
+  };
+  const { data } = useQuery('userProfileKey', userProfile, {
+    refetchOnWindowFocus: false,
+  });
+  // console.log(data?.['subscribed_price']);
+
   const location = useLocation();
   const [durationDefault, setDurationDefault] = React.useState(false);
   const [typeDefault, setTypeDefault] = React.useState(false);
@@ -157,9 +163,12 @@ const ProjectPayment = (props) => {
   const [line1Name, setLine1Name] = React.useState('');
   const [stateName, setStateName] = React.useState('');
   const [postalCodeName, setPostalCodeName] = React.useState('');
-
+  useEffect(() => {
+    setCurrentPlan(data?.['subscribed_price']);
+  });
   useEffect(() => {
     var selectedPlanType;
+    console.log(location.state?.['duration']);
     if (location.state?.['duration'] == false) {
       selectedPlanType = 'mo';
     } else {
@@ -220,7 +229,7 @@ const ProjectPayment = (props) => {
     mutate: confirmPayment,
     reset: resetConfirmPayment,
   } = confirmPaymentMutation;
-  console.log(initiatePaymentData);
+  // console.log(initiatePaymentData);
   const queryClient = useQueryClient();
   const { verifyProjectMutation, publishProjectMutation } =
     useSubmitProject(projectId);
@@ -413,15 +422,6 @@ const ProjectPayment = (props) => {
       priceIDData: priceIDData,
       billingDetails: billingDetailsRef?.current?.values,
     });
-
-    // confirmPayment({
-    //   // secret: initiatePaymentData?.clientSecret,
-    //   priceIDData: priceIDData,
-    //   token: token,
-    //   card: elements.getElement(CardElement),
-    //   billingDetails: billingDetailsRef?.current?.values,
-    //   stripe,
-    // });
   };
 
   const navigateBack = () => {

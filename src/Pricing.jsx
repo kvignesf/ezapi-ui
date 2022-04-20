@@ -187,7 +187,7 @@ const Pricing = () => {
     {
       title: 'Basic',
       price: '15',
-      description: ['Everything in Trial, Plus'],
+      description: ['Everything in Trial +'],
       buttonText: basicButton,
       buttonVariant: 'outlined',
       logo: basicLogo,
@@ -195,7 +195,7 @@ const Pricing = () => {
     {
       title: 'Pro',
       price: '30',
-      description: ['Everything in Basic, Plus'],
+      description: ['Everything in Basic +'],
       buttonText: proButton,
       buttonVariant: 'outlined',
       logo: proLogo,
@@ -203,7 +203,7 @@ const Pricing = () => {
     {
       title: 'Enterprise',
       price: 'Custom',
-      description: ['Everything in Pro, Plus'],
+      description: ['Everything in Pro +'],
       buttonText: 'CONTACT US',
       buttonVariant: 'outlined',
       logo: enterpriseLogo,
@@ -213,22 +213,21 @@ const Pricing = () => {
   const { data } = useQuery('userProfileKey', userProfile, {
     refetchOnWindowFocus: false,
   });
-  var alreadySubscribed;
+
   useEffect(() => {
     if (!_.isEmpty(data)) {
       if (data?.['subscribed_price'] == '') {
-        alreadySubscribed = 'Trial';
-        setTrialButton('Subscribed');
+        if (data?.['plan_name'] != 'Trial') {
+          setTrialButton('Expired');
+        } else if (data?.['plan_name'] == 'Trial') setTrialButton('Subscribed');
       } else {
-        setTrialButton('Subscribe');
+        setTrialButton('Expired');
       }
       if (
         data?.['subscribed_price'] == 'price_1KbgSaDXX1U3xHmP8Jac0qNX' ||
-        data?.['subscribed_subscribed_priceproduct'] ==
-          'price_1KbgKaDXX1U3xHmPYs8KuyFV'
+        data?.['subscribed_price'] == 'price_1KbgKaDXX1U3xHmPYs8KuyFV'
       ) {
         setBasicButton('Subscribed');
-        alreadySubscribed = 'Basic';
       } else {
         setBasicButton('Subscribe');
       }
@@ -237,7 +236,6 @@ const Pricing = () => {
         data?.['subscribed_price'] == 'price_1KbgTiDXX1U3xHmPOwGrKyBp'
       ) {
         setProButton('Subscribed');
-        alreadySubscribed = 'Pro';
       } else {
         setProButton('Subscribe');
       }
@@ -335,7 +333,9 @@ const Pricing = () => {
       document.getElementById('mo').style.color = '#c72c71';
     }
   }
-
+  function numberWithCommas(x) {
+    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }
   return (
     <Dashboard selectedIndex={3}>
       <div className="flex flex-col items-center justify-center w-full  ">
@@ -433,7 +433,11 @@ const Pricing = () => {
                                 : 'red',
                           }}
                         >
-                          ${tier.price}
+                          {index == 3 ? (
+                            <div>{tier.price}</div>
+                          ) : (
+                            <div>${numberWithCommas(tier.price)}</div>
+                          )}
                         </Typography>
                         <Typography
                           variant="h6"
@@ -451,6 +455,7 @@ const Pricing = () => {
                           }}
                         >
                           {index != 3 &&
+                            index != 0 &&
                             (durationMY ? <div>/yr</div> : <div>/mo</div>)}
                         </Typography>
                       </Box>
@@ -479,14 +484,21 @@ const Pricing = () => {
                         ))}
                       </ul>
                     </CardContent>
-                    <CardActions className="flex mt-10 ">
+                    <CardActions className="flex mt-7 ">
                       <Button
                         style={{
-                          color: 'white',
+                          color:
+                            tier.buttonText == 'Subscribed'
+                              ? 'white'
+                              : tier.buttonText == 'Expired'
+                              ? 'black'
+                              : 'white',
 
                           background:
                             tier.buttonText == 'Subscribed'
                               ? '#c72c71'
+                              : tier.buttonText == 'Expired'
+                              ? '#9f9f9f'
                               : '#0971f1',
                         }}
                         onClick={() => {
@@ -496,7 +508,10 @@ const Pricing = () => {
                             tier.buttonText
                           );
                         }}
-                        disabled={tier.buttonText == 'Subscribed'}
+                        disabled={
+                          tier.buttonText == 'Subscribed' ||
+                          tier.buttonText == 'Expired'
+                        }
                         fullWidth
                         variant="outlined"
                       >
@@ -819,10 +834,18 @@ const Pricing = () => {
                     <CardActions className="flex ">
                       <Button
                         style={{
-                          color: 'white',
+                          color:
+                            tier.buttonText == 'Subscribed'
+                              ? 'white'
+                              : tier.buttonText == 'Expired'
+                              ? 'black'
+                              : 'white',
+
                           background:
                             tier.buttonText == 'Subscribed'
                               ? '#c72c71'
+                              : tier.buttonText == 'Expired'
+                              ? '#9f9f9f'
                               : '#0971f1',
                         }}
                         onClick={() => {
@@ -832,7 +855,10 @@ const Pricing = () => {
                             tier.buttonText
                           );
                         }}
-                        disabled={tier.buttonText == 'Subscribed'}
+                        disabled={
+                          tier.buttonText == 'Subscribed' ||
+                          tier.buttonText == 'Expired'
+                        }
                         fullWidth
                         variant="outlined"
                       >
@@ -879,7 +905,11 @@ const Pricing = () => {
                                 : 'red',
                           }}
                         >
-                          ${tier.price}
+                          {index == 3 ? (
+                            <div>{tier.price}</div>
+                          ) : (
+                            <div>${numberWithCommas(tier.price)}</div>
+                          )}
                         </Typography>
                         <Typography
                           variant="h6"
@@ -897,6 +927,7 @@ const Pricing = () => {
                           }}
                         >
                           {index != 3 &&
+                            index != 0 &&
                             (durationMY ? <div>/yr</div> : <div>/mo</div>)}
                         </Typography>
                       </Box>

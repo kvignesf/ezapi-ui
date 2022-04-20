@@ -1,6 +1,6 @@
 import React from 'react';
 import { useHistory } from 'react-router-dom';
-
+import Alert from '@mui/material/Alert';
 import OrderStatus from './OrderStatus';
 import routes, { generateRoute } from '../shared/routes';
 import { isOrderInOtherState } from '../shared/utils';
@@ -22,13 +22,10 @@ const OrderRow = ({ order }) => {
   };
 
   const navigateToOrderRetry = () => {
-    history.push(
-      // generateRoute(routes.paymentForOrder, {
-      //   projectId: order?.projectData?.projectId,
-      //   orderId: order?.orderId,
-      // })
-      generateRoute(routes.payment, order?.projectData?.projectId)
-    );
+    history.push({
+      pathname: routes.payment,
+      state: { type: 'Basic', duration: false, price: '699' },
+    });
   };
 
   return (
@@ -45,25 +42,42 @@ const OrderRow = ({ order }) => {
       >
         {order?.projectData?.projectName}
       </td> */}
-      <td className="py-3">{order?.productName}</td>
-      <td className="py-3">${order?.productPrice}</td>
-      <td
-      // className={classNames({
-      //   "hover:opacity-75 cursor-pointer": isOrderInOtherState(order),
-      // })}
-      // onClick={(e) => {
-      //   e?.preventDefault();
-      //   e?.stopPropagation();
-
-      //   if (isOrderInOtherState(order)) {
-      //     navigateToOrderRetry();
-      //   }
-      // }}
-      >
-        <OrderStatus order={order} onRetry={navigateToOrderRetry} />
+      {/* <td className="py-3">{order?.productName}</td> */}
+      {/* <td className="p-3">dummyData</td> */}
+      <td align="left" className="text-clip overflow-hidden ...">
+        {order?.id}
       </td>
-      <td>{order?.orderId}</td>
-      <td>{orderCreatedDate}</td>
+      <td align="left">{order?.created}</td>
+
+      {/* <td className="py-3">{order?.description}</td> */}
+      <td
+        align="left"
+        className={classNames({
+          'hover:opacity-75 cursor-pointer': isOrderInOtherState(order),
+        })}
+        onClick={(e) => {
+          e?.preventDefault();
+          e?.stopPropagation();
+
+          if (isOrderInOtherState(order)) {
+            navigateToOrderRetry();
+          }
+        }}
+      >
+        <OrderStatus
+          order={order}
+          onRetry={navigateToOrderRetry}
+          description={order?.failure_message}
+        />
+      </td>
+      <td align="left" className="py-3">
+        ${order?.amount}
+      </td>
+      <td align="left" className="text-clip overflow-hidden ...">
+        <a className=" text-blue-500" target="_blank" href={order?.receipt_url}>
+          Click Here
+        </a>
+      </td>
     </tr>
   );
 };

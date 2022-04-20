@@ -1,8 +1,15 @@
 import React from 'react';
-import { CircularProgress, Dialog, Tooltip } from '@material-ui/core';
+import { CircularProgress, Dialog, Snackbar, Tooltip } from '@material-ui/core';
+import CloseIcon from '@material-ui/icons/Close';
 import _ from 'lodash';
+import { useQuery } from 'react-query';
+
 import { getAccessToken } from '../shared/storage';
+import Alert from '@mui/material/Alert';
 import client, { endpoint } from '../shared/network/client';
+import { PrimaryButton, TextButton } from '../shared/components/AppButton';
+import Stack from '@mui/material/Stack';
+// import Snackbar from '@material-ui/core/Snackbar';
 import ReplayIcon from '@material-ui/icons/Replay';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
 import AppIcon from '../shared/components/AppIcon';
@@ -15,17 +22,65 @@ import Colors from '../shared/colors';
 import OrderRow from './OrderRow';
 import ErrorWithMessage from '../shared/components/ErrorWithMessage';
 import LoaderWithMessage from '../shared/components/LoaderWithMessage';
+import { isPartialMatch } from '../shared/utils';
 
 const Content = () => {
+  const [status, setStatus] = React.useState(false);
+  const [data, setData] = React.useState();
   const acc_token = getAccessToken();
   const handleUnsubscribe = async () => {
-    const { UnsubscribeData } = await client.post(endpoint.unSubscribe, {
-      headers: {
-        Authorization: acc_token,
-      },
-    });
+    try {
+      const { unsubscribeData, status } = await client.post(
+        endpoint.unSubscribe,
+        {
+          headers: {
+            Authorization: acc_token,
+          },
+        }
+      );
+      // console.log(status);
+      if (status == 200 || status == '200') {
+        setStatus(true);
+        setFailureAlert(false);
+        setSuccessAlert(true);
+      }
+      // return unsubscrifbeData;
+    } catch (error) {
+      if (error.response.status == 400) {
+        setData(error.response.data);
+        setStatus(false);
+        setFailureAlert(true);
+        setSuccessAlert(false);
+      }
+      // console.log(error.response.status)
+    }
+
+    // if (status == 'success') {
+    //   return true;
+    // } else if (status == 'error') {
+    //   return false;
+    // }
   };
+  // const useHandleUnsubscribe = () => {
+  //   return useQuery('key', handleUnsubscribe, {
+  //     refetchOnWindowFocus: false,
+  //   });
+  // };
+
+  // const isTrial = async () => {
+  //   const { userProfileData } = await client.post(endpoint.userProfile, {
+  //     headers: {
+  //       Authorization: acc_token,
+  //     },
+  //   });
+  //   console.log(userProfileData);
+  //   if (userProfileData?.subscribed_price == '') return true;
+  //   else return false;
+  // };
   const [anchorEl, setAnchorEl] = React.useState(null);
+  const [unsubscribeDialogBox, setUnsubscribeDialogBox] = React.useState(false);
+  const [successAlert, setSuccessAlert] = React.useState(false);
+  const [failureAlert, setFailureAlert] = React.useState(false);
   const {
     data: ordersData,
     isLoading: isFetchingOrders,
@@ -35,6 +90,13 @@ const Content = () => {
   } = useGetOrders();
   const handleOnOptionsClick = (event) => {
     setAnchorEl(event.currentTarget);
+  };
+  const handleClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setUnsubscribeDialogBox(false);
+    setSuccessAlert(false);
   };
   return (
     <div className="p-3 h-full">
@@ -64,26 +126,38 @@ const Content = () => {
           <DeleteProject onClose={handleCloseDialog} project={dialog?.data} />
         )}
       </Dialog> */}
-
+      {/* <Alert severity="success">This is a success alert — check it out!</Alert> */}
       {isFetchingOrders && <LoaderWithMessage message="Fetching orders" />}
 
       {fetchOrdersError && <ErrorWithMessage message="Failed to load orders" />}
 
-      {!_.isEmpty(ordersData?.orders) && (
-        <table className="w-full">
-          <tr className="mr-16  bg-neutral-gray6 w-full text-left text-neutral-gray4 text-mediumLabel">
-            {/* <th className='p-2 rounded-tl-md rounded-bl-md uppercase'>
+      {!_.isEmpty(ordersData) && (
+        <table className="w-full table-fixed">
+          <tr className=" bg-neutral-gray6  text-center w-full text-neutral-gray4 text-mediumLabel ">
+            {/* <th className="p-2 rounded-tl-md rounded-bl-md uppercase">
               Project Id
             </th> */}
             {/* <th className="p-2 rounded-tl-md rounded-bl-md uppercase">
               Project Name
             </th> */}
-            <th className="uppercase">Product</th>
-            <th className="uppercase">Price</th>
-            <th className="uppercase w-64">Payment Status</th>
-            <th className="uppercase">Order Id</th>
-            <th className="uppercase">Order Date</th>
-            <td align="center">
+            <th align="left" className="  uppercase w-72 ">
+              Order Id
+            </th>
+            <th align="left" className=" uppercase w-36">
+              Order Date
+            </th>
+            <th align="left" className="uppercase w-48 ">
+              Payment Status
+            </th>
+            <th align="left" className="uppercase w-30">
+              Price
+            </th>
+            <th align="left" className=" uppercase w-30">
+              Invoice
+            </th>
+            {/* <th className="p-2 w-36 uppercase">Subscription</th> */}
+
+            <td className="">
               <AppIcon onClick={handleOnOptionsClick}>
                 <MoreVertIcon />
               </AppIcon>
@@ -120,7 +194,7 @@ const Content = () => {
               // TransitionComponent={Fade}
               style={{ borderRadius: '1rem' }}
             >
-              <MenuItem
+              {/* <MenuItem
                 onClick={(e) => {
                   e?.preventDefault();
                   e?.stopPropagation();
@@ -130,27 +204,132 @@ const Content = () => {
                 }}
               >
                 Refresh
-              </MenuItem>
+              </MenuItem> */}
               <MenuItem
                 onClick={() => {
-                  handleUnsubscribe();
+                  setSuccessAlert(false);
+                  setUnsubscribeDialogBox(true);
                   setAnchorEl(null);
-                  // handleOnView(project);
+                  setFailureAlert(false);
                 }}
               >
-                Unsubscribe
+                Cancel Subscription
               </MenuItem>
             </Menu>
           </tr>
 
-          {ordersData?.orders.map((order) => {
+          {/* <Dialog
+            aria-labelledby="unsubscribe-dialog"
+            open={unsubscribeDialogBox}
+            fullWidth
+            PaperProps={{
+              style: { borderRadius: 8 },
+            }}
+            disableBackdropClick
+          >
+            {' '}
+            <AppIcon
+              onClick={(e) => {
+                e?.preventDefault();
+                e?.stopPropagation();
+
+                setUnsubscribeDialogBox(false);
+              }}
+            >
+              <CloseIcon />
+            </AppIcon>
+            <h1>dialog box test</h1>
+          </Dialog> */}
+
+          <Dialog
+            onClose={() => {
+              setUnsubscribeDialogBox(false);
+            }}
+            aria-labelledby="dashboard-dialog"
+            open={unsubscribeDialogBox}
+            // maxWidth={5000}
+            PaperProps={{
+              style: { borderRadius: 8 },
+            }}
+            disableBackdropClick
+          >
+            <div className="p-4">
+              <div className="flex flex-row items-center justify-between mb-3">
+                <h6>Unsubscribe</h6>
+                <AppIcon
+                  aria-label="close"
+                  onClick={() => setUnsubscribeDialogBox(false)}
+                >
+                  <CloseIcon />
+                </AppIcon>
+              </div>
+              Are you sure you want to Unsubscribe?
+              <div className="border-t-2 border-neutral-gray7 flex flex-row gap-5  items-center justify-end pt-4 px-4">
+                {' '}
+                <PrimaryButton
+                  style={{
+                    maxWidth: '70px',
+                    maxHeight: '50px',
+                    minWidth: '30px',
+                    minHeight: '30px',
+                  }}
+                  onClick={() => {
+                    setUnsubscribeDialogBox(false);
+                  }}
+                  classes="flex-1 -ml-4 text-brand-secondary"
+                >
+                  NO
+                </PrimaryButton>
+                <PrimaryButton
+                  style={{
+                    maxWidth: '70px',
+                    maxHeight: '50px',
+                    minWidth: '30px',
+                    minHeight: '30px',
+                  }}
+                  onClick={() => {
+                    handleUnsubscribe();
+                  }}
+                  classes="flex-1 -ml-4 text-brand-secondary"
+                >
+                  YES
+                </PrimaryButton>
+                {successAlert && (
+                  <Snackbar
+                    open={successAlert}
+                    autoHideDuration={3000}
+                    onClose={handleClose}
+                    // action={action}
+                  >
+                    <Alert severity="success" sx={{ width: '100%' }}>
+                      Successfully Cancelled Subscription
+                    </Alert>
+                  </Snackbar>
+                )}
+                {failureAlert && (
+                  <Snackbar
+                    open={failureAlert}
+                    autoHideDuration={3000}
+                    onClose={handleClose}
+                    // action={action}
+                  >
+                    <Alert severity="error" sx={{ width: '100%' }}>
+                      {data?.message}
+                    </Alert>
+                  </Snackbar>
+                )}
+              </div>
+            </div>
+          </Dialog>
+
+          {ordersData.map((order) => {
             return <OrderRow order={order} />;
           })}
         </table>
       )}
 
       {/* Empty state */}
-      {_.isEmpty(ordersData?.orders) && (
+      {_.isEmpty(ordersData) && (
         <div className="h-full flex flex-col items-center justify-center">
           <img
             src={EmptyLogo}

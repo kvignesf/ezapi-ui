@@ -92,12 +92,14 @@ const initiatePayment = async ({
         },
       }
     );
-    // await delay(10000);
+    await delay(1000);
+    console.log(currentPlan);
     if (currentPlan == '') {
       update_planFlag = false;
     } else {
       update_planFlag = true;
     }
+    console.log(update_planFlag);
     const subscribeData = await client.post(
       endpoint.subscribe,
       {

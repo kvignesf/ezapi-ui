@@ -1,17 +1,17 @@
-import React from "react";
-import { Link, useParams } from "react-router-dom";
-import { useGetOrders } from "../Orders/ordersQueries";
-import { PrimaryButton } from "../shared/components/AppButton";
-import InputLabel from "@mui/material/InputLabel";
-import MenuItem from "@mui/material/MenuItem";
-import FormControl from "@mui/material/FormControl";
-import Select from "@mui/material/Select";
-import { useMutation, useQuery, useQueryClient } from "react-query";
-import { clearQueryCache, queries } from "../shared/network/queryClient";
+import React from 'react';
+import { Link, useParams } from 'react-router-dom';
+import { useGetOrders } from '../Orders/ordersQueries';
+import { PrimaryButton } from '../shared/components/AppButton';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import Select from '@mui/material/Select';
+import { useMutation, useQuery, useQueryClient } from 'react-query';
+import { clearQueryCache, queries } from '../shared/network/queryClient';
 
-import client, { endpoint } from "../shared/network/client";
-import { ReactComponent as StripeLogo } from "../static/images/stripe_purple.svg";
-import { getContainerUtilityClass } from "@mui/material";
+import client, { endpoint } from '../shared/network/client';
+import { ReactComponent as StripeLogo } from '../static/images/stripe_purple.svg';
+import { getContainerUtilityClass } from '@mui/material';
 
 const pricingData = async () => {
   const { data } = await client.get(endpoint.products2);
@@ -37,20 +37,20 @@ const ProductDetails = ({
   var defType;
   var defSub;
   switch (type) {
-    case "Trial":
+    case 'Trial':
       defType = 10;
       break;
-    case "Basic":
+    case 'Basic':
       defType = 20;
       break;
-    case "Pro":
+    case 'Pro':
       defType = 30;
   }
   switch (duration) {
-    case "mo":
+    case 'mo':
       defSub = 10;
       break;
-    case "yr":
+    case 'yr':
       defSub = 20;
       break;
   }
@@ -95,26 +95,26 @@ const ProductDetails = ({
   function priceFinder(type, duration) {
     switch (type) {
       case 10:
-        type = "Trial";
+        type = 'Trial';
         break;
       case 20:
-        type = "Basic";
+        type = 'Basic';
         break;
       case 30:
-        type = "Pro";
+        type = 'Pro';
     }
     switch (duration) {
       case 10:
-        duration = "month";
+        duration = 'month';
         break;
       case 20:
-        duration = "year";
+        duration = 'year';
         break;
     }
     // console.log("inside");
     if (pricing_data?.products.length > 0) {
-      pricing_data["products"].map((item, index) => {
-        if (type == item["plan_name"]) {
+      pricing_data['products'].map((item, index) => {
+        if (type == item['plan_name']) {
           durationFinder(item, duration);
         }
       });
@@ -122,15 +122,17 @@ const ProductDetails = ({
   }
 
   function durationFinder(item, duration) {
-    if (item["stripe"].length > 0) {
-      item["stripe"].map((item2, index2) => {
-        if (duration == item2["plan_interval"]) {
-          setPrice(item2["plan_price"]);
+    if (item['stripe'].length > 0) {
+      item['stripe'].map((item2, index2) => {
+        if (duration == item2['plan_interval']) {
+          setPrice(item2['plan_price']);
         }
       });
     }
   }
-
+  function numberWithCommas(x) {
+    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }
   return (
     <div className="flex flex-col fixed pl-6">
       <div className="bg-brand-primarySubtle rounded-md p-8 w-full max-w-md mb-3">
@@ -191,12 +193,14 @@ const ProductDetails = ({
         </div>
 
         <div className="border-t-1 border-b-1 border-neutral-gray5 py-3 flex flex-row justify-between items-center my-6">
-          <p className="text-body1">Total Amount : {price}</p>
+          <p className="text-body1">
+            Total Amount : ${numberWithCommas(price)}
+          </p>
           {/* <h4>{priceIDFinder(planType, subscriptionType)}</h4> */}
         </div>
 
         <PrimaryButton
-          style={{ width: "100%" }}
+          style={{ width: '100%' }}
           disabled={disabled}
           onClick={(e) => {
             e?.preventDefault();
@@ -216,7 +220,7 @@ const ProductDetails = ({
 
         <div
           className="mx-2 h-4 bg-neutral-gray4"
-          style={{ width: "1px" }}
+          style={{ width: '1px' }}
         ></div>
 
         <a

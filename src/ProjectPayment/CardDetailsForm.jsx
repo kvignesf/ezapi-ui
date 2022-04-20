@@ -87,7 +87,7 @@ const CardDetailsForm = ({ disabled, formRef }) => {
                   </p>
                 )}
               </div>
-              <button onClick={generateToken}>Generate Token</button>
+              {/* <button onClick={generateToken}>Generate Token</button> */}
             </Form>
           );
         }}

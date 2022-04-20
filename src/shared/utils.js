@@ -690,11 +690,11 @@ export const isFreePublishesExhausted = (publishProjectError) => {
 };
 
 export const isOrderSuccess = (order) => {
-  return order?.status?.toLowerCase() === 'succeeded';
+  return order?.payment_status?.toLowerCase() === 'succeeded';
 };
 
 export const isOrderInitiated = (order) => {
-  return order?.status?.toLowerCase() === 'initiated';
+  return order?.payment_status?.toLowerCase() === 'initiated';
 };
 
 export const isOrderInOtherState = (order) => {
