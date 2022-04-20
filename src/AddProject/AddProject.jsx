@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   AppBar,
   IconButton,
@@ -44,7 +44,9 @@ const AddProject = ({ onClose, onSuccess }) => {
   const [currentTab, setTab] = useState(0);
   const [connectDatabaseTab, setConnectDatabaseTab] = useState(0);
   const history = useHistory();
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = useState(false);
+  const [showCollabsErrorMssg, setShowCollabsErrorMssg] = useState(true);
+
   const loggedInUserId = getUserId();
 
   const [specsError, setSpecsError] = useState(null);
@@ -68,6 +70,8 @@ const AddProject = ({ onClose, onSuccess }) => {
   } = useAddProject(onAddProjectSuccess);
 
   const formRef = useRef();
+
+  const prevFormRef = useRef();
 
   const {
     isLoading: isUploadingProjectDetails,
@@ -166,7 +170,6 @@ const AddProject = ({ onClose, onSuccess }) => {
           updatedProjectDetails.collaborators.push(collaborator);
         }
       });
-
       return updatedProjectDetails;
     });
   };
@@ -255,6 +258,7 @@ const AddProject = ({ onClose, onSuccess }) => {
       <IconButton
         size="small"
         aria-label="close"
+
         color="inherit"
         onClick={handleClose}
       >
@@ -267,6 +271,18 @@ const AddProject = ({ onClose, onSuccess }) => {
     return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
   });
 
+  useEffect(() => {
+    prevFormRef.current = projectDetails.collaborators;
+  }, [projectDetails.collaborators]);
+
+  var showCollabsError = true;
+ 
+  if(prevFormRef.current && (prevFormRef.current.length > projectDetails.collaborators.length)){
+    showCollabsError = false;
+    // setShowCollabsErrorMssg(false);
+  }
+ 
+  
   return (
     <div className="p-4">
       <div className="flex flex-row items-center justify-between mb-3">
@@ -359,9 +375,9 @@ const AddProject = ({ onClose, onSuccess }) => {
               )}
             </div>
 
-            {projectDetailsError && (
+            {showCollabsError && projectDetailsError && (
               <p className="text-overline2 text-accent-red my-2">
-                {projectDetailsError?.message}
+                {projectDetailsError?.response?.data?.message}
               </p>
             )}
 
@@ -468,10 +484,15 @@ const AddProject = ({ onClose, onSuccess }) => {
                 onClick={() => {
                   if (currentTab === 0 || currentTab === 1) {
                     handleNext();
-                  } else if (
-                    projectDetailsError?.message ==
-                    "Your 2 free Projects limit is exhausted, please purchase paid plan to publish." || projectDetailsError?.message ==
-                    "You have exceeded the collaborator limit for your plan"
+                  } 
+                  else if(prevFormRef.current.length > projectDetails.collaborators.length){
+                    // setShowCollabsErrorMssg(false);
+                    handleDone();
+                  }else if (
+                    projectDetailsError?.response?.data?.errorType ==
+                      "FREE_PROJECTS_EXHAUSTED" || projectDetailsError?.response?.data?.errorType == "TRIAL_PERIOD_EXPIRED" ||
+                    (projectDetailsError?.response?.data?.errorType ==
+                      "COLLABRATOR_LIMIT_REACHED" && showCollabsError)
                   ) {
                     history.push(routes.pricing);
                   } else {
@@ -481,9 +502,10 @@ const AddProject = ({ onClose, onSuccess }) => {
               >
                 {currentTab === 0 || currentTab === 1
                   ? "Next"
-                  : projectDetailsError?.message ==
-                    "Your 2 free Projects limit is exhausted, please purchase paid plan to publish." || projectDetailsError?.message ==
-                    "You have exceeded the collaborator limit for your plan"
+                  : (prevFormRef.current.length > projectDetails.collaborators.length) ? "Done" : projectDetailsError?.response?.data?.errorType ==
+                      "FREE_PROJECTS_EXHAUSTED" || projectDetailsError?.response?.data?.errorType == "TRIAL_PERIOD_EXPIRED" ||
+                      projectDetailsError?.response?.data?.errorType ==
+                      "COLLABRATOR_LIMIT_REACHED"
                   ? "Upgrade"
                   : "Done"}
               </PrimaryButton>
