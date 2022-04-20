@@ -42,7 +42,7 @@ export const getApiError = (error) => {
     }
 
     if (url && url === endpoint.project) {
-      return new Error(error?.response?.data?.message);
+      return error;
     }
 
     if (url && url === endpoint.testDBConnection) {
