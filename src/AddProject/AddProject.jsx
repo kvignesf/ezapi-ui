@@ -1,24 +1,25 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   AppBar,
   IconButton,
   Tab,
   Tabs,
   MuiThemeProvider,
-} from "@material-ui/core";
-import Button from "@mui/material/Button";
-import CloseIcon from "@material-ui/icons/Close";
-import { useRecoilState } from "recoil";
-import _ from "lodash";
-
-import AppIcon from "../shared/components/AppIcon";
-import { PrimaryButton, TextButton } from "../shared/components/AppButton";
-import LoaderWithMessage from "../shared/components/LoaderWithMessage";
-import { isEmailValid } from "../shared/utils";
-import ProjectDetails from "./ProjectDetails";
-import ConnectDatabase from "./ConnectDatabase";
-import InviteCollaborators from "../shared/components/InviteCollaborators";
-import projectAtom from "./projectAtom";
+} from '@material-ui/core';
+import Button from '@mui/material/Button';
+import CloseIcon from '@material-ui/icons/Close';
+import { useRecoilState } from 'recoil';
+import _ from 'lodash';
+import { useHistory } from 'react-router-dom';
+import routes from '../shared/routes';
+import AppIcon from '../shared/components/AppIcon';
+import { PrimaryButton, TextButton } from '../shared/components/AppButton';
+import LoaderWithMessage from '../shared/components/LoaderWithMessage';
+import { isEmailValid } from '../shared/utils';
+import ProjectDetails from './ProjectDetails';
+import ConnectDatabase from './ConnectDatabase';
+import InviteCollaborators from '../shared/components/InviteCollaborators';
+import projectAtom from './projectAtom';
 import {
   useDatabaseConnection,
   useAddProject,
@@ -28,22 +29,24 @@ import {
   useExportDBSchema,
   useUploadProjectCertificate,
   useUploadProjectCACertificate,
-} from "./addProjectQuery";
-import { getApiError } from "../shared/utils";
-import TabLabel from "../shared/components/TabLabel";
-import Messages from "../shared/messages";
+} from './addProjectQuery';
+import { getApiError } from '../shared/utils';
+import TabLabel from '../shared/components/TabLabel';
+import Messages from '../shared/messages';
 
-import client, { endpoint } from "../shared/network/client";
+import client, { endpoint } from '../shared/network/client';
 
-import Snackbar from "@material-ui/core/Snackbar";
-import MuiAlert from "@material-ui/lab/Alert";
-import { getUserId } from "../shared/storage";
-
+import Snackbar from '@material-ui/core/Snackbar';
+import MuiAlert from '@material-ui/lab/Alert';
+import { getUserId } from '../shared/storage';
 
 const AddProject = ({ onClose, onSuccess }) => {
   const [currentTab, setTab] = useState(0);
   const [connectDatabaseTab, setConnectDatabaseTab] = useState(0);
-  const [open, setOpen] = React.useState(false);
+  const history = useHistory();
+  const [open, setOpen] = useState(false);
+  const [showCollabsErrorMssg, setShowCollabsErrorMssg] = useState(true);
+
   const loggedInUserId = getUserId();
 
   const [specsError, setSpecsError] = useState(null);
@@ -67,6 +70,8 @@ const AddProject = ({ onClose, onSuccess }) => {
   } = useAddProject(onAddProjectSuccess);
 
   const formRef = useRef();
+
+  const prevFormRef = useRef();
 
   const {
     isLoading: isUploadingProjectDetails,
@@ -165,7 +170,6 @@ const AddProject = ({ onClose, onSuccess }) => {
           updatedProjectDetails.collaborators.push(collaborator);
         }
       });
-
       return updatedProjectDetails;
     });
   };
@@ -219,7 +223,7 @@ const AddProject = ({ onClose, onSuccess }) => {
         projectId: loggedInUserId,
         file: projectDetails?.keys[0],
         userId: loggedInUserId,
-        test: true
+        test: true,
       });
     } else {
       let payload = {
@@ -239,7 +243,7 @@ const AddProject = ({ onClose, onSuccess }) => {
   };
 
   const handleClose = (event, reason) => {
-    if (reason === "clickaway") {
+    if (reason === 'clickaway') {
       return;
     }
 
@@ -254,6 +258,7 @@ const AddProject = ({ onClose, onSuccess }) => {
       <IconButton
         size="small"
         aria-label="close"
+
         color="inherit"
         onClick={handleClose}
       >
@@ -266,6 +271,18 @@ const AddProject = ({ onClose, onSuccess }) => {
     return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
   });
 
+  useEffect(() => {
+    prevFormRef.current = projectDetails.collaborators;
+  }, [projectDetails.collaborators]);
+
+  var showCollabsError = true;
+ 
+  if(prevFormRef.current && (prevFormRef.current.length > projectDetails.collaborators.length)){
+    showCollabsError = false;
+    // setShowCollabsErrorMssg(false);
+  }
+ 
+  
   return (
     <div className="p-4">
       <div className="flex flex-row items-center justify-between mb-3">
@@ -306,16 +323,16 @@ const AddProject = ({ onClose, onSuccess }) => {
               textColor="primary"
             >
               <Tab
-                label={<TabLabel label={"1. Create API"} />}
-                style={{ outline: "none", border: "none" }}
+                label={<TabLabel label={'1. Create API'} />}
+                style={{ outline: 'none', border: 'none' }}
               />
               <Tab
-                label={<TabLabel label={"2. Connect Database"} />}
-                style={{ outline: "none", border: "none" }}
+                label={<TabLabel label={'2. Connect Database'} />}
+                style={{ outline: 'none', border: 'none' }}
               />
               <Tab
-                label={<TabLabel label={"3. Invite Collaborators"} />}
-                style={{ outline: "none", border: "none" }}
+                label={<TabLabel label={'3. Invite Collaborators'} />}
+                style={{ outline: 'none', border: 'none' }}
               />
             </Tabs>
 
@@ -358,9 +375,9 @@ const AddProject = ({ onClose, onSuccess }) => {
               )}
             </div>
 
-            {projectDetailsError && (
+            {showCollabsError && projectDetailsError && (
               <p className="text-overline2 text-accent-red my-2">
-                {projectDetailsError?.message}
+                {projectDetailsError?.response?.data?.message}
               </p>
             )}
 
@@ -380,13 +397,33 @@ const AddProject = ({ onClose, onSuccess }) => {
                 <Alert
                   onClose={handleClose}
                   severity="success"
-                  sx={{ width: "100%" }}
+                  sx={{ width: '100%' }}
                 >
                   Db connection is successful
                 </Alert>
               </Snackbar>
             )}
 
+            {exportDBError && (
+              <p className="text-overline2 text-accent-red my-2">
+                {`Failed to export db - ${exportDBError?.message}`}
+              </p>
+            )}
+            {uploadProjectKeyError && (
+              <p className="text-overline2 text-accent-red my-2">
+                {`Failed to upload key - ${uploadProjectKeyError?.message}`}
+              </p>
+            )}
+            {uploadProjectCertificateError && (
+              <p className="text-overline2 text-accent-red my-2">
+                {`Failed to upload certificate - ${uploadProjectCertificateError?.message}`}
+              </p>
+            )}
+            {uploadProjectCACertificateError && (
+              <p className="text-overline2 text-accent-red my-2">
+                {`Failed to upload caCertificate - ${uploadProjectCACertificateError?.message}`}
+              </p>
+            )}
             {uploadSpecsError && (
               <p className="text-overline2 text-accent-red my-2">
                 {`Failed to upload specs - ${uploadSpecsError?.message}`}
@@ -435,24 +472,42 @@ const AddProject = ({ onClose, onSuccess }) => {
                 classes="mr-3"
               >
                 {currentTab === 0
-                  ? "Cancel"
+                  ? 'Cancel'
                   : currentTab === 1
                   ? connectDatabaseTab === 0
-                    ? "Test"
-                    : "Cancel"
-                  : "Back"}
+                    ? 'Test'
+                    : 'Cancel'
+                  : 'Back'}
               </TextButton>
 
               <PrimaryButton
                 onClick={() => {
                   if (currentTab === 0 || currentTab === 1) {
                     handleNext();
+                  } 
+                  else if(prevFormRef.current.length > projectDetails.collaborators.length){
+                    // setShowCollabsErrorMssg(false);
+                    handleDone();
+                  }else if (
+                    projectDetailsError?.response?.data?.errorType ==
+                      "FREE_PROJECTS_EXHAUSTED" || projectDetailsError?.response?.data?.errorType == "TRIAL_PERIOD_EXPIRED" ||
+                    (projectDetailsError?.response?.data?.errorType ==
+                      "COLLABRATOR_LIMIT_REACHED" && showCollabsError)
+                  ) {
+                    history.push(routes.pricing);
                   } else {
                     handleDone();
                   }
                 }}
               >
-                {currentTab === 0 || currentTab === 1 ? "Next" : "Done"}
+                {currentTab === 0 || currentTab === 1
+                  ? "Next"
+                  : (prevFormRef.current.length > projectDetails.collaborators.length) ? "Done" : projectDetailsError?.response?.data?.errorType ==
+                      "FREE_PROJECTS_EXHAUSTED" || projectDetailsError?.response?.data?.errorType == "TRIAL_PERIOD_EXPIRED" ||
+                      projectDetailsError?.response?.data?.errorType ==
+                      "COLLABRATOR_LIMIT_REACHED"
+                  ? "Upgrade"
+                  : "Done"}
               </PrimaryButton>
             </div>
           </>
@@ -484,12 +539,18 @@ const AddProject = ({ onClose, onSuccess }) => {
 
       {isUploadingProjectKey && (
         <div className="my-7">
-          <LoaderWithMessage message="Using Connection KeyCredentials" contained />
+          <LoaderWithMessage
+            message="Using Connection KeyCredentials"
+            contained
+          />
         </div>
       )}
       {isUploadingProjectCertificate && (
         <div className="my-7">
-          <LoaderWithMessage message="Using Connection CertCredentials" contained />
+          <LoaderWithMessage
+            message="Using Connection CertCredentials"
+            contained
+          />
         </div>
       )}
       {isUploadingProjectCACertificate && (
@@ -508,10 +569,7 @@ const AddProject = ({ onClose, onSuccess }) => {
 
       {isMatchingAi && (
         <div className="my-7">
-          <LoaderWithMessage
-            message="Running AI Matcher"
-            contained
-          />
+          <LoaderWithMessage message="Running AI Matcher" contained />
         </div>
       )}
     </div>

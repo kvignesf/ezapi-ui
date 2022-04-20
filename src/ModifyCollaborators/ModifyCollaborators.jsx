@@ -61,20 +61,20 @@ const ExistingCollaborator = ({ projectId, collab, handleDeletedCollab }) => {
   };
 
   return (
-    <div className='flex flex-row items-center mb-2'>
+    <div className="flex flex-row items-center mb-2">
       <InitialsAvatar
         firstName={firstName}
         lastName={lastName}
-        className='border-none mr-3'
+        className="border-none mr-3"
       />
 
-      <div className='flex flex-col w-full'>
-        <p className='text-mediumLabel capitalize'>
+      <div className="flex flex-col w-full">
+        <p className="text-mediumLabel capitalize">
           {firstName} {lastName}
           {loggedInUserEmail === collab?.email ? " (you)" : ""}
         </p>
 
-        <p className='text-overline2 text-neutral-gray3'>{collab?.email}</p>
+        <p className="text-overline2 text-neutral-gray3">{collab?.email}</p>
       </div>
 
       {loggedInUserEmail !== collab?.email ? (
@@ -89,14 +89,14 @@ const ExistingCollaborator = ({ projectId, collab, handleDeletedCollab }) => {
             <MoreVertIcon />
           </AppIcon>
         ) : (
-          <div className='mr-3 flex items-center justify-center'>
-            <CircularProgress size='24px' />
+          <div className="mr-3 flex items-center justify-center">
+            <CircularProgress size="24px" />
           </div>
         )
       ) : null}
 
       <Menu
-        id='fade-menu'
+        id="fade-menu"
         anchorEl={anchorEl}
         keepMounted
         open={Boolean(anchorEl)}
@@ -159,8 +159,8 @@ const ModifyCollaborators = ({ projectId, invitedCollaborators, onClose }) => {
   }
 
   return (
-    <div className='p-4'>
-      <div className='flex flex-row justify-between items-center mb-3'>
+    <div className="p-4">
+      <div className="flex flex-row justify-between items-center mb-3">
         <h5>Invite Collaborators</h5>
 
         <AppIcon onClick={onClose}>
@@ -168,7 +168,7 @@ const ModifyCollaborators = ({ projectId, invitedCollaborators, onClose }) => {
         </AppIcon>
       </div>
 
-      <div className='flex flex-row items-end mb-4'>
+      <div className="flex flex-row items-end mb-4">
         <InviteCollaborators
           collaborators={toBeInvitedCollabs}
           handleChange={handleCollaboratorsChange}
@@ -176,19 +176,21 @@ const ModifyCollaborators = ({ projectId, invitedCollaborators, onClose }) => {
         />
 
         {!isInvitingCollaborators ? (
-          <PrimaryButton classes='self-end h-12' onClick={handleInviteCollabs}>
+          <PrimaryButton classes="self-end h-12" onClick={handleInviteCollabs}>
             Send Invite
           </PrimaryButton>
         ) : (
-          <CircularProgress size='24px' className='mb-3' />
+          <CircularProgress size="24px" className="mb-3" />
         )}
       </div>
-      <p className='mb-3 text-overline2 text-accent-red'>
-        {inviteCollaboratorsError?.message}
-      </p>
+      {inviteCollaboratorsError && (
+        <p className="mb-3 text-overline2 text-accent-red">
+          {inviteCollaboratorsError?.message}
+        </p>
+      )}
 
       {!_.isEmpty(getInvitedCollabs()) ? (
-        <div className='border-t-2 pt-3'>
+        <div className="border-t-2 pt-3">
           {getInvitedCollabs()?.map((collab) => {
             return (
               <ExistingCollaborator

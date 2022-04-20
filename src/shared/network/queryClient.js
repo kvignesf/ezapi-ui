@@ -11,6 +11,7 @@ export const queries = {
   parameters: "parameters",
   operationRequest: "operationRequest",
   orders: "orders",
+  userProfile: "userProfile",
 };
 
 const queryClient = new QueryClient({
