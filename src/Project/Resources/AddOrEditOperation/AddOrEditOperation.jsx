@@ -265,7 +265,7 @@ const AddOrEditOperation = ({
                     multiline
                     rows={4}
                     disabled={isEditingOperation || isAddingOperation}
-                    inputProps={{ maxLength: 24 }}
+                    inputProps={{ maxLength: 64 }}
                   />
                 </div>
               </div>
