@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useHistory, useParams } from 'react-router-dom';
-import _ from 'lodash';
-import ArrowBackIcon from '@material-ui/icons/ArrowBack';
+import React, { useState, useEffect, useRef } from "react";
+import { useHistory, useParams } from "react-router-dom";
+import _ from "lodash";
+import ArrowBackIcon from "@material-ui/icons/ArrowBack";
 import {
   CircularProgress,
   Dialog,
@@ -9,27 +9,27 @@ import {
   Menu,
   MenuItem,
   Tooltip,
-} from '@material-ui/core';
+} from "@material-ui/core";
 import {
   CardElement,
   Elements,
   useElements,
   useStripe,
-} from '@stripe/react-stripe-js';
-import { loadStripe } from '@stripe/stripe-js';
+} from "@stripe/react-stripe-js";
+import { loadStripe } from "@stripe/stripe-js";
 
-import AppIcon from '../shared/components/AppIcon';
-import InitialsAvatar from '../shared/components/InitialsAvatar';
-import LoaderWithMessage from '../shared/components/LoaderWithMessage';
-import ErrorWithMessage from '../shared/components/ErrorWithMessage';
+import AppIcon from "../shared/components/AppIcon";
+import InitialsAvatar from "../shared/components/InitialsAvatar";
+import LoaderWithMessage from "../shared/components/LoaderWithMessage";
+import ErrorWithMessage from "../shared/components/ErrorWithMessage";
 import {
   useFetchProjectDetails,
   useSubmitProject,
-} from '../Project/projectQueries';
-import { useCanEdit } from '../shared/utils';
-import { getFirstName, getLastName, getEmailId } from '../shared/storage';
-import Colors from '../shared/colors';
-import { useLogout } from '../shared/query/authQueries';
+} from "../Project/projectQueries";
+import { useCanEdit } from "../shared/utils";
+import { getFirstName, getLastName, getEmailId } from "../shared/storage";
+import Colors from "../shared/colors";
+import { useLogout } from "../shared/query/authQueries";
 import {
   useConfirmPayment,
   useGetBasicProduct,
@@ -37,19 +37,19 @@ import {
   useGetProducts,
   useInitiatePayment,
   useMakePayment,
-} from './paymentQueries';
-import BillingDetailsForm from './BillingDetailsForm';
-import CardDetailsForm from './CardDetailsForm';
-import ProductDetails from './ProductDetails';
-import PaymentStatusDialog from './PaymentStatusDialog';
-import { PaymentStatus } from './paymentUtils';
-import routes, { generateRoute } from '../shared/routes';
-import { useQueryClient } from 'react-query';
-import { queries } from '../shared/network/queryClient';
-import PublishStatusDialog from './PublishStatusDialog';
-import ProfileMenu from '../shared/components/ProfileMenu';
-import EzapiLogo from '../shared/components/EzapiLogo';
-import EzapiFooter from '../shared/components/EzapiFooter';
+} from "./paymentQueries";
+import BillingDetailsForm from "./BillingDetailsForm";
+import CardDetailsForm from "./CardDetailsForm";
+import ProductDetails from "./ProductDetails";
+import PaymentStatusDialog from "./PaymentStatusDialog";
+import { PaymentStatus } from "./paymentUtils";
+import routes, { generateRoute } from "../shared/routes";
+import { useQueryClient } from "react-query";
+import { queries } from "../shared/network/queryClient";
+import PublishStatusDialog from "./PublishStatusDialog";
+import ProfileMenu from "../shared/components/ProfileMenu";
+import EzapiLogo from "../shared/components/EzapiLogo";
+import EzapiFooter from "../shared/components/EzapiFooter";
 
 const Header = ({
   projectDetails,
@@ -69,10 +69,10 @@ const Header = ({
   };
 
   return (
-    <header className="fixed top-0 w-full z-999 px-2 border-b-2 flex flex-row justify-between items-center bg-white">
-      <div className="flex flex-row py-2 items-center">
+    <header className='fixed top-0 w-full z-999 px-2 border-b-2 flex flex-row justify-between items-center bg-white'>
+      <div className='flex flex-row py-2 items-center'>
         <AppIcon
-          style={{ marginRight: '1rem' }}
+          style={{ marginRight: "1rem" }}
           onClick={(event) => {
             event?.preventDefault();
             event?.stopPropagation();
@@ -83,17 +83,17 @@ const Header = ({
           <ArrowBackIcon />
         </AppIcon>
 
-        <p className="text-overline1 mr-3">{projectDetails?.projectName}</p>
+        <p className='text-overline1 mr-3'>{projectDetails?.projectName}</p>
 
         <EzapiLogo />
       </div>
 
-      <div className="flex flex-row py-2">
+      <div className='flex flex-row py-2'>
         <div>
           <InitialsAvatar
             firstName={firstName}
             lastName={lastName}
-            className="cursor-pointer"
+            className='cursor-pointer'
             onClick={(e) => {
               e?.preventDefault();
               e?.stopPropagation();
@@ -249,14 +249,14 @@ const ProjectPayment = () => {
 
       // Project is not valid state
       if (
-        projectDetails?.status?.toLowerCase() !== 'in_progress' &&
-        projectDetails?.status?.toLowerCase() !== 'complete'
+        projectDetails?.status?.toLowerCase() !== "in_progress" &&
+        projectDetails?.status?.toLowerCase() !== "complete"
       ) {
         navigateBack();
       }
 
       // Cannot make payment
-      if (projectDetails?.projectBillingPlan?.toLowerCase() !== 'none') {
+      if (projectDetails?.projectBillingPlan?.toLowerCase() !== "none") {
         navigateBack();
       }
     }
@@ -264,7 +264,7 @@ const ProjectPayment = () => {
 
   useEffect(() => {
     // User no access
-    if (projectDetailsError?.message?.toLowerCase() === 'no_access') {
+    if (projectDetailsError?.message?.toLowerCase() === "no_access") {
       navigateBack();
     }
   }, [projectDetailsError]);
@@ -301,12 +301,20 @@ const ProjectPayment = () => {
 
   const navigateBack = () => {
     // history.goBack();
-    history.replace(generateRoute(routes.projects, projectId));
+    // history.replace(generateRoute(routes.projects, projectId),);
+    history.replace({
+      pathname: generateRoute(routes.projects, projectId),
+      state: { allow: true },
+    });
   };
 
   const navigateToDashboard = () => {
     // history.goBack();
-    history.replace(routes.projects);
+    // history.replace(routes.projects);
+    history.replace({
+      pathname: routes.projects,
+      state: { allow: true },
+    });
   };
 
   const handleCloseDialog = () => {
@@ -335,7 +343,7 @@ const ProjectPayment = () => {
   const isPaymentSuccess = () => {
     return (
       isConfirmPaymentSuccess &&
-      confirmPaymentData?.paymentIntent?.status === 'succeeded'
+      confirmPaymentData?.paymentIntent?.status === "succeeded"
     );
   };
 
@@ -345,65 +353,65 @@ const ProjectPayment = () => {
 
   if (isFetchingProjectDetails) {
     return (
-      <div className="flex flex-col">
+      <div className='flex flex-col'>
         <Header
           projectDetails={projectDetails}
           logoutMutation={logoutMutation}
         />
 
-        <LoaderWithMessage message="Loading project details" />
+        <LoaderWithMessage message='Loading project details' />
       </div>
     );
   }
 
   if (isFetchingBillingDetails || isFetchingBillingDetailsBg) {
     return (
-      <div className="flex flex-col">
+      <div className='flex flex-col'>
         <Header
           projectDetails={projectDetails}
           logoutMutation={logoutMutation}
         />
 
-        <LoaderWithMessage message="Loading billing details" />
+        <LoaderWithMessage message='Loading billing details' />
       </div>
     );
   }
 
   if (projectDetailsError) {
     return (
-      <div className="flex flex-col">
+      <div className='flex flex-col'>
         <Header
           projectDetails={projectDetails}
           logoutMutation={logoutMutation}
         />
 
-        <ErrorWithMessage message="Failed to fetch project details" />
+        <ErrorWithMessage message='Failed to fetch project details' />
       </div>
     );
   }
 
   if (isFetchingBasicProduct || isFetchingBasicProductBg) {
     return (
-      <div className="flex flex-col">
+      <div className='flex flex-col'>
         <Header
           projectDetails={projectDetails}
           logoutMutation={logoutMutation}
         />
 
-        <LoaderWithMessage message="Loading plan details" />
+        <LoaderWithMessage message='Loading plan details' />
       </div>
     );
   }
 
   if (getBasicProductError) {
     return (
-      <div className="flex flex-col">
+      <div className='flex flex-col'>
         <Header
           projectDetails={projectDetails}
           logoutMutation={logoutMutation}
         />
 
-        <ErrorWithMessage message="Failed to fetch plan details" />
+        <ErrorWithMessage message='Failed to fetch plan details' />
       </div>
     );
   }
@@ -438,7 +446,7 @@ const ProjectPayment = () => {
   return (
     <div>
       <Dialog
-        aria-labelledby="payment-dialog"
+        aria-labelledby='payment-dialog'
         open={
           shouldShowDialogForPayment() ||
           shouldShowDialogForPublish() ||
@@ -497,29 +505,29 @@ const ProjectPayment = () => {
 
       <Header projectDetails={projectDetails} logoutMutation={logoutMutation} />
 
-      <div className="w-full flex flex-row p-12 h-full mt-14">
+      <div className='w-full flex flex-row p-12 h-full mt-14'>
         {basicProductData && (
-          <div className="flex-1 mr-6 px-6">
+          <div className='flex-1 mr-6 px-6'>
             {canShowAutoPopulationButton() && (
               <button
-                className="p-1 bg-neutral-gray6 rounded-md mb-2"
+                className='p-1 bg-neutral-gray6 rounded-md mb-2'
                 onClick={(e) => {
                   billingDetailsRef?.current?.setValues({
-                    fullName: 'Hello',
-                    country: 'IN',
-                    country: 'IN',
-                    addressLine1: 'Test Address',
-                    zip: '560070',
-                    city: 'Test City',
-                    state: 'Karnataka',
-                    email: 'testemail@randomdomain123.com',
+                    fullName: "Hello",
+                    country: "IN",
+                    country: "IN",
+                    addressLine1: "Test Address",
+                    zip: "560070",
+                    city: "Test City",
+                    state: "Karnataka",
+                    email: "testemail@randomdomain123.com",
                   });
                   cardDetailsRef?.current?.setValues({
-                    cardHolderName: 'Test card holder name',
+                    cardHolderName: "Test card holder name",
                   });
                 }}
               >
-                <p className="text-overline2">Populate data</p>
+                <p className='text-overline2'>Populate data</p>
               </button>
             )}
 
@@ -536,7 +544,7 @@ const ProjectPayment = () => {
         )}
 
         {basicProductData && (
-          <div className="flex-1">
+          <div className='flex-1'>
             <ProductDetails
               product={basicProductData?.product}
               disabled={
