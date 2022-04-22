@@ -490,7 +490,7 @@ const AddProject = ({ onClose, onSuccess }) => {
                     handleDone();
                   }else if (
                     projectDetailsError?.response?.data?.errorType ==
-                      "FREE_PROJECTS_EXHAUSTED" || projectDetailsError?.response?.data?.errorType == "TRIAL_PERIOD_EXPIRED" ||
+                      "PROJECTS_LIMIT_EXHAUSTED" || projectDetailsError?.response?.data?.errorType == "TRIAL_PERIOD_EXPIRED" ||
                     (projectDetailsError?.response?.data?.errorType ==
                       "COLLABRATOR_LIMIT_REACHED" && showCollabsError)
                   ) {
@@ -503,7 +503,7 @@ const AddProject = ({ onClose, onSuccess }) => {
                 {currentTab === 0 || currentTab === 1
                   ? "Next"
                   : (prevFormRef.current.length > projectDetails.collaborators.length) ? "Done" : projectDetailsError?.response?.data?.errorType ==
-                      "FREE_PROJECTS_EXHAUSTED" || projectDetailsError?.response?.data?.errorType == "TRIAL_PERIOD_EXPIRED" ||
+                      "PROJECTS_LIMIT_EXHAUSTED" || projectDetailsError?.response?.data?.errorType == "TRIAL_PERIOD_EXPIRED" ||
                       projectDetailsError?.response?.data?.errorType ==
                       "COLLABRATOR_LIMIT_REACHED"
                   ? "Upgrade"
