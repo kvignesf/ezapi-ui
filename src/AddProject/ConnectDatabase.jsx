@@ -37,6 +37,7 @@ import { queries } from "../shared/network/queryClient";
 
 import { useQuery } from "react-query";
 import { array } from "yup";
+import { FormHelperText } from '@mui/material';
 
 const ConnectDatabase = ({
   formRef,
@@ -478,7 +479,6 @@ const ConnectDatabase = ({
         <div>
           {activeTab === 0 ? (
             <div className="mt-6 mb-6">
-              <p className="text-mediumLabel mb-2">Server Type</p>
               <Formik
                 initialValues={{
                   type: projectDetails?.type ?? "",
@@ -491,6 +491,7 @@ const ConnectDatabase = ({
                 }}
                 validationSchema={Yup.object().shape({
                   // name: apiNameSchema(Messages.NAME_REQUIRED),
+                  type : Yup.string().required("  Database type is required."),
                   host: Yup.string().required("host is required."),
                   port: Yup.string().required("port is required."),
                   database: Yup.string().required("database is required."),
@@ -511,7 +512,9 @@ const ConnectDatabase = ({
                   <Form>
                     <Grid container spacing={2}>
                       <Grid item xs={12}>
-                        <select
+                        <p className="text-mediumLabel mb-2">Server Type</p>
+                        <Field
+                          id = "type"
                           name="type"
                           value={values.type}
                           // color = "primary"
@@ -519,6 +522,8 @@ const ConnectDatabase = ({
                           onBlur={(e) => {
                             debouncedSetType(values.type);
                           }}
+                          error={touched.type && Boolean(errors.type)}
+                          helperText={<ErrorMessage name="type"/>}
                           variant="outlined"
                           style={{
                             border: "1px solid #d2d2d2",
@@ -527,7 +532,9 @@ const ConnectDatabase = ({
                             width: "100%",
                             color: "primary",
                             backgroundColor: "#ffffff",
+                            borderColor: (touched.type && errors.type) && "red"
                           }}
+                          as = "select"
                         >
                           <option value="" label="Select db type" />
 
@@ -551,7 +558,8 @@ const ConnectDatabase = ({
                               }
                             }
                           })}
-                        </select>
+                        </Field>
+                        {(touched.type && errors.type) && <FormHelperText htmlFor='render-select' error>{errors.type}</FormHelperText>}
                       </Grid>
                       <Grid item xs={6}>
                         <p className="text-mediumLabel mb-2">Host</p>
