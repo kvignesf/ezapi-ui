@@ -107,6 +107,7 @@ const AddProject = ({ onClose, onSuccess }) => {
   } = uploadDbMutation;
 
   const handleNext = () => {
+    console.log("mak",formRef);
     if (formRef.current) {
       formRef.current.handleSubmit();
       if (
@@ -121,6 +122,8 @@ const AddProject = ({ onClose, onSuccess }) => {
       }
     }
   };
+
+  
   const handleDone = () => {
     resetCreateProjectApi();
     resetUploadDbsApi();
@@ -464,7 +467,21 @@ const AddProject = ({ onClose, onSuccess }) => {
                     onClose();
                   } else if (currentTab === 1) {
                     handleClick();
-                    databaseConnectionTest();
+                    console.log("formRef:",formRef);
+                    if (formRef.current) {
+                      formRef.current.handleSubmit();
+                      if (
+                        formRef.current.isValid && (!_.isEmpty(projectDetails?.host) &&
+                        !_.isEmpty(projectDetails?.port) &&
+                       !_.isEmpty(projectDetails?.username) &&
+                        !_.isEmpty(projectDetails?.database) &&
+                        !_.isEmpty(projectDetails?.type))
+                    ){
+                          console.log("pappu");
+                          databaseConnectionTest();
+                        }
+                    }
+                    
                   } else {
                     setTab(1);
                   }
