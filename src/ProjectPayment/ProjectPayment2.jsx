@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useRef } from "react";
-import { useHistory, useLocation, useParams } from "react-router-dom";
-import _ from "lodash";
-import { delay } from "../shared/utils";
-import ArrowBackIcon from "@material-ui/icons/ArrowBack";
-import client, { endpoint } from "../shared/network/client";
-import { getApiError } from "../shared/utils";
+import React, { useState, useEffect, useRef } from 'react';
+import { useHistory, useLocation, useParams } from 'react-router-dom';
+import _ from 'lodash';
+import { delay } from '../shared/utils';
+import ArrowBackIcon from '@material-ui/icons/ArrowBack';
+import client, { endpoint } from '../shared/network/client';
+import { getApiError } from '../shared/utils';
 
 import {
   CircularProgress,
@@ -13,30 +13,30 @@ import {
   Menu,
   MenuItem,
   Tooltip,
-} from "@material-ui/core";
+} from '@material-ui/core';
 import {
   CardElement,
   Elements,
   useElements,
   useStripe,
-} from "@stripe/react-stripe-js";
-import { loadStripe } from "@stripe/stripe-js";
+} from '@stripe/react-stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
 
-import AppIcon from "../shared/components/AppIcon";
-import InitialsAvatar from "../shared/components/InitialsAvatar";
-import LoaderWithMessage from "../shared/components/LoaderWithMessage";
-import ErrorWithMessage from "../shared/components/ErrorWithMessage";
+import AppIcon from '../shared/components/AppIcon';
+import InitialsAvatar from '../shared/components/InitialsAvatar';
+import LoaderWithMessage from '../shared/components/LoaderWithMessage';
+import ErrorWithMessage from '../shared/components/ErrorWithMessage';
 import {
   useFetchProjectDetails,
   useSubmitProject,
-} from "../Project/projectQueries";
+} from '../Project/projectQueries';
 import {
   generateSyncOperationResponseRequest,
   useCanEdit,
-} from "../shared/utils";
-import { getFirstName, getLastName, getEmailId } from "../shared/storage";
-import Colors from "../shared/colors";
-import { useLogout } from "../shared/query/authQueries";
+} from '../shared/utils';
+import { getFirstName, getLastName, getEmailId } from '../shared/storage';
+import Colors from '../shared/colors';
+import { useLogout } from '../shared/query/authQueries';
 import {
   useConfirmPayment,
   useGetBasicProduct,
@@ -44,21 +44,21 @@ import {
   useGetProducts,
   useInitiatePayment,
   useMakePayment,
-} from "./paymentQueries";
-import BillingDetailsForm from "./BillingDetailsForm";
-import { useMutation, useQuery } from "react-query";
-import CardDetailsForm from "./CardDetailsForm";
-import ProductDetails from "./ProductDetails";
-import PaymentStatusDialog from "./PaymentStatusDialog";
-import { PaymentStatus } from "./paymentUtils";
-import routes, { generateRoute } from "../shared/routes";
-import { useQueryClient } from "react-query";
-import { queries } from "../shared/network/queryClient";
-import PublishStatusDialog from "./PublishStatusDialog";
-import ProfileMenu from "../shared/components/ProfileMenu";
-import EzapiLogo from "../shared/components/EzapiLogo";
-import EzapiFooter from "../shared/components/EzapiFooter";
-import { getAccessToken } from "../shared/storage";
+} from './paymentQueries';
+import BillingDetailsForm from './BillingDetailsForm';
+import { useMutation, useQuery } from 'react-query';
+import CardDetailsForm from './CardDetailsForm';
+import ProductDetails from './ProductDetails';
+import PaymentStatusDialog from './PaymentStatusDialog';
+import { PaymentStatus } from './paymentUtils';
+import routes, { generateRoute } from '../shared/routes';
+import { useQueryClient } from 'react-query';
+import { queries } from '../shared/network/queryClient';
+import PublishStatusDialog from './PublishStatusDialog';
+import ProfileMenu from '../shared/components/ProfileMenu';
+import EzapiLogo from '../shared/components/EzapiLogo';
+import EzapiFooter from '../shared/components/EzapiFooter';
+import { getAccessToken } from '../shared/storage';
 const acc_token = getAccessToken();
 
 const Header = ({
@@ -80,10 +80,10 @@ const Header = ({
   };
 
   return (
-    <header className='fixed top-0 w-full z-999 px-2 border-b-2 flex flex-row justify-between items-center bg-white'>
-      <div className='flex flex-row py-2 items-center'>
+    <header className="fixed top-0 w-full z-999 px-2 border-b-2 flex flex-row justify-between items-center bg-white">
+      <div className="flex flex-row py-2 items-center">
         <AppIcon
-          style={{ marginRight: "1rem" }}
+          style={{ marginRight: '1rem' }}
           onClick={(event) => {
             event?.preventDefault();
             event?.stopPropagation();
@@ -94,17 +94,17 @@ const Header = ({
           <ArrowBackIcon />
         </AppIcon>
 
-        <p className='text-overline1 mr-3'>{projectDetails?.projectName}</p>
+        <p className="text-overline1 mr-3">{projectDetails?.projectName}</p>
 
         <EzapiLogo />
       </div>
 
-      <div className='flex flex-row py-2'>
+      <div className="flex flex-row py-2">
         <div>
           <InitialsAvatar
             firstName={firstName}
             lastName={lastName}
-            className='cursor-pointer'
+            className="cursor-pointer"
             onClick={(e) => {
               e?.preventDefault();
               e?.stopPropagation();
@@ -147,7 +147,7 @@ const ProjectPayment = (props) => {
       return data;
     } catch (error) {}
   };
-  const { data } = useQuery("userProfileKey", userProfile, {
+  const { data } = useQuery('userProfileKey', userProfile, {
     refetchOnWindowFocus: false,
   });
   // console.log(data?.['subscribed_price']);
@@ -158,25 +158,25 @@ const ProjectPayment = (props) => {
   const [priceDefault, setPriceDefault] = React.useState();
   const [currentPlan, setCurrentPlan] = React.useState();
   const [addCardResponseID, setAddCardResponseID] = React.useState();
-  const [cityName, setCityName] = React.useState("");
-  const [countryName, setCountryName] = React.useState("");
-  const [line1Name, setLine1Name] = React.useState("");
-  const [stateName, setStateName] = React.useState("");
-  const [postalCodeName, setPostalCodeName] = React.useState("");
+  const [cityName, setCityName] = React.useState('');
+  const [countryName, setCountryName] = React.useState('');
+  const [line1Name, setLine1Name] = React.useState('');
+  const [stateName, setStateName] = React.useState('');
+  const [postalCodeName, setPostalCodeName] = React.useState('');
   useEffect(() => {
-    setCurrentPlan(data?.["subscribed_price"]);
+    setCurrentPlan(data?.['subscribed_price']);
   });
   useEffect(() => {
     var selectedPlanType;
-    console.log(location.state?.["duration"]);
-    if (location.state?.["duration"] == false) {
-      selectedPlanType = "mo";
+    console.log(location.state?.['duration']);
+    if (location.state?.['duration'] == false) {
+      selectedPlanType = 'mo';
     } else {
-      selectedPlanType = "yr";
+      selectedPlanType = 'yr';
     }
     setDurationDefault(selectedPlanType);
-    setTypeDefault(location.state?.["type"]);
-    setPriceDefault(location.state?.["price"]);
+    setTypeDefault(location.state?.['type']);
+    setPriceDefault(location.state?.['price']);
   }, [location]);
 
   const { projectId } = useParams();
@@ -312,14 +312,14 @@ const ProjectPayment = (props) => {
 
       // Project is not valid state
       if (
-        projectDetails?.status?.toLowerCase() !== "in_progress" &&
-        projectDetails?.status?.toLowerCase() !== "complete"
+        projectDetails?.status?.toLowerCase() !== 'in_progress' &&
+        projectDetails?.status?.toLowerCase() !== 'complete'
       ) {
         navigateBack();
       }
 
       // Cannot make payment
-      if (projectDetails?.projectBillingPlan?.toLowerCase() !== "none") {
+      if (projectDetails?.projectBillingPlan?.toLowerCase() !== 'none') {
         navigateBack();
       }
     }
@@ -327,7 +327,7 @@ const ProjectPayment = (props) => {
 
   useEffect(() => {
     // User no access
-    if (projectDetailsError?.message?.toLowerCase() === "no_access") {
+    if (projectDetailsError?.message?.toLowerCase() === 'no_access') {
       navigateBack();
     }
   }, [projectDetailsError]);
@@ -348,25 +348,25 @@ const ProjectPayment = (props) => {
   // console.log(acc_token);
 
   const { data: pricing_data } = usePricingData();
-  var priceIDData = "";
+  var priceIDData = '';
   function priceIDFinder(type, duration) {
     if (!_.isEmpty(pricing_data?.products)) {
-      pricing_data["products"].map((item, index) => {
-        if (type == item["plan_name"]) {
+      pricing_data['products'].map((item, index) => {
+        if (type == item['plan_name']) {
           durationFinder(item, duration);
         }
       });
     }
   }
   function durationFinder(item, duration) {
-    if (_.isEmpty(item["stripe"])) {
-      return "Trial cant be subscribed";
+    if (_.isEmpty(item['stripe'])) {
+      return 'Trial cant be subscribed';
     }
-    item["stripe"].map((item2, index2) => {
-      if (duration == item2["plan_interval"]) {
+    item['stripe'].map((item2, index2) => {
+      if (duration == item2['plan_interval']) {
         // console.log(item2["price_id"]);
-        priceIDData = item2["price_id"];
-        return item2["price_id"];
+        priceIDData = item2['price_id'];
+        return item2['price_id'];
       }
     });
   }
@@ -374,21 +374,21 @@ const ProjectPayment = (props) => {
   const initiatePaymentProcess = async (billingDetails, type, duration) => {
     switch (type) {
       case 10:
-        type = "Trial";
+        type = 'Trial';
         break;
       case 20:
-        type = "Basic";
+        type = 'Basic';
         break;
       case 30:
-        type = "Pro";
+        type = 'Pro';
         break;
     }
     switch (duration) {
       case 10:
-        duration = "month";
+        duration = 'month';
         break;
       case 20:
-        duration = "year";
+        duration = 'year';
         break;
     }
 
@@ -403,7 +403,7 @@ const ProjectPayment = (props) => {
       }
     );
 
-    setTokenID(token?.["id"]);
+    setTokenID(token?.['id']);
 
     if (
       billingDetailsRef.current.isValid &&
@@ -411,7 +411,7 @@ const ProjectPayment = (props) => {
       billingDetailsRef?.current?.values?.fullName &&
       billingDetailsRef?.current?.values?.addressLine1
     ) {
-      initiatePaymentProcess2(billingDetailsRef.current.values, token?.["id"]);
+      initiatePaymentProcess2(billingDetailsRef.current.values, token?.['id']);
     }
   };
 
@@ -462,7 +462,7 @@ const ProjectPayment = (props) => {
   const isPaymentSuccess = () => {
     return (
       isConfirmPaymentSuccess &&
-      confirmPaymentData?.paymentIntent?.status === "succeeded"
+      confirmPaymentData?.paymentIntent?.status === 'succeeded'
     );
   };
 
@@ -472,65 +472,65 @@ const ProjectPayment = (props) => {
 
   if (isFetchingProjectDetails) {
     return (
-      <div className='flex flex-col'>
+      <div className="flex flex-col">
         <Header
           projectDetails={projectDetails}
           logoutMutation={logoutMutation}
         />
 
-        <LoaderWithMessage message='Loading project details' />
+        <LoaderWithMessage message="Loading project details" />
       </div>
     );
   }
 
   if (isFetchingBillingDetails || isFetchingBillingDetailsBg) {
     return (
-      <div className='flex flex-col'>
+      <div className="flex flex-col">
         <Header
           projectDetails={projectDetails}
           logoutMutation={logoutMutation}
         />
 
-        <LoaderWithMessage message='Loading billing details' />
+        <LoaderWithMessage message="Loading billing details" />
       </div>
     );
   }
 
   if (projectDetailsError) {
     return (
-      <div className='flex flex-col'>
+      <div className="flex flex-col">
         <Header
           projectDetails={projectDetails}
           logoutMutation={logoutMutation}
         />
 
-        <ErrorWithMessage message='Failed to fetch project details' />
+        <ErrorWithMessage message="Failed to fetch project details" />
       </div>
     );
   }
 
   if (isFetchingBasicProduct || isFetchingBasicProductBg) {
     return (
-      <div className='flex flex-col'>
+      <div className="flex flex-col">
         <Header
           projectDetails={projectDetails}
           logoutMutation={logoutMutation}
         />
 
-        <LoaderWithMessage message='Loading plan details' />
+        <LoaderWithMessage message="Loading plan details" />
       </div>
     );
   }
 
   if (getBasicProductError) {
     return (
-      <div className='flex flex-col'>
+      <div className="flex flex-col">
         <Header
           projectDetails={projectDetails}
           logoutMutation={logoutMutation}
         />
 
-        <ErrorWithMessage message='Failed to fetch plan details' />
+        <ErrorWithMessage message="Failed to fetch plan details" />
       </div>
     );
   }
@@ -558,7 +558,7 @@ const ProjectPayment = (props) => {
   return (
     <div>
       <Dialog
-        aria-labelledby='payment-dialog'
+        aria-labelledby="payment-dialog"
         open={
           shouldShowDialogForPayment() ||
           shouldShowDialogForPublish() ||
@@ -590,9 +590,9 @@ const ProjectPayment = (props) => {
       </Dialog>
 
       <Header projectDetails={projectDetails} logoutMutation={logoutMutation} />
-      <div className='w-full flex flex-row p-12 h-full mt-14'>
+      <div className="w-full flex flex-row p-12 h-full mt-14">
         {basicProductData && (
-          <div className='flex-1 mr-6 px-6'>
+          <div className="flex-1 mr-6 px-6">
             <BillingDetailsForm
               formRef={billingDetailsRef}
               disabled={isInitiatingPayment || isConfirmingPayment}
@@ -606,7 +606,7 @@ const ProjectPayment = (props) => {
         )}
 
         {basicProductData && (
-          <div className='flex-1'>
+          <div className="flex-1">
             <ProductDetails
               type={typeDefault}
               duration={durationDefault}
@@ -617,7 +617,6 @@ const ProjectPayment = (props) => {
               }
               project={projectDetails}
               onPurchaseClick={(type, duration) => {
-                console.log(billingDetailsRef.current.values);
                 billingDetailsRef.current.handleSubmit();
                 cardDetailsRef.current.handleSubmit();
                 if (
