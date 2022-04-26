@@ -12,6 +12,10 @@ import { useMutation, useQuery, useQueryClient } from "react-query";
 import { PrimaryButton } from "../shared/components/AppButton";
 import classNames from "classnames";
 import { getAccessToken } from "../shared/storage";
+import {
+  postcodeValidator,
+  postcodeValidatorExistsForCountry,
+} from "postcode-validator";
 
 const acc_token = getAccessToken();
 const userProfile = async () => {
@@ -35,6 +39,7 @@ const BillingDetailsForm = ({ disabled = false, formRef }) => {
   const [countryName, setCountryName] = React.useState("");
   const [line1Name, setLine1Name] = React.useState("");
   const [stateName, setStateName] = React.useState("");
+  const [zipValidator, setZipValidator] = React.useState(true);
   const [postalCodeName, setPostalCodeName] = React.useState("");
 
   useEffect(() => {
@@ -51,24 +56,38 @@ const BillingDetailsForm = ({ disabled = false, formRef }) => {
 
       <Formik
         initialValues={{
-          fullName: "Test_name",
-          company: "test_company",
+          fullName: "",
+          company: "",
           country: countryName,
           addressLine1: line1Name,
           zip: postalCodeName,
           city: cityName,
           state: stateName,
-          email: "test@gmail.com",
+          email: "",
 
-          addressLine2: "test_Line2",
+          addressLine2: "",
 
-          phone: "33333333",
+          phone: "",
         }}
         enableReinitialize
         validationSchema={billingDetailsSchema}
         innerRef={formRef}
       >
         {({ values, errors, touched, setFieldValue }) => {
+          if (postcodeValidatorExistsForCountry(values.country)) {
+            if (postcodeValidator(values.zip, values.country)) {
+              setZipValidator(true);
+            } else setZipValidator(false);
+          } else {
+            setZipValidator(true);
+            console.log("Country-Zip Validation Not available");
+          }
+          console.log(zipValidator);
+
+          // }
+          // console.log(values.country);
+          // console.log(postcodeValidatorExistsForCountry(values.country));
+
           return (
             <Form>
               <div className='mb-4'>
@@ -237,8 +256,16 @@ const BillingDetailsForm = ({ disabled = false, formRef }) => {
                     // value={postalCodeName}
                     variant='outlined'
                     disabled={disabled}
-                    error={touched.zip && Boolean(errors.zip)}
-                    helperText={<ErrorMessage name='zip' />}
+                    error={
+                      (touched.zip && Boolean(errors.zip)) || !zipValidator
+                    }
+                    helperText={
+                      values.zip
+                        ? !zipValidator
+                          ? "Invalid Zipcode"
+                          : null
+                        : "Please fill this field"
+                    }
                     onKeyUp={(e) => {}}
                     inputProps={{
                       style: {
@@ -249,7 +276,7 @@ const BillingDetailsForm = ({ disabled = false, formRef }) => {
                     //   setFieldValue("zip", v.target.value);
                     // }}
                     onChange={(e) => {
-                      const re = /^[A-Za-z0-9\b]+$/;
+                      const re = /^[A-Z a-z0-9\b]+$/;
 
                       if (
                         e?.target?.value?.trim() === "" ||

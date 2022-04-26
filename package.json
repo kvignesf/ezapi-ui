@@ -26,6 +26,7 @@
     "immer": "^9.0.5",
     "lodash": "^4.17.21",
     "material-ui-chip-input": "^1.1.0",
+    "postcode-validator": "^3.6.6",
     "react": "^17.0.2",
     "react-cookie-consent": "^6.3.0",
     "react-country-region-selector": "^3.3.0",
