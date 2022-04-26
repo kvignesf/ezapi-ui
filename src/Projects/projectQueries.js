@@ -162,6 +162,44 @@ export const useDownloadArtifacts = () => {
   return mutation;
 };
 
+const downloadDatabase = async ({ projectId }) => {
+  try {
+    const osName = getOs();
+
+    const { data } = await client.post(
+      endpoint.downloadDatabase,
+      {
+        projectId,
+        os_type: osName,
+      },
+      {
+        timeout: 480000,
+      }
+    );
+    return data;
+  } catch (error) {
+    throw getApiError(error);
+  }
+};
+
+export const useDownloadDatabase = () => {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation(downloadDatabase, {
+    onSuccess: (data) => {
+      if (data?.downloadUrl && !_.isEmpty(data?.downloadUrl)) {
+        const link = data?.downloadUrl;
+
+        // const filename = link.substring(link.lastIndexOf("/") + 1);
+        const filename = "project_database";
+        saveAs(link, filename);
+      }
+    },
+  });
+
+  return mutation;
+};
+
 const downloadCodegen = async ({ projectId }) => {
   try {
     const osName = getOs();
