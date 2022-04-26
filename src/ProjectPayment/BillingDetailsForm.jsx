@@ -56,7 +56,7 @@ const BillingDetailsForm = ({ disabled = false, formRef }) => {
 
       <Formik
         initialValues={{
-          fullName: "Test_Name",
+          fullName: "",
           company: "",
           country: countryName,
           addressLine1: line1Name,
