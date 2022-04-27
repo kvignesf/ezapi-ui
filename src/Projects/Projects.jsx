@@ -267,7 +267,7 @@ const ProjectRow = ({
 
           {/* Data download */}
           {project?.status?.toLowerCase() === "complete" &&
-            project?.isConnectDB && project?.datagen_count > 0 &&
+            project?.isConnectDB && (project?.datagen_count > 0 || project?.datagen_perf_count > 0) &&
             !isDownloadingDatabase && (
               <Tooltip title="Download Data">
                 <div
