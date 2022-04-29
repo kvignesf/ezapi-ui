@@ -10,6 +10,7 @@
     "@material-ui/core": "^4.12.3",
     "@material-ui/icons": "^4.11.2",
     "@material-ui/lab": "^4.0.0-alpha.60",
+    "@microsoft/fetch-event-source": "^2.0.1",
     "@mui/icons-material": "^5.3.1",
     "@mui/material": "^5.3.1",
     "@stripe/react-stripe-js": "^1.4.1",
@@ -55,7 +56,7 @@
     "yup": "^0.32.9"
   },
   "scripts": {
-    "start": "craco  --openssl-legacy-provider start",
+    "start": "craco start",
     "build": "craco --openssl-legacy-provider build",
     "test": "craco --openssl-legacy-provider test",
     "eject": "react-scripts eject",

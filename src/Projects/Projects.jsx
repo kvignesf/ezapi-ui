@@ -42,6 +42,10 @@ import Logo from "../static/images/logo/svg.svg";
 import DatabaseLogo from "../static/images/logo/database_download.svg";
 import { useCanEdit } from "../shared/utils";
 import { getAccessToken } from "../shared/storage";
+import { fetchEventSource } from "@microsoft/fetch-event-source";
+
+const acc_token = getAccessToken();
+
 const MembersImages = ({ project, ...rest }) => {
   const loggedInUserId = getUserId();
   const userId = getUserId();
@@ -101,6 +105,10 @@ const MembersImages = ({ project, ...rest }) => {
     </div>
   );
 };
+const baseUrl = process.env.REACT_APP_API_URL;
+// const baseUrl = "http://localhost:7744"
+
+
 
 const ProjectRow = ({
   project,
@@ -142,6 +150,72 @@ const ProjectRow = ({
     downloadCodegen({ projectId: project?.projectId });
   };
 
+  
+  const [ enableIcon, setEnableIcon ] = useState(false);
+  const [ listening, setListening ] = useState(false);
+
+  useEffect(() => {
+  const fetchData = async () => {
+    await fetchEventSource(`${baseUrl}/sse`, {
+      method: "GET",
+      headers: {
+        Accept: "text/event-stream",
+        Authorization: `Bearer ${acc_token}`,
+      },
+      onopen(res) {
+        if (res.ok && res.status === 200) {
+          console.log("Connection made ", res);
+        } else if (
+          res.status >= 400 &&
+          res.status < 500 &&
+          res.status !== 429
+        ) {
+          console.log("Client side error ", res);
+        }
+      },
+      onmessage(event) {
+        console.log("Manoj",event.name);
+        console.log("eventdata:",event.data);
+        const parsedData = JSON.parse(event.data);
+        setEnableIcon(parsedData.enableIcon);
+      },
+
+      // dataGenCompleted(event){
+      //   console.log("manoj",event.data);
+      //   const parsedData = JSON.parse(event.data);
+      //   setEnableIcon(parsedData.enableIcon);
+      // },
+      // addEventListener("dataGenCompleted",(e)=>{
+      //   const parsedData = JSON.parse(e.data);
+      //   setEnableIcon(parsedData.enableIcon);
+      // }),
+      onclose() {
+        console.log("Connection closed by the server");
+      },
+      onerror(err) {
+        console.log("There was an error from server", err);
+      },
+    });
+  };
+  fetchData();
+  }, []);
+  // useEffect(() => {
+  //   if (!listening) {
+  //     const events = new EventSource(`${baseUrl}/sse`,{headers: {
+  //             Accept: "text/event-stream",
+  //             Authorization: acc_token,
+  //           }});
+  //     events.addEventListener("dataGenCompleted",(e)=>{
+  //       const parsedData = JSON.parse(e.data);
+  //       setEnableIcon(parsedData.enableIcon);
+  //     });
+
+  //     setListening(true);
+  //   }
+
+    
+    
+  // }, []);
   return (
     <tr className="text-overline2">
       <td
@@ -266,7 +340,7 @@ const ProjectRow = ({
           )}
 
           {/* Data download */}
-          {project?.status?.toLowerCase() === "complete" &&
+          {enableIcon && project?.status?.toLowerCase() === "complete" &&
             project?.isConnectDB && (project?.datagen_count > 0 || project?.datagen_perf_count > 0) &&
             !isDownloadingDatabase && (
               <Tooltip title="Download Data">
@@ -556,7 +630,6 @@ const Projects = () => {
     []
   );
   const history = useHistory();
-  const acc_token = getAccessToken();
   const userProfile = async () => {
     try {
       const { data } = await client.get(endpoint.userProfile, {
