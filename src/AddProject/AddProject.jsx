@@ -107,6 +107,7 @@ const AddProject = ({ onClose, onSuccess }) => {
   } = uploadDbMutation;
 
   const handleNext = () => {
+    console.log("mak",formRef);
     if (formRef.current) {
       formRef.current.handleSubmit();
       if (
@@ -121,6 +122,8 @@ const AddProject = ({ onClose, onSuccess }) => {
       }
     }
   };
+
+  
   const handleDone = () => {
     resetCreateProjectApi();
     resetUploadDbsApi();
@@ -464,7 +467,21 @@ const AddProject = ({ onClose, onSuccess }) => {
                     onClose();
                   } else if (currentTab === 1) {
                     handleClick();
-                    databaseConnectionTest();
+                    console.log("formRef:",formRef);
+                    if (formRef.current) {
+                      formRef.current.handleSubmit();
+                      if (
+                        formRef.current.isValid && (!_.isEmpty(projectDetails?.host) &&
+                        !_.isEmpty(projectDetails?.port) &&
+                       !_.isEmpty(projectDetails?.username) &&
+                        !_.isEmpty(projectDetails?.database) &&
+                        !_.isEmpty(projectDetails?.type))
+                    ){
+                          console.log("pappu");
+                          databaseConnectionTest();
+                        }
+                    }
+                    
                   } else {
                     setTab(1);
                   }
@@ -490,11 +507,12 @@ const AddProject = ({ onClose, onSuccess }) => {
                     handleDone();
                   }else if (
                     projectDetailsError?.response?.data?.errorType ==
-                      "FREE_PROJECTS_EXHAUSTED" || projectDetailsError?.response?.data?.errorType == "TRIAL_PERIOD_EXPIRED" ||
+                      "PROJECTS_LIMIT_EXHAUSTED" || projectDetailsError?.response?.data?.errorType == "TRIAL_PERIOD_EXPIRED" ||
                     (projectDetailsError?.response?.data?.errorType ==
                       "COLLABRATOR_LIMIT_REACHED" && showCollabsError)
                   ) {
                     history.push(routes.pricing);
+                    onClose();
                   } else {
                     handleDone();
                   }
@@ -503,7 +521,7 @@ const AddProject = ({ onClose, onSuccess }) => {
                 {currentTab === 0 || currentTab === 1
                   ? "Next"
                   : (prevFormRef.current.length > projectDetails.collaborators.length) ? "Done" : projectDetailsError?.response?.data?.errorType ==
-                      "FREE_PROJECTS_EXHAUSTED" || projectDetailsError?.response?.data?.errorType == "TRIAL_PERIOD_EXPIRED" ||
+                      "PROJECTS_LIMIT_EXHAUSTED" || projectDetailsError?.response?.data?.errorType == "TRIAL_PERIOD_EXPIRED" ||
                       projectDetailsError?.response?.data?.errorType ==
                       "COLLABRATOR_LIMIT_REACHED"
                   ? "Upgrade"

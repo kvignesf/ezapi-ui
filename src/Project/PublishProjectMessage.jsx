@@ -7,6 +7,10 @@ import AppIcon from "../shared/components/AppIcon";
 import { PrimaryButton, TextButton } from "../shared/components/AppButton";
 import { useGetBasicProduct } from "../ProjectPayment/paymentQueries";
 import { CircularProgress } from "@material-ui/core";
+import { useHistory } from 'react-router-dom';
+import routes from '../shared/routes';
+
+
 
 const PublishProjectMessage = ({
   publishProjectError,
@@ -28,6 +32,8 @@ const PublishProjectMessage = ({
     return !_.isEmpty(publishProjectError?.response?.data?.errorType);
   };
 
+  const history = useHistory();
+
   const isPublishLimitReached = () => {
     return (
       publishProjectError?.response?.data?.errorType === "PUBLISH_LIMIT_REACHED"
@@ -41,6 +47,13 @@ const PublishProjectMessage = ({
     );
   };
 
+  const isTrialPeriodExpired = () => {
+    return (
+      publishProjectError?.response?.data?.errorType ===
+      "TRIAL_PERIOD_EXPIRED"
+    );
+  };
+  
   useEffect(() => {
     if (project && isFreePublishesExhausted()) {
       getBasicProductDetails();
@@ -81,6 +94,10 @@ const PublishProjectMessage = ({
           <p className='text-overline2'>{publishProjectError?.message}</p>
         )}
 
+        {publishProjectError && isTrialPeriodExpired() && (
+          <p className='text-accent-red text-overline2'>{publishProjectError?.response?.data?.message}</p>
+        )}
+
         {publishProjectError && isPublishLimitReached() && (
           <div>
             <p className='text-overline3 uppercase mb-3'>
@@ -89,7 +106,7 @@ const PublishProjectMessage = ({
             </p>
             <p className='text-overline2'>
               Republish limit exceeded for this project. If you want republish
-              again, please contact us and customise it.
+              again, please Upgrade your plan.
             </p>
           </div>
         )}
@@ -137,14 +154,13 @@ const PublishProjectMessage = ({
 
       <div className='border-t-1 flex flex-row items-center p-4'>
         {isFreePublishesExhausted() && (
-          <Link
-            to='/pricing'
-            target='_blank'
-            rel='noopener noreferrer'
-            className='text-overline2 text-brand-secondary hover:opacity-80'
-          >
-            Learn More
-          </Link>
+          <PrimaryButton
+          onClick={() => {
+          history.push(routes.pricing);
+          }
+        }>
+          Upgrade
+        </PrimaryButton>
         )}
 
         <div className='flex-1 flex flex-row justify-end'>
@@ -159,16 +175,14 @@ const PublishProjectMessage = ({
             Cancel
           </TextButton>
 
-          {isPublishLimitReached() ? (
-            <Link
-              to='/contact'
-              target='_blank'
-              rel='noopener noreferrer'
-              className='text-overline2 text-white bg-brand-secondary p-2 px-3 hover:opacity-80'
-              style={{ borderRadius: "4px" }}
-            >
-              Contact Us
-            </Link>
+          {isPublishLimitReached() || isTrialPeriodExpired() ? (
+            <PrimaryButton
+            onClick={() => {
+            history.push(routes.pricing);
+            }
+          }>
+            Upgrade
+          </PrimaryButton>
           ) : (
             <PrimaryButton
               onClick={(e) => {
@@ -182,6 +196,7 @@ const PublishProjectMessage = ({
             </PrimaryButton>
           )}
         </div>
+        
       </div>
     </div>
   );

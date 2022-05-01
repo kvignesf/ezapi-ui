@@ -1,53 +1,55 @@
-import React, { useEffect, useState } from 'react';
-import MoreVertIcon from '@material-ui/icons/MoreVert';
-import GetAppIcon from '@material-ui/icons/GetApp';
-import SystemUpdateAltIcon from '@material-ui/icons/SystemUpdateAlt';
-import TimeAgo from 'react-timeago';
-import _ from 'lodash';
-import classNames from 'classnames';
-import Menu from '@material-ui/core/Menu';
-import MenuItem from '@material-ui/core/MenuItem';
+import React, { useEffect, useState } from "react";
+import MoreVertIcon from "@material-ui/icons/MoreVert";
+import GetAppIcon from "@material-ui/icons/GetApp";
+import SystemUpdateAltIcon from "@material-ui/icons/SystemUpdateAlt";
+import TimeAgo from "react-timeago";
+import _ from "lodash";
+import classNames from "classnames";
+import Menu from "@material-ui/core/Menu";
+import MenuItem from "@material-ui/core/MenuItem";
 // import client, { endpoint } from './shared/network/client';
-import Fade from '@material-ui/core/Fade';
-import { CircularProgress, Dialog, Tooltip } from '@material-ui/core';
+import Fade from "@material-ui/core/Fade";
+import { CircularProgress, Dialog, Tooltip } from "@material-ui/core";
 // import { useHistory } from 'react-router';
-import { useHistory, useLocation } from 'react-router-dom';
-import CodeIcon from '@material-ui/icons/Code';
-import { useQuery } from 'react-query';
-import ReplayIcon from '@material-ui/icons/Replay';
-import client, { endpoint } from '../shared/network/client';
-import Dashboard from '../Dashboard';
-import AppIcon from '../shared/components/AppIcon';
-import AddProject from '../AddProject';
-import InviteCollaborators from '../shared/components/InviteCollaborators';
-import ModifyCollaborators from '../ModifyCollaborators/ModifyCollaborators';
-import InitialsAvatar from '../shared/components/InitialsAvatar';
-import Colors from '../shared/colors';
-import RenameProject from './RenameProject/RenameProject';
-import DeleteProject from './DeleteProject/DeleteProject';
+import { useHistory, useLocation } from "react-router-dom";
+import CodeIcon from "@material-ui/icons/Code";
+import { useQuery } from "react-query";
+import ReplayIcon from "@material-ui/icons/Replay";
+import client, { endpoint } from "../shared/network/client";
+import Dashboard from "../Dashboard";
+import AppIcon from "../shared/components/AppIcon";
+import AddProject from "../AddProject";
+import InviteCollaborators from "../shared/components/InviteCollaborators";
+import ModifyCollaborators from "../ModifyCollaborators/ModifyCollaborators";
+import InitialsAvatar from "../shared/components/InitialsAvatar";
+import Colors from "../shared/colors";
+import RenameProject from "./RenameProject/RenameProject";
+import DeleteProject from "./DeleteProject/DeleteProject";
 
 import {
   useDownloadArtifacts,
   useDownloadCodegen,
   useDownloadSpecs,
   useGetProjects,
-} from './projectQueries';
-import EmptyLogo from '../static/images/empty-state.svg';
-import { PrimaryButton } from '../shared/components/AppButton';
-import LoaderWithMessage from '../shared/components/LoaderWithMessage';
-import { getUserId } from '../shared/storage';
-import routes, { generateRoute } from '../shared/routes';
-import Logo from '../static/images/logo/svg.svg';
-import { useCanEdit } from '../shared/utils';
-import { getAccessToken } from '../shared/storage';
+  useDownloadDatabase,
+} from "./projectQueries";
+import EmptyLogo from "../static/images/empty-state.svg";
+import { PrimaryButton } from "../shared/components/AppButton";
+import LoaderWithMessage from "../shared/components/LoaderWithMessage";
+import { getUserId } from "../shared/storage";
+import routes, { generateRoute } from "../shared/routes";
+import Logo from "../static/images/logo/svg.svg";
+import DatabaseLogo from "../static/images/logo/database_download.svg";
+import { useCanEdit } from "../shared/utils";
+import { getAccessToken } from "../shared/storage";
 const MembersImages = ({ project, ...rest }) => {
   const loggedInUserId = getUserId();
   const userId = getUserId();
 
   return (
     <div
-      className={classNames('flex flex-row', {
-        'cursor-pointer': project?.author === userId,
+      className={classNames("flex flex-row", {
+        "cursor-pointer": project?.author === userId,
       })}
       {...rest}
     >
@@ -80,9 +82,9 @@ const MembersImages = ({ project, ...rest }) => {
               firstName={firstName}
               lastName={lastName}
               className={classNames(
-                'rounded-full p-2 bg-brand-primarySubtle w-min',
+                "rounded-full p-2 bg-brand-primarySubtle w-min",
                 {
-                  '-ml-2': index != 0,
+                  "-ml-2": index != 0,
                 }
               )}
             />
@@ -113,6 +115,8 @@ const ProjectRow = ({
   const loggedInUserId = getUserId();
   const { isLoading: isDownloadingSpecs, mutate: downloadSpecs } =
     useDownloadSpecs();
+  const { isLoading: isDownloadingDatabase, mutate: downloadDatabase } =
+    useDownloadDatabase();
   const { isLoading: isDownloadingArtifacts, mutate: downloadArtifacts } =
     useDownloadArtifacts();
   const { isLoading: isDownloadingCodegen, mutate: downloadCodegen } =
@@ -124,6 +128,10 @@ const ProjectRow = ({
 
   const onDownloadSpecs = () => {
     downloadSpecs({ projectId: project?.projectId });
+  };
+
+  const onDownloadDatabase = () => {
+    downloadDatabase({ projectId: project?.projectId });
   };
 
   const onDownloadArtifact = () => {
@@ -166,8 +174,8 @@ const ProjectRow = ({
         <div className="flex flex-row items-center gap-2">
           {/* Codegen download */}
           <div className="w-8">
-            {project?.status?.toLowerCase() === 'complete' &&
-              project?.projectType?.toLowerCase() !== 'schema' &&
+            {project?.status?.toLowerCase() === "complete" &&
+              project?.projectType?.toLowerCase() !== "schema" &&
               !isDownloadingCodegen && (
                 <AppIcon
                   onClick={(e) => {
@@ -182,14 +190,14 @@ const ProjectRow = ({
                   <Tooltip
                     title={
                       project?.codegen
-                        ? 'Download Codegen'
-                        : 'Preparing Codegen'
+                        ? "Download Codegen"
+                        : "Preparing Codegen"
                     }
                   >
                     <CodeIcon
                       className={classNames({
-                        'opacity-50 cursor-default': !project?.codegen,
-                        'cursor-pointer text-brand-primary': project?.codegen,
+                        "opacity-50 cursor-default": !project?.codegen,
+                        "cursor-pointer text-brand-primary": project?.codegen,
                       })}
                     />
                   </Tooltip>
@@ -197,19 +205,19 @@ const ProjectRow = ({
               )}
 
             {isDownloadingCodegen && (
-              <CircularProgress style={{ width: '24px', height: '24px' }} />
+              <CircularProgress style={{ width: "24px", height: "24px" }} />
             )}
           </div>
 
           {/* Spec download */}
-          {project?.status?.toLowerCase() === 'complete' &&
+          {project?.status?.toLowerCase() === "complete" &&
             project?.publishStatus?.SpecGeneration?.success &&
             !isDownloadingSpecs && (
               <Tooltip title="Download Specs">
                 <div
                   style={{
-                    width: '32px',
-                    height: '32px',
+                    width: "32px",
+                    height: "32px",
                   }}
                 >
                   <img
@@ -228,11 +236,12 @@ const ProjectRow = ({
             )}
 
           {isDownloadingSpecs && (
-            <CircularProgress style={{ width: '24px', height: '24px' }} />
+            <CircularProgress style={{ width: "24px", height: "24px" }} />
           )}
 
+          
           {/* Artefact download */}
-          {project?.status?.toLowerCase() === 'complete' &&
+          {project?.status?.toLowerCase() === "complete" &&
             project?.publishStatus?.SankyGeneration?.success &&
             project?.publishStatus?.ArtefactGeneration?.success &&
             !isDownloadingArtifacts && (
@@ -253,8 +262,40 @@ const ProjectRow = ({
             )}
 
           {isDownloadingArtifacts && (
-            <CircularProgress style={{ width: '24px', height: '24px' }} />
+            <CircularProgress style={{ width: "24px", height: "24px" }} />
           )}
+
+          {/* Data download */}
+          {project?.status?.toLowerCase() === "complete" &&
+            project?.isConnectDB && (project?.datagen_count > 0 || project?.datagen_perf_count > 0) &&
+            !isDownloadingDatabase && (
+              <Tooltip title="Download Data">
+                <div
+                  style={{
+                    marginTop: "12px",
+                    width: "36px",
+                    height: "36px",
+                  }}
+                >
+                  <img
+                    src={DatabaseLogo}
+                    alt="ezapi logo"
+                    className="cursor-pointer"
+                    onClick={(e) => {
+                      e?.preventDefault();
+                      e?.stopPropagation();
+
+                      onDownloadDatabase();
+                    }}
+                  />
+                </div>
+              </Tooltip>
+            )}
+
+          {isDownloadingDatabase && (
+            <CircularProgress style={{ width: "24px", height: "24px" }} />
+          )}
+
         </div>
       </td>
 
@@ -274,7 +315,7 @@ const ProjectRow = ({
           setAnchorEl(null);
         }}
         TransitionComponent={Fade}
-        style={{ borderRadius: '1rem' }}
+        style={{ borderRadius: "1rem" }}
       >
         <MenuItem
           onClick={() => {
@@ -337,7 +378,7 @@ const Content = ({ showCreateProjectDialog }) => {
   const showMembersDialog = (project) => {
     setDialog({
       show: true,
-      type: 'members',
+      type: "members",
       data: project,
     });
   };
@@ -345,7 +386,7 @@ const Content = ({ showCreateProjectDialog }) => {
   const showRenameProjectDialog = (project) => {
     setDialog({
       show: true,
-      type: 'rename-project',
+      type: "rename-project",
       data: project,
     });
   };
@@ -353,7 +394,7 @@ const Content = ({ showCreateProjectDialog }) => {
   const showDeleteProjectDialog = (project) => {
     setDialog({
       show: true,
-      type: 'del-project',
+      type: "del-project",
       data: project,
     });
   };
@@ -367,8 +408,12 @@ const Content = ({ showCreateProjectDialog }) => {
   };
 
   const handleOnView = (project) => {
-    if (project?.status === 'IN_PROGRESS' || project?.status === 'COMPLETE') {
-      history.push(generateRoute(routes.projects, project?.projectId));
+    if (project?.status === "IN_PROGRESS" || project?.status === "COMPLETE") {
+      // history.push(generateRoute(routes.projects, project?.projectId));
+      history.push({
+        pathname: generateRoute(routes.projects, project?.projectId),
+        state: { allow: true },
+      });
     }
   };
 
@@ -385,7 +430,7 @@ const Content = ({ showCreateProjectDialog }) => {
   };
 
   if (isFetchingProjects) {
-    return <LoaderWithMessage message={'Fetching Projects'} />;
+    return <LoaderWithMessage message={"Fetching Projects"} />;
   }
 
   return (
@@ -400,7 +445,7 @@ const Content = ({ showCreateProjectDialog }) => {
         }}
         disableBackdropClick
       >
-        {dialog?.type === 'members' && (
+        {dialog?.type === "members" && (
           <ModifyCollaborators
             projectId={dialog?.data?.projectId}
             onClose={handleCloseDialog}
@@ -408,11 +453,11 @@ const Content = ({ showCreateProjectDialog }) => {
           />
         )}
 
-        {dialog?.type === 'rename-project' && (
+        {dialog?.type === "rename-project" && (
           <RenameProject onClose={handleCloseDialog} project={dialog?.data} />
         )}
 
-        {dialog?.type === 'del-project' && (
+        {dialog?.type === "del-project" && (
           <DeleteProject onClose={handleCloseDialog} project={dialog?.data} />
         )}
       </Dialog>
@@ -434,10 +479,10 @@ const Content = ({ showCreateProjectDialog }) => {
                 <Tooltip title="Refresh list">
                   <ReplayIcon
                     style={{
-                      width: '20px',
-                      height: '20px',
+                      width: "20px",
+                      height: "20px",
                       color: Colors.brand.primary,
-                      cursor: 'pointer',
+                      cursor: "pointer",
                     }}
                     onClick={(e) => {
                       e?.preventDefault();
@@ -472,7 +517,7 @@ const Content = ({ showCreateProjectDialog }) => {
             <img
               src={EmptyLogo}
               className="mb-4"
-              style={{ width: '100px', height: '100px' }}
+              style={{ width: "100px", height: "100px" }}
             />
 
             <h5 className="mb-3">No API project available</h5>
@@ -501,7 +546,7 @@ const Projects = () => {
   useEffect(
     () => {
       // console.log(locatison.state?.['allow']);
-      if (location.state?.['allow'] == true) {
+      if (location.state?.["allow"] == true) {
         setStay(true);
       } else {
         setStay(false);
@@ -523,14 +568,14 @@ const Projects = () => {
       return data;
     } catch (error) {}
   };
-  const { data } = useQuery('userProfileKey', userProfile, {
+  const { data } = useQuery("userProfileKey", userProfile, {
     refetchOnWindowFocus: false,
   });
-  console.log(data?.['plan_name']);
+  console.log(data?.["plan_name"]);
   console.log(stay);
 
-  if (data?.['plan_name'] === null && !stay) {
-    console.log('in');
+  if (data?.["plan_name"] === null && !stay) {
+    console.log("in");
     history.push(routes.pricing);
     // setRenderNow(false);
   }
@@ -539,7 +584,7 @@ const Projects = () => {
   // }
   return (
     <>
-      {' '}
+      {" "}
       {
         <Dashboard selectedIndex={1}>
           <Content />

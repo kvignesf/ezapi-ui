@@ -32,6 +32,7 @@ export const endpoint = Object.freeze({
   verifyProject: '/projectValidate',
   downloadSpec: '/download_spec',
   downloadArtifact: '/download_apiops',
+  downloadDatabase: '/download_gendata',
   downloadCodegen: '/download_codegen',
   testDBConnection: '/testDBConnection',
   exportDBSchema: '/db_to_python',
