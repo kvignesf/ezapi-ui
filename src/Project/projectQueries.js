@@ -56,7 +56,7 @@ const publishProject = async ({ projectId }) => {
   try {
     const { data } = await client.post(endpoint.publishProject, {
       projectId,
-    });
+    },{timeout: 48000});
     return data;
   } catch (error) {
     throw getApiError(error);

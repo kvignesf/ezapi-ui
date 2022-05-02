@@ -512,6 +512,7 @@ const AddProject = ({ onClose, onSuccess }) => {
                       "COLLABRATOR_LIMIT_REACHED" && showCollabsError)
                   ) {
                     history.push(routes.pricing);
+                    onClose();
                   } else {
                     handleDone();
                   }
