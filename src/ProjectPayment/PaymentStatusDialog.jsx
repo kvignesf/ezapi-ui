@@ -1,15 +1,15 @@
-import React from 'react';
-import CloseIcon from '@material-ui/icons/Close';
-import _ from 'lodash';
-import { CircularProgress } from '@material-ui/core';
-import routes, { generateRoute } from '../shared/routes';
-import AppIcon from '../shared/components/AppIcon';
-import { ReactComponent as SuccessLogo } from '../static/images/success-icon.svg';
-import { ReactComponent as FailureLogo } from '../static/images/failure-icon.svg';
-import { PrimaryButton, TextButton } from '../shared/components/AppButton';
-import { PaymentStatus } from './paymentUtils';
-import Messages from '../shared/messages';
-import { useHistory, useLocation, useParams } from 'react-router-dom';
+import React from "react";
+import CloseIcon from "@material-ui/icons/Close";
+import _ from "lodash";
+import { CircularProgress } from "@material-ui/core";
+import routes, { generateRoute } from "../shared/routes";
+import AppIcon from "../shared/components/AppIcon";
+import { ReactComponent as SuccessLogo } from "../static/images/success-icon.svg";
+import { ReactComponent as FailureLogo } from "../static/images/failure-icon.svg";
+import { PrimaryButton, TextButton } from "../shared/components/AppButton";
+import { PaymentStatus } from "./paymentUtils";
+import Messages from "../shared/messages";
+import { useHistory, useLocation, useParams } from "react-router-dom";
 
 const PaymentStatusDialog = ({
   response,
@@ -42,44 +42,44 @@ const PaymentStatusDialog = ({
     // }
     return (
       isInitiatePaymentSuccess &&
-      initiatePaymentData?.[0]['status'] == 200 &&
-      initiatePaymentData?.[1]['status'] == 200 &&
+      initiatePaymentData?.[0]["status"] == 200 &&
+      initiatePaymentData?.[1]["status"] == 200 &&
       !initiatePaymentError
     );
   };
 
   const getContentMessage = () => {
     if (isInitiatingPayment) {
-      return 'Initialising Payment';
+      return "Initializing Payment";
     } else if (initiatePaymentError) {
       // console.log(initiatePaymentError);
       return initiatePaymentError.message;
     } else if (isConfirmingPayment) {
-      return 'Confirming Payment';
+      return "Confirming Payment";
     } else if (isPaymentSuccess()) {
-      return 'Payment successful';
+      return "Payment successful";
     } else if (!isPaymentSuccess()) {
       return (
-        confirmPaymentData?.error?.message + ' Please try again!' ??
-        confirmPaymentError?.message + ' Please try again.' ??
+        confirmPaymentData?.error?.message + " Please try again!" ??
+        confirmPaymentError?.message + " Please try again." ??
         Messages.PAYMENT_RETRY
       );
     }
 
-    return '-';
+    return "-";
   };
 
   return (
     <div>
-      <div className="p-4 flex flex-row justify-between border-b-1">
-        <p className="text-subtitle2">
+      <div className='p-4 flex flex-row justify-between border-b-1'>
+        <p className='text-subtitle2'>
           {isInitiatingPayment
-            ? 'Payment Initialisation'
+            ? "Payment Initialization"
             : initiatePaymentError
-            ? 'Payment Failure'
+            ? "Payment Failure"
             : isPaymentSuccess()
-            ? 'Payment Success'
-            : 'Payment Failure'}
+            ? "Payment Success"
+            : "Payment Failure"}
         </p>
         {!isInitiatingPayment && !isConfirmingPayment && (
           <AppIcon
@@ -95,27 +95,27 @@ const PaymentStatusDialog = ({
         )}
       </div>
 
-      <div className="p-4 py-6">
+      <div className='p-4 py-6'>
         {isPaymentSuccess() ? (
-          <div className="w-full flex flex-col items-center justify-center mb-3">
-            <SuccessLogo className="mb-2" />
-            <p className="text-subtitle2">Successful!</p>
+          <div className='w-full flex flex-col items-center justify-center mb-3'>
+            <SuccessLogo className='mb-2' />
+            <p className='text-subtitle2'>Successful!</p>
           </div>
         ) : (initiatePaymentError ||
             confirmPaymentError ||
             !isPaymentSuccess()) &&
           !isInitiatingPayment &&
           !isConfirmingPayment ? (
-          <div className="w-full flex flex-col items-center justify-center mb-3">
-            <FailureLogo className="mb-2" />
-            <p className="text-subtitle2">Failure!</p>
+          <div className='w-full flex flex-col items-center justify-center mb-3'>
+            <FailureLogo className='mb-2' />
+            <p className='text-subtitle2'>Failure!</p>
           </div>
         ) : null}
 
-        <p className="text-overline2">{getContentMessage()}</p>
+        <p className='text-overline2'>{getContentMessage()}</p>
       </div>
 
-      <div className="p-4 border-t-1 flex flex-row justify-end">
+      <div className='p-4 border-t-1 flex flex-row justify-end'>
         {!isInitiatingPayment && !isConfirmingPayment ? (
           <PrimaryButton
             onClick={(e) => {
