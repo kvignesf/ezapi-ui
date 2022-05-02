@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import classNames from 'classnames';
 import { useHistory } from 'react-router-dom';
 import {
@@ -15,7 +15,6 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import DashboardSharpIcon from '@material-ui/icons/DashboardSharp';
 import { List, ListItem } from '@material-ui/core';
 import AddIcon from '@material-ui/icons/Add';
-import { useRecoilState } from 'recoil';
 
 import Logo from '../static/images/logo/svg.svg';
 import { ReactComponent as OrderHistoryIcon } from '../static/images/order-history.svg';
@@ -34,7 +33,18 @@ import EzapiLogo from '../shared/components/EzapiLogo';
 import ProfileMenu from '../shared/components/ProfileMenuWithIcon';
 import ProfileMenuWithIcon from '../shared/components/ProfileMenuWithIcon';
 import EzapiFooter from '../shared/components/EzapiFooter';
+import { fetchEventSource } from "@microsoft/fetch-event-source";
+import { useRecoilState } from 'recoil';
+import {downloadIconSts, downloadIconProj} from './dwnDataGenAtom';
+
+
+
 import _ from 'lodash';
+
+const acc_token = getAccessToken();
+const baseUrl = process.env.REACT_APP_API_URL;
+
+
 
 const useStyles = makeStyles({
   selectedItem: {
@@ -116,6 +126,52 @@ const Dashboard = ({ selectedIndex, children, pricingDefaultCheck }) => {
   const handleOnLogout = () => {
     logout();
   };
+  const [enableIcon, setEnableIcon] = useRecoilState(downloadIconSts);
+  const [projectIden, setProjectIden] = useRecoilState(downloadIconProj);
+
+  //const [ enableIcon, setEnableIcon ] = useState(false);
+  //const [ projectIden, setProjectIden ] = useState(false);
+
+
+  useEffect(() => {
+    const fetchData = async () => {
+      await fetchEventSource(`${baseUrl}/sse`, {
+        method: "GET",
+        headers: {
+          Accept: "text/event-stream",
+          Authorization: `Bearer ${acc_token}`,
+        },
+        onopen(res) {
+          if (res.ok && res.status === 200) {
+            console.log("Connection made ", res);
+          } else if (
+            res.status >= 400 &&
+            res.status < 500 &&
+            res.status !== 429
+          ) {
+            console.log("Client side error ", res);
+          }
+        },
+        onmessage(event) {
+          console.log("Manoj..dashboard",event.event);
+          console.log("eventdata ..dashboard :",event.data);
+          const parsedData = JSON.parse(event.data);
+          console.log("...parsedData..", parsedData[0].enableIcon)
+          setProjectIden(parsedData[0].projectId)
+          setEnableIcon(parsedData[0].enableIcon);
+        },
+  
+        
+        onclose() {
+          console.log("Connection closed by the server");
+        },
+        onerror(err) {
+          console.log("There was an error from server", err);
+        },
+      });
+    };  
+    fetchData(); 
+    }, []);
 
   return (
     <div className="flex flex-col">
