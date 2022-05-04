@@ -155,85 +155,11 @@ const ProjectRow = ({
     downloadCodegen({ projectId: project?.projectId });
   };
 
-  
-  /* const [ enableIcon, setEnableIcon ] = useState(false);
-  const [ projectIden, setProjectIden ] = useState(false);
-  const [ listening, setListening ] = useState(false); */
   const [enableIcon, setEnableIcon] = useRecoilState(downloadIconSts);
   const [projectIden, setProjectIden] = useRecoilState(downloadIconProj); 
-
   
-
-  /* useEffect(() => {
-  const fetchData = async () => {
-    await fetchEventSource(`${baseUrl}/sse`, {
-      method: "GET",
-      headers: {
-        Accept: "text/event-stream",
-        Authorization: `Bearer ${acc_token}`,
-      },
-      onopen(res) {
-        if (res.ok && res.status === 200) {
-          console.log("Connection made ", res);
-        } else if (
-          res.status >= 400 &&
-          res.status < 500 &&
-          res.status !== 429
-        ) {
-          console.log("Client side error ", res);
-        }
-      },
-      onmessage(event) {
-        console.log("Manoj..dashboard",event.event);
-        console.log("eventdata ..dashboard :",event.data);
-        const parsedData = JSON.parse(event.data);
-        console.log("...parsedData..", parsedData[0].enableIcon)
-        setEnableIcon(parsedData[0].enableIcon);
-        setProjectIden(parsedData[0].projectId)
-      },
-
-      // dataGenCompleted(event){
-      //   console.log("manoj",event.data);
-      //   const parsedData = JSON.parse(event.data);
-      //   setEnableIcon(parsedData.enableIcon);
-      // },
-      // addEventListener("dataGenCompleted",(e)=>{
-      //   const parsedData = JSON.parse(e.data);
-      //   setEnableIcon(parsedData.enableIcon);
-      // }),
-      onclose() {
-        console.log("Connection closed by the server");
-      },
-      onerror(err) {
-        console.log("There was an error from server", err);
-      },
-    });
-  };
-  if (project?.status?.toLowerCase() === "complete" && project?.isConnectDB && (project?.datagen_count > 0 || project?.datagen_perf_count > 0)) {
-    console.log("..project?.status..", project?.projectId)
-    console.log("..project?.status..", project?.status)
-    fetchData();
-  }  
-  }, []);
- */
-  /* const EventSource = NativeEventSource || EventSourcePolyfill;
-
-  useEffect(() => {
-    if (!listening) {
-      const events = new EventSource(`${baseUrl}/sse`,{ headers: {
-              Accept: "text/event-stream",
-              Authorization: 'Bearer ' + acc_token,
-            }});
-      events.addEventListener("dataGenCompleted",(e)=>{
-        const parsedData = JSON.parse(e.data);
-        setEnableIcon(parsedData.enableIcon);
-      });
-      setListening(true);
-    }
- }, [listening, enableIcon]); */
-
-  console.log("enableIcon..", enableIcon);
-  console.log("projectIden..", projectIden);
+  // console.log("enableIcon..", enableIcon);
+  // console.log("projectIden..", projectIden);
 
   return (
     <tr className="text-overline2">
@@ -358,9 +284,11 @@ const ProjectRow = ({
             <CircularProgress style={{ width: "24px", height: "24px" }} />
           )}
 
+          {/* project?.isConnectDB && (project?.projectId == projectIden && enableIcon)) || ((project?.datagen_count > 0 || project?.datagen_perf_count > 0) && (projectIden == undefined || project?.projectId != projectIden) )) &&
+            !isDownloadingDatabase */}
           {/* Data download */}
-          {((project?.status?.toLowerCase() === "complete" &&
-            project?.isConnectDB && (project?.projectId == projectIden && enableIcon)) || ((project?.datagen_count > 0 || project?.datagen_perf_count > 0) && (projectIden == undefined || project?.projectId != projectIden) )) &&
+          {project?.status?.toLowerCase() === "complete" &&
+            project?.isConnectDB && (project?.datagen_count > 0 || project?.datagen_perf_count > 0) &&
             !isDownloadingDatabase && (
               <Tooltip title="Download Data">
                 <div
@@ -372,13 +300,13 @@ const ProjectRow = ({
                 >
                   <img
                     src={DatabaseLogo}
-                    alt="ezapi logo"                    
+                    alt="ezapi logo"
                     className="cursor-pointer"
                     onClick={(e) => {
                       e?.preventDefault();
                       e?.stopPropagation();
-                      {enableIcon && 
-                      (onDownloadDatabase());}
+
+                      onDownloadDatabase();
                     }}
                   />
                 </div>
@@ -388,7 +316,6 @@ const ProjectRow = ({
           {isDownloadingDatabase && (
             <CircularProgress style={{ width: "24px", height: "24px" }} />
           )}
-
         </div>
       </td>
 

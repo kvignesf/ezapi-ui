@@ -129,49 +129,45 @@ const Dashboard = ({ selectedIndex, children, pricingDefaultCheck }) => {
   const [enableIcon, setEnableIcon] = useRecoilState(downloadIconSts);
   const [projectIden, setProjectIden] = useRecoilState(downloadIconProj);
 
-  //const [ enableIcon, setEnableIcon ] = useState(false);
-  //const [ projectIden, setProjectIden ] = useState(false);
-
-
-  useEffect(() => {
-    const fetchData = async () => {
-      await fetchEventSource(`${baseUrl}/sse`, {
-        method: "GET",
-        headers: {
-          Accept: "text/event-stream",
-          Authorization: `Bearer ${acc_token}`,
-        },
-        onopen(res) {
-          if (res.ok && res.status === 200) {
-            console.log("Connection made ", res);
-          } else if (
-            res.status >= 400 &&
-            res.status < 500 &&
-            res.status !== 429
-          ) {
-            console.log("Client side error ", res);
-          }
-        },
-        onmessage(event) {
-          console.log("Manoj..dashboard",event.event);
-          console.log("eventdata ..dashboard :",event.data);
-          const parsedData = JSON.parse(event.data);
-          console.log("...parsedData..", parsedData[0].enableIcon)
-          setProjectIden(parsedData[0].projectId)
-          setEnableIcon(parsedData[0].enableIcon);
-        },
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     await fetchEventSource(`${baseUrl}/sse`, {
+  //       method: "GET",
+  //       headers: {
+  //         Accept: "text/event-stream",
+  //         Authorization: `Bearer ${acc_token}`,
+  //       },
+  //       onopen(res) {
+  //         if (res.ok && res.status === 200) {
+  //           console.log("Connection made ", res);
+  //         } else if (
+  //           res.status >= 400 &&
+  //           res.status < 500 &&
+  //           res.status !== 429
+  //         ) {
+  //           console.log("Client side error ", res);
+  //         }
+  //       },
+  //       onmessage(event) {
+  //         console.log("Manoj..dashboard",event.event);
+  //         console.log("eventdata ..dashboard :",event.data);
+  //         const parsedData = JSON.parse(event.data);
+  //         console.log("...parsedData..", parsedData[0].enableIcon)
+  //         setProjectIden(parsedData[0].projectId)
+  //         setEnableIcon(parsedData[0].enableIcon);
+  //       },
   
         
-        onclose() {
-          console.log("Connection closed by the server");
-        },
-        onerror(err) {
-          console.log("There was an error from server", err);
-        },
-      });
-    };  
-    fetchData(); 
-    }, []);
+  //       onclose() {
+  //         console.log("Connection closed by the server");
+  //       },
+  //       onerror(err) {
+  //         console.log("There was an error from server", err);
+  //       },
+  //     });
+  //   };  
+  //   fetchData(); 
+  //   }, []);
 
   return (
     <div className="flex flex-col">
