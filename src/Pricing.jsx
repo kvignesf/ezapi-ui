@@ -540,8 +540,8 @@ const Pricing = () => {
                           }}
                         >
                           {tier.title == "Trial"
-                            ? "Subscription Ends at" + endSubDate
-                            : "Subscription Ends at" + endSubDate}
+                            ? "Subscription Ends at " + endSubDate
+                            : "Subscription Ends at " + endSubDate}
                         </p>
                       </CardContent>
                     )}
