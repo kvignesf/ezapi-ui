@@ -1860,6 +1860,11 @@
     "prop-types" "^15.7.2"
     "react-is" "^16.8.0 || ^17.0.0"
 
+"@microsoft/fetch-event-source@^2.0.1":
+  "integrity" "sha512-W6CLUJ2eBMw3Rec70qrsEW0jOm/3twwJv21mrmj2yORiaVmVYGS4sSS5yUwvQc1ZlDLYGPnClVWmUUMagKNsfA=="
+  "resolved" "https://registry.npmjs.org/@microsoft/fetch-event-source/-/fetch-event-source-2.0.1.tgz"
+  "version" "2.0.1"
+
 "@mui/base@5.0.0-alpha.66":
   "integrity" "sha512-LARfVx0HmGV5YwU2pdIqEApQwz/CtEnYtKkV856hlY0cgi5NQL2htzZ/9ujKz0j3LFUaMYiYuJ2AOwrNtGFGrw=="
   "resolved" "https://registry.npmjs.org/@mui/base/-/base-5.0.0-alpha.66.tgz"

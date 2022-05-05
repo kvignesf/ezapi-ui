@@ -171,6 +171,8 @@ const Pricing = () => {
       },
     ],
   ];
+  const [endSubDate, setEndSubDate] = React.useState();
+  const [regDate, setRegDate] = React.useState();
   const [durationMY, setDurationMY] = React.useState(false);
   const [trialButton, setTrialButton] = React.useState("SUBSCRIBE");
   const [basicButton, setBasicButton] = React.useState("SUBSCRIBE");
@@ -216,13 +218,8 @@ const Pricing = () => {
 
   useEffect(() => {
     if (!_.isEmpty(data)) {
-      // if (data?.["subscribed_price"] == "") {
-      //   if (data?.["plan_name"] != "Trial") {
-      //     setTrialButton("Subscribe");
-      //   } else if (data?.["plan_name"] == "Trial") setTrialButton("Subscribed");
-      // } else {
-      //   setTrialButton("Expired");
-      // }
+      setEndSubDate(data?.["subscription_ends_at"]);
+      console.log(data?.["registeredOn"] + 30);
       if (data?.["plan_name"] == "Trial") {
         setTrialButton("Subscribed");
       } else {
@@ -525,6 +522,29 @@ const Pricing = () => {
                         {tier.buttonText}
                       </Button>
                     </CardActions>
+                    {tier.buttonText == "Subscribed" && endSubDate != "" && (
+                      <CardContent className='flex flex-col'>
+                        <p
+                          class=' text-center text-sm ...'
+                          style={{
+                            color:
+                              index == 0
+                                ? "#2FDAA1"
+                                : index == 1
+                                ? "#9085D3"
+                                : index == 2
+                                ? "#40A3E4"
+                                : index == 3
+                                ? "#EC6A6C"
+                                : "red",
+                          }}
+                        >
+                          {tier.title == "Trial"
+                            ? "Subscription Ends at " + endSubDate
+                            : "Subscription Ends at " + endSubDate}
+                        </p>
+                      </CardContent>
+                    )}
                   </Card>
                 </Grid>
               ))}
