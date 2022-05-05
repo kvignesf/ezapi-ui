@@ -57,7 +57,7 @@ export const endpoint = Object.freeze({
 
 const client = axios.create({
   baseURL: baseUrl,
-  timeout: 10000,
+  timeout: 50000,
   timeoutErrorMessage: Messages.UNKNOWN,
   responseType: 'json',
 });

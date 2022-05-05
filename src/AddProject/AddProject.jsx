@@ -46,6 +46,7 @@ const AddProject = ({ onClose, onSuccess }) => {
   const history = useHistory();
   const [open, setOpen] = useState(false);
   const [showCollabsErrorMssg, setShowCollabsErrorMssg] = useState(true);
+  const [inviteCollabsErrorMssg, setInviteCollabsErrorMssg] = useState(false);
 
   const loggedInUserId = getUserId();
 
@@ -124,7 +125,8 @@ const AddProject = ({ onClose, onSuccess }) => {
   };
 
   
-  const handleDone = () => {
+  const handleSkipForNow = () => {
+    setInviteCollabsErrorMssg(false);
     resetCreateProjectApi();
     resetUploadDbsApi();
     resetUploadSpecsApi();
@@ -158,6 +160,49 @@ const AddProject = ({ onClose, onSuccess }) => {
         };
       }),
     });
+  }
+  
+  const handleDone = () => {
+    if(projectDetails.collaborators.length < 1)
+    {
+      setInviteCollabsErrorMssg(true);
+    }
+    else{
+      setInviteCollabsErrorMssg(false);
+    resetCreateProjectApi();
+    resetUploadDbsApi();
+    resetUploadSpecsApi();
+    exportDBSchemaApi();
+    resetAiMatcherApi();
+
+    if (
+      _.isEmpty(projectDetails?.name) ||
+      (_.isEmpty(projectDetails?.dbs) &&
+        _.isEmpty(projectDetails?.specs) &&
+        _.isEmpty(projectDetails?.host) &&
+        _.isEmpty(projectDetails?.port) &&
+        _.isEmpty(projectDetails?.username) &&
+        _.isEmpty(projectDetails?.password) &&
+        _.isEmpty(projectDetails?.database) &&
+        _.isEmpty(projectDetails?.type))
+    ) {
+      setTab(0);
+      if (formRef.current) {
+        formRef.current.handleSubmit();
+      }
+
+      return;
+    }
+
+    uploadProjectData({
+      name: projectDetails?.name,
+      invitees: projectDetails?.collaborators?.map((collaborator) => {
+        return {
+          email: collaborator,
+        };
+      }),
+    });
+  }
   };
 
   const handleCollaboratorsChange = (collaborators) => {
@@ -384,6 +429,12 @@ const AddProject = ({ onClose, onSuccess }) => {
               </p>
             )}
 
+          {inviteCollabsErrorMssg && (
+              <p className="text-overline2 text-accent-red my-2">
+                Please enter atleast one collaborator to create Project
+              </p>
+            )}
+
             {dbConnectionTestError && (
               <p className="text-overline2 text-accent-red my-2">
                 {`Failed to connect Db - ${dbConnectionTestError?.message}`}
@@ -450,7 +501,7 @@ const AddProject = ({ onClose, onSuccess }) => {
               {currentTab === 2 ? (
                 <TextButton
                   onClick={() => {
-                    handleDone();
+                    handleSkipForNow();
                   }}
                   classes="flex-1 -ml-4 text-brand-secondary"
                 >
