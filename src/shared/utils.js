@@ -356,7 +356,7 @@ export const parseGetOperationRequestResponse = (operationResponse) => {
     } else {
       // Single body item
 
-      if (operationResponse?.body?.ezapi_ref) {
+      if (operationResponse?.body?.ezapi_ref || isAttribute(operationResponse?.body) || isColumn(operationResponse?.body)) {
         request.body = [_.cloneDeep(operationResponse?.body)];
       }
     }
@@ -511,7 +511,9 @@ export const parseGetOperationResponseResponse = (operationResponse) => {
     } else {
       // Single body item
 
-      if (responseData?.content?.ezapi_ref) {
+      if (responseData?.content?.ezapi_ref || isAttribute(responseData?.content) || isColumn(responseData?.content)) {
+      // if (responseData?.content) {
+
         responseObj.body = [_.cloneDeep(responseData?.content)];
       }
     }
@@ -634,24 +636,35 @@ export const operationAtomWithMiddleware = selector({
     const previousValue = get(operationAtom);
     const clonedNewValue = _.cloneDeep(newValue);
 
+    console.log("1");
     if (previousValue === defaultState) {
       // Initial data loading up
+    console.log("2");
+
       clonedNewValue.isModified = false;
     } else if (!clonedNewValue?.operation || !clonedNewValue?.operationIndex) {
       // Resetting atom state
+    console.log("3");
+      console.log("data",clonedNewValue);
       clonedNewValue.isModified = false;
     } else if (
       clonedNewValue?.operationIndex !== previousValue?.operationIndex
     ) {
+    console.log("4");
+
       // New operation is selected
       clonedNewValue.isModified = false;
       clonedNewValue.operationRequest = defaultState?.operationRequest;
       clonedNewValue.operationResponse = defaultState?.operationResponse;
     } else if (clonedNewValue?.isModified !== previousValue?.isModified) {
       // Operation is synced
+    console.log("5");
+
       clonedNewValue.isModified = false;
     } else {
       // Something internally is modified
+    console.log("6");
+
       clonedNewValue.isModified = true;
     }
 
