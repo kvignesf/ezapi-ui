@@ -42,6 +42,17 @@ import Logo from "../static/images/logo/svg.svg";
 import DatabaseLogo from "../static/images/logo/database_download.svg";
 import { useCanEdit } from "../shared/utils";
 import { getAccessToken } from "../shared/storage";
+import { fetchEventSource } from "@microsoft/fetch-event-source";
+import { useRecoilState } from 'recoil';
+import projectAtom, { defaultState } from '../AddProject/projectAtom';
+import {downloadIconSts, downloadIconProj} from '../Dashboard/dwnDataGenAtom';
+
+
+//import { NativeEventSource, EventSourcePolyfill } from 'event-source-polyfill';
+
+
+const acc_token = getAccessToken();
+
 const MembersImages = ({ project, ...rest }) => {
   const loggedInUserId = getUserId();
   const userId = getUserId();
@@ -101,6 +112,8 @@ const MembersImages = ({ project, ...rest }) => {
     </div>
   );
 };
+const baseUrl = process.env.REACT_APP_API_URL;
+//const baseUrl = "http://localhost:7744"
 
 const ProjectRow = ({
   project,
@@ -141,6 +154,12 @@ const ProjectRow = ({
   const onDownloadCodegen = () => {
     downloadCodegen({ projectId: project?.projectId });
   };
+
+  const [enableIcon, setEnableIcon] = useRecoilState(downloadIconSts);
+  const [projectIden, setProjectIden] = useRecoilState(downloadIconProj); 
+  
+  // console.log("enableIcon..", enableIcon);
+  // console.log("projectIden..", projectIden);
 
   return (
     <tr className="text-overline2">
@@ -265,6 +284,8 @@ const ProjectRow = ({
             <CircularProgress style={{ width: "24px", height: "24px" }} />
           )}
 
+          {/* project?.isConnectDB && (project?.projectId == projectIden && enableIcon)) || ((project?.datagen_count > 0 || project?.datagen_perf_count > 0) && (projectIden == undefined || project?.projectId != projectIden) )) &&
+            !isDownloadingDatabase */}
           {/* Data download */}
           {project?.status?.toLowerCase() === "complete" &&
             project?.isConnectDB && (project?.datagen_count > 0 || project?.datagen_perf_count > 0) &&
@@ -295,7 +316,6 @@ const ProjectRow = ({
           {isDownloadingDatabase && (
             <CircularProgress style={{ width: "24px", height: "24px" }} />
           )}
-
         </div>
       </td>
 
@@ -556,7 +576,6 @@ const Projects = () => {
     []
   );
   const history = useHistory();
-  const acc_token = getAccessToken();
   const userProfile = async () => {
     try {
       const { data } = await client.get(endpoint.userProfile, {

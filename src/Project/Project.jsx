@@ -559,11 +559,11 @@ const Project = () => {
                   style={{ outline: "none", border: "none" }}
                 />
 
-                <Tab
+                {/* <Tab
                   label={<TabLabel label={"Visualize"} />}
                   style={{ outline: "none", border: "none" }}
                   disabled
-                />
+                /> */}
               </Tabs>
             </div>
 
