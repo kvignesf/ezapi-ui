@@ -1,4 +1,5 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
+import Button from "@mui/material/Button";
 import TreeView from "@material-ui/lab/TreeView";
 import { makeStyles } from "@material-ui/core/styles";
 import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
@@ -51,7 +52,27 @@ const Resources = ({
     type: null,
     data: null,
   });
+
   const canEdit = useCanEdit();
+
+  const [expanded, setExpanded] = React.useState([]);
+  const [expandNow, setExpandNow] = React.useState([]);
+
+  const handleToggle = (event, nodeIds) => {
+    setExpanded(nodeIds);
+  };
+
+  const handleExpandClick = () => {
+    setExpanded((oldExpanded) =>
+      oldExpanded.length === 0 ? Array.from(Array(1000).keys()) : []
+    );
+  };
+  useEffect(() => {
+    console.log(treeNodeIndex);
+    setExpanded((oldExpanded) =>
+      oldExpanded.length === 0 ? Array.from(Array(1000).keys()) : []
+    );
+  }, []);
 
   const showAddResourceDialog = () => {
     if (canEdit()) {
@@ -132,10 +153,17 @@ const Resources = ({
           </AppIcon>
         )}
       </div>
+      {/* <Button onClick={handleExpandClick}>
+        {expanded.length === 0 ? "Expand all" : "Collapse all"}
+      </Button> */}
 
       {!_.isEmpty(resources) ? (
         // {true ? (
+
         <TreeView
+          expanded={expanded}
+          aria-label='controlled'
+          onNodeToggle={handleToggle}
           className={classes.root}
           defaultCollapseIcon={
             <ArrowDropDownIcon style={{ color: Colors.neutral.gray3 }} />
