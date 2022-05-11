@@ -5,7 +5,7 @@ import linkedin from 'react-linkedin-login-oauth2/assets/linkedin.png';
 import { useHistory, useLocation } from 'react-router-dom';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { getAccessToken } from '../shared/storage';
-import Logo from '../static/images/logo/png.png';
+import Logo from '../static/images/logo/connectoLogoWithName.svg';
 import Constants from '../shared/constants';
 import routes from '../shared/routes';
 import Colors from '../shared/colors';
@@ -62,7 +62,7 @@ const Login = () => {
       <Card className="w-1/2 max-w-sm flex flex-col justify-center items-center p-5">
         <img
           src={Logo}
-          alt="ezapi logo"
+          alt="conektto logo"
           className="mb-4 p-3"
           style={{ maxWidth: '128px' }}
         />

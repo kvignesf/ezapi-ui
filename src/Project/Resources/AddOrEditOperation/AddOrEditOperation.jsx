@@ -152,7 +152,6 @@ const AddOrEditOperation = ({
 
   console.log("isEditingOperationSuccess", isEditingOperationSuccess);
   if (isEditingOperationSuccess || isAddingOperationSuccess) {
-    console.log("show");
     onClose();
     return null;
   }
