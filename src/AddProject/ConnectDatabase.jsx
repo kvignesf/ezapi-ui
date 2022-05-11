@@ -218,7 +218,6 @@ const ConnectDatabase = ({
   const handleOnKeysPick = (pickedKeys) => {
     setProjectDetails((currProjectDetails) => {
       const updatedProjectDetails = _.cloneDeep(currProjectDetails);
-      console.log("enterd into fuinction", updatedProjectDetails);
       pickedKeys.forEach((pickedKey) => {
         if (
           !_.find(
@@ -227,13 +226,9 @@ const ConnectDatabase = ({
           )
         ) {
           if (!updatedProjectDetails.keys) {
-            console.log("manojjj");
             updatedProjectDetails.keys = [];
           }
-          console.log("prani", updatedProjectDetails.keys);
-          console.log(pickedKey);
           updatedProjectDetails?.keys?.push(pickedKey);
-          console.log("prani_updated", updatedProjectDetails.keys);
         }
       });
 
@@ -246,7 +241,6 @@ const ConnectDatabase = ({
   const handleOnCertificatesPick = (pickedCertificates) => {
     setProjectDetails((currProjectDetails) => {
       const updatedProjectDetails = _.cloneDeep(currProjectDetails);
-      console.log("enterd into fuinction", updatedProjectDetails);
       pickedCertificates.forEach((pickedCertificate) => {
         if (
           !_.find(
@@ -256,13 +250,9 @@ const ConnectDatabase = ({
           )
         ) {
           if (!updatedProjectDetails.certificates) {
-            console.log("manojjj");
             updatedProjectDetails.certificates = [];
           }
-          console.log("prani", updatedProjectDetails.certificates);
-          console.log(pickedCertificate);
           updatedProjectDetails?.certificates?.push(pickedCertificate);
-          console.log("prani_updated", updatedProjectDetails.certificates);
         }
       });
 
@@ -275,7 +265,6 @@ const ConnectDatabase = ({
   const handleOnCACertificatesPick = (pickedCACertificates) => {
     setProjectDetails((currProjectDetails) => {
       const updatedProjectDetails = _.cloneDeep(currProjectDetails);
-      console.log("enterd into fuinction", updatedProjectDetails);
       pickedCACertificates.forEach((pickedCACertificate) => {
         if (
           !_.find(
@@ -285,13 +274,9 @@ const ConnectDatabase = ({
           )
         ) {
           if (!updatedProjectDetails.caCertificates) {
-            console.log("manojjj");
             updatedProjectDetails.caCertificates = [];
           }
-          console.log("prani", updatedProjectDetails.caCertificates);
-          console.log(pickedCACertificate);
           updatedProjectDetails?.caCertificates?.push(pickedCACertificate);
-          console.log("prani_updated", updatedProjectDetails.caCertificates);
         }
       });
 
@@ -678,7 +663,6 @@ const ConnectDatabase = ({
                                 multiple
                                 hidden
                                 onChange={(e) => {
-                                  console.log("entered into Onchange");
                                   handleOnKeysPick(Array.from(e.target.files));
                                   e.target.value = "";
                                 }}

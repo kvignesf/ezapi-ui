@@ -25,6 +25,8 @@ import InitialsAvatar from "../shared/components/InitialsAvatar";
 import Colors from "../shared/colors";
 import RenameProject from "./RenameProject/RenameProject";
 import DeleteProject from "./DeleteProject/DeleteProject";
+import moment from 'moment';
+
 
 import {
   useDownloadArtifacts,
@@ -124,6 +126,7 @@ const ProjectRow = ({
   handleOnRename,
 }) => {
   const [anchorEl, setAnchorEl] = React.useState(null);
+  const [lastDataGenerated, setLastDataGenerated] = useState("Download Data");
   const datetime = new Date(project?.updatedAt);
   const loggedInUserId = getUserId();
   const { isLoading: isDownloadingSpecs, mutate: downloadSpecs } =
@@ -159,7 +162,13 @@ const ProjectRow = ({
   const [projectIden, setProjectIden] = useRecoilState(downloadIconProj); 
   
   // console.log("enableIcon..", enableIcon);
-  // console.log("projectIden..", projectIden);
+  // console.log("projectIden..", projectIden);  
+  useEffect(() => {
+    if(project?.lastDataGenerated){
+      const p = "Download Data ".concat(moment(parseInt(project?.lastDataGenerated)).format('llll'));
+      setLastDataGenerated(p);
+    }
+  }, [project?.lastDataGenerated]);
 
   return (
     <tr className="text-overline2">
@@ -241,7 +250,7 @@ const ProjectRow = ({
                 >
                   <img
                     src={Logo}
-                    alt="ezapi logo"
+                    alt="conektto logo"
                     className="cursor-pointer"
                     onClick={(e) => {
                       e?.preventDefault();
@@ -290,7 +299,7 @@ const ProjectRow = ({
           {project?.status?.toLowerCase() === "complete" &&
             project?.isConnectDB && (project?.datagen_count > 0 || project?.datagen_perf_count > 0) &&
             !isDownloadingDatabase && (
-              <Tooltip title="Download Data">
+              <Tooltip title={lastDataGenerated}>
                 <div
                   style={{
                     marginTop: "12px",
@@ -300,7 +309,7 @@ const ProjectRow = ({
                 >
                   <img
                     src={DatabaseLogo}
-                    alt="ezapi logo"
+                    alt="conektto logo"
                     className="cursor-pointer"
                     onClick={(e) => {
                       e?.preventDefault();

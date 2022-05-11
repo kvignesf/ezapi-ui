@@ -27,6 +27,7 @@
     "immer": "^9.0.5",
     "lodash": "^4.17.21",
     "material-ui-chip-input": "^1.1.0",
+    "moment": "^2.29.3",
     "postcode-validator": "^3.6.6",
     "react": "^17.0.2",
     "react-cookie-consent": "^6.3.0",
@@ -56,7 +57,7 @@
     "yup": "^0.32.9"
   },
   "scripts": {
-    "start": "craco --openssl-legacy-provider start",
+    "start": "craco start",
     "build": "craco --openssl-legacy-provider build",
     "test": "craco --openssl-legacy-provider test",
     "eject": "react-scripts eject",

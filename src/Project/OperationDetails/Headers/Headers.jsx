@@ -312,7 +312,7 @@ const Headers = ({ request = true, responseCode }) => {
     );
     const operationDetails = operationAtom?.contents;
     let nameExists = false;
-
+    
     if (request) {
       let foundItemIndex = operationDetails.operationRequest.headers.findIndex(
         (x) => {
@@ -338,7 +338,6 @@ const Headers = ({ request = true, responseCode }) => {
         }
       }
     }
-
     return nameExists;
   };
 

@@ -49,7 +49,6 @@ const InviteCollaborators = ({
         defaultValue={collaborators}
         dataSource={collaborators}
         onChange={(emails) => {
-          console.log("Manojjjj")
           const trimmedEmails = emails?.map((email) => email?.trim());
 
           handleChange(trimmedEmails);
@@ -59,7 +58,6 @@ const InviteCollaborators = ({
             setError(null);
             return false;
           }
-          console.log("colaborators:",numberOfCollaborators);
           // else if (email === loggedInEmail) {
           //   setError(null);
           //   return false;
