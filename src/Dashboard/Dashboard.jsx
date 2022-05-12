@@ -16,7 +16,7 @@ import DashboardSharpIcon from '@material-ui/icons/DashboardSharp';
 import { List, ListItem } from '@material-ui/core';
 import AddIcon from '@material-ui/icons/Add';
 
-import Logo from '../static/images/logo/svg.svg';
+import Logo from '../static/images/logo/connectoLogo.svg';
 import { ReactComponent as OrderHistoryIcon } from '../static/images/order-history.svg';
 import { ReactComponent as PricingPageIcon } from '../static/images/pricing-page.svg';
 import PricingPageLogo from '../icons/pricingPage_logo.png';

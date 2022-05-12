@@ -356,7 +356,7 @@ export const parseGetOperationRequestResponse = (operationResponse) => {
     } else {
       // Single body item
 
-      if (operationResponse?.body?.ezapi_ref) {
+      if (operationResponse?.body?.ezapi_ref || isAttribute(operationResponse?.body) || isColumn(operationResponse?.body)) {
         request.body = [_.cloneDeep(operationResponse?.body)];
       }
     }
@@ -511,7 +511,9 @@ export const parseGetOperationResponseResponse = (operationResponse) => {
     } else {
       // Single body item
 
-      if (responseData?.content?.ezapi_ref) {
+      if (responseData?.content?.ezapi_ref || isAttribute(responseData?.content) || isColumn(responseData?.content)) {
+      // if (responseData?.content) {
+
         responseObj.body = [_.cloneDeep(responseData?.content)];
       }
     }
@@ -636,6 +638,7 @@ export const operationAtomWithMiddleware = selector({
 
     if (previousValue === defaultState) {
       // Initial data loading up
+
       clonedNewValue.isModified = false;
     } else if (!clonedNewValue?.operation || !clonedNewValue?.operationIndex) {
       // Resetting atom state
@@ -672,14 +675,16 @@ export const useCanEdit = () => {
 };
 
 export const isItemSame = (item1, item2, fullPath) => {
+
   if (isAttribute(item1)) {
-    return item1.parentName === fullPath && item1.name === item2.name;
+    // return item1.parentName === fullPath && item1.name === item2.name;
+    return item1.name === item2.name;
   } else if (isColumn(item1)) {
     return (
       item1.tableName === fullPath && item1.sourceName === item2.sourceName
     );
   } else {
-    return item1.name === item2.name;
+      return item1.name === item2.name;
   }
 };
 

@@ -19,7 +19,7 @@ import homeImg from '../static/images/home1.png';
 import visualImg from '../static/images/visual.jpg';
 import { Avatar, CardMedia, Paper, TextField } from '@material-ui/core';
 import routes from '../shared/routes';
-import ezLogo from '../static/images/logo/jpg.jpg';
+import ezLogo from '../static/images/logo/connectoLogo.svg';
 
 function Copyright() {
   return (
@@ -176,7 +176,7 @@ export default function Landing() {
             noWrap
             className={classes.toolbarTitle}
           >
-            EzAPI
+            CONEKTTO
           </Typography>
 
           <nav>
@@ -233,7 +233,7 @@ export default function Landing() {
           color='textPrimary'
           gutterBottom
         >
-          Get to know about EZAPI
+          Get to know about CONEKTTO
         </Typography>
       </Container>
 
@@ -267,10 +267,10 @@ export default function Landing() {
                   the context of business, products and services as against
                   standards in API specification. Visualization and knowledge
                   respresentation of API specification today is in stone age.
-                  EzAPI brings simplicity and ease to the whole API ecosystem."
-                  &nbsp;&nbsp;&nbsp;&nbsp; Go visualize @ ezapi !!.
+                  CONEKTTO brings simplicity and ease to the whole API ecosystem."
+                  &nbsp;&nbsp;&nbsp;&nbsp; Go visualize @ conektto !!.
                   <br />
-                  Hashtag: #ezapi_visualize, #ezapi"
+                  Hashtag: #conektto_visualize, #conektto"
                 </Typography>
               </Box>
             </Grid>
