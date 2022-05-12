@@ -100,7 +100,7 @@ const Pricing = () => {
   const [regDate, setRegDate] = React.useState();
   const [durationMY, setDurationMY] = React.useState("M");
   const [trialButton, setTrialButton] = React.useState("SUBSCRIBE");
-  // const [basicButton, setBasicButton] = React.useState("SUBSCRIBE");
+  const [basicButton, setBasicButton] = React.useState("SUBSCRIBE");
   const [proButton, setProButton] = React.useState("SUBSCRIBE");
   const planTypeCardData2 = [];
 
@@ -141,14 +141,14 @@ const Pricing = () => {
         setTrialButton("Expired");
       }
 
-      // if (
-      //   data?.["subscribed_price"] == "price_1KbgSaDXX1U3xHmP8Jac0qNX" ||
-      //   data?.["subscribed_price"] == "price_1KbgKaDXX1U3xHmPYs8KuyFV"
-      // ) {
-      //   setBasicButton("Subscribed");
-      // } else {
-      //   setBasicButton("Subscribe");
-      // }
+      if (
+        data?.["subscribed_price"] == "price_1KbgSaDXX1U3xHmP8Jac0qNX" ||
+        data?.["subscribed_price"] == "price_1KbgKaDXX1U3xHmPYs8KuyFV"
+      ) {
+        setBasicButton("Subscribed");
+      } else {
+        setBasicButton("Subscribe");
+      }
 
       if (
         data?.["subscribed_price"] == "price_1KbgTiDXX1U3xHmPCHjkKqGN" ||
@@ -174,16 +174,16 @@ const Pricing = () => {
 
   const { data: pricing_data } = usePricingData();
 
-  function setPlanPriceBasedOnDuration() {
+  function setPlanPriceBasedOnDuration(item, index) {
     var durationMatchPlaceHolder;
     if (durationMY == "M") durationMatchPlaceHolder = "month";
     else if (durationMY == "Y") durationMatchPlaceHolder = "year";
-    pricing_data["products"].map((item, index) => {
-      item?.["stripe"].map((item2, index2) => {
-        if (durationMatchPlaceHolder == item2["plan_interval"]) {
-          planTypeCardData2[index]["price"] = item2?.["plan_price"];
-        }
-      });
+
+    item?.["stripe"].map((item2, index2) => {
+      if (durationMatchPlaceHolder == item2["plan_interval"]) {
+        console.log(planTypeCardData2, item["plan_name"]);
+        planTypeCardData2[index]["price"] = item2?.["plan_price"];
+      }
     });
   }
 
@@ -198,7 +198,7 @@ const Pricing = () => {
         case "Basic":
           item["logo"] = basicLogo;
           item["description"] = ["Everything in Trial +"];
-          item["buttonText"] = basicLogo;
+          item["buttonText"] = basicButton;
           break;
         case "Pro":
           item["logo"] = proLogo;
@@ -227,7 +227,7 @@ const Pricing = () => {
         validityCardData[item["plan_name"]] = [];
 
         if (item["plan_name"] != "Trial") {
-          setPlanPriceBasedOnDuration();
+          setPlanPriceBasedOnDuration(item, index);
         } else {
           planTypeCardData2[index]["price"] = 0;
         }
@@ -283,13 +283,26 @@ const Pricing = () => {
     );
     cardHeaderData.map((item) => {
       for (const key in item) {
-        if (key == "Basic" && item?.["plan_data"]?.length == 0) {
+        if (
+          pricing_data?.products.length < 3 &&
+          item?.["plan_data"]?.length == 0
+        ) {
+          if (key == "Basic") {
+            item?.["plan_data"].push(item["Trial"]);
+            item?.["plan_data"].push(item["Basic"]);
+            item?.["plan_data"].push(item["Enterprise"]);
+          } else if (key == "Pro") {
+            item?.["plan_data"].push(item["Trial"]);
+            item?.["plan_data"].push(item["Pro"]);
+            item?.["plan_data"].push(item["Enterprise"]);
+          }
+        }
+        if (
+          pricing_data?.products.length == 3 &&
+          item?.["plan_data"]?.length == 0
+        ) {
           item?.["plan_data"].push(item["Trial"]);
           item?.["plan_data"].push(item["Basic"]);
-          item?.["plan_data"].push(item["Enterprise"]);
-        }
-        if (key == "Pro" && item?.["plan_data"]?.length == 0) {
-          item?.["plan_data"].push(item["Trial"]);
           item?.["plan_data"].push(item["Pro"]);
           item?.["plan_data"].push(item["Enterprise"]);
         }
