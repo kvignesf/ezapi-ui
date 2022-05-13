@@ -141,19 +141,13 @@ const Pricing = () => {
         setTrialButton("Expired");
       }
 
-      if (
-        data?.["subscribed_price"] == "price_1KbgSaDXX1U3xHmP8Jac0qNX" ||
-        data?.["subscribed_price"] == "price_1KbgKaDXX1U3xHmPYs8KuyFV"
-      ) {
+      if (data?.["plan_name"] == "Basic") {
         setBasicButton("Subscribed");
       } else {
         setBasicButton("Subscribe");
       }
 
-      if (
-        data?.["subscribed_price"] == "price_1KbgTiDXX1U3xHmPCHjkKqGN" ||
-        data?.["subscribed_price"] == "price_1KbgTiDXX1U3xHmPOwGrKyBp"
-      ) {
+      if (data?.["plan_name"] == "Pro") {
         setProButton("Subscribed");
       } else {
         setProButton("Subscribe");
