@@ -202,8 +202,15 @@ const Dashboard = ({ selectedIndex, children, pricingDefaultCheck }) => {
         style={{ height: '56px', zIndex: '99' }}
       >
         {/* EZAPI logo */}
-        <div className="w-full">
-          <EzapiLogo />
+        <div className="w-full flex flex-row">
+          <EzapiLogo style={{
+            marginRight: '0.5rem',
+          }}/>
+
+          <h6 className="text-white whitespace-nowrap ml-1 mt-1">
+          CONEKTTO
+          </h6>
+
         </div>
 
         {/* Initials logo */}
