@@ -422,11 +422,13 @@ const ConnectDatabase = ({
   const { data: pricing_data } = usePricingData();
   const { data: userProfile_data } = useUserProfile();
 
+  console.log("pricing_data:",pricing_data);
+  
   useEffect(() => {
     if (pricing_data && userProfile_data) {
-      if (userProfile_data["plan_name"] == null) {
+      if (userProfile_data["plan_name"] == null || userProfile_data["plan_name"] == "Basic") {
         setConnectors({ ms_sql: true, my_sql: false, postgres: false });
-      } else {
+      } else{
         setConnectors(
           pricing_data["products"].filter(
             (item) => item["plan_name"] == userProfile_data["plan_name"]
