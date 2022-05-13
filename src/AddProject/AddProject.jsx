@@ -108,7 +108,6 @@ const AddProject = ({ onClose, onSuccess }) => {
   } = uploadDbMutation;
 
   const handleNext = () => {
-    console.log("mak",formRef);
     if (formRef.current) {
       formRef.current.handleSubmit();
       if (
@@ -518,7 +517,6 @@ const AddProject = ({ onClose, onSuccess }) => {
                     onClose();
                   } else if (currentTab === 1) {
                     handleClick();
-                    console.log("formRef:",formRef);
                     if (formRef.current) {
                       formRef.current.handleSubmit();
                       if (
@@ -528,7 +526,6 @@ const AddProject = ({ onClose, onSuccess }) => {
                         !_.isEmpty(projectDetails?.database) &&
                         !_.isEmpty(projectDetails?.type))
                     ){
-                          console.log("pappu");
                           databaseConnectionTest();
                         }
                     }

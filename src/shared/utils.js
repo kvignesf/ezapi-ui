@@ -636,35 +636,25 @@ export const operationAtomWithMiddleware = selector({
     const previousValue = get(operationAtom);
     const clonedNewValue = _.cloneDeep(newValue);
 
-    console.log("1");
     if (previousValue === defaultState) {
       // Initial data loading up
-    console.log("2");
 
       clonedNewValue.isModified = false;
     } else if (!clonedNewValue?.operation || !clonedNewValue?.operationIndex) {
       // Resetting atom state
-    console.log("3");
-      console.log("data",clonedNewValue);
       clonedNewValue.isModified = false;
     } else if (
       clonedNewValue?.operationIndex !== previousValue?.operationIndex
     ) {
-    console.log("4");
-
       // New operation is selected
       clonedNewValue.isModified = false;
       clonedNewValue.operationRequest = defaultState?.operationRequest;
       clonedNewValue.operationResponse = defaultState?.operationResponse;
     } else if (clonedNewValue?.isModified !== previousValue?.isModified) {
       // Operation is synced
-    console.log("5");
-
       clonedNewValue.isModified = false;
     } else {
       // Something internally is modified
-    console.log("6");
-
       clonedNewValue.isModified = true;
     }
 
@@ -685,14 +675,16 @@ export const useCanEdit = () => {
 };
 
 export const isItemSame = (item1, item2, fullPath) => {
+
   if (isAttribute(item1)) {
-    return item1.parentName === fullPath && item1.name === item2.name;
+    // return item1.parentName === fullPath && item1.name === item2.name;
+    return item1.name === item2.name;
   } else if (isColumn(item1)) {
     return (
       item1.tableName === fullPath && item1.sourceName === item2.sourceName
     );
   } else {
-    return item1.name === item2.name;
+      return item1.name === item2.name;
   }
 };
 

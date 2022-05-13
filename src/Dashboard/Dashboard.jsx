@@ -16,7 +16,7 @@ import DashboardSharpIcon from '@material-ui/icons/DashboardSharp';
 import { List, ListItem } from '@material-ui/core';
 import AddIcon from '@material-ui/icons/Add';
 
-import Logo from '../static/images/logo/svg.svg';
+import Logo from '../static/images/logo/connectoLogo.svg';
 import { ReactComponent as OrderHistoryIcon } from '../static/images/order-history.svg';
 import { ReactComponent as PricingPageIcon } from '../static/images/pricing-page.svg';
 import PricingPageLogo from '../icons/pricingPage_logo.png';
@@ -202,8 +202,15 @@ const Dashboard = ({ selectedIndex, children, pricingDefaultCheck }) => {
         style={{ height: '56px', zIndex: '99' }}
       >
         {/* EZAPI logo */}
-        <div className="w-full">
-          <EzapiLogo />
+        <div className="w-full flex flex-row">
+          <EzapiLogo style={{
+            marginRight: '0.5rem',
+          }}/>
+
+          <h6 className="text-white whitespace-nowrap ml-1 mt-1">
+          CONEKTTO
+          </h6>
+
         </div>
 
         {/* Initials logo */}
