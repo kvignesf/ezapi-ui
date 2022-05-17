@@ -1,64 +1,62 @@
-import React, { useState, useEffect } from 'react';
-import classNames from 'classnames';
-import { useHistory } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import classNames from "classnames";
+import { useHistory } from "react-router-dom";
 import {
   Dialog,
   Fade,
   makeStyles,
   Menu,
   MenuItem,
-} from '@material-ui/core/index';
-import client, { endpoint } from '../shared/network/client';
-import { getAccessToken } from '../shared/storage';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import DashboardSharpIcon from '@material-ui/icons/DashboardSharp';
-import { List, ListItem } from '@material-ui/core';
-import AddIcon from '@material-ui/icons/Add';
+} from "@material-ui/core/index";
+import client, { endpoint } from "../shared/network/client";
+import { getAccessToken } from "../shared/storage";
+import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
+import ListItemIcon from "@material-ui/core/ListItemIcon";
+import DashboardSharpIcon from "@material-ui/icons/DashboardSharp";
+import { List, ListItem } from "@material-ui/core";
+import AddIcon from "@material-ui/icons/Add";
 
-import Logo from '../static/images/logo/connectoLogo.svg';
-import { ReactComponent as OrderHistoryIcon } from '../static/images/order-history.svg';
-import { ReactComponent as PricingPageIcon } from '../static/images/pricing-page.svg';
-import PricingPageLogo from '../icons/pricingPage_logo.png';
-import Colors from '../shared/colors';
-import routes, { generateRoute } from '../shared/routes';
-import { useMutation, useQuery } from 'react-query';
-import AppIcon from '../shared/components/AppIcon';
-import AddProject from '../AddProject';
-import projectAtom, { defaultState } from '../AddProject/projectAtom';
-import InitialsAvatar from '../shared/components/InitialsAvatar';
-import { useLogout } from '../shared/query/authQueries';
-import { getFirstName, getLastName } from '../shared/storage';
-import EzapiLogo from '../shared/components/EzapiLogo';
-import ProfileMenu from '../shared/components/ProfileMenuWithIcon';
-import ProfileMenuWithIcon from '../shared/components/ProfileMenuWithIcon';
-import EzapiFooter from '../shared/components/EzapiFooter';
+import imageLogo from "../static/images/logo/connectoLogo.svg";
+import { ReactComponent as OrderHistoryIcon } from "../static/images/order-history.svg";
+import { ReactComponent as PricingPageIcon } from "../static/images/pricing-page.svg";
+import PricingPageLogo from "../icons/pricingPage_logo.png";
+import Colors from "../shared/colors";
+import routes, { generateRoute } from "../shared/routes";
+import { useMutation, useQuery } from "react-query";
+import AppIcon from "../shared/components/AppIcon";
+import AddProject from "../AddProject";
+import projectAtom, { defaultState } from "../AddProject/projectAtom";
+import InitialsAvatar from "../shared/components/InitialsAvatar";
+import { useLogout } from "../shared/query/authQueries";
+import { getFirstName, getLastName } from "../shared/storage";
+import EzapiLogo from "../shared/components/EzapiLogo";
+import Logo from "../static/images/logo/logoText.svg";
+
+import ProfileMenu from "../shared/components/ProfileMenuWithIcon";
+import ProfileMenuWithIcon from "../shared/components/ProfileMenuWithIcon";
+import EzapiFooter from "../shared/components/EzapiFooter";
 import { fetchEventSource } from "@microsoft/fetch-event-source";
-import { useRecoilState } from 'recoil';
-import {downloadIconSts, downloadIconProj} from './dwnDataGenAtom';
+import { useRecoilState } from "recoil";
+import { downloadIconSts, downloadIconProj } from "./dwnDataGenAtom";
 
-
-
-import _ from 'lodash';
+import _ from "lodash";
 
 const acc_token = getAccessToken();
 const baseUrl = process.env.REACT_APP_API_URL;
-
-
 
 const useStyles = makeStyles({
   selectedItem: {
     background: Colors.brand.primarySubtle,
     borderLeft: `5px solid ${Colors.brand.primary}`,
-    borderLeftWidth: '5px',
-    borderTopRightRadius: '5px',
-    borderBottomRightRadius: '5px',
+    borderLeftWidth: "5px",
+    borderTopRightRadius: "5px",
+    borderBottomRightRadius: "5px",
   },
   root: {
-    '&$selected': {
+    "&$selected": {
       backgroundColor: Colors.brand.primarySubtle,
-      '&:hover': {
-        backgroundColor: 'none',
+      "&:hover": {
+        backgroundColor: "none",
       },
     },
   },
@@ -106,7 +104,7 @@ const Dashboard = ({ selectedIndex, children, pricingDefaultCheck }) => {
   const showAddProjectDialog = () => {
     setDialog({
       show: true,
-      type: 'add-project',
+      type: "add-project",
     });
   };
 
@@ -156,8 +154,7 @@ const Dashboard = ({ selectedIndex, children, pricingDefaultCheck }) => {
   //         setProjectIden(parsedData[0].projectId)
   //         setEnableIcon(parsedData[0].enableIcon);
   //       },
-  
-        
+
   //       onclose() {
   //         console.log("Connection closed by the server");
   //       },
@@ -165,8 +162,8 @@ const Dashboard = ({ selectedIndex, children, pricingDefaultCheck }) => {
   //         console.log("There was an error from server", err);
   //       },
   //     });
-  //   };  
-  //   fetchData(); 
+  //   };
+  //   fetchData();
   //   }, []);
 
   return (
@@ -181,7 +178,7 @@ const Dashboard = ({ selectedIndex, children, pricingDefaultCheck }) => {
         }}
         disableBackdropClick
       >
-        {dialog?.type === 'add-project' && (
+        {dialog?.type === "add-project" && (
           <AddProject
             onClose={handleCloseDialog}
             onSuccess={(projectId) => {
@@ -199,18 +196,31 @@ const Dashboard = ({ selectedIndex, children, pricingDefaultCheck }) => {
 
       <header
         className="fixed w-full top-0 bg-brand-primary flex flex-row p-4 items-center"
-        style={{ height: '56px', zIndex: '99' }}
+        style={{ height: "56px", zIndex: "99" }}
       >
         {/* EZAPI logo */}
         <div className="w-full flex flex-row">
-          <EzapiLogo style={{
-            marginRight: '0.5rem',
-          }}/>
+          {/* <EzapiLogo
+            style={{
+              marginRight: "0.5rem",
+            }}
+          /> */}
+          <img
+            src={imageLogo}
+            alt="conektto logo"
+            className="p-1"
+            style={{ maxWidth: "128px", maxHeight: "50px"}}
+          />
 
-          <h6 className="text-white whitespace-nowrap ml-1 mt-1">
+          <img
+            src={Logo}
+            alt="conektto logo"
+            style={{ maxWidth: "128px" }}
+          />
+
+          {/* <h6 className="text-white whitespace-nowrap ml-1 mt-1">
           CONEKTTO
-          </h6>
-
+          </h6> */}
         </div>
 
         {/* Initials logo */}
@@ -218,7 +228,7 @@ const Dashboard = ({ selectedIndex, children, pricingDefaultCheck }) => {
           firstName={firstName}
           lastName={lastName}
           style={{
-            marginRight: '0.5rem',
+            marginRight: "0.5rem",
           }}
         />
 
@@ -241,31 +251,31 @@ const Dashboard = ({ selectedIndex, children, pricingDefaultCheck }) => {
                 handleSideMenuItemClick(0);
               }}
               style={{
-                padding: '1rem',
+                padding: "1rem",
                 background:
-                  selectedIndex === 0 ? Colors.brand.primarySubtle : 'white',
+                  selectedIndex === 0 ? Colors.brand.primarySubtle : "white",
               }}
               className={selectedIndex === 0 ? styles.selectedItem : null}
               disableTouchRipple
             >
               <ListItemIcon
                 style={{
-                  minWidth: '0',
-                  marginRight: '1rem',
+                  minWidth: "0",
+                  marginRight: "1rem",
                 }}
               >
                 <AddIcon
                   className={`${classNames({
-                    'text-brand-primary': selectedIndex === 0,
-                    'text-neutral-gray2': selectedIndex !== 0,
+                    "text-brand-primary": selectedIndex === 0,
+                    "text-neutral-gray2": selectedIndex !== 0,
                   })}`}
-                  style={selectedIndex === 0 ? {} : { color: 'grey' }}
+                  style={selectedIndex === 0 ? {} : { color: "grey" }}
                 />
               </ListItemIcon>
               <p
                 className={`text-overline2 ${classNames({
-                  'text-brand-primary': selectedIndex === 0,
-                  'text-neutral-gray2': selectedIndex !== 0,
+                  "text-brand-primary": selectedIndex === 0,
+                  "text-neutral-gray2": selectedIndex !== 0,
                 })}`}
               >
                 Create New API
@@ -279,24 +289,24 @@ const Dashboard = ({ selectedIndex, children, pricingDefaultCheck }) => {
                 handleSideMenuItemClick(1);
               }}
               style={{
-                padding: '1rem',
+                padding: "1rem",
               }}
               className={selectedIndex === 1 ? styles.selectedItem : null}
               classes={{ root: styles.root, selected: styles.selected }}
               disableTouchRipple
             >
-              <ListItemIcon style={{ minWidth: '0', marginRight: '1rem' }}>
+              <ListItemIcon style={{ minWidth: "0", marginRight: "1rem" }}>
                 <DashboardSharpIcon
                   className={`${classNames({
-                    'text-brand-primary': selectedIndex === 1,
-                    'text-neutral-gray4': selectedIndex !== 1,
+                    "text-brand-primary": selectedIndex === 1,
+                    "text-neutral-gray4": selectedIndex !== 1,
                   })}`}
                 />
               </ListItemIcon>
               <p
                 className={`text-overline2 ${classNames({
-                  'text-brand-primary': selectedIndex === 1,
-                  'text-neutral-gray4': selectedIndex !== 1,
+                  "text-brand-primary": selectedIndex === 1,
+                  "text-neutral-gray4": selectedIndex !== 1,
                 })}`}
               >
                 Dashboard
@@ -310,13 +320,13 @@ const Dashboard = ({ selectedIndex, children, pricingDefaultCheck }) => {
                 handleSideMenuItemClick(2);
               }}
               style={{
-                padding: '1rem',
+                padding: "1rem",
               }}
               className={selectedIndex === 2 ? styles.selectedItem : null}
               classes={{ root: styles.root, selected: styles.selected }}
               disableTouchRipple
             >
-              <ListItemIcon style={{ minWidth: '0', marginRight: '1rem' }}>
+              <ListItemIcon style={{ minWidth: "0", marginRight: "1rem" }}>
                 <OrderHistoryIcon
                   fill={
                     selectedIndex === 2
@@ -327,8 +337,8 @@ const Dashboard = ({ selectedIndex, children, pricingDefaultCheck }) => {
               </ListItemIcon>
               <p
                 className={`text-overline2 ${classNames({
-                  'text-brand-primary': selectedIndex === 2,
-                  'text-neutral-gray4': selectedIndex !== 2,
+                  "text-brand-primary": selectedIndex === 2,
+                  "text-neutral-gray4": selectedIndex !== 2,
                 })}`}
               >
                 Order History
@@ -342,13 +352,13 @@ const Dashboard = ({ selectedIndex, children, pricingDefaultCheck }) => {
                 handleSideMenuItemClick(3);
               }}
               style={{
-                padding: '1rem',
+                padding: "1rem",
               }}
               className={selectedIndex === 3 ? styles.selectedItem : null}
               classes={{ root: styles.root, selected: styles.selected }}
               disableTouchRipple
             >
-              <ListItemIcon style={{ minWidth: '0', marginRight: '1rem' }}>
+              <ListItemIcon style={{ minWidth: "0", marginRight: "1rem" }}>
                 <PricingPageIcon
                   fill={
                     selectedIndex === 3
@@ -359,8 +369,8 @@ const Dashboard = ({ selectedIndex, children, pricingDefaultCheck }) => {
               </ListItemIcon>
               <p
                 className={`text-overline2 ${classNames({
-                  'text-brand-primary': selectedIndex === 3,
-                  'text-neutral-gray4': selectedIndex !== 3,
+                  "text-brand-primary": selectedIndex === 3,
+                  "text-neutral-gray4": selectedIndex !== 3,
                 })}`}
               >
                 Pricing Plan
