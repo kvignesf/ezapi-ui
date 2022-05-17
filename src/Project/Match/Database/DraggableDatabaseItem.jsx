@@ -10,6 +10,7 @@ import Colors from "../../../shared/colors";
 import AttributeIcon from "../../../static/images/attribute.svg";
 import TableIcon from "../../../static/images/table-icon.svg";
 import ColumnIcon from "../../../static/images/column-icon.svg";
+import autoGenrateIcon from "../../../static/images/auto-generate.svg";
 import {
   isArray,
   isAttribute,
@@ -55,10 +56,10 @@ const DraggableDatabaseItem = ({ index, item, section, ...rest }) => {
           opacity: isDragging ? 0.5 : 1,
           cursor: isDatabase(item) && canEdit() ? "pointer" : null,
         }}
-        className='p-2 mb-2 rounded-md bg-white flex flex-row items-center'
+        className="p-2 mb-2 rounded-md bg-white flex flex-row items-center"
         {...rest}
       >
-        <AppIcon className='mr-1 opacity-50'>
+        <AppIcon className="mr-1 opacity-50">
           <DragIndicatorIcon
             className={classNames({
               "cursor-move":
@@ -73,16 +74,22 @@ const DraggableDatabaseItem = ({ index, item, section, ...rest }) => {
         </AppIcon>
 
         <img
-          className='mr-2'
+          className="mr-2"
           src={
             isDatabase(item) ? TableIcon : isColumn(item) ? ColumnIcon : null
           }
           style={{ width: "24px", height: "24px" }}
         />
-
-        <p className='flex-1 text-overline3 mr-2 overflow-ellipsis'>
+        
+        <p className="flex-1 text-overline3 mr-2 overflow-ellipsis">
           {item?.name}
         </p>
+
+        {item.auto && (<img
+          className="mr-2"
+          src={item.auto ? autoGenrateIcon : null}
+          style={{ width: "24px", height: "24px" }}
+        />)}
 
         {/* <div
           className={classNames("w-12 max-w-3 h-6 rounded-sm", {

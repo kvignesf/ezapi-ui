@@ -29,7 +29,7 @@ const InviteCollaborators = ({
 
   useEffect(() => {
     if (pricing_data && userProfile_data) {
-      if (userProfile_data["plan_name"] == null) {
+      if (userProfile_data["plan_name"] == null || userProfile_data["plan_name"] == "Basic") {
         setNumberOfCollaborators(2);
       } else {
         setNumberOfCollaborators(
