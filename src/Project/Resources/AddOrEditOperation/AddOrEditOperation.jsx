@@ -152,7 +152,6 @@ const AddOrEditOperation = ({
 
   console.log("isEditingOperationSuccess", isEditingOperationSuccess);
   if (isEditingOperationSuccess || isAddingOperationSuccess) {
-    console.log("show");
     onClose();
     return null;
   }
@@ -265,7 +264,7 @@ const AddOrEditOperation = ({
                     multiline
                     rows={4}
                     disabled={isEditingOperation || isAddingOperation}
-                    inputProps={{ maxLength: 24 }}
+                    inputProps={{ maxLength: 64 }}
                   />
                 </div>
               </div>

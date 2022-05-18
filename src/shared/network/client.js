@@ -1,55 +1,65 @@
-import axios from "axios";
+import axios from 'axios';
 
-import { getAccessToken, setAccessToken, clearSession } from "../storage";
-import routes from "../routes";
-import Messages from "../messages";
+import { getAccessToken, setAccessToken, clearSession } from '../storage';
+import routes from '../routes';
+import Messages from '../messages';
 
 const baseUrl = process.env.REACT_APP_API_URL;
 
 export const endpoint = Object.freeze({
-  login: "/auth",
-  logout: "/logout",
-  project: "/project",
-  projects: "/projects",
-  aiMatcher: "/aiMatcher",
-  resources: "/resources",
-  path: "/path",
-  paths: "/paths",
-  operation: "/operation",
-  schemasList: "/schemasList",
-  subSchemaData: "/subSchemaData",
-  addParameter: "/projectParams/add",
-  editParameter: "/projectParams/edit",
-  getParameter: "/projectParams/get",
-  deleteParameter: "/projectParams/delete",
-  tablesLookup: "/tablesLookup",
-  tablesData: "/tablesData",
-  recommendations: "/recommendations",
-  schemaRecommendations: "/schemaRecommendations",
-  saveAttributeMatch: "/overrideAttrMatch",
-  saveSchemaMatch: "/overrideSchemaMatch",
-  publishProject: "/publish",
-  verifyProject: "/projectValidate",
-  downloadSpec: "/download_spec",
-  downloadArtifact: "/download_apiops",
-  downloadCodegen: "/download_codegen",
+  login: '/auth',
+  logout: '/logout',
+  project: '/project',
+  projects: '/projects',
+  aiMatcher: '/aiMatcher',
+  resources: '/resources',
+  path: '/path',
+  paths: '/paths',
+  operation: '/operation',
+  schemasList: '/schemasList',
+  subSchemaData: '/subSchemaData',
+  addParameter: '/projectParams/add',
+  editParameter: '/projectParams/edit',
+  getParameter: '/projectParams/get',
+  deleteParameter: '/projectParams/delete',
+  tablesLookup: '/tablesLookup',
+  tablesData: '/tablesData',
+  recommendations: '/recommendations',
+  schemaRecommendations: '/schemaRecommendations',
+  saveAttributeMatch: '/overrideAttrMatch',
+  saveSchemaMatch: '/overrideSchemaMatch',
+  publishProject: '/publish',
+  verifyProject: '/projectValidate',
+  downloadSpec: '/download_spec',
+  downloadArtifact: '/download_apiops',
+  downloadDatabase: '/download_gendata',
+  downloadCodegen: '/download_codegen',
+  testDBConnection: '/testDBConnection',
+  exportDBSchema: '/db_to_python',
 
   // Payment
-  products: "/product",
-  basicProduct: "/product/basic",
-  billingDetails: "/billing-details",
-  payment: "/payment",
-  initiatePayment: "/initiate-order",
+  products2: '/products',
+  products: '/product',
+  userProfile: '/userProfile',
+  basicProduct: '/product/basic',
+  billingDetails: '/billing-details',
+  payment: '/payment',
+  initiatePayment: '/initiate-order',
+  addCard: '/addCard',
+  defaultCard: '/makeDefaultCard',
+  subscribe: '/subscribe',
+  unSubscribe: '/cancelSubscription',
+  // initiatePayment: "/subscribe",
 
   // Orders
-  orders: "/orders",
+  orders: '/orders',
 });
 
 const client = axios.create({
   baseURL: baseUrl,
-  timeout: 10000,
+  timeout: 50000,
   timeoutErrorMessage: Messages.UNKNOWN,
-  responseType: "json",
+  responseType: 'json',
 });
 
 // Setting token for requests
@@ -59,7 +69,7 @@ client.interceptors.request.use(
     const url = request.url;
 
     if (accessToken && url && url !== endpoint.login) {
-      request.headers["Authorization"] = `Bearer ${accessToken}`;
+      request.headers['Authorization'] = `Bearer ${accessToken}`;
     }
     return request;
   },

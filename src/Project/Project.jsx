@@ -256,7 +256,10 @@ const Project = () => {
   const closePublishProjectSuccess = () => {
     resetPublishMutation();
     resetVerifyMutation();
-    history.goBack();
+    history.push({
+      pathname: routes.projects,
+      state: { allow: true },
+    });
   };
 
   const handleProfileMenuClick = (event) => {
@@ -289,7 +292,11 @@ const Project = () => {
     resetSubmitProjectMutation();
     resetFetchProject();
     resetSyncOperationMutation();
-    history.replace(routes.projects);
+
+    history.replace({
+      pathname: routes.projects,
+      state: { allow: true },
+    });
     // history.goBack();
   };
 
@@ -552,11 +559,11 @@ const Project = () => {
                   style={{ outline: "none", border: "none" }}
                 />
 
-                <Tab
+                {/* <Tab
                   label={<TabLabel label={"Visualize"} />}
                   style={{ outline: "none", border: "none" }}
                   disabled
-                />
+                /> */}
               </Tabs>
             </div>
 

@@ -1,20 +1,20 @@
-import { useEffect, useState, useMemo } from "react";
-import _ from "lodash";
+import { useEffect, useState, useMemo } from 'react';
+import _ from 'lodash';
 import {
   useRecoilValue,
   useGetRecoilValueInfo_UNSTABLE,
   useRecoilTransactionObserver_UNSTABLE,
   selector,
-} from "recoil";
+} from 'recoil';
 
-import { endpoint } from "./network/client";
-import { getAccessToken } from "./storage";
-import Constants from "./constants";
-import schemaAtom from "./atom/schemaAtom";
-import tableAtom from "./atom/tableAtom";
-import operationAtom, { defaultState } from "../Project/operationAtom";
-import { UserRoleContext, useUserRole } from "../Project/UserRoleContext";
-import Messages from "./messages";
+import { endpoint } from './network/client';
+import { getAccessToken } from './storage';
+import Constants from './constants';
+import schemaAtom from './atom/schemaAtom';
+import tableAtom from './atom/tableAtom';
+import operationAtom, { defaultState } from '../Project/operationAtom';
+import { UserRoleContext, useUserRole } from '../Project/UserRoleContext';
+import Messages from './messages';
 
 export const isEmailValid = (email) => {
   const re =
@@ -24,6 +24,7 @@ export const isEmailValid = (email) => {
 
 export const isUserLoggedIn = () => {
   const token = getAccessToken();
+  console.log('acc_token: ' + token);
 
   return token && !_.isEmpty(token);
 };
@@ -40,8 +41,24 @@ export const getApiError = (error) => {
       return error;
     }
 
-    return new Error(Messages.INVALID_DATA);
-  } else if (url && !_.isEmpty(url) && url.includes("/uploads")) {
+    if (url && url === endpoint.project) {
+      return error;
+    }
+
+    if (url && url === endpoint.testDBConnection) {
+      return new Error(error?.response?.data?.message);
+    }
+
+    if (url && url === endpoint.exportDBSchema) {
+      return new Error(error?.response?.data?.message);
+    }
+
+    if (url && !_.isEmpty(url) && url.includes('/upload_To_GCP')) {
+      return new Error(error?.response?.data?.message);
+    }
+    return new Error(error?.response?.data?.message);
+    // return new Error(Messages.INVALID_DATA);
+  } else if (url && !_.isEmpty(url) && url.includes('/uploads')) {
     return new Error(error?.response?.data?.aiResponse?.message);
   }
 
@@ -49,49 +66,49 @@ export const getApiError = (error) => {
 };
 
 export const isArray = (object) => {
-  return object?.type === "array";
+  return object?.type === 'array';
 };
 
 export const isAttribute = (object) => {
   return (
     object?.type &&
     !_.isEmpty(object?.type) &&
-    object?.paramType !== "column" &&
+    object?.paramType !== 'column' &&
     _.includes(Constants.acceptedTypes, object?.type)
   );
 };
 
 export const isSchema = (object) => {
   return (
-    object?.type === "ref" ||
-    object?.type === "ezapi_ref" ||
+    object?.type === 'ref' ||
+    object?.type === 'ezapi_ref' ||
     (object?.data !== null && object?.data !== undefined)
   );
 };
 
 export const isDatabase = (object) => {
-  return object?.type === "ezapi_table";
+  return object?.type === 'ezapi_table';
 };
 
 export const isColumn = (object) => {
-  return object?.paramType === "column";
+  return object?.paramType === 'column';
 };
 
 export const isObject = (object) => {
-  return object?.type === "object";
+  return object?.type === 'object';
 };
 
 export const isFullMatch = (object) => {
-  return object?.match_type?.toLowerCase() === "full";
+  return object?.match_type?.toLowerCase() === 'full';
 };
 
 export const isPartialMatch = (object) => {
-  return object?.match_type?.toLowerCase() === "partial";
+  return object?.match_type?.toLowerCase() === 'partial';
 };
 
 export const isNoMatch = (object) => {
   return (
-    !object?.match_type || object?.match_type?.toLowerCase() === "no match"
+    !object?.match_type || object?.match_type?.toLowerCase() === 'no match'
   );
 };
 
@@ -112,11 +129,11 @@ export const useWindowSize = () => {
       });
     }
     // Add event listener
-    window.addEventListener("resize", handleResize);
+    window.addEventListener('resize', handleResize);
     // Call handler right away so state gets updated with initial window size
     handleResize();
     // Remove event listener on cleanup
-    return () => window.removeEventListener("resize", handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []); // Empty array ensures that effect is only run on mount
   return windowSize;
 };
@@ -146,16 +163,16 @@ export const generateSyncOperationRequestRequest = (operationRequest) => {
       let clonedHeader = _.cloneDeep(header);
 
       clonedHeader.required =
-        header?.required === true || header?.required === "true" ? true : false;
+        header?.required === true || header?.required === 'true' ? true : false;
 
       const possibleValuesType = Object.prototype.toString.call(
         header?.possibleValues
       );
 
-      if (possibleValuesType === "[object String]") {
+      if (possibleValuesType === '[object String]') {
         clonedHeader.possibleValues =
-          header?.possibleValues?.split(",").map((item) => {
-            return item.trim(" ");
+          header?.possibleValues?.split(',').map((item) => {
+            return item.trim(' ');
           }) ?? [];
       }
 
@@ -171,7 +188,7 @@ export const generateSyncOperationRequestRequest = (operationRequest) => {
       let clonedItem = _.cloneDeep(item);
 
       clonedItem.required =
-        item?.required === true || item?.required === "true" ? true : false;
+        item?.required === true || item?.required === 'true' ? true : false;
 
       return clonedItem;
     });
@@ -185,7 +202,7 @@ export const generateSyncOperationRequestRequest = (operationRequest) => {
       let clonedItem = _.cloneDeep(item);
 
       clonedItem.required =
-        item?.required === true || item?.required === "true" ? true : false;
+        item?.required === true || item?.required === 'true' ? true : false;
 
       return clonedItem;
     });
@@ -196,7 +213,7 @@ export const generateSyncOperationRequestRequest = (operationRequest) => {
       let clonedItem = _.cloneDeep(item);
 
       clonedItem.required =
-        item?.required === true || item?.required === "true" ? true : false;
+        item?.required === true || item?.required === 'true' ? true : false;
 
       return clonedItem;
     });
@@ -216,7 +233,7 @@ export const generateSyncOperationRequestRequest = (operationRequest) => {
         // newItem.customName = item?.customName;
         // return newItem;
 
-        if (clonedItem?.hasOwnProperty("data")) {
+        if (clonedItem?.hasOwnProperty('data')) {
           delete clonedItem?.data;
         }
 
@@ -264,17 +281,17 @@ export const parseGetOperationRequestResponse = (operationResponse) => {
       clonedHeader.name = headerName;
 
       clonedHeader.required =
-        headerObject?.required === true || headerObject?.required === "true"
+        headerObject?.required === true || headerObject?.required === 'true'
           ? true
           : false;
 
       clonedHeader.possibleValues =
         headerObject?.possibleValues?.reduce((acc, curr) => {
           if (acc) {
-            return acc + ", " + curr;
+            return acc + ', ' + curr;
           }
           return curr;
-        }, "") ?? [];
+        }, '') ?? [];
 
       return clonedHeader;
     });
@@ -339,7 +356,7 @@ export const parseGetOperationRequestResponse = (operationResponse) => {
     } else {
       // Single body item
 
-      if (operationResponse?.body?.ezapi_ref) {
+      if (operationResponse?.body?.ezapi_ref || isAttribute(operationResponse?.body) || isColumn(operationResponse?.body)) {
         request.body = [_.cloneDeep(operationResponse?.body)];
       }
     }
@@ -375,7 +392,7 @@ export const generateSyncOperationResponseRequest = (operationResponse) => {
         let clonedHeader = _.cloneDeep(header);
 
         clonedHeader.required =
-          header?.required === true || header?.required === "true"
+          header?.required === true || header?.required === 'true'
             ? true
             : false;
 
@@ -383,10 +400,10 @@ export const generateSyncOperationResponseRequest = (operationResponse) => {
           header?.possibleValues
         );
 
-        if (possibleValuesType === "[object String]") {
+        if (possibleValuesType === '[object String]') {
           clonedHeader.possibleValues =
-            header?.possibleValues?.split(",").map((item) => {
-              return item.trim(" ");
+            header?.possibleValues?.split(',').map((item) => {
+              return item.trim(' ');
             }) ?? [];
         }
 
@@ -399,7 +416,7 @@ export const generateSyncOperationResponseRequest = (operationResponse) => {
         if (isSchema(item)) {
           const clonedItem = _.cloneDeep(item);
 
-          if (clonedItem?.hasOwnProperty("data")) {
+          if (clonedItem?.hasOwnProperty('data')) {
             delete clonedItem?.data;
           }
 
@@ -456,17 +473,17 @@ export const parseGetOperationResponseResponse = (operationResponse) => {
       clonedHeader.name = headerName;
 
       clonedHeader.required =
-        headerObject?.required === true || headerObject?.required === "true"
+        headerObject?.required === true || headerObject?.required === 'true'
           ? true
           : false;
 
       clonedHeader.possibleValues =
         headerObject?.possibleValues?.reduce((acc, curr) => {
           if (acc) {
-            return acc + ", " + curr;
+            return acc + ', ' + curr;
           }
           return curr;
-        }, "") ?? [];
+        }, '') ?? [];
 
       return clonedHeader;
     });
@@ -494,7 +511,9 @@ export const parseGetOperationResponseResponse = (operationResponse) => {
     } else {
       // Single body item
 
-      if (responseData?.content?.ezapi_ref) {
+      if (responseData?.content?.ezapi_ref || isAttribute(responseData?.content) || isColumn(responseData?.content)) {
+      // if (responseData?.content) {
+
         responseObj.body = [_.cloneDeep(responseData?.content)];
       }
     }
@@ -560,10 +579,10 @@ export const useGetFullPath = () => {
       ) {
         const path = schemaDetails?.selected?.reduce((acc, curr) => {
           if (_.isEmpty(acc)) {
-            return "/" + curr?.name;
+            return '/' + curr?.name;
           }
-          return acc + "/" + curr?.name;
-        }, "");
+          return acc + '/' + curr?.name;
+        }, '');
 
         return path;
       }
@@ -587,28 +606,28 @@ export const useGetFullPath = () => {
 export const getOs = () => {
   let userAgent = window.navigator.userAgent,
     platform = window.navigator.platform,
-    macosPlatforms = ["Macintosh", "MacIntel", "MacPPC", "Mac68K"],
-    windowsPlatforms = ["Win32", "Win64", "Windows", "WinCE"],
-    iosPlatforms = ["iPhone", "iPad", "iPod"],
+    macosPlatforms = ['Macintosh', 'MacIntel', 'MacPPC', 'Mac68K'],
+    windowsPlatforms = ['Win32', 'Win64', 'Windows', 'WinCE'],
+    iosPlatforms = ['iPhone', 'iPad', 'iPod'],
     os = null;
 
   if (macosPlatforms.indexOf(platform) !== -1) {
-    os = "mac";
+    os = 'mac';
   } else if (iosPlatforms.indexOf(platform) !== -1) {
-    os = "ios";
+    os = 'ios';
   } else if (windowsPlatforms.indexOf(platform) !== -1) {
-    os = "windows";
+    os = 'windows';
   } else if (/Android/.test(userAgent)) {
-    os = "android";
+    os = 'android';
   } else if (!os && /Linux/.test(platform)) {
-    os = "linux";
+    os = 'linux';
   }
 
   return os;
 };
 
 export const operationAtomWithMiddleware = selector({
-  key: operationAtom.key + "_middleware",
+  key: operationAtom.key + '_middleware',
   get: ({ get }) => {
     return get(operationAtom);
   },
@@ -619,6 +638,7 @@ export const operationAtomWithMiddleware = selector({
 
     if (previousValue === defaultState) {
       // Initial data loading up
+
       clonedNewValue.isModified = false;
     } else if (!clonedNewValue?.operation || !clonedNewValue?.operationIndex) {
       // Resetting atom state
@@ -643,7 +663,7 @@ export const operationAtomWithMiddleware = selector({
 });
 
 export const canEdit = (role) => {
-  return role?.toLowerCase() === "admin";
+  return role?.toLowerCase() === 'admin';
 };
 
 export const useCanEdit = () => {
@@ -655,29 +675,31 @@ export const useCanEdit = () => {
 };
 
 export const isItemSame = (item1, item2, fullPath) => {
+
   if (isAttribute(item1)) {
-    return item1.parentName === fullPath && item1.name === item2.name;
+    // return item1.parentName === fullPath && item1.name === item2.name;
+    return item1.name === item2.name;
   } else if (isColumn(item1)) {
     return (
       item1.tableName === fullPath && item1.sourceName === item2.sourceName
     );
   } else {
-    return item1.name === item2.name;
+      return item1.name === item2.name;
   }
 };
 
 export const isFreePublishesExhausted = (publishProjectError) => {
   return (
-    publishProjectError?.response?.data?.errorType === "FREE_PROJECTS_EXHAUSTED"
+    publishProjectError?.response?.data?.errorType === 'FREE_PROJECTS_EXHAUSTED'
   );
 };
 
 export const isOrderSuccess = (order) => {
-  return order?.status?.toLowerCase() === "succeeded";
+  return order?.payment_status?.toLowerCase() === 'succeeded';
 };
 
 export const isOrderInitiated = (order) => {
-  return order?.status?.toLowerCase() === "initiated";
+  return order?.payment_status?.toLowerCase() === 'initiated';
 };
 
 export const isOrderInOtherState = (order) => {

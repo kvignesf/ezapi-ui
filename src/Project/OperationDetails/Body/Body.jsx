@@ -366,7 +366,7 @@ const BodyItem = ({ request = true, responseCode, itemRef }) => {
       setOperationDetails((operationDetails) => {
         if (request) {
           const index = operationDetails.operationRequest.body.findIndex(
-            (x) => x?.sourceName === item?.sourceName
+            (x) => x?.name === item?.name
           );
           if (index !== -1) {
             const newOperationDetails = _.cloneDeep(operationDetails);
@@ -375,19 +375,22 @@ const BodyItem = ({ request = true, responseCode, itemRef }) => {
 
             return newOperationDetails;
           }
-        } else {
+        } else {          
           const responseData = operationDetails?.operationResponse?.find(
             (item) => item.responseCode === responseCode
           );
           const responseIndex = operationDetails?.operationResponse?.findIndex(
             (item) => item.responseCode === responseCode
           );
-
+          
           const existingBodyIndex = responseData?.body?.findIndex(
-            (body) => body?.sourceName === item?.sourceName
-          );
+            // (body) => body?.sourceName === item?.sourceName
+            (body) => body?.name === item?.name
 
+          );
+          
           if (existingBodyIndex >= 0 && responseData && responseIndex >= 0) {
+
             const clonedOperationDetails = _.cloneDeep(operationDetails);
             const clonedResponseData = _.cloneDeep(responseData);
 
@@ -865,7 +868,7 @@ const BodyItem = ({ request = true, responseCode, itemRef }) => {
                     <div className='flex flex-row items-center justify-start flex-1'>
                       <img
                         src={AttributeIcon}
-                        alt='ezapi logo'
+                        alt='conektto logo'
                         className='bg-white mr-2'
                         style={{
                           height: "24px",
@@ -984,7 +987,7 @@ const BodySubTreeItems = ({ currentRef: some }) => {
           <div className='flex flex-row items-center justify-center'>
             <img
               src={SchemaIcon}
-              alt='ezapi logo'
+              alt='conektto logo'
               className='bg-white mr-2'
               style={{
                 height: "24px",
@@ -1043,7 +1046,7 @@ const BodySubTreeItems = ({ currentRef: some }) => {
                   <div className='flex flex-row items-center justify-start flex-1'>
                     <img
                       src={AttributeIcon}
-                      alt='ezapi logo'
+                      alt='conektto logo'
                       className='bg-white mr-2'
                       style={{
                         height: "24px",
@@ -1089,7 +1092,7 @@ const SchemaLabel = ({ labelItem, isLoading, deleteItem }) => {
             <div className='flex flex-row items-center justify-start w-1/3'>
               <img
                 src={SchemaIcon}
-                alt='ezapi logo'
+                alt='conektto logo'
                 className='bg-white mr-4'
                 style={{ height: "24px", width: "24px" }}
               />
@@ -1138,7 +1141,7 @@ const AttributeLabel = ({ labelItem, deleteItem }) => {
               <div className='flex-1 flex flex-row'>
                 <img
                   src={AttributeIcon}
-                  alt='ezapi logo'
+                  alt='conektto logo'
                   className='bg-white mr-4'
                   style={{ height: "24px", width: "24px" }}
                 />
@@ -1264,7 +1267,7 @@ const DatabaseLabel = ({
                 <div className='flex flex-row items-center justify-start  w-1/4'>
                   <img
                     src={TableIcon}
-                    alt='ezapi logo'
+                    alt='conektto logo'
                     className='bg-white mr-4'
                     style={{ height: "24px", width: "24px" }}
                   />
@@ -1430,7 +1433,7 @@ const ColumnLabel = ({
                 <div className='flex-1 flex flex-row'>
                   <img
                     src={ColumnIcon}
-                    alt='ezapi logo'
+                    alt='conektto logo'
                     className='bg-white mr-4'
                     style={{ height: "24px", width: "24px" }}
                   />

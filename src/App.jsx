@@ -1,26 +1,30 @@
-import React, { useMemo, useState } from "react";
-import { QueryClientProvider } from "react-query";
-import { RecoilRoot, useRecoilValue } from "recoil";
-import { BrowserRouter, Route, Switch, Redirect } from "react-router-dom";
-import { LinkedInPopUp } from "react-linkedin-login-oauth2";
-import { MuiThemeProvider, createMuiTheme } from "@material-ui/core";
-import SnackbarProvider from "react-simple-snackbar";
-import { loadStripe } from "@stripe/stripe-js";
-import { Elements, ElementsConsumer } from "@stripe/react-stripe-js";
+import React, { useMemo, useState } from 'react';
+import { QueryClientProvider } from 'react-query';
+import { RecoilRoot, useRecoilValue } from 'recoil';
+import { BrowserRouter, Route, Switch, Redirect } from 'react-router-dom';
+import { LinkedInPopUp } from 'react-linkedin-login-oauth2';
+import { MuiThemeProvider, createMuiTheme } from '@material-ui/core';
+import SnackbarProvider from 'react-simple-snackbar';
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements, ElementsConsumer } from '@stripe/react-stripe-js';
 
-import queryClient from "./shared/network/queryClient";
-import NotFound from "./shared/components/NotFound";
-import PrivateRoute from "./shared/components/PrivateRoute";
-import routes from "./shared/routes";
-import Colors from "./shared/colors";
-import Login from "./Login";
-import Projects from "./Projects";
-import Landing from "./Landing";
-import { isUserLoggedIn, DebugObserver } from "./shared/utils";
-import Project from "./Project";
-import ProjectPayment from "./ProjectPayment/ProjectPayment";
-import Orders from "./Orders/Orders";
-import EzapiFooter from "./shared/components/EzapiFooter";
+import queryClient from './shared/network/queryClient';
+import NotFound from './shared/components/NotFound';
+import PrivateRoute from './shared/components/PrivateRoute';
+import routes from './shared/routes';
+import Colors from './shared/colors';
+import Login from './Login';
+import Projects from './Projects';
+import Landing from './Landing';
+import { isUserLoggedIn, DebugObserver } from './shared/utils';
+import Project from './Project';
+import ProjectPayment from './ProjectPayment/ProjectPayment';
+import ProjectPayment2 from './ProjectPayment/ProjectPayment2';
+import Orders from './Orders/Orders';
+
+import EzapiFooter from './shared/components/EzapiFooter';
+import Pricing from './Pricing';
+import Billing from './BillingPage';
 
 const theme = createMuiTheme({
   palette: {
@@ -54,13 +58,34 @@ const App = () => {
                 )} */}
                 </Route>
 
+                <PrivateRoute exact path={routes.orders} component={Orders} />
                 <PrivateRoute
                   exact
                   path={routes.projects}
                   component={Projects}
                 />
-
-                <PrivateRoute exact path={routes.orders} component={Orders} />
+                <PrivateRoute exact path={routes.pricing} component={Pricing} />
+                <Route
+                  path={routes.payment}
+                  render={(props) => {
+                    return (
+                      <>
+                        {isAuthenticated() ? (
+                          <Elements stripe={stripePromise}>
+                            <ProjectPayment2 {...props} />
+                          </Elements>
+                        ) : (
+                          <Redirect
+                            to={{
+                              pathname: routes.signIn,
+                              state: { from: props.location },
+                            }}
+                          />
+                        )}
+                      </>
+                    );
+                  }}
+                />
 
                 <Route
                   path={routes.paymentForOrder}
@@ -86,9 +111,9 @@ const App = () => {
 
                 <PrivateRoute exact path={routes.project} component={Project} />
 
-                <Route exact path='/linkedin' component={LinkedInPopUp} />
+                <Route exact path="/linkedin" component={LinkedInPopUp} />
                 {/* Base route */}
-                <Route exact path='/' component={Landing} />
+                <Route exact path="/" component={Landing} />
                 {/* 404 */}
                 <Route component={NotFound} />
               </Switch>

@@ -1,9 +1,9 @@
 import React from "react";
 
-import { ReactComponent as Logo } from "../../static/images/logo/logo_svg.svg";
+import { ReactComponent as Logo } from "../../static/images/logo/connectoLogo.svg";
 
 const EzapiLogo = () => {
-  return <Logo alt='ezapi logo' className='bg-white w-8 h-8 rounded-sm' />;
+  return <Logo alt='conektto logo' className='bg-white w-8 h-8 rounded-sm' />;
 };
 
 export default EzapiLogo;

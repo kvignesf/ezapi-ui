@@ -1,16 +1,55 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { ErrorMessage, Field, Form, Formik, useFormik } from "formik";
 import { MenuItem, Select, TextField } from "@material-ui/core";
 import countryList from "react-select-country-list";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import { CountryDropdown, RegionDropdown } from "react-country-region-selector";
-
+import client, { endpoint } from "../shared/network/client";
+import { getApiError } from "../shared/utils";
 import billingDetailsSchema from "./billingDetailsSchema";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 import { PrimaryButton } from "../shared/components/AppButton";
 import classNames from "classnames";
+import { getAccessToken } from "../shared/storage";
+import {
+  postcodeValidator,
+  postcodeValidatorExistsForCountry,
+} from "postcode-validator";
+
+const acc_token = getAccessToken();
+const userProfile = async () => {
+  try {
+    const { data } = await client.get(endpoint.userProfile, {
+      headers: {
+        Authorization: acc_token,
+      },
+    });
+
+    return data;
+  } catch (error) {}
+};
 
 const BillingDetailsForm = ({ disabled = false, formRef }) => {
+  const { data } = useQuery("userProfileKey", userProfile, {
+    refetchOnWindowFocus: false,
+  });
+
+  const [cityName, setCityName] = React.useState("");
+  const [countryName, setCountryName] = React.useState("");
+  const [line1Name, setLine1Name] = React.useState("");
+  const [stateName, setStateName] = React.useState("");
+  const [zipValidator, setZipValidator] = React.useState(true);
+  const [postalCodeName, setPostalCodeName] = React.useState("");
+
+  useEffect(() => {
+    setCityName(data?.["billing_address"]?.["city"]);
+    setCountryName(data?.["billing_address"]?.["country"]);
+    setStateName(data?.["billing_address"]?.["state"]);
+    setLine1Name(data?.["billing_address"]?.["line1"]);
+    setPostalCodeName(data?.["billing_address"]?.["postal_code"]);
+  });
+
   return (
     <div className='mb-8'>
       <p className='text-subtitle1 mb-3'>Billing Details</p>
@@ -19,19 +58,36 @@ const BillingDetailsForm = ({ disabled = false, formRef }) => {
         initialValues={{
           fullName: "",
           company: "",
-          country: "",
-          addressLine1: "",
-          addressLine2: "",
-          zip: "",
-          city: "",
-          state: "",
+          country: countryName,
+          addressLine1: line1Name,
+          zip: postalCodeName,
+          city: cityName,
+          state: stateName,
           email: "",
+
+          addressLine2: "",
+
           phone: "",
         }}
+        enableReinitialize
         validationSchema={billingDetailsSchema}
         innerRef={formRef}
       >
         {({ values, errors, touched, setFieldValue }) => {
+          if (postcodeValidatorExistsForCountry(values.country)) {
+            if (postcodeValidator(values.zip, values.country)) {
+              setZipValidator(true);
+            } else setZipValidator(false);
+          } else {
+            setZipValidator(true);
+            console.log("Country-Zip Validation Not available");
+          }
+          console.log(zipValidator);
+
+          // }
+          // console.log(values.country);
+          // console.log(postcodeValidatorExistsForCountry(values.country));
+
           return (
             <Form>
               <div className='mb-4'>
@@ -41,6 +97,8 @@ const BillingDetailsForm = ({ disabled = false, formRef }) => {
                   id='fullName'
                   name='fullName'
                   fullWidth
+                  // value="fulllnameee"
+                  value={values.fullName}
                   color='primary'
                   variant='outlined'
                   disabled={disabled}
@@ -103,6 +161,7 @@ const BillingDetailsForm = ({ disabled = false, formRef }) => {
                     labelId='country-select-label'
                     id='country'
                     name='country'
+                    // value={countryName}
                     value={values.country}
                     disabled={disabled}
                     variant='outlined'
@@ -144,6 +203,7 @@ const BillingDetailsForm = ({ disabled = false, formRef }) => {
                   fullWidth
                   color='primary'
                   variant='outlined'
+                  // value={line1Name}
                   disabled={disabled}
                   error={touched.addressLine1 && Boolean(errors.addressLine1)}
                   helperText={<ErrorMessage name='addressLine1' />}
@@ -193,18 +253,30 @@ const BillingDetailsForm = ({ disabled = false, formRef }) => {
                     name='zip'
                     fullWidth
                     color='primary'
+                    // value={postalCodeName}
                     variant='outlined'
                     disabled={disabled}
-                    error={touched.zip && Boolean(errors.zip)}
-                    helperText={<ErrorMessage name='zip' />}
+                    error={
+                      (touched.zip && Boolean(errors.zip)) || !zipValidator
+                    }
+                    helperText={
+                      values.zip
+                        ? !zipValidator
+                          ? "Invalid Zipcode"
+                          : null
+                        : "Please fill this field"
+                    }
                     onKeyUp={(e) => {}}
                     inputProps={{
                       style: {
                         height: "6px",
                       },
                     }}
+                    // onChange={(v) => {
+                    //   setFieldValue("zip", v.target.value);
+                    // }}
                     onChange={(e) => {
-                      const re = /^[0-9\b]+$/;
+                      const re = /^[A-Z a-z0-9\b]+$/;
 
                       if (
                         e?.target?.value?.trim() === "" ||
@@ -225,6 +297,7 @@ const BillingDetailsForm = ({ disabled = false, formRef }) => {
                     name='city'
                     fullWidth
                     color='primary'
+                    // value={cityName}
                     variant='outlined'
                     disabled={disabled}
                     error={touched.city && Boolean(errors.city)}
@@ -260,6 +333,7 @@ const BillingDetailsForm = ({ disabled = false, formRef }) => {
                       name='state'
                       fullWidth
                       color='primary'
+                      // value={stateName}
                       variant='outlined'
                       disabled={disabled}
                       error={touched.state && Boolean(errors.state)}

@@ -1,56 +1,71 @@
-import React, { useState } from "react";
-import classNames from "classnames";
-import { useHistory } from "react-router-dom";
+import React, { useState, useEffect } from 'react';
+import classNames from 'classnames';
+import { useHistory } from 'react-router-dom';
 import {
   Dialog,
   Fade,
   makeStyles,
   Menu,
   MenuItem,
-} from "@material-ui/core/index";
-import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
-import ListItemIcon from "@material-ui/core/ListItemIcon";
-import DashboardSharpIcon from "@material-ui/icons/DashboardSharp";
-import { List, ListItem } from "@material-ui/core";
-import AddIcon from "@material-ui/icons/Add";
-import { useRecoilState } from "recoil";
+} from '@material-ui/core/index';
+import client, { endpoint } from '../shared/network/client';
+import { getAccessToken } from '../shared/storage';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+import DashboardSharpIcon from '@material-ui/icons/DashboardSharp';
+import { List, ListItem } from '@material-ui/core';
+import AddIcon from '@material-ui/icons/Add';
 
-import Logo from "../static/images/logo/svg.svg";
-import { ReactComponent as OrderHistoryIcon } from "../static/images/order-history.svg";
-import Colors from "../shared/colors";
-import routes, { generateRoute } from "../shared/routes";
-import AppIcon from "../shared/components/AppIcon";
-import AddProject from "../AddProject";
-import projectAtom, { defaultState } from "../AddProject/projectAtom";
-import InitialsAvatar from "../shared/components/InitialsAvatar";
-import { useLogout } from "../shared/query/authQueries";
-import { getFirstName, getLastName } from "../shared/storage";
-import EzapiLogo from "../shared/components/EzapiLogo";
-import ProfileMenu from "../shared/components/ProfileMenuWithIcon";
-import ProfileMenuWithIcon from "../shared/components/ProfileMenuWithIcon";
-import EzapiFooter from "../shared/components/EzapiFooter";
-import _ from "lodash";
+import Logo from '../static/images/logo/connectoLogo.svg';
+import { ReactComponent as OrderHistoryIcon } from '../static/images/order-history.svg';
+import { ReactComponent as PricingPageIcon } from '../static/images/pricing-page.svg';
+import PricingPageLogo from '../icons/pricingPage_logo.png';
+import Colors from '../shared/colors';
+import routes, { generateRoute } from '../shared/routes';
+import { useMutation, useQuery } from 'react-query';
+import AppIcon from '../shared/components/AppIcon';
+import AddProject from '../AddProject';
+import projectAtom, { defaultState } from '../AddProject/projectAtom';
+import InitialsAvatar from '../shared/components/InitialsAvatar';
+import { useLogout } from '../shared/query/authQueries';
+import { getFirstName, getLastName } from '../shared/storage';
+import EzapiLogo from '../shared/components/EzapiLogo';
+import ProfileMenu from '../shared/components/ProfileMenuWithIcon';
+import ProfileMenuWithIcon from '../shared/components/ProfileMenuWithIcon';
+import EzapiFooter from '../shared/components/EzapiFooter';
+import { fetchEventSource } from "@microsoft/fetch-event-source";
+import { useRecoilState } from 'recoil';
+import {downloadIconSts, downloadIconProj} from './dwnDataGenAtom';
+
+
+
+import _ from 'lodash';
+
+const acc_token = getAccessToken();
+const baseUrl = process.env.REACT_APP_API_URL;
+
+
 
 const useStyles = makeStyles({
   selectedItem: {
     background: Colors.brand.primarySubtle,
     borderLeft: `5px solid ${Colors.brand.primary}`,
-    borderLeftWidth: "5px",
-    borderTopRightRadius: "5px",
-    borderBottomRightRadius: "5px",
+    borderLeftWidth: '5px',
+    borderTopRightRadius: '5px',
+    borderBottomRightRadius: '5px',
   },
   root: {
-    "&$selected": {
+    '&$selected': {
       backgroundColor: Colors.brand.primarySubtle,
-      "&:hover": {
-        backgroundColor: "none",
+      '&:hover': {
+        backgroundColor: 'none',
       },
     },
   },
   selected: {},
 });
 
-const Dashboard = ({ selectedIndex, children }) => {
+const Dashboard = ({ selectedIndex, children, pricingDefaultCheck }) => {
   const styles = useStyles();
   const history = useHistory();
   const [dialog, setDialog] = useState({
@@ -58,21 +73,32 @@ const Dashboard = ({ selectedIndex, children }) => {
     type: null,
     data: null,
   });
+  const [counter, setCounter] = useState(() => {
+    return 0;
+  });
   const [profileMenuAnchorEl, setProfilemenuAnchorEl] = useState(false);
   const [projectState, setProjectState] = useRecoilState(projectAtom);
+
   const { isLoading: isLoggingOut, mutate: logout } = useLogout();
   const firstName = getFirstName();
   const lastName = getLastName();
 
   const handleSideMenuItemClick = (index) => {
+    // console.log(index);
     if (index !== selectedIndex) {
       if (index === 0) {
         // Show add new project dialog
         showAddProjectDialog();
       } else if (index === 1) {
-        history.push(routes.projects);
+        history.push({
+          pathname: routes.projects,
+          state: { allow: true },
+        });
+        // history.push(routes.projects);
       } else if (index === 2) {
         history.push(routes.orders);
+      } else if (index === 3) {
+        history.push(routes.pricing);
       }
     }
   };
@@ -80,7 +106,7 @@ const Dashboard = ({ selectedIndex, children }) => {
   const showAddProjectDialog = () => {
     setDialog({
       show: true,
-      type: "add-project",
+      type: 'add-project',
     });
   };
 
@@ -100,12 +126,54 @@ const Dashboard = ({ selectedIndex, children }) => {
   const handleOnLogout = () => {
     logout();
   };
+  const [enableIcon, setEnableIcon] = useRecoilState(downloadIconSts);
+  const [projectIden, setProjectIden] = useRecoilState(downloadIconProj);
+
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     await fetchEventSource(`${baseUrl}/sse`, {
+  //       method: "GET",
+  //       headers: {
+  //         Accept: "text/event-stream",
+  //         Authorization: `Bearer ${acc_token}`,
+  //       },
+  //       onopen(res) {
+  //         if (res.ok && res.status === 200) {
+  //           console.log("Connection made ", res);
+  //         } else if (
+  //           res.status >= 400 &&
+  //           res.status < 500 &&
+  //           res.status !== 429
+  //         ) {
+  //           console.log("Client side error ", res);
+  //         }
+  //       },
+  //       onmessage(event) {
+  //         console.log("Manoj..dashboard",event.event);
+  //         console.log("eventdata ..dashboard :",event.data);
+  //         const parsedData = JSON.parse(event.data);
+  //         console.log("...parsedData..", parsedData[0].enableIcon)
+  //         setProjectIden(parsedData[0].projectId)
+  //         setEnableIcon(parsedData[0].enableIcon);
+  //       },
+  
+        
+  //       onclose() {
+  //         console.log("Connection closed by the server");
+  //       },
+  //       onerror(err) {
+  //         console.log("There was an error from server", err);
+  //       },
+  //     });
+  //   };  
+  //   fetchData(); 
+  //   }, []);
 
   return (
-    <div className='flex flex-col'>
+    <div className="flex flex-col">
       <Dialog
         onClose={handleCloseDialog}
-        aria-labelledby='dashboard-dialog'
+        aria-labelledby="dashboard-dialog"
         open={isLoggingOut || (dialog?.show ?? false)}
         fullWidth
         PaperProps={{
@@ -113,7 +181,7 @@ const Dashboard = ({ selectedIndex, children }) => {
         }}
         disableBackdropClick
       >
-        {dialog?.type === "add-project" && (
+        {dialog?.type === 'add-project' && (
           <AddProject
             onClose={handleCloseDialog}
             onSuccess={(projectId) => {
@@ -126,16 +194,23 @@ const Dashboard = ({ selectedIndex, children }) => {
           />
         )}
 
-        {isLoggingOut && <div className='p-4'>Logging you out ...</div>}
+        {isLoggingOut && <div className="p-4">Logging you out ...</div>}
       </Dialog>
 
       <header
-        className='fixed w-full top-0 bg-brand-primary flex flex-row p-4 items-center'
-        style={{ height: "56px", zIndex: "99" }}
+        className="fixed w-full top-0 bg-brand-primary flex flex-row p-4 items-center"
+        style={{ height: '56px', zIndex: '99' }}
       >
         {/* EZAPI logo */}
-        <div className='w-full'>
-          <EzapiLogo />
+        <div className="w-full flex flex-row">
+          <EzapiLogo style={{
+            marginRight: '0.5rem',
+          }}/>
+
+          <h6 className="text-white whitespace-nowrap ml-1 mt-1">
+          CONEKTTO
+          </h6>
+
         </div>
 
         {/* Initials logo */}
@@ -143,12 +218,12 @@ const Dashboard = ({ selectedIndex, children }) => {
           firstName={firstName}
           lastName={lastName}
           style={{
-            marginRight: "0.5rem",
+            marginRight: '0.5rem',
           }}
         />
 
         {/* Name */}
-        <p className='text-overline2 text-white whitespace-nowrap mr-2'>
+        <p className="text-overline2 text-white whitespace-nowrap mr-2">
           {firstName} {lastName}
         </p>
 
@@ -156,8 +231,8 @@ const Dashboard = ({ selectedIndex, children }) => {
         <ProfileMenuWithIcon logout={logout} />
       </header>
 
-      <section className='h-full flex flex-row my-14'>
-        <div className='h-full w-52 fixed left-0 border-r-2 border-gray-100'>
+      <section className="h-full flex flex-row my-14">
+        <div className="h-full w-52 fixed left-0 border-r-2 border-gray-100">
           <List>
             <ListItem
               button
@@ -166,31 +241,31 @@ const Dashboard = ({ selectedIndex, children }) => {
                 handleSideMenuItemClick(0);
               }}
               style={{
-                padding: "1rem",
+                padding: '1rem',
                 background:
-                  selectedIndex === 0 ? Colors.brand.primarySubtle : "white",
+                  selectedIndex === 0 ? Colors.brand.primarySubtle : 'white',
               }}
               className={selectedIndex === 0 ? styles.selectedItem : null}
               disableTouchRipple
             >
               <ListItemIcon
                 style={{
-                  minWidth: "0",
-                  marginRight: "1rem",
+                  minWidth: '0',
+                  marginRight: '1rem',
                 }}
               >
                 <AddIcon
                   className={`${classNames({
-                    "text-brand-primary": selectedIndex === 0,
-                    "text-neutral-gray2": selectedIndex !== 0,
+                    'text-brand-primary': selectedIndex === 0,
+                    'text-neutral-gray2': selectedIndex !== 0,
                   })}`}
-                  style={selectedIndex === 0 ? {} : { color: "grey" }}
+                  style={selectedIndex === 0 ? {} : { color: 'grey' }}
                 />
               </ListItemIcon>
               <p
                 className={`text-overline2 ${classNames({
-                  "text-brand-primary": selectedIndex === 0,
-                  "text-neutral-gray2": selectedIndex !== 0,
+                  'text-brand-primary': selectedIndex === 0,
+                  'text-neutral-gray2': selectedIndex !== 0,
                 })}`}
               >
                 Create New API
@@ -204,24 +279,24 @@ const Dashboard = ({ selectedIndex, children }) => {
                 handleSideMenuItemClick(1);
               }}
               style={{
-                padding: "1rem",
+                padding: '1rem',
               }}
               className={selectedIndex === 1 ? styles.selectedItem : null}
               classes={{ root: styles.root, selected: styles.selected }}
               disableTouchRipple
             >
-              <ListItemIcon style={{ minWidth: "0", marginRight: "1rem" }}>
+              <ListItemIcon style={{ minWidth: '0', marginRight: '1rem' }}>
                 <DashboardSharpIcon
                   className={`${classNames({
-                    "text-brand-primary": selectedIndex === 1,
-                    "text-neutral-gray4": selectedIndex !== 1,
+                    'text-brand-primary': selectedIndex === 1,
+                    'text-neutral-gray4': selectedIndex !== 1,
                   })}`}
                 />
               </ListItemIcon>
               <p
                 className={`text-overline2 ${classNames({
-                  "text-brand-primary": selectedIndex === 1,
-                  "text-neutral-gray4": selectedIndex !== 1,
+                  'text-brand-primary': selectedIndex === 1,
+                  'text-neutral-gray4': selectedIndex !== 1,
                 })}`}
               >
                 Dashboard
@@ -235,13 +310,13 @@ const Dashboard = ({ selectedIndex, children }) => {
                 handleSideMenuItemClick(2);
               }}
               style={{
-                padding: "1rem",
+                padding: '1rem',
               }}
               className={selectedIndex === 2 ? styles.selectedItem : null}
               classes={{ root: styles.root, selected: styles.selected }}
               disableTouchRipple
             >
-              <ListItemIcon style={{ minWidth: "0", marginRight: "1rem" }}>
+              <ListItemIcon style={{ minWidth: '0', marginRight: '1rem' }}>
                 <OrderHistoryIcon
                   fill={
                     selectedIndex === 2
@@ -252,18 +327,50 @@ const Dashboard = ({ selectedIndex, children }) => {
               </ListItemIcon>
               <p
                 className={`text-overline2 ${classNames({
-                  "text-brand-primary": selectedIndex === 2,
-                  "text-neutral-gray4": selectedIndex !== 2,
+                  'text-brand-primary': selectedIndex === 2,
+                  'text-neutral-gray4': selectedIndex !== 2,
                 })}`}
               >
                 Order History
+              </p>
+            </ListItem>
+
+            <ListItem
+              button
+              selected={selectedIndex === 3}
+              onClick={() => {
+                handleSideMenuItemClick(3);
+              }}
+              style={{
+                padding: '1rem',
+              }}
+              className={selectedIndex === 3 ? styles.selectedItem : null}
+              classes={{ root: styles.root, selected: styles.selected }}
+              disableTouchRipple
+            >
+              <ListItemIcon style={{ minWidth: '0', marginRight: '1rem' }}>
+                <PricingPageIcon
+                  fill={
+                    selectedIndex === 3
+                      ? Colors.brand.primary
+                      : Colors.neutral.gray4
+                  }
+                />
+              </ListItemIcon>
+              <p
+                className={`text-overline2 ${classNames({
+                  'text-brand-primary': selectedIndex === 3,
+                  'text-neutral-gray4': selectedIndex !== 3,
+                })}`}
+              >
+                Pricing Plan
               </p>
             </ListItem>
           </List>
         </div>
 
         <div
-          className='ml-52 w-full'
+          className="ml-52 w-full"
 
           // style={{ height: `calc(100vh - 180px)` }}
         >
