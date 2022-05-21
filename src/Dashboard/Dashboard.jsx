@@ -19,6 +19,7 @@ import AddIcon from "@material-ui/icons/Add";
 import imageLogo from "../static/images/logo/connectoLogo.svg";
 import { ReactComponent as OrderHistoryIcon } from "../static/images/order-history.svg";
 import { ReactComponent as PricingPageIcon } from "../static/images/pricing-page.svg";
+import { ReactComponent as ProductTourIcon } from "../static/images/product-tour.svg";
 import PricingPageLogo from "../icons/pricingPage_logo.png";
 import Colors from "../shared/colors";
 import routes, { generateRoute } from "../shared/routes";
@@ -97,6 +98,9 @@ const Dashboard = ({ selectedIndex, children, pricingDefaultCheck }) => {
         history.push(routes.orders);
       } else if (index === 3) {
         history.push(routes.pricing);
+      }
+      else if (index === 4) {
+        history.push(routes.productTour);
       }
     }
   };
@@ -376,6 +380,37 @@ const Dashboard = ({ selectedIndex, children, pricingDefaultCheck }) => {
                 Pricing Plan
               </p>
             </ListItem>
+            <ListItem
+              button
+              selected={selectedIndex === 4}
+              onClick={() => {
+                handleSideMenuItemClick(4);
+              }}
+              style={{
+                padding: "1rem",
+              }}
+              className={selectedIndex === 4 ? styles.selectedItem : null}
+              classes={{ root: styles.root, selected: styles.selected }}
+              disableTouchRipple
+            >
+              <ListItemIcon style={{ minWidth: "0", marginRight: "1rem" }}>
+                <ProductTourIcon
+                  className={`${classNames({
+                    "text-brand-primary": selectedIndex === 4,
+                    "text-neutral-gray4": selectedIndex !== 4,
+                  })}`}
+                />
+              </ListItemIcon>
+              <p
+                className={`text-overline2 ${classNames({
+                  "text-brand-primary": selectedIndex === 4,
+                  "text-neutral-gray4": selectedIndex !== 4,
+                })}`}
+              >
+                Product Tour
+              </p>
+            </ListItem>
+
           </List>
         </div>
 
