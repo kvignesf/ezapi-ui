@@ -68,7 +68,7 @@ const Resources = ({
     );
   };
   useEffect(() => {
-    console.log(treeNodeIndex);
+    //console.log(treeNodeIndex);
     setExpanded((oldExpanded) =>
       oldExpanded.length === 0 ? Array.from(Array(1000).keys()) : []
     );

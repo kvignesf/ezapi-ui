@@ -22,12 +22,16 @@ import tickLogo from "./icons/tick_logo.png";
 import crossLogo from "./icons/cross_logo.png";
 import Switch from "@mui/material/Switch";
 import routes from "./shared/routes";
-import { getAccessToken } from "./shared/storage";
+import { getAccessToken, setUserId } from "./shared/storage";
+import { getUserId } from "./shared/storage";
+import { ConstructionOutlined } from "@mui/icons-material";
 const acc_token = getAccessToken();
+
 const pricingData = async () => {
   const { data } = await client.get(endpoint.products2);
   return data;
-};
+};  
+
 const userProfile = async () => {
   try {
     const { data } = await client.get(endpoint.userProfile, {
@@ -35,10 +39,10 @@ const userProfile = async () => {
         Authorization: acc_token,
       },
     });
-
     return data;
   } catch (error) {}
 };
+
 export const usePricingData = () => {
   return useQuery([queries.products], pricingData, {
     refetchOnWindowFocus: false,
@@ -102,11 +106,31 @@ const Pricing = () => {
   const [trialButton, setTrialButton] = React.useState("SUBSCRIBE");
   const [basicButton, setBasicButton] = React.useState("SUBSCRIBE");
   const [proButton, setProButton] = React.useState("SUBSCRIBE");
+  //const [user_id, setUserId] = useState();
+
   const planTypeCardData2 = [];
+
+  //setUserId(getUserId())
 
   const { data } = useQuery("userProfileKey", userProfile, {
     refetchOnWindowFocus: false,
   });
+  const user_id = getUserId();
+
+  const pricingData2 = async () => {
+    const { data } = await client.get(endpoint.products2, {
+      headers: {
+        user_id: user_id
+      },
+    });
+    return data;
+  };
+
+  const usePricingData2 = () => {
+    return useQuery([queries.products], pricingData2, {
+      refetchOnWindowFocus: false,
+    });
+  };
 
   function CalculateTrialExpiryDate(str, index, value) {
     var dateStringArray = (
@@ -127,7 +151,13 @@ const Pricing = () => {
       dateObject[1] + "/" + dateObject[2].substring(0, 2) + "/" + dateObject[0];
     return dateObject;
   }
+
+/*   useEffect(() => {      
+
+  }, [user_id]) */
+
   useEffect(() => {
+
     if (!_.isEmpty(data)) {
       setEndSubDate(data?.["subscription_ends_at"]);
       setRenewSub(data?.["subscription_renews_at"]);
@@ -141,13 +171,19 @@ const Pricing = () => {
         setTrialButton("Expired");
       }
 
-      if (data?.["plan_name"] == "Basic") {
+      if (data?.["plan_name"] == "POC") {
         setBasicButton("Subscribed");
       } else {
         setBasicButton("Subscribe");
       }
 
       if (data?.["plan_name"] == "Pro") {
+        setProButton("Subscribed");
+      } else {
+        setProButton("Subscribe");
+      }
+
+      if (data?.["plan_name"] == "Basic") {
         setProButton("Subscribed");
       } else {
         setProButton("Subscribe");
@@ -166,7 +202,7 @@ const Pricing = () => {
     }
   };
 
-  const { data: pricing_data } = usePricingData();
+  const { data: pricing_data } = usePricingData2();
 
   function setPlanPriceBasedOnDuration(item, index) {
     var durationMatchPlaceHolder;
@@ -175,7 +211,7 @@ const Pricing = () => {
 
     item?.["stripe"].map((item2, index2) => {
       if (durationMatchPlaceHolder == item2["plan_interval"]) {
-        console.log(planTypeCardData2, item["plan_name"]);
+        //console.log(planTypeCardData2, item["plan_name"]);
         planTypeCardData2[index]["price"] = item2?.["plan_price"];
       }
     });
@@ -189,7 +225,7 @@ const Pricing = () => {
           item["description"] = ["Get the Trial, free"];
           item["buttonText"] = trialButton;
           break;
-        case "Basic":
+        case "POC":
           item["logo"] = basicLogo;
           item["description"] = ["Everything in Trial +"];
           item["buttonText"] = basicButton;
@@ -198,6 +234,11 @@ const Pricing = () => {
           item["logo"] = proLogo;
           item["description"] = ["Everything in Trial +"];
           item["buttonText"] = proButton;
+          break;
+        case "Basic":
+          item["logo"] = basicLogo;
+          item["description"] = ["Everything in Trial +"];
+          item["buttonText"] = basicButton;
           break;
       }
     });
@@ -242,7 +283,7 @@ const Pricing = () => {
         logo: enterpriseLogo,
       });
     }
-    console.log(planTypeCardData2);
+    //console.log(planTypeCardData2);
     pricing_data["products"].map((item, index) => {
       projectsCardData[item["plan_name"]].push(
         item["no_of_projects"],
@@ -267,7 +308,7 @@ const Pricing = () => {
       );
       validityCardData[item["plan_name"]].push(item["validity"]);
     });
-    console.log(projectsCardData);
+    //console.log(projectsCardData);
 
     cardHeaderData.push(
       projectsCardData,
@@ -276,20 +317,24 @@ const Pricing = () => {
       validityCardData
     );
     cardHeaderData.map((item) => {
-      for (const key in item) {
+      for (const key in item) {        
         if (
           pricing_data?.products.length < 3 &&
           item?.["plan_data"]?.length == 0
         ) {
-          if (key == "Basic") {
+          if (key == "POC") {
             item?.["plan_data"].push(item["Trial"]);
-            item?.["plan_data"].push(item["Basic"]);
+            item?.["plan_data"].push(item["POC"]);
             item?.["plan_data"].push(item["Enterprise"]);
           } else if (key == "Pro") {
             item?.["plan_data"].push(item["Trial"]);
             item?.["plan_data"].push(item["Pro"]);
             item?.["plan_data"].push(item["Enterprise"]);
-          }
+          } else if (key == "Basic") {
+            item?.["plan_data"].push(item["Trial"]);
+            item?.["plan_data"].push(item["Basic"]);
+            item?.["plan_data"].push(item["Enterprise"]);
+          } 
         }
         if (
           pricing_data?.products.length == 3 &&
@@ -303,7 +348,7 @@ const Pricing = () => {
       }
     });
 
-    console.log(cardHeaderData);
+    //console.log("cardHeaderData", cardHeaderData);
   }
 
   function handleSwitchChange(event) {

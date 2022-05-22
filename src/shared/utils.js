@@ -24,7 +24,7 @@ export const isEmailValid = (email) => {
 
 export const isUserLoggedIn = () => {
   const token = getAccessToken();
-  console.log('acc_token: ' + token);
+  console.log('acc_token: ');
 
   return token && !_.isEmpty(token);
 };

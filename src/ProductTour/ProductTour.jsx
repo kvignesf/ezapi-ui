@@ -24,7 +24,7 @@ const ProductTour = () => {
       setIndex((index - 1) % productVideosData?.productVideos.length);
     }
   };
-  console.log("productVideos:", productVideosData);
+  //console.log("productVideos:", productVideosData);
   return (
     <Dashboard selectedIndex={4}>
       <div className="mt-16">
