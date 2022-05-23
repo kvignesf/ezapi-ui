@@ -21,7 +21,7 @@ import Project from './Project';
 import ProjectPayment from './ProjectPayment/ProjectPayment';
 import ProjectPayment2 from './ProjectPayment/ProjectPayment2';
 import Orders from './Orders/Orders';
-
+import ProductTour from './ProductTour/ProductTour';
 import EzapiFooter from './shared/components/EzapiFooter';
 import Pricing from './Pricing';
 import Billing from './BillingPage';
@@ -65,6 +65,7 @@ const App = () => {
                   component={Projects}
                 />
                 <PrivateRoute exact path={routes.pricing} component={Pricing} />
+                <PrivateRoute exact path={routes.productTour} component={ProductTour} />
                 <Route
                   path={routes.payment}
                   render={(props) => {

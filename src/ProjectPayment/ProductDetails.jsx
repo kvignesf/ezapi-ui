@@ -12,9 +12,17 @@ import { clearQueryCache, queries } from "../shared/network/queryClient";
 import client, { endpoint } from "../shared/network/client";
 import { ReactComponent as StripeLogo } from "../static/images/stripe_purple.svg";
 import { getContainerUtilityClass } from "@mui/material";
+import { getUserId } from "../shared/storage";
+
 
 const pricingData = async () => {
-  const { data } = await client.get(endpoint.products2);
+  const user_id = getUserId();
+
+  const { data } = await client.get(endpoint.products2, {
+    headers: {
+      user_id: user_id
+    }
+  });
   // priceIDFinder(data);
   // console.log(data);
   return data;
