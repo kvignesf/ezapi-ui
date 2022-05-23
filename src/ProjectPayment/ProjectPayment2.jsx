@@ -59,6 +59,8 @@ import ProfileMenu from '../shared/components/ProfileMenu';
 import EzapiLogo from '../shared/components/EzapiLogo';
 import EzapiFooter from '../shared/components/EzapiFooter';
 import { getAccessToken } from '../shared/storage';
+import { getUserId } from "../shared/storage";
+
 const acc_token = getAccessToken();
 
 const Header = ({
@@ -124,7 +126,13 @@ const Header = ({
   );
 };
 const pricingData = async () => {
-  const { data } = await client.get(endpoint.products2);
+  const user_id = getUserId();
+
+  const { data } = await client.get(endpoint.products2, {
+    headers: {
+      user_id: user_id
+    }
+  });
   // priceIDFinder(data);
   // console.log(data);
   return data;
@@ -168,7 +176,7 @@ const ProjectPayment = (props) => {
   });
   useEffect(() => {
     var selectedPlanType;
-    console.log(location.state?.['duration']);
+    //console.log(location.state?.['duration']);
     if (location.state?.['duration'] == false) {
       selectedPlanType = 'mo';
     } else {
