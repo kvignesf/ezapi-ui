@@ -422,7 +422,7 @@ const ConnectDatabase = ({
   const { data: pricing_data } = usePricingData();
   const { data: userProfile_data } = useUserProfile();
 
-  console.log("pricing_data:",pricing_data);
+  //console.log("pricing_data:",pricing_data);
   
   useEffect(() => {
     if (pricing_data && userProfile_data) {

@@ -37,6 +37,7 @@ export const endpoint = Object.freeze({
   testDBConnection: '/testDBConnection',
   exportDBSchema: '/db_to_python',
 
+
   // Payment
   products2: '/products',
   products: '/product',
@@ -53,6 +54,9 @@ export const endpoint = Object.freeze({
 
   // Orders
   orders: '/orders',
+
+  //ProductTour
+  productVideos: '/productVideos'
 });
 
 const client = axios.create({

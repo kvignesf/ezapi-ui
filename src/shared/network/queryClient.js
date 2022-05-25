@@ -11,6 +11,7 @@ export const queries = {
   parameters: "parameters",
   operationRequest: "operationRequest",
   orders: "orders",
+  productVideos: "productVideos",
   userProfile: "userProfile",
 };
 

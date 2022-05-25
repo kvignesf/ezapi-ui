@@ -599,8 +599,8 @@ const Projects = () => {
   const { data } = useQuery("userProfileKey", userProfile, {
     refetchOnWindowFocus: false,
   });
-  console.log(data?.["plan_name"]);
-  console.log(stay);
+  //console.log(data?.["plan_name"]);
+  //console.log(stay);
 
   if (data?.["plan_name"] === null && !stay) {
     console.log("in");
