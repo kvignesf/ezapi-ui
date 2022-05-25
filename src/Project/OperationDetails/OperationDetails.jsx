@@ -48,62 +48,24 @@ const OperationDetails = ({
   const [operationState, setOperationState] = useRecoilState(
     operationAtomWithMiddleware
   );
+
   const getOperationMutation = useGetOperation();
-
-  useEffect(() => {
-    if (operationState?.operationIndex && operationState?.operation) {
-      getOperationMutation.mutate({
-        operationId: operationState.operation.operationId,
-        pathId: operationState.path.pathId,
-        resourceId: operationState.resource.resourceId,
-        projectId: projectId,
-      });
-    }
-  }, [operationState?.operationIndex]);
-
-  // useEffect(() => {
-  //   if (getOperationMutation?.data?.getResponseApiData) {
-  //     const operationData = getOperationMutation?.data?.getResponseApiData;
-
-  //     setOperationState((operationState) => {
-  //       const clonedOperationState = _.cloneDeep(operationState);
-  //       let parsedOperationResponse = parseGetOperationResponseResponse(
-  //         operationData?.responseBody
-  //       );
-
-  //       if (!parsedOperationResponse || _.isEmpty(parsedOperationResponse)) {
-  //         parsedOperationResponse = [
-  //           {
-  //             responseCode: Constants.mandatoryResponseCode,
-  //             headers: [],
-  //             body: [],
-  //           },
-  //         ];
-  //       }
-
-  //       clonedOperationState.operationResponse = parsedOperationResponse;
-
-  //       return clonedOperationState;
-  //     });
-  //   }
-  // }, [getOperationMutation?.data?.getResponseApiData]);
-
-  // useEffect(() => {
-  //   if (getOperationMutation?.data?.getRequestApiData) {
-  //     const operationData = getOperationMutation?.data?.getRequestApiData;
-
-  //     setOperationState((operationState) => {
-  //       const clonedOperationState = _.cloneDeep(operationState);
-  //       const parsedOperationRequest = parseGetOperationRequestResponse(
-  //         operationData?.requestBody
-  //       );
-
-  //       clonedOperationState.operationRequest = parsedOperationRequest;
-
-  //       return clonedOperationState;
-  //     });
-  //   }
-  // }, [getOperationMutation?.data?.getRequestApiData]);
+  console.log(operationState);
+  useEffect(
+    () => {
+      if (operationState?.operationIndex && operationState?.operation) {
+        getOperationMutation.mutate({
+          operationId: operationState.operation.operationId,
+          pathId: operationState.path.pathId,
+          resourceId: operationState.resource.resourceId,
+          projectId: projectId,
+          endpoint: operationState.endpoint,
+        });
+      }
+    },
+    [operationState?.operationIndex],
+    [operationState?.endpoint]
+  );
 
   if (getOperationMutation?.isLoading) {
     return (

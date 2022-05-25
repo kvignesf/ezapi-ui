@@ -70,11 +70,17 @@ export const useSyncOperation = () => {
   return mutation;
 };
 
-const getOperation = async ({ projectId, resourceId, pathId, operationId }) => {
+const getOperation = async ({
+  projectId,
+  resourceId,
+  pathId,
+  operationId,
+  endpoint,
+}) => {
   try {
     const { data: getRequestApiData } = await client.post(
       `/operationData/request/${operationId}`,
-      { projectId, resourceId, pathId }
+      { projectId, resourceId, pathId, endpoint }
     );
 
     const { data: getResponseApiData } = await client.post(
