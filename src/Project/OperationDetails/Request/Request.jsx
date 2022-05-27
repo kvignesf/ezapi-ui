@@ -123,13 +123,13 @@ const Request = ({
   }, [paramNameArr, customPath]);
   useEffect(() => {
     setPathValidator(validateBrackets(customPath));
-    setOperationDetails((operationDetails) => {
-      const clonedOperationDetails = _.cloneDeep(operationDetails);
+    // setOperationDetails((operationDetails) => {
+    //   const clonedOperationDetails = _.cloneDeep(operationDetails);
 
-      clonedOperationDetails.endpoint = customPath;
+    //   clonedOperationDetails.endpoint = customPath;
 
-      return clonedOperationDetails;
-    });
+    //   return clonedOperationDetails;
+    // });
   }, [customPath]);
 
   const [currentTab, setTab] = useState(0);
@@ -143,7 +143,7 @@ const Request = ({
       </div>
     );
   }
-  console.log(currentTab);
+  // console.log(currentTab);
   return (
     <div>
       <div className='border-b-2 mx-3 h-full'>

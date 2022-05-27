@@ -1,74 +1,86 @@
-import "./styles.css";
-import Dropdown from "react-multilevel-dropdown";
+import * as React from "react";
+import Box from "@mui/material/Box";
+import InputLabel from "@mui/material/InputLabel";
+import MenuItem from "@mui/material/MenuItem";
+import FormControl from "@mui/material/FormControl";
+import _ from "lodash";
+import Select from "@mui/material/Select";
+import {
+  getApiError,
+  operationAtomWithMiddleware,
+  parseGetOperationRequestResponse,
+  parseGetOperationResponseResponse,
+} from "../../../shared/utils";
+import { useRecoilValue, useRecoilState } from "recoil";
+export default function Authorization({ request = true, responseCode }) {
+  const [authtype, setAuthtype] = React.useState("No Auth");
+  const [tokentype, setTokentype] = React.useState("");
+  let [operationData, setOperationDetails] = useRecoilState(
+    operationAtomWithMiddleware
+  );
 
-export default function Authorization() {
-  const menus = [
-    {
-      name: "Movies",
-      type: "page",
-      id: "1",
-      children: [
-        {
-          name: "Hindi Movies",
-          type: "page",
-          id: "one-one",
-          children: [
-            {
-              name: "Action Movies",
-              type: "page",
-              id: "one-one-one",
-            },
-            {
-              name: "Romantic Movies",
-              type: "page",
-              id: "one-one-two",
-            },
-          ],
-        },
-        {
-          name: "Telugu Movies",
-          type: "page",
-          id: "one-two",
-          children: [
-            {
-              name: "Actionvhnjhnb Movies",
-              type: "page",
-              id: "one-two-one",
-            },
-          ],
-        },
-      ],
-    },
-  ];
+  const handleChange = (event) => {
+    setAuthtype(event.target.value);
+    // console.log(operationData);
+    // setOperationDetails((operationDetails) => {
+    //   if (request) {
+    //     console.log("operationDetails");
+    //     // let authObj = operationDetails.operationRequest;
+    //     // const clonedAuthObj = _.cloneDeep(authObj);
+    //     // const clonedOperationDetails = _.cloneDeep(operationDetails);
+    //     // clonedAuthObj["authorization"] = {
+    //     //   authType: authtype,
+    //     //   tokenType: tokentype,
+    //     // };
+
+    //     // clonedOperationDetails.operationRequest = clonedAuthObj;
+    //   }
+    // });
+  };
+  const handleChangeTokenType = (event) => {
+    setTokentype(event.target.value);
+    // setOperationDetails((operationDetails) => {
+    //   const clonedOperationDetails = _.cloneDeep(operationDetails);
+    //   clonedOperationDetails.operationRequest["authorization"]["authType"] =
+    //     authtype;
+    //   clonedOperationDetails.operationRequest["authorization"]["tokenType"] =
+    //     tokentype;
+    // });
+  };
 
   return (
-    <div className='App'>
-      {menus.map((menu) => (
-        <Dropdown
-          title={menu.name}
-          menuClassName='text-14 py-8 px-5 my-0 mx-16 border-b-1 border-solid border-blue hover:border-black'
-        >
-          {menu.children &&
-            menu.children.map((item) => (
-              <Dropdown.Item>
-                {item.name}
-                {item.children &&
-                  item.children.map((submenu) => (
-                    <Dropdown.Submenu position='right'>
-                      <Dropdown.Item>{submenu.name}</Dropdown.Item>
-                      {console.log(submenu.name)}
-                      {/* {item.children &&
-                        item.children.map((submenu) => (
-                          <Dropdown.Submenu position="right">
-                            <Dropdown.Item>{submenu.name}</Dropdown.Item>
-                          </Dropdown.Submenu>
-                        ))} */}
-                    </Dropdown.Submenu>
-                  ))}
-              </Dropdown.Item>
-            ))}
-        </Dropdown>
-      ))}
+    <div className='w-1/2 m-6'>
+      {" "}
+      <div className='grid  grid-cols-2 gap-1 '>
+        {" "}
+        <div className='grid items-center grid-cols-1 gap-2 '>
+          <p className=''>Auth Type: </p>
+
+          <FormControl style={{ width: "200px" }}>
+            <Select value={authtype} label='Age' onChange={handleChange}>
+              <MenuItem value={"No Auth"}>No Auth</MenuItem>
+              <MenuItem value={"Bearer Token"}>Bearer Token</MenuItem>
+            </Select>
+          </FormControl>
+        </div>
+        {authtype == "Bearer Token" && (
+          <div className='grid items-center grid-cols-1 col-start-2 gap-1'>
+            <p className='mr-4 self-center'>Token Type: </p>
+            <Box>
+              <FormControl style={{ width: "200px" }}>
+                <Select
+                  labelId='demo-simple-select-label'
+                  id='demo-simple-select'
+                  value={tokentype}
+                  onChange={handleChangeTokenType}
+                >
+                  <MenuItem value='JWT'>JWT</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
