@@ -13,9 +13,10 @@ import Snackbar from '@mui/material/Snackbar';
 import { getUserId } from '../shared/storage';
 
 let keyPath, certPath, caCertPath, savedProjectId;
-const loggedInUserId = getUserId();
 
 const pricingData = async () => {
+  const loggedInUserId = getUserId();
+
   const { data } = await client.get(endpoint.products2, {
     headers: {
       user_id: loggedInUserId
