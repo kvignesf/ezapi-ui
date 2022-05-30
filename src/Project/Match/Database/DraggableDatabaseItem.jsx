@@ -4,6 +4,8 @@ import DragIndicatorIcon from "@material-ui/icons/DragIndicator";
 import AccountTreeIcon from "@material-ui/icons/AccountTree";
 import classNames from "classnames";
 import { Drawer } from "@material-ui/core";
+import _ from "lodash";
+
 
 import AppIcon from "../../../shared/components/AppIcon";
 import Colors from "../../../shared/colors";
@@ -21,7 +23,7 @@ import {
   useCanEdit,
 } from "../../../shared/utils";
 
-const DraggableDatabaseItem = ({ index, item, section, ...rest }) => {
+const DraggableDatabaseItem = ({ index, item, section, primaryKey, ...rest }) => {
   const [dialog, setDialog] = useState({
     show: false,
     type: null,
@@ -39,6 +41,7 @@ const DraggableDatabaseItem = ({ index, item, section, ...rest }) => {
   );
   const canEdit = useCanEdit();
 
+ 
   return (
     <>
       {/* <Drawer anchor={"right"} open={dialog?.show} onClose={handleCloseDialog}>
@@ -54,9 +57,10 @@ const DraggableDatabaseItem = ({ index, item, section, ...rest }) => {
         ref={canEdit() ? drag : null}
         style={{
           opacity: isDragging ? 0.5 : 1,
+          backgroundColor: isDatabase(item) && (primaryKey.includes(item.name)) ? "#FFB6C1" :'white',
           cursor: isDatabase(item) && canEdit() ? "pointer" : null,
         }}
-        className="p-2 mb-2 rounded-md bg-white flex flex-row items-center"
+        className="p-2 mb-2 rounded-md flex flex-row items-center"
         {...rest}
       >
         <AppIcon className="mr-1 opacity-50">

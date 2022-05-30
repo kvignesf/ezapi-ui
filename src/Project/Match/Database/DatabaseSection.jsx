@@ -11,10 +11,15 @@ import {
   isDatabase,
   operationAtomWithMiddleware,
 } from "../../../shared/utils";
+import primaryAtom from "../../../shared/atom/primaryAtom";
+
 import _ from "lodash";
 
 const DatabaseSection = ({ items, onItemClick, section }) => {
   const operationState = useRecoilValue(operationAtomWithMiddleware);
+  const primaryKeyRef = useRecoilValue(primaryAtom);
+
+  
 
   const isItemsTypeTable = () => {
     if (items && !_.isEmpty(items)) {
@@ -57,6 +62,7 @@ const DatabaseSection = ({ items, onItemClick, section }) => {
                   index={index}
                   item={item}
                   section={section}
+                  primaryKey = {primaryKeyRef}
                   onClick={(e) => {
                     e?.preventDefault();
                     e?.stopPropagation();
