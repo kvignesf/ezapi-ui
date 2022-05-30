@@ -1,5 +1,5 @@
 import React, { useCallback } from "react";
-import { useGetRecoilValueInfo_UNSTABLE, useRecoilState } from "recoil";
+import { useGetRecoilValueInfo_UNSTABLE, useRecoilValue, useRecoilState } from "recoil";
 import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
 import TableCell from "@material-ui/core/TableCell";
@@ -25,17 +25,47 @@ import {
 } from "../../../shared/utils";
 import DragAndDropMessage from "../../../shared/components/DragAndDropMessage";
 import Row from "../Row";
+import primaryAtom from "../../../shared/atom/primaryAtom";
+import tablesDataAtom from "../../../shared/atom/tablesDataAtom";
 
+let final_arr = []
 const FormData = ({ request = true }) => {
   let [operationDetails, setOperationDetails] = useRecoilState(
     operationAtomWithMiddleware
   );
   const { height, width } = useWindowSize();
+  const [primaryKeyRef, setPrimaryKeyRef] = useRecoilState(primaryAtom);
+  const tablesData = useRecoilValue(tablesDataAtom);
   const { fetch: fetchParentName } = useGetParentName();
   const { fetch: fetchFullPath } = useGetFullPath();
   const getRecoilValueInfo = useGetRecoilValueInfo_UNSTABLE();
 
   const itemDropped = (item) => {
+    if(isColumn(item)){
+      if(item?.foreign)
+      {
+        final_arr.push(item?.foreign?.table);        
+        let condition = tablesData.filter((table)=>{
+          return table.name === item.foreign.table
+        })[0].selectedColumns.filter((column)=>{
+          return column.name === item.foreign.column
+        })[0]
+        
+        while(condition?.foreign){       
+        final_arr.push(condition.foreign.table);
+        condition = tablesData.filter((table)=>{
+          return table.name === condition.foreign.table
+        })[0].selectedColumns.filter((column)=>{
+          return column.name === condition.foreign.column
+        })[0]
+       
+      }
+      }
+      else{
+        final_arr = []
+      }
+      setPrimaryKeyRef(final_arr);
+    }
     if (
       (isAttribute(item) || isColumn(item)) &&
       !isArray(item) &&
