@@ -15,6 +15,7 @@ import {
 const syncOperation = async ({
   projectId,
   resourceId,
+
   pathId,
   operationId,
   requestData,
@@ -27,6 +28,7 @@ const syncOperation = async ({
         projectId,
         resourceId,
         pathId,
+
         ...requestData,
       }
     );
@@ -60,7 +62,7 @@ export const useSyncOperation = () => {
         operationAtomWithMiddleware
       );
       const clonedOperationState = _.cloneDeep(operationAtomLoadable?.contents);
-
+      // console.log(clonedOperationState);
       clonedOperationState.isModified = false;
 
       setOperationState(clonedOperationState);
@@ -70,7 +72,7 @@ export const useSyncOperation = () => {
   return mutation;
 };
 
-const getOperation = async ({
+export const getOperation = async ({
   projectId,
   resourceId,
   pathId,

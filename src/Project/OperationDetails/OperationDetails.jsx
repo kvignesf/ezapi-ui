@@ -14,6 +14,7 @@ import Request from "./Request/Request";
 import Response from "./Response/Response";
 import operationAtom from "../operationAtom";
 import { useGetOperation } from "../../shared/query/operationDetailsQuery";
+import { getOperation } from "../../shared/query/operationDetailsQuery";
 import TabLabel from "../../shared/components/TabLabel";
 import Constants from "../../shared/constants";
 import LoaderWithMessage from "../../shared/components/LoaderWithMessage";
@@ -50,22 +51,18 @@ const OperationDetails = ({
   );
 
   const getOperationMutation = useGetOperation();
-  console.log(operationState);
-  useEffect(
-    () => {
-      if (operationState?.operationIndex && operationState?.operation) {
-        getOperationMutation.mutate({
-          operationId: operationState.operation.operationId,
-          pathId: operationState.path.pathId,
-          resourceId: operationState.resource.resourceId,
-          projectId: projectId,
-          endpoint: operationState.endpoint,
-        });
-      }
-    },
-    [operationState?.operationIndex],
-    [operationState?.endpoint]
-  );
+  // console.log(operationState);
+  useEffect(() => {
+    if (operationState?.operationIndex && operationState?.operation) {
+      getOperationMutation.mutate({
+        operationId: operationState.operation.operationId,
+        pathId: operationState.path.pathId,
+        resourceId: operationState.resource.resourceId,
+        projectId: projectId,
+        // endpoint: operationState.operationRequest.endpoint,
+      });
+    }
+  }, [operationState?.operationIndex, operationState?.endpoint]);
 
   if (getOperationMutation?.isLoading) {
     return (

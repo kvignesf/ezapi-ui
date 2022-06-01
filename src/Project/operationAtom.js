@@ -6,12 +6,15 @@ export const defaultState = {
   resource: null,
   path: null,
   projectId: null,
+
   operationIndex: null,
 
   operationRequest: {
     headers: [],
     formData: [],
     pathParams: [],
+    endpoint: null,
+    authorization: null,
     queryParams: [],
     body: [],
   },

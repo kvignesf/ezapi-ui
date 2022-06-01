@@ -1,4 +1,4 @@
-import * as React from "react";
+import React, { useEffect } from "react";
 import Box from "@mui/material/Box";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
@@ -15,38 +15,31 @@ import { useRecoilValue, useRecoilState } from "recoil";
 export default function Authorization({ request = true, responseCode }) {
   const [authtype, setAuthtype] = React.useState("No Auth");
   const [tokentype, setTokentype] = React.useState("");
-  let [operationData, setOperationDetails] = useRecoilState(
+  let [operationDetails, setOperationDetails] = useRecoilState(
     operationAtomWithMiddleware
   );
 
   const handleChange = (event) => {
     setAuthtype(event.target.value);
-    // console.log(operationData);
-    // setOperationDetails((operationDetails) => {
-    //   if (request) {
-    //     console.log("operationDetails");
-    //     // let authObj = operationDetails.operationRequest;
-    //     // const clonedAuthObj = _.cloneDeep(authObj);
-    //     // const clonedOperationDetails = _.cloneDeep(operationDetails);
-    //     // clonedAuthObj["authorization"] = {
-    //     //   authType: authtype,
-    //     //   tokenType: tokentype,
-    //     // };
-
-    //     // clonedOperationDetails.operationRequest = clonedAuthObj;
-    //   }
-    // });
   };
   const handleChangeTokenType = (event) => {
     setTokentype(event.target.value);
-    // setOperationDetails((operationDetails) => {
-    //   const clonedOperationDetails = _.cloneDeep(operationDetails);
-    //   clonedOperationDetails.operationRequest["authorization"]["authType"] =
-    //     authtype;
-    //   clonedOperationDetails.operationRequest["authorization"]["tokenType"] =
-    //     tokentype;
-    // });
   };
+  useEffect(() => {
+    if (authtype == "Bearer Token" && tokentype != "JWT") setTokentype("JWT");
+    setOperationDetails((operationDetails) => {
+      if (request) {
+        const newOperationDetails = _.cloneDeep(operationDetails);
+        const clonedAuthType = _.cloneDeep(authtype);
+        const clonedTokenType = _.cloneDeep(tokentype);
+        newOperationDetails.operationRequest["authorization"] = {
+          "authType": clonedAuthType,
+          "tokenType": clonedTokenType,
+        };
+        return newOperationDetails;
+      }
+    });
+  }, [authtype, tokentype]);
 
   return (
     <div className='w-1/2 m-6'>

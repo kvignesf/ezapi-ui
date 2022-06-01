@@ -3,7 +3,9 @@ import { Tab, Tabs } from "@material-ui/core";
 import { useRecoilValue, useRecoilState } from "recoil";
 import { useGetRecoilValueInfo_UNSTABLE } from "recoil";
 import { useParams } from "react-router";
+import { getOperation } from "../../../shared/query/operationDetailsQuery";
 import _ from "lodash";
+import { useSetRecoilState } from "recoil";
 import client from "../../../shared/network/client";
 import {
   getApiError,
@@ -39,23 +41,38 @@ const Request = ({
   getDetailsMutation: { isLoading: isLoadingOperationRequest },
   projectType = "schema",
 }) => {
-  const [operationDetails, setOperationDetails] = useRecoilState(
+  const { projectId } = useParams();
+  const [operationState, setOperationState] = useRecoilState(
     operationAtomWithMiddleware
   );
 
   const [paramNameArr, setParamNameArr] = useState([]);
   const [pathValidator, setPathValidator] = useState();
-  const [count, setCount] = useState(0);
+  const [pathParam, setPathParam] = useState();
+  const [endpoint, setEndpoint] = useState();
+  const [firstTime, setFirstTime] = useState(true);
 
   const [customPath, setCustomPath] = useState(
-    "/" + operationDetails.path.pathName + ""
+    "/" + operationState.path.pathName + ""
   );
+  useEffect(() => {
+    getOperation({
+      operationId: operationState.operation.operationId,
+      pathId: operationState.path.pathId,
+      resourceId: operationState.resource.resourceId,
+      projectId: projectId,
+    }).then((x) => {
+      console.log(x?.getRequestApiData?.endpoint);
+      setEndpoint(x?.getRequestApiData?.endpoint);
+      setCustomPath(x?.getRequestApiData?.endpoint);
+    });
+  }, []);
 
   function buildcustomPath(e) {
     // setCustomPath(e?.currentTarget?.value);
     var c_name = e;
 
-    var path_name = "/" + operationDetails.path.pathName;
+    var path_name = "/" + operationState.path.pathName;
     //path
     if (c_name?.includes(path_name + "/") && path_name[1] == c_name?.[1]) {
     } else {
@@ -83,6 +100,7 @@ const Request = ({
       c_name = c_name?.replace("/{" + deleteItem + "}", "");
     });
     setCustomPath(c_name);
+    return c_name;
   }
 
   const validateBrackets = (str = "") => {
@@ -105,8 +123,8 @@ const Request = ({
   };
 
   useEffect(() => {
-    let pathParamArray = operationDetails.operationRequest.pathParams;
-
+    let pathParamArray = operationState.operationRequest.pathParams;
+    // console.log(operationState);
     var tempArr = [];
     if (pathParamArray.length == 0) {
       tempArr = [];
@@ -115,26 +133,42 @@ const Request = ({
         tempArr.push(item["name"]);
       });
     }
+    // console.log(pathParam, tempArr, firstTime);
 
-    setParamNameArr(tempArr);
-  }, [operationDetails.operationRequest.pathParams]);
+    if (
+      (JSON.stringify(pathParam) != JSON.stringify(tempArr) && pathParam) ||
+      firstTime
+    ) {
+      console.log("in");
+      setFirstTime(false);
+      setParamNameArr(tempArr);
+      setPathParam(tempArr);
+    }
+  }, [operationState.operationRequest.pathParams]);
+
   useEffect(() => {
+    // console.log("changed");
     buildcustomPath(customPath);
-  }, [paramNameArr, customPath]);
-  useEffect(() => {
     setPathValidator(validateBrackets(customPath));
-    // setOperationDetails((operationDetails) => {
-    //   const clonedOperationDetails = _.cloneDeep(operationDetails);
-
-    //   clonedOperationDetails.endpoint = customPath;
-
-    //   return clonedOperationDetails;
-    // });
+  }, [paramNameArr]);
+  useEffect(() => {
+    // console.log("userManipulated");
+    buildcustomPath(customPath);
+    setPathValidator(validateBrackets(customPath));
+  }, [customPath]);
+  useEffect(() => {
+    setOperationState((operationState) => {
+      const newOperationDetails = _.cloneDeep(operationState);
+      const clonedCustomPat = _.cloneDeep(customPath);
+      newOperationDetails.operationRequest["endpoint"] = clonedCustomPat;
+      return newOperationDetails;
+    });
+    // console.log(customPath);
   }, [customPath]);
 
   const [currentTab, setTab] = useState(0);
 
-  const operationState = useRecoilValue(operationAtomWithMiddleware);
+  // const operationState = useRecoilValue(operationAtomWithMiddleware);
 
   if (isLoadingOperationRequest) {
     return (
