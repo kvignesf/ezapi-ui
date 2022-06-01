@@ -59,6 +59,8 @@ import ProfileMenu from "../shared/components/ProfileMenu";
 import EzapiLogo from "../shared/components/EzapiLogo";
 import EzapiFooter from "../shared/components/EzapiFooter";
 import { getAccessToken } from "../shared/storage";
+import { getUserId } from "../shared/storage";
+
 const acc_token = getAccessToken();
 
 const Header = ({
@@ -124,6 +126,14 @@ const Header = ({
   );
 };
 const pricingData = async () => {
+  //const user_id = getUserId();
+
+  /* const { data } = await client.get(endpoint.products2, {
+    headers: {
+      user_id: user_id
+    }
+  }); */
+
   const { data } = await client.get(endpoint.products2);
   // priceIDFinder(data);
   // console.log(data);

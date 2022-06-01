@@ -116,14 +116,24 @@ const Pricing = () => {
   const { data } = useQuery("userProfileKey", userProfile, {
     refetchOnWindowFocus: false,
   });
-  const user_id = getUserId();
-
+  /* const user_id = getUserId();
   const pricingData2 = async () => {
     const { data } = await client.get(endpoint.products2, {
       headers: {
         user_id: user_id,
       },
     });
+    return data;
+  };
+
+  const usePricingData2 = () => {
+    return useQuery([queries.products], pricingData2, {
+      refetchOnWindowFocus: false,
+    });
+  }; */
+
+  const pricingData2 = async () => {
+    const { data } = await client.get(endpoint.products2);
     return data;
   };
 

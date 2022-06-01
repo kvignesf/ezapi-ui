@@ -18,28 +18,28 @@ const InviteCollaborators = ({
   ...rest
 }) => {
   const [error, setError] = useState(null);
-  const [numberOfCollaborators, setNumberOfCollaborators] = useState(0);
+  // const [numberOfCollaborators, setNumberOfCollaborators] = useState(0);
 
   
   // const loggedInEmail = getEmailId();
   const [projectDetails, setProjectDetails] = useRecoilState(projectAtom);
   
-  const { data: pricing_data } = usePricingData();
-  const { data: userProfile_data } = useUserProfile();
+  // const { data: pricing_data } = usePricingData();
+  // const { data: userProfile_data } = useUserProfile();
 
-  useEffect(() => {
-    if (pricing_data && userProfile_data) {
-      if (userProfile_data["plan_name"] == null || userProfile_data["plan_name"] == "Basic") {
-        setNumberOfCollaborators(2);
-      } else {
-        setNumberOfCollaborators(
-          pricing_data["products"].filter(
-            (item) => item["plan_name"] == userProfile_data["plan_name"]
-          )[0]["no_of_collaborators"]
-        );
-      }
-    }
-  }, [pricing_data, userProfile_data]);
+  // useEffect(() => {
+  //   if (pricing_data && userProfile_data) {
+  //     if (userProfile_data["plan_name"] == null || userProfile_data["plan_name"] == "Basic") {
+  //       setNumberOfCollaborators(2);
+  //     } else {
+  //       setNumberOfCollaborators(
+  //         pricing_data["products"].filter(
+  //           (item) => item["plan_name"] == userProfile_data["plan_name"]
+  //         )[0]["no_of_collaborators"]
+  //       );
+  //     }
+  //   }
+  // }, [pricing_data, userProfile_data]);
 
   return (
     <div className='p-4' {...rest} style={{height:'300px', overflowY:'scroll'}}>
@@ -62,7 +62,7 @@ const InviteCollaborators = ({
           //   setError(null);
           //   return false;
           // }
-          if(projectDetails.collaborators.length > numberOfCollaborators - 1)
+          if(projectDetails.collaborators.length > projectDetails.numberOfCollaborators - 1)
           {
             setError("You have exhausted your collaborator limit, please upgrade");
             return false;
