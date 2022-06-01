@@ -1,7 +1,6 @@
 {
   "name": "apiops-frontend-react",
   "version": "0.1.0",
-  "proxy": "https://localhost:3000",
   "private": true,
   "dependencies": {
     "@craco/craco": "^6.2.0",
@@ -63,7 +62,7 @@
     "yup": "^0.32.9"
   },
   "scripts": {
-    "start": "craco  start",
+    "start": "craco --openssl-legacy-provider  start",
     "build": "craco --openssl-legacy-provider build",
     "test": "craco --openssl-legacy-provider test",
     "eject": "react-scripts eject",
