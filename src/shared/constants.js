@@ -12,11 +12,14 @@ const Constants = {
   allResponses: responses,
   mandatoryResponse: responses[0],
   parameterDataTypes: [
+    "array",
+    "object",
     "integer",
     "long",
     "float",
     "double",
     "string",
+
     "byte",
     "binary",
     "boolean",

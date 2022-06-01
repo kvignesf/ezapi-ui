@@ -164,7 +164,11 @@ const AddOrEditParameter = ({ parameter, onClose }) => {
                             {...value}
                           >
                             {Constants.parameterDataTypes.map((type) => {
-                              return <MenuItem value={type}>{type}</MenuItem>;
+                              var upCaseType =
+                                type.charAt(0).toUpperCase() + type.slice(1);
+                              return (
+                                <MenuItem value={type}>{upCaseType}</MenuItem>
+                              );
                             })}
                           </Select>
                           {value?.error && (
@@ -235,7 +239,7 @@ const AddOrEditParameter = ({ parameter, onClose }) => {
                   />
                 </div>
 
-                <div className='mb-4'>
+                {/* <div className='mb-4'>
                   <label className='flex flex-row items-center h-5 w-min'>
                     <p className='text-overline2 mr-2'>Required</p>
                     <Field
@@ -257,7 +261,7 @@ const AddOrEditParameter = ({ parameter, onClose }) => {
                       }}
                     />
                   </label>
-                </div>
+                </div> */}
               </Form>
             )}
           </Formik>

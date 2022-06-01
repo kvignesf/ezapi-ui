@@ -14,6 +14,7 @@ import Request from "./Request/Request";
 import Response from "./Response/Response";
 import operationAtom from "../operationAtom";
 import { useGetOperation } from "../../shared/query/operationDetailsQuery";
+import { getOperation } from "../../shared/query/operationDetailsQuery";
 import TabLabel from "../../shared/components/TabLabel";
 import Constants from "../../shared/constants";
 import LoaderWithMessage from "../../shared/components/LoaderWithMessage";
@@ -48,8 +49,9 @@ const OperationDetails = ({
   const [operationState, setOperationState] = useRecoilState(
     operationAtomWithMiddleware
   );
-  const getOperationMutation = useGetOperation();
 
+  const getOperationMutation = useGetOperation();
+  // console.log(operationState);
   useEffect(() => {
     if (operationState?.operationIndex && operationState?.operation) {
       getOperationMutation.mutate({
@@ -57,53 +59,10 @@ const OperationDetails = ({
         pathId: operationState.path.pathId,
         resourceId: operationState.resource.resourceId,
         projectId: projectId,
+        // endpoint: operationState.operationRequest.endpoint,
       });
     }
-  }, [operationState?.operationIndex]);
-
-  // useEffect(() => {
-  //   if (getOperationMutation?.data?.getResponseApiData) {
-  //     const operationData = getOperationMutation?.data?.getResponseApiData;
-
-  //     setOperationState((operationState) => {
-  //       const clonedOperationState = _.cloneDeep(operationState);
-  //       let parsedOperationResponse = parseGetOperationResponseResponse(
-  //         operationData?.responseBody
-  //       );
-
-  //       if (!parsedOperationResponse || _.isEmpty(parsedOperationResponse)) {
-  //         parsedOperationResponse = [
-  //           {
-  //             responseCode: Constants.mandatoryResponseCode,
-  //             headers: [],
-  //             body: [],
-  //           },
-  //         ];
-  //       }
-
-  //       clonedOperationState.operationResponse = parsedOperationResponse;
-
-  //       return clonedOperationState;
-  //     });
-  //   }
-  // }, [getOperationMutation?.data?.getResponseApiData]);
-
-  // useEffect(() => {
-  //   if (getOperationMutation?.data?.getRequestApiData) {
-  //     const operationData = getOperationMutation?.data?.getRequestApiData;
-
-  //     setOperationState((operationState) => {
-  //       const clonedOperationState = _.cloneDeep(operationState);
-  //       const parsedOperationRequest = parseGetOperationRequestResponse(
-  //         operationData?.requestBody
-  //       );
-
-  //       clonedOperationState.operationRequest = parsedOperationRequest;
-
-  //       return clonedOperationState;
-  //     });
-  //   }
-  // }, [getOperationMutation?.data?.getRequestApiData]);
+  }, [operationState?.operationIndex, operationState?.endpoint]);
 
   if (getOperationMutation?.isLoading) {
     return (
