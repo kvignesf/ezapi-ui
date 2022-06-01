@@ -72,6 +72,7 @@ const AddProject = ({ onClose, onSuccess }) => {
 
   const formRef = useRef();
 
+
   const prevFormRef = useRef();
 
   const {
@@ -108,18 +109,29 @@ const AddProject = ({ onClose, onSuccess }) => {
   } = uploadDbMutation;
 
   const handleNext = () => {
+    console.log("##",formRef);
     if (formRef.current) {
       formRef.current.handleSubmit();
-      if (
-        formRef.current.isValid &&
-        !_.isEmpty(projectDetails?.name) &&
-        currentTab === 0
-      ) {
-        setTab(currentTab + 1);
-      } else if (currentTab === 1) {
-        formRef.current.handleSubmit();
-        setTab(currentTab + 1);
+      if(formRef.current.isValid){
+        if((currentTab === 0 && !_.isEmpty(projectDetails?.name)) || (currentTab === 1 && connectDatabaseTab===0) || (currentTab === 1 && connectDatabaseTab===1 && !_.isEmpty(projectDetails?.dbType))){
+          setTab(currentTab + 1);
+        }
+        
       }
+      // if (
+      //   formRef.current.isValid &&
+      //   !_.isEmpty(projectDetails?.name) &&
+      //   currentTab === 0
+      // ) {
+      //   setTab(currentTab + 1);
+      //   console.log("##",formRef);
+
+      // }
+      //  else if (currentTab === 1 &&
+      //   connectDatabaseTab === 1) {
+      //   formRef.current.handleSubmit();
+      //   setTab(currentTab + 1);
+      // }
     }
   };
 

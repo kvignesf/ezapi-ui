@@ -37,7 +37,7 @@ import { queries } from "../shared/network/queryClient";
 
 import { useQuery } from "react-query";
 import { array } from "yup";
-import { FormHelperText } from '@mui/material';
+import { FormHelperText } from "@mui/material";
 
 const ConnectDatabase = ({
   formRef,
@@ -177,6 +177,19 @@ const ConnectDatabase = ({
         return {
           ...currProjectDetails,
           type: nextValue,
+        };
+      });
+    }, 300),
+    [] // will be created only once initially
+  );
+  const debouncedSetNumberOfCollaborators = useCallback(
+    debounce((nextValue) => {
+      resetProjectApiState();
+
+      setProjectDetails((currProjectDetails) => {
+        return {
+          ...currProjectDetails,
+          numberOfCollaborators: nextValue,
         };
       });
     }, 300),
@@ -423,17 +436,21 @@ const ConnectDatabase = ({
   const { data: userProfile_data } = useUserProfile();
 
   //console.log("pricing_data:",pricing_data);
-  
+
   useEffect(() => {
     if (pricing_data && userProfile_data) {
-      if (userProfile_data["plan_name"] == null || userProfile_data["plan_name"] == "Basic") {
+      if (
+        userProfile_data["plan_name"] == null ||
+        userProfile_data["plan_name"] == "Basic"
+      ) {
+        debouncedSetNumberOfCollaborators(2);
         setConnectors({ ms_sql: true, my_sql: false, postgres: false });
-      } else{
-        setConnectors(
-          pricing_data["products"].filter(
-            (item) => item["plan_name"] == userProfile_data["plan_name"]
-          )[0]["connectors"]
-        );
+      } else {
+        const filtered_plan = pricing_data["products"].filter(
+          (item) => item["plan_name"] == userProfile_data["plan_name"]
+        )[0];
+        debouncedSetNumberOfCollaborators(filtered_plan["no_of_collaborators"]);
+        setConnectors(filtered_plan["connectors"]);
       }
     }
   }, [pricing_data, userProfile_data]);
@@ -478,7 +495,7 @@ const ConnectDatabase = ({
                 }}
                 validationSchema={Yup.object().shape({
                   // name: apiNameSchema(Messages.NAME_REQUIRED),
-                  type : Yup.string().required("  Database type is required."),
+                  type: Yup.string().required("  Database type is required."),
                   host: Yup.string().required("host is required."),
                   port: Yup.string().required("port is required."),
                   database: Yup.string().required("database is required."),
@@ -501,7 +518,7 @@ const ConnectDatabase = ({
                       <Grid item xs={12}>
                         <p className="text-mediumLabel mb-2">Server Type</p>
                         <Field
-                          id = "type"
+                          id="type"
                           name="type"
                           value={values.type}
                           // color = "primary"
@@ -510,7 +527,7 @@ const ConnectDatabase = ({
                             debouncedSetType(values.type);
                           }}
                           error={touched.type && Boolean(errors.type)}
-                          helperText={<ErrorMessage name="type"/>}
+                          helperText={<ErrorMessage name="type" />}
                           variant="outlined"
                           style={{
                             border: "1px solid #d2d2d2",
@@ -519,9 +536,9 @@ const ConnectDatabase = ({
                             width: "100%",
                             color: "primary",
                             backgroundColor: "#ffffff",
-                            borderColor: (touched.type && errors.type) && "red"
+                            borderColor: touched.type && errors.type && "red",
                           }}
-                          as = "select"
+                          as="select"
                         >
                           <option value="" label="Select db type" />
 
@@ -546,7 +563,11 @@ const ConnectDatabase = ({
                             }
                           })}
                         </Field>
-                        {(touched.type && errors.type) && <FormHelperText htmlFor='render-select' error>{errors.type}</FormHelperText>}
+                        {touched.type && errors.type && (
+                          <FormHelperText htmlFor="render-select" error>
+                            {errors.type}
+                          </FormHelperText>
+                        )}
                       </Grid>
                       <Grid item xs={6}>
                         <p className="text-mediumLabel mb-2">Host</p>
@@ -901,26 +922,32 @@ const ConnectDatabase = ({
             </div>
           ) : (
             <div className="h-80 pt-4 mb-4">
-              <Formik
-                initialValues={{
-                  dbType: projectDetails?.dbType ?? "",
-                }}
-                innerRef={formRef}
-              >
-                {({
-                  errors,
-                  touched,
-                  values,
-                  submitForm,
-                  validateForm,
-                  handleChange,
-                  handleBlur,
-                  setErrors,
-                }) => (
-                  <Form>
-                    <div className="mb-3">
-                      <Grid item xs={12}>
-                        <select
+              <div className="mb-3">
+                <Formik
+                  initialValues={{
+                    dbType: projectDetails?.dbType ?? "",
+                  }}
+                  validationSchema={Yup.object().shape({
+                    dbType: Yup.string().required(
+                      "  Database type is required."
+                    ),
+                  })}
+                  innerRef={formRef}
+                >
+                  {({
+                    errors,
+                    touched,
+                    values,
+                    submitForm,
+                    validateForm,
+                    handleChange,
+                    handleBlur,
+                    setErrors,
+                  }) => (
+                    <Form>
+                      <div className="mb-3">
+                        <Grid item xs={12}>
+                          {/* <select
                           name="dbType"
                           value={values.dbType}
                           // color = "primary"
@@ -939,11 +966,6 @@ const ConnectDatabase = ({
                             backgroundColor: "#ffffff",
                           }}
                         >
-                          {/* <option value="" label="Select db type" />
-                          <option value="mysql" label="MySQL" />
-                          <option value="mssql" label="SQL Server" />
-                          <option value="mongo" label="Mongo" />
-                          <option value="postgres" label="Postgres" /> */}
                           <option value="" label="Select db type" />
 
                           {databaseTypes?.map((item) => {
@@ -966,83 +988,133 @@ const ConnectDatabase = ({
                               }
                             }
                           })}
-                        </select>
-                      </Grid>
-                      <Grid item xs={12}>
-                        <p className="text-mediumLabel mb-2">
-                          Connect DB{" "}
-                          <span>
-                            <InfoOutlinedIcon />
-                          </span>
-                        </p>
-                        <input
-                          id="dbs"
-                          type="file"
-                          accept=".sql"
-                          multiple
-                          hidden
-                          onChange={(e) => {
-                            handleOnDbsPick(Array.from(e.target.files));
-                            e.target.value = "";
-                          }}
-                        />
-                        <label
-                          for="dbs"
-                          className="bg-brand-secondary rounded-md px-4 py-2
-            text-white text-mediumLabel hover:opacity-90"
-                        >
-                          Upload DDL
-                        </label>
-                      </Grid>
+                        </select> */}
 
-                      {/* Connected Dbs */}
-                      {!_.isEmpty(projectDetails?.dbs) ? (
-                        <div className="mt-3">
-                          <Scrollbar
-                            className="max-h-24"
-                            alwaysShowTracks={true}
+                          <Field
+                            id="dbType"
+                            name="dbType"
+                            value={values.dbType}
+                            // color = "primary"
+                            onChange={handleChange}
+                            onBlur={(e) => {
+                              debouncedSetDbType(values.dbType);
+                            }}
+                            error={touched.dbType && Boolean(errors.dbType)}
+                            helperText={<ErrorMessage name="dbType" />}
+                            variant="outlined"
+                            style={{
+                              border: "1px solid #d2d2d2",
+                              height: "60px",
+                              borderRadius: "4px",
+                              width: "100%",
+                              color: "primary",
+                              backgroundColor: "#ffffff",
+                              borderColor:
+                                touched.dbType && errors.dbType && "red",
+                            }}
+                            as="select"
                           >
-                            <ul>
-                              {projectDetails?.dbs?.map((file) => {
-                                return (
-                                  <li key={file.name}>
-                                    <div className="rounded-md border bg-neutral-gray7 p-2 mb-2 flex flex-row items-center justify-between">
-                                      <p className="text-overline2">
-                                        {file.name}{" "}
-                                        {Math.round(file.size / 1024)} KB
-                                      </p>
-                                      <AppIcon
-                                        aria-label="remove"
-                                        onClick={() => {
-                                          removeSelectedDb(file.name);
-                                        }}
-                                        style={{
-                                          width: "18px",
-                                          height: "18px",
-                                        }}
-                                      >
-                                        <CloseIcon />
-                                      </AppIcon>
-                                    </div>
-                                  </li>
-                                );
-                              })}
-                            </ul>
-                          </Scrollbar>
-                        </div>
-                      ) : null}
+                            <option value="" label="Select db type" />
 
-                      {_.isEmpty(projectDetails?.dbs) &&
-                        _.isEmpty(projectDetails?.specs) &&
-                        !_.isEmpty(dbsError) && (
-                          <p className="text-accent-red text-overline2 mt-2">
-                            {dbsError}
-                          </p>
-                        )}
-                    </div>
-                  </Form>
-                )}
-              </Formik>
+                            {databaseTypes?.map((item) => {
+                              if (connectors) {
+                                if (connectors[item.check]) {
+                                  return (
+                                    <option
+                                      value={item.value}
+                                      label={item.label}
+                                    />
+                                  );
+                                } else {
+                                  return (
+                                    <option
+                                      value={item.value}
+                                      label={item.label}
+                                      disabled
+                                    />
+                                  );
+                                }
+                              }
+                            })}
+                          </Field>
+                          {touched.dbType && errors.dbType && (
+                            <FormHelperText htmlFor="render-select" error>
+                              {errors.dbType}
+                            </FormHelperText>
+                          )}
+                        </Grid>
+                      </div>
+                    </Form>
+                  )}
+                </Formik>
+              </div>
+              <div className="mb-3">
+                <p className="text-mediumLabel mb-2">
+                  Connect DB{" "}
+                  <span>
+                    <InfoOutlinedIcon />
+                  </span>
+                </p>
+                <input
+                  id="dbs"
+                  type="file"
+                  accept=".sql"
+                  multiple
+                  hidden
+                  onChange={(e) => {
+                    handleOnDbsPick(Array.from(e.target.files));
+                    e.target.value = "";
+                  }}
+                />
+                <label
+                  for="dbs"
+                  className="bg-brand-secondary rounded-md px-4 py-2
+            text-white text-mediumLabel hover:opacity-90"
+                >
+                  Upload DDL
+                </label>
+
+                {/* Connected Dbs */}
+                {!_.isEmpty(projectDetails?.dbs) ? (
+                  <div className="mt-3">
+                    <Scrollbar className="max-h-24" alwaysShowTracks={true}>
+                      <ul>
+                        {projectDetails?.dbs?.map((file) => {
+                          return (
+                            <li key={file.name}>
+                              <div className="rounded-md border bg-neutral-gray7 p-2 mb-2 flex flex-row items-center justify-between">
+                                <p className="text-overline2">
+                                  {file.name} {Math.round(file.size / 1024)} KB
+                                </p>
+                                <AppIcon
+                                  aria-label="remove"
+                                  onClick={() => {
+                                    removeSelectedDb(file.name);
+                                  }}
+                                  style={{
+                                    width: "18px",
+                                    height: "18px",
+                                  }}
+                                >
+                                  <CloseIcon />
+                                </AppIcon>
+                              </div>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </Scrollbar>
+                  </div>
+                ) : null}
+
+                {_.isEmpty(projectDetails?.dbs) &&
+                  _.isEmpty(projectDetails?.specs) &&
+                  !_.isEmpty(dbsError) && (
+                    <p className="text-accent-red text-overline2 mt-2">
+                      {dbsError}
+                    </p>
+                  )}
+              </div>
             </div>
           )}
         </div>
