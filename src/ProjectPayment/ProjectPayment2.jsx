@@ -126,13 +126,15 @@ const Header = ({
   );
 };
 const pricingData = async () => {
-  const user_id = getUserId();
+  //const user_id = getUserId();
 
-  const { data } = await client.get(endpoint.products2, {
+  /* const { data } = await client.get(endpoint.products2, {
     headers: {
       user_id: user_id
     }
-  });
+  }); */
+
+  const { data } = await client.get(endpoint.products2);
   // priceIDFinder(data);
   // console.log(data);
   return data;
