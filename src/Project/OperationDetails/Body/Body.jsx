@@ -3,6 +3,7 @@ import {
   useGetRecoilValueInfo_UNSTABLE,
   useRecoilState,
   useSetRecoilState,
+  useRecoilValue,
 } from "recoil";
 import { CircularProgress } from "@material-ui/core";
 import _ from "lodash";
@@ -54,17 +55,47 @@ import ChangeTableName from "./ChangeTableName";
 import ChangeColumnName from "../ChangeColumnName";
 import { useExpandedIds } from "./utils";
 import Colors from "../../../shared/colors";
+import primaryAtom from "../../../shared/atom/primaryAtom";
+import tablesDataAtom from "../../../shared/atom/tablesDataAtom";
 
+let final_arr = []
 const Body = ({ request = true, responseCode, projectType = "schema" }) => {
   let [operationData, setOperationDetails] = useRecoilState(
     operationAtomWithMiddleware
   );
   const { height, width } = useWindowSize();
   const { getExandedIds, setExpandedIds } = useExpandedIds([]);
+  const [primaryKeyRef, setPrimaryKeyRef] = useRecoilState(primaryAtom);
+  const tablesData = useRecoilValue(tablesDataAtom);
   const { fetch: fetchParentName } = useGetParentName();
   const { fetch: fetchFullPath } = useGetFullPath();
 
   const itemDropped = (item) => {
+    if(isColumn(item)){
+      if(item?.foreign)
+      {
+        final_arr.push(item?.foreign?.table);        
+        let condition = tablesData.filter((table)=>{
+          return table.name === item.foreign.table
+        })[0].selectedColumns.filter((column)=>{
+          return column.name === item.foreign.column
+        })[0]
+        
+        while(condition?.foreign){       
+        final_arr.push(condition.foreign.table);
+        condition = tablesData.filter((table)=>{
+          return table.name === condition.foreign.table
+        })[0].selectedColumns.filter((column)=>{
+          return column.name === condition.foreign.column
+        })[0]
+       
+      }
+      }
+      else{
+        final_arr = []
+      }
+      setPrimaryKeyRef(final_arr);
+    }
     if (
       (isSchema(item) ||
         isDatabase(item) ||
