@@ -7,6 +7,7 @@ import { useGetTablesData } from "../../../shared/query/tablesQueries";
 import LoaderWithMessage from "../../../shared/components/LoaderWithMessage";
 import DatabaseSection from "./DatabaseSection";
 import tableAtom from "../../../shared/atom/tableAtom";
+import tablesDataAtom from "../../../shared/atom/tablesDataAtom";
 import { isDatabase } from "../../../shared/utils";
 
 const Database = () => {
@@ -19,6 +20,7 @@ const Database = () => {
   } = useGetTablesData();
   const [content, setContent] = useState(null);
   const [tableState, setTableState] = useRecoilState(tableAtom);
+  const [tablesDataState, setTablesDataState] = useRecoilState(tablesDataAtom);
 
   useEffect(() => {
     fetchTablesData({ projectId });
@@ -36,6 +38,8 @@ const Database = () => {
 
       setContent([firstPart, secondPart, thirdPart]);
     } else if (tablesData && !_.isEmpty(tablesData)) {
+      setTablesDataState(tablesData);
+
       const clonedTablesData = _.cloneDeep(tablesData);
 
       clonedTablesData?.sort((a, b) => {
@@ -44,12 +48,12 @@ const Database = () => {
         return 0;
       });
 
+
       const threePartIndex = Math.ceil(clonedTablesData.length / 3);
 
       const thirdPart = clonedTablesData.splice(-threePartIndex);
       const secondPart = clonedTablesData.splice(-threePartIndex);
       const firstPart = clonedTablesData;
-
       setContent([firstPart, secondPart, thirdPart]);
     }
   }, [tablesData, tableState?.selected]);
