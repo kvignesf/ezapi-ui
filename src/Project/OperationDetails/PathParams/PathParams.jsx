@@ -329,7 +329,7 @@ const PathParams = ({ request = true }) => {
                         onDescriptionUpdate(item, value);
                       }}
                       onRequiredUpdate={(item, value) => {
-                        // onRequiredUpdate(item, value);
+                        onRequiredUpdate(item, value);
                       }}
                       onNameUpdate={(item, name) => {
                         onNameUpdate(item, name);
@@ -353,7 +353,7 @@ const PathParams = ({ request = true }) => {
                         onDescriptionUpdate(item, value);
                       }}
                       onRequiredUpdate={(item, value) => {
-                        // onRequiredUpdate(item, value);
+                        onRequiredUpdate(item, value);
                       }}
                       isNameTaken={isNameTaken}
                     />
