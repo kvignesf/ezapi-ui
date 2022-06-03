@@ -5,6 +5,8 @@ import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import _ from "lodash";
 import Select from "@mui/material/Select";
+import { getOperation } from "../../../shared/query/operationDetailsQuery";
+import { useParams } from "react-router";
 import {
   getApiError,
   operationAtomWithMiddleware,
@@ -13,6 +15,10 @@ import {
 } from "../../../shared/utils";
 import { useRecoilValue, useRecoilState } from "recoil";
 export default function Authorization({ request = true, responseCode }) {
+  const [operationState, setOperationState] = useRecoilState(
+    operationAtomWithMiddleware
+  );
+  const { projectId } = useParams();
   const [authtype, setAuthtype] = React.useState("No Auth");
   const [tokentype, setTokentype] = React.useState("");
   let [operationDetails, setOperationDetails] = useRecoilState(
@@ -25,6 +31,17 @@ export default function Authorization({ request = true, responseCode }) {
   const handleChangeTokenType = (event) => {
     setTokentype(event.target.value);
   };
+  useEffect(() => {
+    getOperation({
+      operationId: operationState.operation.operationId,
+      pathId: operationState.path.pathId,
+      resourceId: operationState.resource.resourceId,
+      projectId: projectId,
+    }).then((x) => {
+      setAuthtype(x?.getRequestApiData?.requestBody?.authorization?.authType);
+      setTokentype(x?.getRequestApiData?.requestBody?.authorization?.tokenType);
+    });
+  }, []);
   useEffect(() => {
     if (authtype == "Bearer Token" && tokentype != "JWT") setTokentype("JWT");
     setOperationDetails((operationDetails) => {
