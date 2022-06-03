@@ -62,7 +62,7 @@ const Request = ({
       resourceId: operationState.resource.resourceId,
       projectId: projectId,
     }).then((x) => {
-      console.log(x?.getRequestApiData?.endpoint);
+      // console.log(x?.getRequestApiData?.endpoint);
       setEndpoint(x?.getRequestApiData?.endpoint);
       setCustomPath(x?.getRequestApiData?.endpoint);
     });
