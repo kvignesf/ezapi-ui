@@ -286,7 +286,7 @@ const ParamRow = ({ param }) => {
             />
           </AppIcon>
           <p className='flex-1 ml-1 text-overline2'>{param?.name}</p>
-          <p className='flex-1 text-overline2'>{param?.type}</p>
+          <p className='flex-1 text-overline2'>{param?.commonName}</p>
           <p className='flex-1 text-overline2'>{param?.description}</p>
           <p className='flex-1 text-overline2'>
             {param?.required ? "Yes" : "No"}
