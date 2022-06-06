@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import {
   Select,
+  IconButton,
   TextField,
   MenuItem,
   OutlinedInput,
@@ -34,6 +35,9 @@ import { withStyles } from "@material-ui/core/styles";
 import { useUserProfile, usePricingData } from "./addProjectQuery";
 import client, { endpoint } from "../shared/network/client";
 import { queries } from "../shared/network/queryClient";
+import Snackbar from "@material-ui/core/Snackbar";
+import Button from "@mui/material/Button";
+import MuiAlert from "@material-ui/lab/Alert";
 
 import { useQuery } from "react-query";
 import { array } from "yup";
@@ -51,6 +55,7 @@ const ConnectDatabase = ({
   handleTabChange,
 }) => {
   const [projectDetails, setProjectDetails] = useRecoilState(projectAtom);
+  const [open, setOpen] = useState(false);
   const [connectors, setConnectors] = useState({
     ms_sql: true,
     my_sql: false,
@@ -299,6 +304,35 @@ const ConnectDatabase = ({
     resetProjectApiState();
   };
 
+  const handleClose = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setOpen(false);
+  };
+  const handleClick = () => {
+    setOpen(true);
+  };
+
+  const action = (
+    <React.Fragment>
+      <Button color="secondary" size="small" onClick={handleClose}>
+        UNDO
+      </Button>
+      <IconButton
+        size="small"
+        aria-label="close"
+        color="inherit"
+        onClick={handleClose}
+      >
+        <CloseIcon fontSize="small" />
+      </IconButton>
+    </React.Fragment>
+  );
+
+  const Alert = React.forwardRef(function Alert(props, ref) {
+    return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+  });
   const handleOnDbsPick = (pickedDbs) => {
     setProjectDetails((currProjectDetails) => {
       const updatedProjectDetails = _.cloneDeep(currProjectDetails);
@@ -454,7 +488,7 @@ const ConnectDatabase = ({
       }
     }
   }, [pricing_data, userProfile_data]);
-
+  console.log("projectDeta", projectDetails);
   return (
     <div className="p-4" style={{ height: "300px", overflowY: "scroll" }}>
       {/* <Scrollbar className="max-h-60" alwaysShowTracks={true}> */}
@@ -1061,6 +1095,13 @@ const ConnectDatabase = ({
                   accept=".sql"
                   multiple
                   hidden
+                  disabled={
+                    projectDetails?.dbs !== null
+                      ? projectDetails?.dbs?.length === 0
+                        ? false
+                        : true
+                      : false
+                  }
                   onChange={(e) => {
                     handleOnDbsPick(Array.from(e.target.files));
                     e.target.value = "";
@@ -1068,12 +1109,34 @@ const ConnectDatabase = ({
                 />
                 <label
                   for="dbs"
+                  onClick={() => {
+                    if (
+                      projectDetails?.dbs !== null &&
+                      projectDetails?.dbs?.length !== 0
+                    ) {
+                      handleClick();
+                    }
+                  }}
                   className="bg-brand-secondary rounded-md px-4 py-2
             text-white text-mediumLabel hover:opacity-90"
                 >
                   Upload DDL
                 </label>
 
+                <Snackbar
+                  open={open}
+                  autoHideDuration={6000}
+                  onClose={handleClose}
+                  action={action}
+                >
+                  <Alert
+                    onClose={handleClose}
+                    severity="error"
+                    sx={{ width: "100%" }}
+                  >
+                    Only one file Upload is allowed
+                  </Alert>
+                </Snackbar>
                 {/* Connected Dbs */}
                 {!_.isEmpty(projectDetails?.dbs) ? (
                   <div className="mt-3">
