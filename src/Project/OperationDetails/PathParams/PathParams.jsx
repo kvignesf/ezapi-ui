@@ -291,7 +291,7 @@ const PathParams = ({ request = true }) => {
     >
       <TableContainer
         style={{
-          maxHeight: height > 750 ? "27vh" : height > 600 ? "23vh" : "20vh",
+          maxHeight: height > 750 ? "27vh" : height > 600 ? "24vh" : "20vh",
         }}
       >
         <Table
@@ -343,7 +343,12 @@ const PathParams = ({ request = true }) => {
 
           {!request &&
             !_.isEmpty(operationDetails?.operationResponse?.pathParams) && (
-              <TableBody className='w-full max-h-6'>
+              <TableBody
+                style={{
+                  overflowX: "auto",
+                }}
+                className='w-full max-h-6'
+              >
                 {operationDetails?.operationResponse?.pathParams?.map((row) => {
                   return (
                     <Row

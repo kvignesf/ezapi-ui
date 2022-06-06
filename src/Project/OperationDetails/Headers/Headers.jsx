@@ -354,7 +354,7 @@ const Headers = ({ request = true, responseCode }) => {
     );
     const operationDetails = operationAtom?.contents;
     let nameExists = false;
-    
+
     if (request) {
       let foundItemIndex = operationDetails.operationRequest.headers.findIndex(
         (x) => {
@@ -447,7 +447,7 @@ const Headers = ({ request = true, responseCode }) => {
     <DropArea onItemDropped={itemDropped}>
       <TableContainer
         style={{
-          maxHeight: height > 750 ? "27vh" : height > 600 ? "23vh" : "20vh",
+          maxHeight: height > 750 ? "27vh" : height > 600 ? "30vh" : "20vh",
         }}
       >
         <Table

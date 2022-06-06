@@ -211,7 +211,7 @@ const Project = () => {
     resetOperationState();
     resetSchemaState();
   };
-
+  // console.log(operationState);
   const saveProject = () => {
     if (canEdit(userRole)) {
       const { loadable: operationAtomLoadable } = getRecoilValueInfo(
@@ -228,6 +228,7 @@ const Project = () => {
 
       syncOperation({
         projectId: operationState?.projectId,
+
         operationId: operationState?.operation?.operationId,
         pathId: operationState?.path?.pathId,
         resourceId: operationState?.resource?.resourceId,
@@ -660,11 +661,14 @@ const Project = () => {
                         if (showUnsavedPopup && operationState?.isModified) {
                           showSaveOperationWarning("reset_operation_state");
                         } else {
+                          // console.log(operationState);
                           const cloned = _.cloneDeep(operationState);
                           cloned.operation = operation;
                           cloned.resource = resource;
                           cloned.path = path;
                           cloned.operationIndex = index;
+
+                          // console.log(cloned);
 
                           setOperationState(cloned);
                         }

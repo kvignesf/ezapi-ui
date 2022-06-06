@@ -1,10 +1,33 @@
 import React, { useEffect, useState } from "react";
 import { Tab, Tabs } from "@material-ui/core";
 import { useRecoilValue, useRecoilState } from "recoil";
-import _ from "lodash";
+import { useGetRecoilValueInfo_UNSTABLE } from "recoil";
 import { useParams } from "react-router";
-
+import { getOperation } from "../../../shared/query/operationDetailsQuery";
+import _ from "lodash";
+import { useSetRecoilState } from "recoil";
+import client from "../../../shared/network/client";
+import {
+  getApiError,
+  operationAtomWithMiddleware,
+  parseGetOperationRequestResponse,
+  parseGetOperationResponseResponse,
+} from "../../../shared/utils";
+import {
+  Box,
+  Button,
+  Card,
+  Container,
+  FormControlLabel,
+  Grid,
+  makeStyles,
+  TextField,
+  Typography,
+} from "@material-ui/core";
+// import { useParams } from "react-router";
+// import { useGetOperation } from "../../../shared/query/operationDetailsQuery";
 import Headers from "../Headers/Headers";
+import Authorization from "../Authorization/Authorization";
 import PathParams from "../PathParams/PathParams";
 import QueryParams from "../QueryParams/QueryParams";
 import FormData from "../FormData/FormData";
@@ -12,14 +35,140 @@ import operationAtom from "../../operationAtom";
 import Body from "../Body/Body";
 import TabLabel from "../../../shared/components/TabLabel";
 import LoaderWithMessage from "../../../shared/components/LoaderWithMessage";
-import { operationAtomWithMiddleware } from "../../../shared/utils";
+// import { operationAtomWithMiddleware } from "../../../shared/utils";
 
 const Request = ({
   getDetailsMutation: { isLoading: isLoadingOperationRequest },
   projectType = "schema",
 }) => {
+  const { projectId } = useParams();
+  const [operationState, setOperationState] = useRecoilState(
+    operationAtomWithMiddleware
+  );
+
+  const [paramNameArr, setParamNameArr] = useState([]);
+  const [pathValidator, setPathValidator] = useState();
+  const [pathParam, setPathParam] = useState();
+  const [endpoint, setEndpoint] = useState();
+  const [firstTime, setFirstTime] = useState(true);
+
+  const [customPath, setCustomPath] = useState(
+    "/" + operationState.path.pathName + ""
+  );
+  useEffect(() => {
+    getOperation({
+      operationId: operationState.operation.operationId,
+      pathId: operationState.path.pathId,
+      resourceId: operationState.resource.resourceId,
+      projectId: projectId,
+    }).then((x) => {
+      // console.log(x?.getRequestApiData?.endpoint);
+      setEndpoint(x?.getRequestApiData?.endpoint);
+      setCustomPath(x?.getRequestApiData?.endpoint);
+    });
+  }, []);
+
+  function buildcustomPath(e) {
+    // setCustomPath(e?.currentTarget?.value);
+    var c_name = e;
+
+    var path_name = "/" + operationState.path.pathName;
+    //path
+    if (c_name?.includes(path_name + "/") && path_name[1] == c_name?.[1]) {
+    } else {
+      c_name = path_name;
+    }
+    //adding
+    paramNameArr.map((paramItem, index) => {
+      if (c_name.includes("{" + paramItem + "}")) {
+      } else {
+        c_name = c_name?.concat("/{" + paramItem + "}");
+      }
+    });
+    //deleting
+    var paramsToDelete = [];
+    var pattern = /\{(.*?)\}/g;
+    var match;
+    while ((match = pattern.exec(c_name)) != null) {
+      paramsToDelete.push(match[1]);
+    }
+    var paramsToDelete = paramsToDelete.filter(
+      (paramItem) => !paramNameArr.includes(paramItem)
+    );
+
+    paramsToDelete.map((deleteItem) => {
+      c_name = c_name?.replace("/{" + deleteItem + "}", "");
+    });
+    setCustomPath(c_name);
+    return c_name;
+  }
+
+  const validateBrackets = (str = "") => {
+    const strArr = str.split("");
+    let counter = 0;
+    for (let i = 0, len = strArr.length; i < len; i++) {
+      if (strArr[i] === "{") {
+        counter++;
+      } else if (strArr[i] === "}") {
+        counter--;
+      }
+      if (counter < 0) {
+        return false;
+      }
+    }
+    if (counter === 0) {
+      return true;
+    }
+    return false;
+  };
+
+  useEffect(() => {
+    let pathParamArray = operationState.operationRequest.pathParams;
+    // console.log(operationState);
+    var tempArr = [];
+    if (pathParamArray.length == 0) {
+      tempArr = [];
+    } else {
+      pathParamArray.map((item) => {
+        tempArr.push(item["name"]);
+      });
+    }
+    // console.log(pathParam, tempArr, firstTime);
+
+    if (
+      (JSON.stringify(pathParam) != JSON.stringify(tempArr) && pathParam) ||
+      firstTime
+    ) {
+      console.log("in");
+      setFirstTime(false);
+      setParamNameArr(tempArr);
+      setPathParam(tempArr);
+    }
+  }, [operationState.operationRequest.pathParams]);
+
+  useEffect(() => {
+    // console.log("changed");
+    buildcustomPath(customPath);
+    setPathValidator(validateBrackets(customPath));
+  }, [paramNameArr]);
+  useEffect(() => {
+    // console.log("userManipulated");
+    buildcustomPath(customPath);
+    setPathValidator(validateBrackets(customPath));
+  }, [customPath]);
+  useEffect(() => {
+    setOperationState((operationState) => {
+      const newOperationDetails = _.cloneDeep(operationState);
+      const clonedCustomPat = _.cloneDeep(customPath);
+      newOperationDetails.operationRequest["endpoint"] = clonedCustomPat;
+      return newOperationDetails;
+    });
+    // console.log(customPath);
+  }, [customPath]);
+
   const [currentTab, setTab] = useState(0);
-  const operationState = useRecoilValue(operationAtomWithMiddleware);
+
+  // const operationState = useRecoilValue(operationAtomWithMiddleware);
 
   if (isLoadingOperationRequest) {
     return (
@@ -28,10 +177,10 @@ const Request = ({
       </div>
     );
   }
-
+  // console.log(currentTab);
   return (
     <div>
-      <div className='border-b-2 m-3 h-full'>
+      <div className='border-b-2 mx-3 h-full'>
         <Tabs
           value={currentTab}
           onChange={(_, index) => {
@@ -42,6 +191,12 @@ const Request = ({
           textColor='primary'
           style={{ width: "min-content" }}
         >
+          <Tab
+            label={<TabLabel label={"Authorization"} />}
+            style={{
+              outline: "none",
+            }}
+          />
           <Tab
             label={<TabLabel label={"Headers"} />}
             style={{
@@ -78,12 +233,32 @@ const Request = ({
           )}
         </Tabs>
       </div>
-
-      {currentTab === 0 && <Headers request={true} />}
-      {currentTab === 1 && <FormData request={true} />}
-      {currentTab === 2 && <PathParams request={true} />}
-      {currentTab === 3 && <QueryParams request={true} />}
-      {currentTab === 4 && <Body request={true} projectType={projectType} />}
+      {currentTab == 3 && (
+        <div className='flex flex-row justify-end mr-2 '>
+          {" "}
+          <p className='  self-center mr-5'>Path: </p>
+          <TextField
+            defaultValue={customPath}
+            className='path'
+            error={!pathValidator}
+            helperText={!pathValidator ? "Invalid Path" : null}
+            id='outlined-basic'
+            variant='outlined'
+            size='small'
+            style={{ width: "75%" }}
+            value={customPath}
+            onChange={(e) => {
+              buildcustomPath(e?.currentTarget?.value);
+            }}
+          />
+        </div>
+      )}
+      {currentTab === 0 && <Authorization request={true} />}
+      {currentTab === 1 && <Headers request={true} />}
+      {currentTab === 2 && <FormData request={true} />}
+      {currentTab === 3 && <PathParams request={true} />}
+      {currentTab === 4 && <QueryParams request={true} />}
+      {currentTab === 5 && <Body request={true} projectType={projectType} />}
     </div>
   );
 };
