@@ -106,6 +106,7 @@ const Pricing = () => {
   const [trialButton, setTrialButton] = React.useState("SUBSCRIBE");
   const [basicButton, setBasicButton] = React.useState("SUBSCRIBE");
   const [proButton, setProButton] = React.useState("SUBSCRIBE");
+  const [pocButton, setPOCButton] = React.useState("SUBSCRIBE");
   //const [user_id, setUserId] = useState();
 
   const planTypeCardData2 = [];
@@ -182,9 +183,9 @@ const Pricing = () => {
       }
 
       if (data?.["plan_name"] == "POC") {
-        setBasicButton("Subscribed");
+        setPOCButton("Subscribed");
       } else {
-        setBasicButton("Subscribe");
+        setPOCButton("Subscribe");
       }
 
       if (data?.["plan_name"] == "Pro") {
@@ -194,9 +195,9 @@ const Pricing = () => {
       }
 
       if (data?.["plan_name"] == "Basic") {
-        setProButton("Subscribed");
+        setBasicButton("Subscribed");
       } else {
-        setProButton("Subscribe");
+        setBasicButton("Subscribe");
       }
     }
   });
@@ -238,7 +239,7 @@ const Pricing = () => {
         case "POC":
           item["logo"] = basicLogo;
           item["description"] = ["Everything in Trial +"];
-          item["buttonText"] = basicButton;
+          item["buttonText"] = pocButton;
           break;
         case "Pro":
           item["logo"] = proLogo;
