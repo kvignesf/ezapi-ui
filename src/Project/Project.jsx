@@ -589,7 +589,7 @@ const Project = () => {
                 </PrimaryButton>
               )}
 
-              {canShowPublishCountStatus() && (
+              {canEdit(userRole) && canShowPublishCountStatus() && (
                 <div
                   className='flex flex-col py-1 px-3 border-1 border-l-0 border-brand-secondary mr-3 justify-center cursor-pointer'
                   style={{
@@ -704,6 +704,7 @@ const Project = () => {
                     >
                       <OperationDetails
                         projectType={projectDetails?.projectType}
+                        canEdit={canEdit(userRole)}
                       />
                     </div>
                   )}

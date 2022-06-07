@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import Card from "@material-ui/core/Card";
 import { LinkedIn } from "react-linkedin-login-oauth2";
 import linkedin from "react-linkedin-login-oauth2/assets/linkedin.png";
-import sso from "../icons/ssoLogo2.svg";
+import sso from "../icons/ssoLogo3.svg";
 import { useHistory, useLocation } from "react-router-dom";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 import { getAccessToken } from "../shared/storage";
@@ -44,7 +44,7 @@ const Login = () => {
   } = useLogin();
 
   const handleSuccess = (data) => {
-    console.log(data);
+    // console.log(data);
     if (data?.code && !_.isEmpty(data?.code)) {
       login({ linkedInAuthToken: data?.code, redirect_uri: redirect_uri });
     }
@@ -59,7 +59,7 @@ const Login = () => {
     }
   }, []);
   useEffect(() => {
-    console.log("inside redirect using sso");
+    // console.log("inside redirect using sso");
     if (isUserLoggedIn()) {
       history.push({
         pathname: routes.projects,
@@ -77,9 +77,9 @@ const Login = () => {
     fetch(process.env.REACT_APP_API_URL + "/auth_workos", requestOptions)
       .then((response) => response.json())
       .then((data) => {
-        console.log(data);
+        // console.log(data);
         if ("jwtToken" in data && "userData" in data) {
-          console.log("inside successs");
+          // console.log("inside successs");
           setAccessToken(data?.jwtToken);
           //  setAccessToken(data?.jwtToken);
           setFirstName(data?.userData?.firstName);
@@ -88,7 +88,7 @@ const Login = () => {
           setEmailId(data?.userData?.email);
           setSsoLoggedIn(true);
         } else {
-          console.log("failure");
+          // console.log("failure");
         }
       });
   }, []);
@@ -150,12 +150,11 @@ const Login = () => {
             </LinkedIn>
 
             <img
-              class='cursor-pointer ...'
               src={sso}
               onClick={SSOLogin}
               alt='Log in with SSO'
               style={{ maxWidth: "180px" }}
-              className='w-full'
+              className='w-full cursor-pointer ... '
             />
           </div>
         )}
