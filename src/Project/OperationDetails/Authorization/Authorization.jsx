@@ -12,18 +12,20 @@ import {
   operationAtomWithMiddleware,
   parseGetOperationRequestResponse,
   parseGetOperationResponseResponse,
+  canEdit,
 } from "../../../shared/utils";
 import { useRecoilValue, useRecoilState } from "recoil";
-export default function Authorization({ request = true, responseCode }) {
-  const [operationState, setOperationState] = useRecoilState(
+export default function Authorization({
+  request = true,
+  responseCode,
+  ...props
+}) {
+  const [operationState, setOperationDetails] = useRecoilState(
     operationAtomWithMiddleware
   );
   const { projectId } = useParams();
   const [authtype, setAuthtype] = React.useState("No Auth");
   const [tokentype, setTokentype] = React.useState("");
-  let [operationDetails, setOperationDetails] = useRecoilState(
-    operationAtomWithMiddleware
-  );
 
   const handleChange = (event) => {
     setAuthtype(event.target.value);
@@ -61,36 +63,48 @@ export default function Authorization({ request = true, responseCode }) {
   return (
     <div className='w-1/2 m-6'>
       {" "}
-      <div className='grid  grid-cols-2 gap-1 '>
-        {" "}
-        <div className='grid items-center grid-cols-1 gap-2 '>
-          <p className=''>Auth Type: </p>
-
-          <FormControl style={{ width: "200px" }}>
-            <Select value={authtype} label='Age' onChange={handleChange}>
-              <MenuItem value={"No Auth"}>No Auth</MenuItem>
-              <MenuItem value={"Bearer Token"}>Bearer Token</MenuItem>
-            </Select>
-          </FormControl>
-        </div>
-        {authtype == "Bearer Token" && (
-          <div className='grid items-center grid-cols-1 col-start-2 gap-1'>
-            <p className='mr-4 self-center'>Token Type: </p>
+      {request && (
+        <div className='grid  grid-cols-2 gap-1 '>
+          {" "}
+          <div className='grid items-center grid-cols-1 gap-2 '>
+            <p className=''>Auth Type: </p>
             <Box>
+              {" "}
               <FormControl style={{ width: "200px" }}>
                 <Select
+                  disabled={!props.canEdit}
                   labelId='demo-simple-select-label'
                   id='demo-simple-select'
-                  value={tokentype}
-                  onChange={handleChangeTokenType}
+                  value={authtype}
+                  onChange={handleChange}
                 >
-                  <MenuItem value='JWT'>JWT</MenuItem>
+                  <MenuItem value='No Auth'>No Auth</MenuItem>
+                  <MenuItem value='Bearer Token'>Bearer Token</MenuItem>
                 </Select>
               </FormControl>
             </Box>
           </div>
-        )}
-      </div>
+          {operationState.operationRequest?.authorization?.authType ==
+            "Bearer Token" && (
+            <div className='grid items-center grid-cols-1 col-start-2 gap-1'>
+              <p className='mr-4 self-center'>Token Type: </p>
+              <Box>
+                <FormControl style={{ width: "200px" }}>
+                  <Select
+                    disabled={!props.canEdit}
+                    labelId='demo-simple-select-label'
+                    id='demo-simple-select'
+                    value={tokentype}
+                    onChange={handleChangeTokenType}
+                  >
+                    <MenuItem value='JWT'>JWT</MenuItem>
+                  </Select>
+                </FormControl>
+              </Box>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

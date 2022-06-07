@@ -42,6 +42,7 @@ const OperationDetails = ({
   projectType,
   ...props
 }) => {
+  // console.log(props.canEdit);
   const { projectId } = useParams();
   const tabsClasses = tabsStyles();
   const tabClasses = tabStyles();
@@ -62,7 +63,7 @@ const OperationDetails = ({
         // endpoint: operationState.operationRequest.endpoint,
       });
     }
-  }, [operationState?.operationIndex, operationState?.endpoint]);
+  }, [operationState?.operationIndex]);
 
   if (getOperationMutation?.isLoading) {
     return (
@@ -125,6 +126,7 @@ const OperationDetails = ({
             {currentTab === 0 ? (
               <div className='h-full'>
                 <Request
+                  canEdit={props.canEdit}
                   getDetailsMutation={getOperationMutation}
                   projectType={projectType}
                 />

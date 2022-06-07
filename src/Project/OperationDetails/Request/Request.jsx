@@ -40,6 +40,7 @@ import LoaderWithMessage from "../../../shared/components/LoaderWithMessage";
 const Request = ({
   getDetailsMutation: { isLoading: isLoadingOperationRequest },
   projectType = "schema",
+  ...props
 }) => {
   const { projectId } = useParams();
   const [operationState, setOperationState] = useRecoilState(
@@ -139,7 +140,7 @@ const Request = ({
       (JSON.stringify(pathParam) != JSON.stringify(tempArr) && pathParam) ||
       firstTime
     ) {
-      console.log("in");
+      // console.log("in");
       setFirstTime(false);
       setParamNameArr(tempArr);
       setPathParam(tempArr);
@@ -237,26 +238,35 @@ const Request = ({
         <div className='flex flex-row justify-end mr-2 '>
           {" "}
           <p className='  self-center mr-5'>Path: </p>
-          <TextField
-            defaultValue={customPath}
-            className='path'
-            error={!pathValidator}
-            helperText={!pathValidator ? "Invalid Path" : null}
-            id='outlined-basic'
-            variant='outlined'
-            size='small'
-            style={{ width: "75%" }}
-            value={customPath}
-            onChange={(e) => {
-              buildcustomPath(e?.currentTarget?.value);
-            }}
-          />
+          {props.canEdit ? (
+            <TextField
+              defaultValue={customPath}
+              className='path'
+              disabled={!props.canEdit}
+              error={!pathValidator}
+              helperText={!pathValidator ? "Invalid Path" : null}
+              id='outlined-basic'
+              variant='outlined'
+              size='small'
+              style={{ width: "75%", color: "red", textColor: "red" }}
+              value={customPath}
+              onChange={(e) => {
+                buildcustomPath(e?.currentTarget?.value);
+              }}
+            />
+          ) : (
+            <p className='h-5 my-2 mr-44  self-center'>{customPath}</p>
+          )}
         </div>
       )}
-      {currentTab === 0 && <Authorization request={true} />}
+      {currentTab === 0 && (
+        <Authorization canEdit={props.canEdit} request={true} />
+      )}
       {currentTab === 1 && <Headers request={true} />}
       {currentTab === 2 && <FormData request={true} />}
-      {currentTab === 3 && <PathParams request={true} />}
+      {currentTab === 3 && (
+        <PathParams canEdit={props.canEdit} request={true} />
+      )}
       {currentTab === 4 && <QueryParams request={true} />}
       {currentTab === 5 && <Body request={true} projectType={projectType} />}
     </div>
