@@ -97,12 +97,12 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
       setPrimaryKeyRef(final_arr);
     }
     if (
-      (isSchema(item) ||
+      isSchema(item) ||
         isDatabase(item) ||
         isAttribute(item) ||
-        isColumn(item)) &&
-      !isObject(item) &&
-      !isArray(item)
+        isColumn(item) ||
+      isObject(item) ||
+      isArray(item)
     ) {
       setOperationDetails((operationDetails) => {
         const path = fetchFullPath(item);

@@ -1093,7 +1093,7 @@ const ConnectDatabase = ({
                   id="dbs"
                   type="file"
                   accept=".sql"
-                  multiple
+                  // multiple
                   hidden
                   disabled={
                     projectDetails?.dbs !== null

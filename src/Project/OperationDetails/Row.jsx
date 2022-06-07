@@ -136,7 +136,7 @@ const Row = ({
         </TableCell>
 
         <TableCell align='left' style={{ width: "150px", padding: "0px" }}>
-          {row.type}
+          {row.commonName}
         </TableCell>
 
         <TableCell
