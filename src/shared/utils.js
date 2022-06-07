@@ -73,8 +73,8 @@ export const isAttribute = (object) => {
   return (
     object?.type &&
     !_.isEmpty(object?.type) &&
-    object?.paramType !== "column" &&
-    _.includes(Constants.acceptedTypes, object?.type)
+    object?.paramType !== 'column' &&
+    _.includes(Constants.parameterDataTypes, object?.commonName)
   );
 };
 
