@@ -47,6 +47,7 @@ const Headers = ({ request = true, responseCode }) => {
   const getRecoilValueInfo = useGetRecoilValueInfo_UNSTABLE();
 
   const itemDropped = (item) => {
+    console.log("entereeeeed",item);
     let final_arr = [];
 
     if(isColumn(item)){

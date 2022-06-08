@@ -109,7 +109,6 @@ const AddProject = ({ onClose, onSuccess }) => {
   } = uploadDbMutation;
 
   const handleNext = () => {
-    console.log("##",formRef);
     if (formRef.current) {
       formRef.current.handleSubmit();
       if(formRef.current.isValid){
@@ -143,16 +142,7 @@ const AddProject = ({ onClose, onSuccess }) => {
     resetUploadSpecsApi();
     exportDBSchemaApi();
     resetAiMatcherApi();
-    console.log("-1",_.isEmpty(projectDetails?.dbs));
-    console.log("0",_.isEmpty(projectDetails?.specs));
-    console.log("1",_.isEmpty(projectDetails?.host));
-    console.log("2",_.isEmpty(projectDetails?.port));
-    console.log("3",_.isEmpty(projectDetails?.username));
-    console.log("4",_.isEmpty(projectDetails?.password));
-    console.log("5",_.isEmpty(projectDetails?.database));
-    console.log("6",_.isEmpty(projectDetails?.type));
-
-
+    
     if(_.isEmpty(projectDetails?.name))
     {
       setTab(0);
@@ -162,16 +152,16 @@ const AddProject = ({ onClose, onSuccess }) => {
 
       return;
     }
-    else if(_.isEmpty(projectDetails?.dbs) && _.isEmpty(projectDetails?.specs) && (_.isEmpty(projectDetails?.host) ||
-    _.isEmpty(projectDetails?.port) ||
-    _.isEmpty(projectDetails?.username) ||
-    _.isEmpty(projectDetails?.password) ||
-    _.isEmpty(projectDetails?.database) ||
-    _.isEmpty(projectDetails?.type)))
-    {
-      console.log("entry1",projectDetails);
-      setErrorDisplay(true);
-    }
+    // else if(_.isEmpty(projectDetails?.dbs) && _.isEmpty(projectDetails?.specs) && (_.isEmpty(projectDetails?.host) ||
+    // _.isEmpty(projectDetails?.port) ||
+    // _.isEmpty(projectDetails?.username) ||
+    // _.isEmpty(projectDetails?.password) ||
+    // _.isEmpty(projectDetails?.database) ||
+    // _.isEmpty(projectDetails?.type)))
+    // {
+    //   console.log("entry1",projectDetails);
+    //   setErrorDisplay(true);
+    // }
     else{
     console.log("entry2",projectDetails);
     
@@ -210,15 +200,15 @@ const AddProject = ({ onClose, onSuccess }) => {
 
       return;
     }
-    else if(_.isEmpty(projectDetails?.dbs) && _.isEmpty(projectDetails?.specs) && (_.isEmpty(projectDetails?.host) ||
-    _.isEmpty(projectDetails?.port) ||
-    _.isEmpty(projectDetails?.username) ||
-    _.isEmpty(projectDetails?.password) ||
-    _.isEmpty(projectDetails?.database) ||
-    _.isEmpty(projectDetails?.type)))
-    {
-      setErrorDisplay(true);
-    }
+    // else if(_.isEmpty(projectDetails?.dbs) && _.isEmpty(projectDetails?.specs) && (_.isEmpty(projectDetails?.host) ||
+    // _.isEmpty(projectDetails?.port) ||
+    // _.isEmpty(projectDetails?.username) ||
+    // _.isEmpty(projectDetails?.password) ||
+    // _.isEmpty(projectDetails?.database) ||
+    // _.isEmpty(projectDetails?.type)))
+    // {
+    //   setErrorDisplay(true);
+    // }
     
     else{
     uploadProjectData({

@@ -193,10 +193,10 @@ export const useAddProject = (onSuccess) => {
             dbtype: projectDetails?.dbType,
           });
         } else if (
-          !_.isEmpty(projectDetails?.host) &&
-          !_.isEmpty(projectDetails?.port) &&
-          !_.isEmpty(projectDetails?.username) &&
-          !_.isEmpty(projectDetails?.database) &&
+          !_.isEmpty(projectDetails?.host) ||
+          !_.isEmpty(projectDetails?.port) ||
+          !_.isEmpty(projectDetails?.username) ||
+          !_.isEmpty(projectDetails?.database) ||
           !_.isEmpty(projectDetails?.type)
         ) {
           if (
@@ -482,11 +482,11 @@ export const useUploadProjectSpecs = (
             dbtype: projectDetails?.dbType,
           });
         } else if (
-          !_.isEmpty(projectDetails?.specs) &&
-          !_.isEmpty(projectDetails?.host) &&
-          !_.isEmpty(projectDetails?.port) &&
-          !_.isEmpty(projectDetails?.username) &&
-          !_.isEmpty(projectDetails?.database) &&
+          !_.isEmpty(projectDetails?.specs) ||
+          !_.isEmpty(projectDetails?.host) ||
+          !_.isEmpty(projectDetails?.port) ||
+          !_.isEmpty(projectDetails?.username) ||
+          !_.isEmpty(projectDetails?.database) ||
           !_.isEmpty(projectDetails?.type)
         ) {
           if (
