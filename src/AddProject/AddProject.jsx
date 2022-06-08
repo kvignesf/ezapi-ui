@@ -45,7 +45,7 @@ const AddProject = ({ onClose, onSuccess }) => {
   const [connectDatabaseTab, setConnectDatabaseTab] = useState(0);
   const history = useHistory();
   const [open, setOpen] = useState(false);
-  const [showCollabsErrorMssg, setShowCollabsErrorMssg] = useState(true);
+  const [errorDisplay, setErrorDisplay] = useState(false);
   const [inviteCollabsErrorMssg, setInviteCollabsErrorMssg] = useState(false);
 
   const loggedInUserId = getUserId();
@@ -143,18 +143,18 @@ const AddProject = ({ onClose, onSuccess }) => {
     resetUploadSpecsApi();
     exportDBSchemaApi();
     resetAiMatcherApi();
+    console.log("-1",_.isEmpty(projectDetails?.dbs));
+    console.log("0",_.isEmpty(projectDetails?.specs));
+    console.log("1",_.isEmpty(projectDetails?.host));
+    console.log("2",_.isEmpty(projectDetails?.port));
+    console.log("3",_.isEmpty(projectDetails?.username));
+    console.log("4",_.isEmpty(projectDetails?.password));
+    console.log("5",_.isEmpty(projectDetails?.database));
+    console.log("6",_.isEmpty(projectDetails?.type));
 
-    if (
-      _.isEmpty(projectDetails?.name) ||
-      (_.isEmpty(projectDetails?.dbs) &&
-        _.isEmpty(projectDetails?.specs) &&
-        _.isEmpty(projectDetails?.host) &&
-        _.isEmpty(projectDetails?.port) &&
-        _.isEmpty(projectDetails?.username) &&
-        _.isEmpty(projectDetails?.password) &&
-        _.isEmpty(projectDetails?.database) &&
-        _.isEmpty(projectDetails?.type))
-    ) {
+
+    if(_.isEmpty(projectDetails?.name))
+    {
       setTab(0);
       if (formRef.current) {
         formRef.current.handleSubmit();
@@ -162,7 +162,19 @@ const AddProject = ({ onClose, onSuccess }) => {
 
       return;
     }
-
+    else if(_.isEmpty(projectDetails?.dbs) && _.isEmpty(projectDetails?.specs) && (_.isEmpty(projectDetails?.host) ||
+    _.isEmpty(projectDetails?.port) ||
+    _.isEmpty(projectDetails?.username) ||
+    _.isEmpty(projectDetails?.password) ||
+    _.isEmpty(projectDetails?.database) ||
+    _.isEmpty(projectDetails?.type)))
+    {
+      console.log("entry1",projectDetails);
+      setErrorDisplay(true);
+    }
+    else{
+    console.log("entry2",projectDetails);
+    
     uploadProjectData({
       name: projectDetails?.name,
       invitees: projectDetails?.collaborators?.map((collaborator) => {
@@ -172,8 +184,11 @@ const AddProject = ({ onClose, onSuccess }) => {
       }),
     });
   }
+  }
   
   const handleDone = () => {
+    setErrorDisplay(false);
+
     if(projectDetails.collaborators.length < 1)
     {
       setInviteCollabsErrorMssg(true);
@@ -187,16 +202,7 @@ const AddProject = ({ onClose, onSuccess }) => {
     resetAiMatcherApi();
 
     if (
-      _.isEmpty(projectDetails?.name) ||
-      (_.isEmpty(projectDetails?.dbs) &&
-        _.isEmpty(projectDetails?.specs) &&
-        _.isEmpty(projectDetails?.host) &&
-        _.isEmpty(projectDetails?.port) &&
-        _.isEmpty(projectDetails?.username) &&
-        _.isEmpty(projectDetails?.password) &&
-        _.isEmpty(projectDetails?.database) &&
-        _.isEmpty(projectDetails?.type))
-    ) {
+      _.isEmpty(projectDetails?.name)) {
       setTab(0);
       if (formRef.current) {
         formRef.current.handleSubmit();
@@ -204,7 +210,17 @@ const AddProject = ({ onClose, onSuccess }) => {
 
       return;
     }
-
+    else if(_.isEmpty(projectDetails?.dbs) && _.isEmpty(projectDetails?.specs) && (_.isEmpty(projectDetails?.host) ||
+    _.isEmpty(projectDetails?.port) ||
+    _.isEmpty(projectDetails?.username) ||
+    _.isEmpty(projectDetails?.password) ||
+    _.isEmpty(projectDetails?.database) ||
+    _.isEmpty(projectDetails?.type)))
+    {
+      setErrorDisplay(true);
+    }
+    
+    else{
     uploadProjectData({
       name: projectDetails?.name,
       invitees: projectDetails?.collaborators?.map((collaborator) => {
@@ -213,6 +229,7 @@ const AddProject = ({ onClose, onSuccess }) => {
         };
       }),
     });
+  }
   }
   };
 
@@ -439,6 +456,12 @@ const AddProject = ({ onClose, onSuccess }) => {
                 {projectDetailsError?.response?.data?.message}
               </p>
             )}
+
+          {errorDisplay && (currentTab === 2) && (
+              <p className="text-overline2 text-accent-red my-2">
+                Please upload atleast one of the following - specs or ddl file or dbconnection
+              </p>
+          )}
 
           {inviteCollabsErrorMssg && (
               <p className="text-overline2 text-accent-red my-2">
