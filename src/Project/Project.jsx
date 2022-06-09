@@ -173,7 +173,6 @@ const Project = () => {
       dialog?.type === "save-operation-warning"
     ) {
       handleCloseDialog();
-
       resetSyncOperationMutation();
 
       // if (dialog?.data === "with-nav") {

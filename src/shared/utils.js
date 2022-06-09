@@ -73,7 +73,7 @@ export const isAttribute = (object) => {
   return (
     object?.type &&
     !_.isEmpty(object?.type) &&
-    object?.paramType !== 'column' &&
+    object?.paramType !== "column" &&
     _.includes(Constants.acceptedTypes, object?.type)
   );
 };
@@ -268,7 +268,8 @@ export const generateSyncOperationRequestRequest = (operationRequest) => {
  * @param  {[object]} [operationResponse] The operation response which is to be parsed into the local state format.
  * @return {[object]} [object] Operation Request in the local state format.
  */
-export const parseGetOperationRequestResponse = (operationResponse) => {
+export const parseGetOperationRequestResponse = (requestAPIData) => {
+  var operationResponse = requestAPIData?.requestBody;
   if (!operationResponse || _.isEmpty(operationResponse)) {
     return {
       headers: [],
@@ -276,6 +277,8 @@ export const parseGetOperationRequestResponse = (operationResponse) => {
       pathParams: [],
       queryParams: [],
       body: [],
+      endpoint: "",
+      authorization: {},
     };
   }
   let request = {
@@ -283,6 +286,8 @@ export const parseGetOperationRequestResponse = (operationResponse) => {
     formData: [],
     pathParams: [],
     queryParams: [],
+    authorization: {},
+    endpoint: "",
     body: [],
   };
 
@@ -379,6 +384,16 @@ export const parseGetOperationRequestResponse = (operationResponse) => {
         request.body = [_.cloneDeep(operationResponse?.body)];
       }
     }
+  }
+
+  if (
+    operationResponse?.authorization &&
+    !_.isEmpty(operationResponse?.authorization)
+  ) {
+    request.authorization = operationResponse?.authorization;
+  }
+  if (requestAPIData?.endpoint && !_.isEmpty(requestAPIData?.endpoint)) {
+    request.endpoint = requestAPIData?.endpoint;
   }
 
   return request;
