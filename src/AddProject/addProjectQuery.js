@@ -461,6 +461,7 @@ export const useUploadProjectCACertificate = (
   return mutation;
 };
 
+
 export const useUploadProjectSpecs = (
   exportDBSchemaMutation,
   keyMutation,
@@ -482,7 +483,6 @@ export const useUploadProjectSpecs = (
             dbtype: projectDetails?.dbType,
           });
         } else if (
-          !_.isEmpty(projectDetails?.specs) ||
           !_.isEmpty(projectDetails?.host) ||
           !_.isEmpty(projectDetails?.port) ||
           !_.isEmpty(projectDetails?.username) ||
