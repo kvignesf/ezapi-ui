@@ -52,7 +52,7 @@ const OperationDetails = ({
   );
 
   const getOperationMutation = useGetOperation();
-  // console.log(operationState);
+
   useEffect(() => {
     if (operationState?.operationIndex && operationState?.operation) {
       getOperationMutation.mutate({
@@ -60,7 +60,6 @@ const OperationDetails = ({
         pathId: operationState.path.pathId,
         resourceId: operationState.resource.resourceId,
         projectId: projectId,
-        // endpoint: operationState.operationRequest.endpoint,
       });
     }
   }, [operationState?.operationIndex]);

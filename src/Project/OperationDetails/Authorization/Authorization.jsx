@@ -20,37 +20,25 @@ export default function Authorization({
   responseCode,
   ...props
 }) {
-  const [operationState, setOperationDetails] = useRecoilState(
+  let [operationData, setOperationDetails] = useRecoilState(
     operationAtomWithMiddleware
   );
+
   const { projectId } = useParams();
   const [authtype, setAuthtype] = React.useState("No Auth");
   const [tokentype, setTokentype] = React.useState("");
 
-  const handleChange = (event) => {
-    setAuthtype(event.target.value);
-  };
-  const handleChangeTokenType = (event) => {
-    setTokentype(event.target.value);
-  };
-  useEffect(() => {
-    getOperation({
-      operationId: operationState.operation.operationId,
-      pathId: operationState.path.pathId,
-      resourceId: operationState.resource.resourceId,
-      projectId: projectId,
-    }).then((x) => {
-      setAuthtype(x?.getRequestApiData?.requestBody?.authorization?.authType);
-      setTokentype(x?.getRequestApiData?.requestBody?.authorization?.tokenType);
-    });
-  }, []);
-  useEffect(() => {
-    if (authtype == "Bearer Token" && tokentype != "JWT") setTokentype("JWT");
+  const handleChangeAuthType = (event) => {
+    var tempTokenType = tokentype;
+    if (event.target.value == "Bearer Token") {
+      tempTokenType = "JWT";
+    }
+
     setOperationDetails((operationDetails) => {
       if (request) {
         const newOperationDetails = _.cloneDeep(operationDetails);
-        const clonedAuthType = _.cloneDeep(authtype);
-        const clonedTokenType = _.cloneDeep(tokentype);
+        const clonedAuthType = _.cloneDeep(event.target.value);
+        const clonedTokenType = _.cloneDeep(tempTokenType);
         newOperationDetails.operationRequest["authorization"] = {
           "authType": clonedAuthType,
           "tokenType": clonedTokenType,
@@ -58,7 +46,27 @@ export default function Authorization({
         return newOperationDetails;
       }
     });
-  }, [authtype, tokentype]);
+  };
+  const handleChangeTokenType = (event) => {
+    setOperationDetails((operationDetails) => {
+      if (request) {
+        const newOperationDetails = _.cloneDeep(operationDetails);
+        const clonedAuthType = _.cloneDeep(authtype);
+        const clonedTokenType = _.cloneDeep(event.target.value);
+        newOperationDetails.operationRequest["authorization"] = {
+          "authType": clonedAuthType,
+          "tokenType": clonedTokenType,
+        };
+        return newOperationDetails;
+      }
+    });
+  };
+  useEffect(() => {
+    if (operationData?.operationRequest?.authorization) {
+      setAuthtype(operationData?.operationRequest?.authorization?.authType);
+      setTokentype(operationData?.operationRequest?.authorization?.tokenType);
+    }
+  }, [operationData?.operationRequest?.authorization]);
 
   return (
     <div className='w-1/2 m-6'>
@@ -76,7 +84,7 @@ export default function Authorization({
                   labelId='demo-simple-select-label'
                   id='demo-simple-select'
                   value={authtype}
-                  onChange={handleChange}
+                  onChange={handleChangeAuthType}
                 >
                   <MenuItem value='No Auth'>No Auth</MenuItem>
                   <MenuItem value='Bearer Token'>Bearer Token</MenuItem>
@@ -84,7 +92,7 @@ export default function Authorization({
               </FormControl>
             </Box>
           </div>
-          {operationState.operationRequest?.authorization?.authType ==
+          {operationData.operationRequest?.authorization?.authType ==
             "Bearer Token" && (
             <div className='grid items-center grid-cols-1 col-start-2 gap-1'>
               <p className='mr-4 self-center'>Token Type: </p>
