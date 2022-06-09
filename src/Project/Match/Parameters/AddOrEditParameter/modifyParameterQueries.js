@@ -26,9 +26,10 @@ const addParameter = async ({
         required,
       },
     });
+    console.log(data);
     return data;
   } catch (error) {
-    throw getApiError(error);
+    throw error;
   }
 };
 

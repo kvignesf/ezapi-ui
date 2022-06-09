@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Tab, Tabs, Tooltip } from "@material-ui/core";
 import { useRecoilValue, useRecoilState } from "recoil";
 import { useGetRecoilValueInfo_UNSTABLE } from "recoil";
@@ -43,51 +43,50 @@ const Request = ({
   const [pathValidator, setPathValidator] = useState(true);
   const [pathParam, setPathParam] = useState();
   const [firstTime, setFirstTime] = useState(true);
-  const [tempPath, setTempPath] = useState();
-
+  const [prevPath, setPrevPath] = useState("");
+  const [selected, setSelected] = React.useState(false);
   const [customPath, setCustomPath] = useState(
     operationState?.operationRequest?.endpoint
   );
 
-  function buildcustomPath(e) {
-    var c_name = e;
-
-    var path_name = "/" + operationState.path.pathName;
-    //path
-    if (c_name?.includes(path_name + "/") && path_name[1] == c_name?.[1]) {
-      console.log("path exists" + c_name);
+  function buildcustomPath(currentPath) {
+    if (!validateBrackets(currentPath)) {
+      // setPathValidator(false);
     } else {
-      c_name = path_name;
-      console.log("path doesnt exists" + c_name);
-    }
-    //adding
-    paramNameArr.map((paramItem, index) => {
-      if (c_name.includes("{" + paramItem + "}")) {
-        console.log("2" + c_name);
+      var c_name = currentPath;
+      var path_name = "/" + operationState.path.pathName;
+      //path
+      if (c_name?.includes(path_name + "/") && path_name[1] == c_name?.[1]) {
       } else {
-        c_name = c_name?.concat("/{" + paramItem + "}");
-        console.log("3" + c_name);
+        c_name = path_name;
       }
-    });
-    console.log("4 " + c_name);
-    //deleting
-    var paramsToDelete = [];
-    var pattern = /\{(.*?)\}/g;
-    var match;
-    while ((match = pattern.exec(c_name)) != null) {
-      paramsToDelete.push(match[1]);
-    }
+      //adding
 
-    var paramsToDelete = paramsToDelete.filter(
-      (paramItem) => !paramNameArr.includes(paramItem)
-    );
-    console.log(paramsToDelete);
-    paramsToDelete.map((deleteItem) => {
-      c_name = c_name?.replace("/{" + deleteItem + "}", "");
-    });
-    console.log(c_name);
-    setCustomPath(c_name);
-    return c_name;
+      var uiPath = CalcPathParArr();
+      uiPath.map((paramItem, index) => {
+        if (c_name.includes("{" + paramItem + "}")) {
+        } else {
+          c_name = c_name?.concat("/{" + paramItem + "}");
+        }
+      });
+      //deleting
+      var paramsToDelete = [];
+      var pattern = /\{(.*?)\}/g;
+      var match;
+      while ((match = pattern.exec(c_name)) != null) {
+        paramsToDelete.push(match[1]);
+      }
+
+      var paramsToDelete = paramsToDelete.filter(
+        (paramItem) => !uiPath.includes(paramItem)
+      );
+      paramsToDelete.map((deleteItem) => {
+        c_name = c_name?.replace("/{" + deleteItem + "}", "");
+      });
+      setCustomPath(c_name);
+      setPathValidator(validateBrackets(customPath));
+    }
+    return currentPath;
   }
 
   const validateBrackets = (str = "") => {
@@ -110,15 +109,11 @@ const Request = ({
   };
 
   useEffect(() => {
-    console.log("inside 1");
-    if (operationState?.operationRequest?.endpoint) {
-      console.log("inside 1.1" + operationState?.operationRequest?.endpoint);
-      setTempPath(operationState?.operationRequest?.endpoint);
+    if (operationState?.operationRequest?.endpoint != undefined) {
+      buildcustomPath(operationState?.operationRequest?.endpoint);
     }
   }, [operationState?.operationRequest?.endpoint]);
-  useEffect(() => {
-    console.log("inside 2");
-
+  function CalcPathParArr() {
     let pathParamArray = operationState.operationRequest.pathParams;
     var tempArr = [];
     if (pathParamArray.length == 0) {
@@ -128,7 +123,6 @@ const Request = ({
         tempArr.push(item["name"]);
       });
     }
-    // console.log(tempArr, pathParam);
     if (
       (JSON.stringify(pathParam) != JSON.stringify(tempArr) && pathParam) ||
       firstTime
@@ -137,21 +131,14 @@ const Request = ({
       setParamNameArr(tempArr);
       setPathParam(tempArr);
     }
-  }, [operationState.operationRequest.pathParams]);
+    return tempArr;
+  }
 
   useEffect(() => {
-    console.log("whyy ->" + paramNameArr);
-    if (operationState?.operationRequest?.endpoint && paramNameArr.length > 0) {
-      console.log("inside 3" + paramNameArr + "...... " + tempPath);
-      buildcustomPath(tempPath);
-
-      setPathValidator(validateBrackets(customPath));
-    }
-  }, [paramNameArr, tempPath, customPath]);
+    buildcustomPath(customPath);
+  }, [operationState.operationRequest.pathParams]);
 
   const [currentTab, setTab] = useState(0);
-
-  // const operationState = useRecoilValue(operationAtomWithMiddleware);
 
   if (isLoadingOperationRequest) {
     return (
@@ -161,15 +148,18 @@ const Request = ({
     );
   }
 
-  function customPathSave() {
-    setOperationState((operationState) => {
-      const newOperationDetails = _.cloneDeep(operationState);
-      const clonedCustomPat = _.cloneDeep(customPath);
-      newOperationDetails.operationRequest["endpoint"] = clonedCustomPat;
-      return newOperationDetails;
-    });
+  function postSinkRequest(currentPath) {
+    if (currentPath != prevPath) {
+      setPrevPath(currentPath);
+      setOperationState((operationState) => {
+        const newOperationDetails = _.cloneDeep(operationState);
+        const clonedCustomPat = _.cloneDeep(customPath);
+        newOperationDetails.operationRequest["endpoint"] = clonedCustomPat;
+        return newOperationDetails;
+      });
+    }
   }
-  // console.log(currentTab);
+
   return (
     <div>
       <div className='border-b-2 mx-3 h-full'>
@@ -236,20 +226,24 @@ const Request = ({
               disabled={!props.canEdit}
               error={!pathValidator}
               helperText={!pathValidator ? "Invalid Path" : null}
+              onBlur={(e) => {
+                postSinkRequest(e?.target?.value);
+              }}
               id='outlined-basic'
               variant='outlined'
               size='small'
+              onDes
               style={{ width: "75%", color: "red", textColor: "red" }}
               value={customPath}
               onChange={(e) => {
                 buildcustomPath(e?.currentTarget?.value);
-                setTempPath(e?.currentTarget?.value);
+                // setTempPath(e?.currentTarget?.value);
               }}
             />
           ) : (
             <p className='h-5 my-2 mr-44  self-center'>{customPath}</p>
           )}
-          <AppIcon
+          {/* <AppIcon
             onClick={(e) => {
               e?.preventDefault();
               e?.stopPropagation();
@@ -260,7 +254,7 @@ const Request = ({
             <Tooltip title='Save changes'>
               <CloudUploadIcon style={{ color: "lightblue" }} />
             </Tooltip>
-          </AppIcon>
+          </AppIcon> */}
         </div>
       )}
       {currentTab === 0 && (

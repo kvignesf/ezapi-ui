@@ -14,6 +14,7 @@ import InitialsAvatar from "../shared/components/InitialsAvatar";
 import {
   useUpdateProject,
   useInviteCollaborator,
+  useGetProjects,
 } from "../Projects/projectQueries";
 import { CircularProgress } from "@material-ui/core";
 import { getEmailId } from "../shared/storage";
@@ -61,20 +62,20 @@ const ExistingCollaborator = ({ projectId, collab, handleDeletedCollab }) => {
   };
 
   return (
-    <div className="flex flex-row items-center mb-2">
+    <div className='flex flex-row items-center mb-2'>
       <InitialsAvatar
         firstName={firstName}
         lastName={lastName}
-        className="border-none mr-3"
+        className='border-none mr-3'
       />
 
-      <div className="flex flex-col w-full">
-        <p className="text-mediumLabel capitalize">
+      <div className='flex flex-col w-full'>
+        <p className='text-mediumLabel capitalize'>
           {firstName} {lastName}
           {loggedInUserEmail === collab?.email ? " (you)" : ""}
         </p>
 
-        <p className="text-overline2 text-neutral-gray3">{collab?.email}</p>
+        <p className='text-overline2 text-neutral-gray3'>{collab?.email}</p>
       </div>
 
       {loggedInUserEmail !== collab?.email ? (
@@ -89,14 +90,14 @@ const ExistingCollaborator = ({ projectId, collab, handleDeletedCollab }) => {
             <MoreVertIcon />
           </AppIcon>
         ) : (
-          <div className="mr-3 flex items-center justify-center">
-            <CircularProgress size="24px" />
+          <div className='mr-3 flex items-center justify-center'>
+            <CircularProgress size='24px' />
           </div>
         )
       ) : null}
 
       <Menu
-        id="fade-menu"
+        id='fade-menu'
         anchorEl={anchorEl}
         keepMounted
         open={Boolean(anchorEl)}
@@ -120,6 +121,14 @@ const ExistingCollaborator = ({ projectId, collab, handleDeletedCollab }) => {
 };
 
 const ModifyCollaborators = ({ projectId, invitedCollaborators, onClose }) => {
+  // const {
+  //   data: projects,
+  //   isLoading: isFetchingProjects,
+  //   error: fetchProjectsError,
+  //   isFetching: isFetchingProjectsBg,
+  //   refetch: refetchProjects,
+  // } = useGetProjects();
+
   const {
     isLoading: isInvitingCollaborators,
     isSuccess: isInviteCollaboratorsSuccess,
@@ -159,8 +168,8 @@ const ModifyCollaborators = ({ projectId, invitedCollaborators, onClose }) => {
   }
 
   return (
-    <div className="p-4">
-      <div className="flex flex-row justify-between items-center mb-3">
+    <div className='p-4'>
+      <div className='flex flex-row justify-between items-center mb-3'>
         <h5>Invite Collaborators</h5>
 
         <AppIcon onClick={onClose}>
@@ -168,29 +177,31 @@ const ModifyCollaborators = ({ projectId, invitedCollaborators, onClose }) => {
         </AppIcon>
       </div>
 
-      <div className="flex flex-row items-end mb-4">
+      <div className='flex flex-cols items-end'>
         <InviteCollaborators
           collaborators={toBeInvitedCollabs}
           handleChange={handleCollaboratorsChange}
           style={{ width: "100%", marginRight: "1rem" }}
         />
-
-        {!isInvitingCollaborators ? (
-          <PrimaryButton classes="self-end h-12" onClick={handleInviteCollabs}>
-            Send Invite
-          </PrimaryButton>
-        ) : (
-          <CircularProgress size="24px" className="mb-3" />
+        <div className='pb-4'>
+          {" "}
+          {!isInvitingCollaborators ? (
+            <PrimaryButton classes=' h-12' onClick={handleInviteCollabs}>
+              Send Invite
+            </PrimaryButton>
+          ) : (
+            <CircularProgress size='24px' className='mb-3' />
+          )}
+        </div>
+        {inviteCollaboratorsError && (
+          <p className='mb-3 text-overline2 text-accent-red'>
+            {inviteCollaboratorsError?.message}
+          </p>
         )}
       </div>
-      {inviteCollaboratorsError && (
-        <p className="mb-3 text-overline2 text-accent-red">
-          {inviteCollaboratorsError?.message}
-        </p>
-      )}
-
+      {console.log(getInvitedCollabs())}
       {!_.isEmpty(getInvitedCollabs()) ? (
-        <div className="border-t-2 pt-3">
+        <div className='border-t-2 pt-3'>
           {getInvitedCollabs()?.map((collab) => {
             return (
               <ExistingCollaborator
