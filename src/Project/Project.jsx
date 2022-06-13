@@ -8,6 +8,7 @@ import {
   Tabs,
   Tooltip,
 } from "@material-ui/core";
+import client, { endpoint } from "../shared/network/client";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import {
@@ -66,10 +67,13 @@ import EzapiFooter from "../shared/components/EzapiFooter";
 import Scrollbar from "react-smooth-scrollbar";
 
 const Project = () => {
+  console.log("Project");
   const { projectId } = useParams();
   const history = useHistory();
   const firstName = getFirstName();
   const lastName = getLastName();
+  const [dataFetched, setDataFetched] = useState(false);
+  const [memberList, setMemberList] = useState();
   const {
     isLoading: isFetchingProjectDetails,
     isSuccess: isProjectDetailsFetched,
@@ -118,6 +122,7 @@ const Project = () => {
   });
   const getRecoilValueInfo = useGetRecoilValueInfo_UNSTABLE();
   const [userRole, setRole] = useState(null);
+
   const [autoSyncIntervalId, setAutoSync] = useState(0);
   const [showUnsavedPopup, setUnsavedPopup] = useState(true);
 
@@ -128,6 +133,10 @@ const Project = () => {
     return () => stopAutoSync();
   }, [userRole]);
 
+  useEffect(() => {
+    console.log("from PD");
+    setMemberList(projectDetails?.["members"]);
+  }, [projectDetails]);
   useEffect(() => {
     if (operationState?.isModified) {
       setUnsavedPopup(true);
@@ -141,6 +150,7 @@ const Project = () => {
   useEffect(() => {
     if (projectDetails) {
       // Get user role
+      // console.log(projectDetails?.members);
       if (projectDetails?.members && !_.isEmpty(projectDetails?.members)) {
         const userEmail = getEmailId();
         const currentUserDetails = projectDetails?.members?.find(
@@ -286,6 +296,7 @@ const Project = () => {
       type: null,
       data: null,
     });
+    setDataFetched(false);
   };
 
   const navigateBack = () => {
@@ -311,6 +322,14 @@ const Project = () => {
     !_.isEmpty(verifyProjectData?.response);
 
   const handleInviteClick = () => {
+    async function projectdetails() {
+      const { data } = await client.get(`${endpoint.project}/${projectId}`);
+      console.log(data?.["members"]);
+      setMemberList(data?.["members"]);
+      setDataFetched(true);
+    }
+    projectdetails();
+
     if (canEdit(userRole)) {
       setDialog({
         show: true,
@@ -457,10 +476,6 @@ const Project = () => {
                   if (dialog?.data === "reset_operation_state") {
                     resetProjectState();
                   }
-
-                  // if (dialog?.data === "with-nav") {
-                  //   navigateBack();
-                  // }
                 }}
                 saveProject={() => {
                   if (dialog?.data === "reset_operation_state") {
@@ -472,11 +487,11 @@ const Project = () => {
               />
             )}
 
-          {dialog?.type === "members" && (
+          {dialog?.type === "members" && dataFetched && (
             <ModifyCollaborators
               projectId={projectId}
               onClose={handleCloseDialog}
-              invitedCollaborators={projectDetails?.members}
+              invitedCollaborators={memberList}
             />
           )}
 
