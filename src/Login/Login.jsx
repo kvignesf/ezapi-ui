@@ -31,10 +31,7 @@ const Login = () => {
   const [ssoLoggedIn, setSsoLoggedIn] = useState(false);
   const history = useHistory();
   const redirect_uri = `${window.location.origin}/linkedin`;
-  // const redirect_sso =
-  //   "https://api.workos.com/sso/authorize?client_id=client_01G38CGM9H2SD3W0NB50QD3WYE&organization=org_01G38DMHSPFQ7RP0782NZAXZ91&redirect_uri=http%3A%2F%2Flocalhost%3A7744%2Fauth_workos&response_type=code";
-  const queryParams = new URLSearchParams(window.location.search);
-  const code = queryParams.get("code");
+
   const {
     error: loginError,
     isLoading: isLoggingIn,
@@ -44,7 +41,6 @@ const Login = () => {
   } = useLogin();
 
   const handleSuccess = (data) => {
-    // console.log(data);
     if (data?.code && !_.isEmpty(data?.code)) {
       login({ linkedInAuthToken: data?.code, redirect_uri: redirect_uri });
     }
@@ -58,8 +54,8 @@ const Login = () => {
       });
     }
   }, []);
+
   useEffect(() => {
-    // console.log("inside redirect using sso");
     if (isUserLoggedIn()) {
       history.push({
         pathname: routes.projects,
@@ -69,35 +65,34 @@ const Login = () => {
   }, [ssoLoggedIn]);
 
   useEffect(() => {
-    const requestOptions = {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ code: code }),
-    };
-    fetch(process.env.REACT_APP_API_URL + "/auth_workos", requestOptions)
-      .then((response) => response.json())
-      .then((data) => {
-        // console.log(data);
-        if ("jwtToken" in data && "userData" in data) {
-          // console.log("inside successs");
-          setAccessToken(data?.jwtToken);
-          //  setAccessToken(data?.jwtToken);
-          setFirstName(data?.userData?.firstName);
-          setLastName(data?.userData?.lastName);
-          setUserId(data?.userData?.user_id);
-          setEmailId(data?.userData?.email);
-          setSsoLoggedIn(true);
-        } else {
-          // console.log("failure");
-        }
-      });
+    const queryParams = new URLSearchParams(window.location.search);
+    const code = queryParams.get("code");
+    if (code) {
+      const requestOptions = {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: code }),
+      };
+      fetch(process.env.REACT_APP_API_URL + "/auth_workos", requestOptions)
+        .then((response) => response.json())
+        .then((data) => {
+          if ("jwtToken" in data && "userData" in data) {
+            setAccessToken(data?.jwtToken);
+            setFirstName(data?.userData?.firstName);
+            setLastName(data?.userData?.lastName);
+            setUserId(data?.userData?.user_id);
+            setEmailId(data?.userData?.email);
+            setSsoLoggedIn(true);
+          } else {
+          }
+        });
+    }
   }, []);
 
   function SSOLogin() {
     const requestOptions = {
       method: "GET",
       headers: { "Content-Type": "application/json" },
-      // body: JSON.stringify({ code: code }),
     };
     fetch(process.env.REACT_APP_API_URL + "/sso_url", requestOptions)
       .then((response) => response.json())

@@ -177,13 +177,13 @@ const ModifyCollaborators = ({ projectId, invitedCollaborators, onClose }) => {
         </AppIcon>
       </div>
 
-      <div className='flex flex-cols items-end'>
+      <div className='flex flex-cols '>
         <InviteCollaborators
           collaborators={toBeInvitedCollabs}
           handleChange={handleCollaboratorsChange}
           style={{ width: "100%", marginRight: "1rem" }}
         />
-        <div className='pb-4'>
+        <div className=' mt-10 pt-1'>
           {" "}
           {!isInvitingCollaborators ? (
             <PrimaryButton classes=' h-12' onClick={handleInviteCollabs}>
@@ -193,13 +193,13 @@ const ModifyCollaborators = ({ projectId, invitedCollaborators, onClose }) => {
             <CircularProgress size='24px' className='mb-3' />
           )}
         </div>
-        {inviteCollaboratorsError && (
-          <p className='mb-3 text-overline2 text-accent-red'>
-            {inviteCollaboratorsError?.message}
-          </p>
-        )}
       </div>
-      {console.log(getInvitedCollabs())}
+      {inviteCollaboratorsError && (
+        <p className='mb-3 ml-4 text-overline2 text-accent-red'>
+          {inviteCollaboratorsError?.message}
+        </p>
+      )}
+
       {!_.isEmpty(getInvitedCollabs()) ? (
         <div className='border-t-2 pt-3'>
           {getInvitedCollabs()?.map((collab) => {
