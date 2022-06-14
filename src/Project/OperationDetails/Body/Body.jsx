@@ -31,6 +31,7 @@ import DropArea from "../DropArea";
 import operationAtom from "../../operationAtom";
 import {
   isAttribute,
+  // isArrayOrObjectAttribute,
   isSchema,
   isArray,
   useWindowSize,
@@ -296,6 +297,7 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
                       clonedRef["selectedColumns"] = [];
                     }
                   }
+                  
 
                   return (
                     <BodyItem

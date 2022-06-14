@@ -78,6 +78,15 @@ export const isAttribute = (object) => {
   );
 };
 
+// export const isArrayOrObjectAttribute = (object) => {
+//   return (
+//     object?.type &&
+//     !_.isEmpty(object?.type) &&
+//     object?.paramType !== 'column' &&
+//     _.includes(Constants.bodyAcceptedTypes, object?.type)
+//   );
+// };
+
 export const isSchema = (object) => {
   return (
     object?.type === "ref" ||
