@@ -146,9 +146,7 @@ const AddProject = ({ onClose, onSuccess }) => {
     if(_.isEmpty(projectDetails?.name))
     {
       setTab(0);
-      console.log("ente");
       if (formRef.current) {
-        console.log("innerEnr",formRef?.current);
         formRef.current.handleSubmit();
       }
 
@@ -161,11 +159,9 @@ const AddProject = ({ onClose, onSuccess }) => {
     _.isEmpty(projectDetails?.database) ||
     _.isEmpty(projectDetails?.type)))
     {
-      console.log("entry1",projectDetails);
       setErrorDisplay(true);
     }
     else{
-    console.log("entry2",projectDetails);
     
     uploadProjectData({
       name: projectDetails?.name,

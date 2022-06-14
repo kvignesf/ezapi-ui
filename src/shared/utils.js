@@ -24,7 +24,6 @@ export const isEmailValid = (email) => {
 
 export const isUserLoggedIn = () => {
   const token = getAccessToken();
-  console.log("acc_token: ");
 
   return token && !_.isEmpty(token);
 };
@@ -78,14 +77,14 @@ export const isAttribute = (object) => {
   );
 };
 
-// export const isArrayOrObjectAttribute = (object) => {
-//   return (
-//     object?.type &&
-//     !_.isEmpty(object?.type) &&
-//     object?.paramType !== 'column' &&
-//     _.includes(Constants.bodyAcceptedTypes, object?.type)
-//   );
-// };
+export const isArrayOrObjectAttribute = (object) => {
+  return (
+    object?.type &&
+    _.isEmpty(object?.ref) &&
+    object?.paramType !== 'column' &&
+    _.includes(Constants.bodyAcceptedTypes, object?.type)
+  );
+};
 
 export const isSchema = (object) => {
   return (
@@ -262,7 +261,7 @@ export const generateSyncOperationRequestRequest = (operationRequest) => {
         }
 
         return clonedItem;
-      } else if (isAttribute(item) || isColumn(item)) {
+      } else if (isAttribute(item) || isColumn(item) || isArrayOrObjectAttribute(item)) {
         return item;
       }
     });
@@ -464,7 +463,7 @@ export const generateSyncOperationResponseRequest = (operationResponse) => {
           }
 
           return clonedItem;
-        } else if (isAttribute(item) || isColumn(item) || isDatabase(item)) {
+        } else if (isAttribute(item) || isColumn(item) || isDatabase(item) || isArrayOrObjectAttribute(item)) {
           return item;
         }
       });

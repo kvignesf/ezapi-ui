@@ -489,7 +489,6 @@ const ConnectDatabase = ({
       }
     }
   }, [pricing_data, userProfile_data]);
-  console.log("projectDeta", projectDetails);
   return (
     <div className="p-4" style={{ height: "300px", overflowY: "scroll" }}>
       {/* <Scrollbar className="max-h-60" alwaysShowTracks={true}> */}

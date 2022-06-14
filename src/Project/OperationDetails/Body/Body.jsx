@@ -31,7 +31,7 @@ import DropArea from "../DropArea";
 import operationAtom from "../../operationAtom";
 import {
   isAttribute,
-  // isArrayOrObjectAttribute,
+  isArrayOrObjectAttribute,
   isSchema,
   isArray,
   useWindowSize,
@@ -102,13 +102,13 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
         isDatabase(item) ||
         isAttribute(item) ||
         isColumn(item) ||
-      isObject(item) ||
-      isArray(item)
+        isArrayOrObjectAttribute(item)
     ) {
       setOperationDetails((operationDetails) => {
         const path = fetchFullPath(item);
-
+        
         if (request) {
+
           if (
             !operationDetails.operationRequest.body.find((x) =>
               isItemSame(x, item, path)
@@ -129,6 +129,7 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
             return newOperationDetails;
           }
         } else {
+
           const responseData = getResponseData(operationDetails);
           const responseIndex = getResponseIndex(operationDetails);
 
@@ -241,6 +242,9 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
                     if (!clonedRef.hasOwnProperty("selectedColumns")) {
                       clonedRef["selectedColumns"] = [];
                     }
+                  }
+                  else if (isArray(item) || isObject(item)) {
+                    clonedRef = _.cloneDeep(item);
                   }
 
                   return (
@@ -392,9 +396,8 @@ const BodyItem = ({ request = true, responseCode, itemRef }) => {
       (isSchema(item) ||
         isColumn(item) ||
         isAttribute(item) ||
-        isDatabase(item)) &&
-      !isArray(item) &&
-      !isObject(item) &&
+        isDatabase(item)) ||
+        isArrayOrObjectAttribute(item)&&
       canEdit()
     ) {
       setOperationDetails((operationDetails) => {
@@ -821,7 +824,7 @@ const BodyItem = ({ request = true, responseCode, itemRef }) => {
     }
   };
 
-  if (isAttribute(bodyItem)) {
+  if (isAttribute(bodyItem) || isArray(bodyItem) || isObject(bodyItem)) {
     return (
       <AttributeLabel
         labelItem={bodyItem}
