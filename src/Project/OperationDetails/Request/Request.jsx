@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
-import { Tab, Tabs } from "@material-ui/core";
+import React, { useEffect, useState, useRef } from "react";
+import { Tab, Tabs, Tooltip } from "@material-ui/core";
 import { useRecoilValue, useRecoilState } from "recoil";
 import { useGetRecoilValueInfo_UNSTABLE } from "recoil";
+import CloudUploadIcon from "@material-ui/icons/CloudUpload";
 import { useParams } from "react-router";
 import { getOperation } from "../../../shared/query/operationDetailsQuery";
 import _ from "lodash";
@@ -13,17 +14,8 @@ import {
   parseGetOperationRequestResponse,
   parseGetOperationResponseResponse,
 } from "../../../shared/utils";
-import {
-  Box,
-  Button,
-  Card,
-  Container,
-  FormControlLabel,
-  Grid,
-  makeStyles,
-  TextField,
-  Typography,
-} from "@material-ui/core";
+import AppIcon from "../../../shared/components/AppIcon";
+import { TextField } from "@material-ui/core";
 // import { useParams } from "react-router";
 // import { useGetOperation } from "../../../shared/query/operationDetailsQuery";
 import Headers from "../Headers/Headers";
@@ -40,6 +32,7 @@ import LoaderWithMessage from "../../../shared/components/LoaderWithMessage";
 const Request = ({
   getDetailsMutation: { isLoading: isLoadingOperationRequest },
   projectType = "schema",
+  ...props
 }) => {
   const { projectId } = useParams();
   const [operationState, setOperationState] = useRecoilState(
@@ -47,60 +40,53 @@ const Request = ({
   );
 
   const [paramNameArr, setParamNameArr] = useState([]);
-  const [pathValidator, setPathValidator] = useState();
+  const [pathValidator, setPathValidator] = useState(true);
   const [pathParam, setPathParam] = useState();
-  const [endpoint, setEndpoint] = useState();
   const [firstTime, setFirstTime] = useState(true);
-
+  const [prevPath, setPrevPath] = useState("");
+  const [selected, setSelected] = React.useState(false);
   const [customPath, setCustomPath] = useState(
-    "/" + operationState.path.pathName + ""
+    operationState?.operationRequest?.endpoint
   );
-  useEffect(() => {
-    getOperation({
-      operationId: operationState.operation.operationId,
-      pathId: operationState.path.pathId,
-      resourceId: operationState.resource.resourceId,
-      projectId: projectId,
-    }).then((x) => {
-      // console.log(x?.getRequestApiData?.endpoint);
-      setEndpoint(x?.getRequestApiData?.endpoint);
-      setCustomPath(x?.getRequestApiData?.endpoint);
-    });
-  }, []);
 
-  function buildcustomPath(e) {
-    // setCustomPath(e?.currentTarget?.value);
-    var c_name = e;
-
-    var path_name = "/" + operationState.path.pathName;
-    //path
-    if (c_name?.includes(path_name + "/") && path_name[1] == c_name?.[1]) {
+  function buildcustomPath(currentPath) {
+    if (!validateBrackets(currentPath)) {
+      // setPathValidator(false);
     } else {
-      c_name = path_name;
-    }
-    //adding
-    paramNameArr.map((paramItem, index) => {
-      if (c_name.includes("{" + paramItem + "}")) {
+      var c_name = currentPath;
+      var path_name = "/" + operationState.path.pathName;
+      //path
+      if (c_name?.includes(path_name + "/") && path_name[1] == c_name?.[1]) {
       } else {
-        c_name = c_name?.concat("/{" + paramItem + "}");
+        c_name = path_name;
       }
-    });
-    //deleting
-    var paramsToDelete = [];
-    var pattern = /\{(.*?)\}/g;
-    var match;
-    while ((match = pattern.exec(c_name)) != null) {
-      paramsToDelete.push(match[1]);
-    }
-    var paramsToDelete = paramsToDelete.filter(
-      (paramItem) => !paramNameArr.includes(paramItem)
-    );
+      //adding
 
-    paramsToDelete.map((deleteItem) => {
-      c_name = c_name?.replace("/{" + deleteItem + "}", "");
-    });
-    setCustomPath(c_name);
-    return c_name;
+      var uiPath = CalcPathParArr();
+      uiPath.map((paramItem, index) => {
+        if (c_name.includes("{" + paramItem + "}")) {
+        } else {
+          c_name = c_name?.concat("/{" + paramItem + "}");
+        }
+      });
+      //deleting
+      var paramsToDelete = [];
+      var pattern = /\{(.*?)\}/g;
+      var match;
+      while ((match = pattern.exec(c_name)) != null) {
+        paramsToDelete.push(match[1]);
+      }
+
+      var paramsToDelete = paramsToDelete.filter(
+        (paramItem) => !uiPath.includes(paramItem)
+      );
+      paramsToDelete.map((deleteItem) => {
+        c_name = c_name?.replace("/{" + deleteItem + "}", "");
+      });
+      setCustomPath(c_name);
+      setPathValidator(validateBrackets(customPath));
+    }
+    return currentPath;
   }
 
   const validateBrackets = (str = "") => {
@@ -123,8 +109,12 @@ const Request = ({
   };
 
   useEffect(() => {
+    if (operationState?.operationRequest?.endpoint != undefined) {
+      buildcustomPath(operationState?.operationRequest?.endpoint);
+    }
+  }, [operationState?.operationRequest?.endpoint]);
+  function CalcPathParArr() {
     let pathParamArray = operationState.operationRequest.pathParams;
-    // console.log(operationState);
     var tempArr = [];
     if (pathParamArray.length == 0) {
       tempArr = [];
@@ -133,42 +123,22 @@ const Request = ({
         tempArr.push(item["name"]);
       });
     }
-    // console.log(pathParam, tempArr, firstTime);
-
     if (
       (JSON.stringify(pathParam) != JSON.stringify(tempArr) && pathParam) ||
       firstTime
     ) {
-      console.log("in");
       setFirstTime(false);
       setParamNameArr(tempArr);
       setPathParam(tempArr);
     }
+    return tempArr;
+  }
+
+  useEffect(() => {
+    buildcustomPath(customPath);
   }, [operationState.operationRequest.pathParams]);
 
-  useEffect(() => {
-    // console.log("changed");
-    buildcustomPath(customPath);
-    setPathValidator(validateBrackets(customPath));
-  }, [paramNameArr]);
-  useEffect(() => {
-    // console.log("userManipulated");
-    buildcustomPath(customPath);
-    setPathValidator(validateBrackets(customPath));
-  }, [customPath]);
-  useEffect(() => {
-    setOperationState((operationState) => {
-      const newOperationDetails = _.cloneDeep(operationState);
-      const clonedCustomPat = _.cloneDeep(customPath);
-      newOperationDetails.operationRequest["endpoint"] = clonedCustomPat;
-      return newOperationDetails;
-    });
-    // console.log(customPath);
-  }, [customPath]);
-
   const [currentTab, setTab] = useState(0);
-
-  // const operationState = useRecoilValue(operationAtomWithMiddleware);
 
   if (isLoadingOperationRequest) {
     return (
@@ -177,7 +147,19 @@ const Request = ({
       </div>
     );
   }
-  // console.log(currentTab);
+
+  function postSinkRequest(currentPath) {
+    if (currentPath != prevPath) {
+      setPrevPath(currentPath);
+      setOperationState((operationState) => {
+        const newOperationDetails = _.cloneDeep(operationState);
+        const clonedCustomPat = _.cloneDeep(customPath);
+        newOperationDetails.operationRequest["endpoint"] = clonedCustomPat;
+        return newOperationDetails;
+      });
+    }
+  }
+
   return (
     <div>
       <div className='border-b-2 mx-3 h-full'>
@@ -237,26 +219,52 @@ const Request = ({
         <div className='flex flex-row justify-end mr-2 '>
           {" "}
           <p className='  self-center mr-5'>Path: </p>
-          <TextField
-            defaultValue={customPath}
-            className='path'
-            error={!pathValidator}
-            helperText={!pathValidator ? "Invalid Path" : null}
-            id='outlined-basic'
-            variant='outlined'
-            size='small'
-            style={{ width: "75%" }}
-            value={customPath}
-            onChange={(e) => {
-              buildcustomPath(e?.currentTarget?.value);
+          {props.canEdit ? (
+            <TextField
+              defaultValue={customPath}
+              className='path'
+              disabled={!props.canEdit}
+              error={!pathValidator}
+              helperText={!pathValidator ? "Invalid Path" : null}
+              onBlur={(e) => {
+                postSinkRequest(e?.target?.value);
+              }}
+              id='outlined-basic'
+              variant='outlined'
+              size='small'
+              onDes
+              style={{ width: "75%", color: "red", textColor: "red" }}
+              value={customPath}
+              onChange={(e) => {
+                buildcustomPath(e?.currentTarget?.value);
+                // setTempPath(e?.currentTarget?.value);
+              }}
+            />
+          ) : (
+            <p className='h-5 my-2 mr-44  self-center'>{customPath}</p>
+          )}
+          {/* <AppIcon
+            onClick={(e) => {
+              e?.preventDefault();
+              e?.stopPropagation();
+
+              customPathSave();
             }}
-          />
+          >
+            <Tooltip title='Save changes'>
+              <CloudUploadIcon style={{ color: "lightblue" }} />
+            </Tooltip>
+          </AppIcon> */}
         </div>
       )}
-      {currentTab === 0 && <Authorization request={true} />}
+      {currentTab === 0 && (
+        <Authorization canEdit={props.canEdit} request={true} />
+      )}
       {currentTab === 1 && <Headers request={true} />}
       {currentTab === 2 && <FormData request={true} />}
-      {currentTab === 3 && <PathParams request={true} />}
+      {currentTab === 3 && (
+        <PathParams canEdit={props.canEdit} request={true} />
+      )}
       {currentTab === 4 && <QueryParams request={true} />}
       {currentTab === 5 && <Body request={true} projectType={projectType} />}
     </div>

@@ -42,6 +42,7 @@ const OperationDetails = ({
   projectType,
   ...props
 }) => {
+  // console.log(props.canEdit);
   const { projectId } = useParams();
   const tabsClasses = tabsStyles();
   const tabClasses = tabStyles();
@@ -51,7 +52,7 @@ const OperationDetails = ({
   );
 
   const getOperationMutation = useGetOperation();
-  // console.log(operationState);
+
   useEffect(() => {
     if (operationState?.operationIndex && operationState?.operation) {
       getOperationMutation.mutate({
@@ -59,10 +60,9 @@ const OperationDetails = ({
         pathId: operationState.path.pathId,
         resourceId: operationState.resource.resourceId,
         projectId: projectId,
-        // endpoint: operationState.operationRequest.endpoint,
       });
     }
-  }, [operationState?.operationIndex, operationState?.endpoint]);
+  }, [operationState?.operationIndex]);
 
   if (getOperationMutation?.isLoading) {
     return (
@@ -125,6 +125,7 @@ const OperationDetails = ({
             {currentTab === 0 ? (
               <div className='h-full'>
                 <Request
+                  canEdit={props.canEdit}
                   getDetailsMutation={getOperationMutation}
                   projectType={projectType}
                 />

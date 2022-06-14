@@ -108,12 +108,10 @@ export const useGetOperation = () => {
         setOperationState((operationState) => {
           const clonedOperationState = _.cloneDeep(operationState);
           const parsedOperationRequest = parseGetOperationRequestResponse(
-            data?.getRequestApiData?.requestBody
+            data?.getRequestApiData
           );
-
           clonedOperationState.operationRequest = parsedOperationRequest;
           clonedOperationState.projectId = variables?.projectId;
-
           return clonedOperationState;
         });
       }
