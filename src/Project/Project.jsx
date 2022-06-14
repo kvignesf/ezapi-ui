@@ -134,7 +134,6 @@ const Project = () => {
   }, [userRole]);
 
   useEffect(() => {
-    console.log("from PD");
     setMemberList(projectDetails?.["members"]);
   }, [projectDetails]);
   useEffect(() => {

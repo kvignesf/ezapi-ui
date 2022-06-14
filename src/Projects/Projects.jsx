@@ -602,7 +602,6 @@ const Projects = () => {
   //console.log(stay);
 
   if (data?.["plan_name"] === null && !stay) {
-    console.log("in");
     history.push(routes.pricing);
     // setRenderNow(false);
   }

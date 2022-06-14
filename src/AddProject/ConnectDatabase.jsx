@@ -38,6 +38,7 @@ import { queries } from "../shared/network/queryClient";
 import Snackbar from "@material-ui/core/Snackbar";
 import Button from "@mui/material/Button";
 import MuiAlert from "@material-ui/lab/Alert";
+import { ConnectedFocusError } from 'focus-formik-error'
 
 import { useQuery } from "react-query";
 import { array } from "yup";
@@ -488,7 +489,6 @@ const ConnectDatabase = ({
       }
     }
   }, [pricing_data, userProfile_data]);
-  console.log("projectDeta", projectDetails);
   return (
     <div className="p-4" style={{ height: "300px", overflowY: "scroll" }}>
       {/* <Scrollbar className="max-h-60" alwaysShowTracks={true}> */}
@@ -548,6 +548,7 @@ const ConnectDatabase = ({
                   setErrors,
                 }) => (
                   <Form>
+                    <ConnectedFocusError />
                     <Grid container spacing={2}>
                       <Grid item xs={12}>
                         <p className="text-mediumLabel mb-2">Server Type</p>
@@ -979,6 +980,7 @@ const ConnectDatabase = ({
                     setErrors,
                   }) => (
                     <Form>
+                      <ConnectedFocusError />
                       <div className="mb-3">
                         <Grid item xs={12}>
                           {/* <select

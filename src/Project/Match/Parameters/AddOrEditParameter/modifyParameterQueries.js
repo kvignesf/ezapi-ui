@@ -26,7 +26,6 @@ const addParameter = async ({
         required,
       },
     });
-    console.log(data);
     return data;
   } catch (error) {
     throw error;

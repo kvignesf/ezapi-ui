@@ -152,18 +152,16 @@ const AddProject = ({ onClose, onSuccess }) => {
 
       return;
     }
-    // else if(_.isEmpty(projectDetails?.dbs) && _.isEmpty(projectDetails?.specs) && (_.isEmpty(projectDetails?.host) ||
-    // _.isEmpty(projectDetails?.port) ||
-    // _.isEmpty(projectDetails?.username) ||
-    // _.isEmpty(projectDetails?.password) ||
-    // _.isEmpty(projectDetails?.database) ||
-    // _.isEmpty(projectDetails?.type)))
-    // {
-    //   console.log("entry1",projectDetails);
-    //   setErrorDisplay(true);
-    // }
+    else if(_.isEmpty(projectDetails?.dbs) && (_.isEmpty(projectDetails?.host) ||
+    _.isEmpty(projectDetails?.port) ||
+    _.isEmpty(projectDetails?.username) ||
+    _.isEmpty(projectDetails?.password) ||
+    _.isEmpty(projectDetails?.database) ||
+    _.isEmpty(projectDetails?.type)))
+    {
+      setErrorDisplay(true);
+    }
     else{
-    console.log("entry2",projectDetails);
     
     uploadProjectData({
       name: projectDetails?.name,
@@ -200,15 +198,15 @@ const AddProject = ({ onClose, onSuccess }) => {
 
       return;
     }
-    // else if(_.isEmpty(projectDetails?.dbs) && _.isEmpty(projectDetails?.specs) && (_.isEmpty(projectDetails?.host) ||
-    // _.isEmpty(projectDetails?.port) ||
-    // _.isEmpty(projectDetails?.username) ||
-    // _.isEmpty(projectDetails?.password) ||
-    // _.isEmpty(projectDetails?.database) ||
-    // _.isEmpty(projectDetails?.type)))
-    // {
-    //   setErrorDisplay(true);
-    // }
+    else if(_.isEmpty(projectDetails?.dbs) && (_.isEmpty(projectDetails?.host) ||
+    _.isEmpty(projectDetails?.port) ||
+    _.isEmpty(projectDetails?.username) ||
+    _.isEmpty(projectDetails?.password) ||
+    _.isEmpty(projectDetails?.database) ||
+    _.isEmpty(projectDetails?.type)))
+    {
+      setErrorDisplay(true);
+    }
     
     else{
     uploadProjectData({
@@ -449,7 +447,7 @@ const AddProject = ({ onClose, onSuccess }) => {
 
           {errorDisplay && (currentTab === 2) && (
               <p className="text-overline2 text-accent-red my-2">
-                Please upload atleast one of the following - specs or ddl file or dbconnection
+                Please upload atleast one of the following - ddl file or dbconnection
               </p>
           )}
 
