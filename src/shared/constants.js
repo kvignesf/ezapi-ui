@@ -28,6 +28,7 @@ const Constants = {
     "password",
   ],
   acceptedTypes: ["integer", "number", "string", "boolean"],
+  bodyAcceptedTypes:["array","object"],
 };
 
 export default Constants;
