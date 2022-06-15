@@ -52,6 +52,7 @@ const AddProject = ({ onClose, onSuccess }) => {
 
   const [specsError, setSpecsError] = useState(null);
   const [dbsError, setDbsError] = useState(null);
+  const [isProjectNameEmpty, setIsProjectNameEmpty] = useState(false);
   const [projectDetails, setProjectDetails] = useRecoilState(projectAtom);
 
   const onAddProjectSuccess = (projectId) => {
@@ -146,6 +147,7 @@ const AddProject = ({ onClose, onSuccess }) => {
     if(_.isEmpty(projectDetails?.name))
     {
       setTab(0);
+      setIsProjectNameEmpty(true);
       if (formRef.current) {
         formRef.current.handleSubmit();
       }
@@ -192,6 +194,7 @@ const AddProject = ({ onClose, onSuccess }) => {
     if (
       _.isEmpty(projectDetails?.name)) {
       setTab(0);
+      setIsProjectNameEmpty(true)
       if (formRef.current) {
         formRef.current.handleSubmit();
       }
@@ -408,6 +411,7 @@ const AddProject = ({ onClose, onSuccess }) => {
                     formRef={formRef}
                     specsError={specsError}
                     dbsError={dbsError}
+                    isProjectNameEmpty={isProjectNameEmpty}
                     addProjectMutation={addProjectMutation}
                     uploadSpecsMutation={uploadSpecsMutation}
                     uploadDbMutation={uploadDbMutation}
