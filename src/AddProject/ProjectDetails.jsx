@@ -19,12 +19,20 @@ const ProjectDetails = ({
   formRef,
   specsError,
   dbsError,
+  isProjectNameEmpty,
   addProjectMutation,
   uploadSpecsMutation,
   uploadDbMutation,
   aiMatcherMutation,
 }) => {
   const [projectDetails, setProjectDetails] = useRecoilState(projectAtom);
+
+  useEffect(() => {
+    if (formRef.current && isProjectNameEmpty) {
+      formRef.current.touched.name = true;
+      formRef.current.setErrors({ name: Messages.NAME_REQUIRED });
+    }
+  }, [isProjectNameEmpty, formRef]);
 
   const debouncedSetName = useCallback(
     debounce((nextValue) => {
