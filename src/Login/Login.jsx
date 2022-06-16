@@ -282,7 +282,7 @@ const Login = () => {
                           id='button2'
                           // disabled={isSubmitting}
                           onClick={() => {
-                            console.log("clicked");
+                            // console.log("clicked");
                             SSOLogin(values);
                           }}
                         >
