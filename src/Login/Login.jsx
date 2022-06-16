@@ -4,6 +4,7 @@ import AppIcon from "../shared/components/AppIcon";
 import { Field, ErrorMessage, Form, Formik } from "formik";
 import CloseIcon from "@material-ui/icons/Close";
 import * as Yup from "yup";
+import "./Login.css";
 import { Select, MenuItem, OutlinedInput, Grid } from "@material-ui/core";
 import { LinkedIn } from "react-linkedin-login-oauth2";
 import linkedin from "react-linkedin-login-oauth2/assets/linkedin.png";
@@ -15,6 +16,7 @@ import { FormHelperText } from "@mui/material";
 import { TextField } from "@material-ui/core";
 import Logo from "../static/images/logo/connectoLogoWithName.svg";
 import Constants from "../shared/constants";
+import LoaderWithMessage from "../shared/components/LoaderWithMessage";
 import { Dialog } from "@material-ui/core/index";
 import { PrimaryButton } from "../shared/components/AppButton";
 import routes from "../shared/routes";
@@ -39,7 +41,7 @@ const Login = () => {
   const formRef = useRef();
   const [ssoLoggedIn, setSsoLoggedIn] = useState(false);
   const [dialog, setDialog] = useState(false);
-  const [formValues, setFormValues] = useState();
+  const [isLoading, setIsLoading] = useState(true);
   const [ssoError, setSsoError] = useState();
   const history = useHistory();
   const redirect_uri = `${window.location.origin}/linkedin`;
@@ -80,6 +82,7 @@ const Login = () => {
     const queryParams = new URLSearchParams(window.location.search);
     const code = queryParams.get("code");
     if (code) {
+      setIsLoading(true);
       const requestOptions = {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -99,20 +102,23 @@ const Login = () => {
             setUserId(data?.userData?.user_id);
             setEmailId(data?.userData?.email);
             setSsoLoggedIn(true);
+            setIsLoading(false);
           } else {
+            setIsLoading(false);
           }
         });
+    } else {
+      setIsLoading(false);
     }
   }, []);
 
   function SSOLogin(values) {
-    // console.log(orgID);
+    setIsLoading(true);
     const requestOptions = {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        orgName: values.org,
-        domain: values.dom,
+        email: values.email,
       }),
     };
     fetch(
@@ -126,37 +132,17 @@ const Login = () => {
         // console.log(data);
         if (!data?.url && data?.error) {
           // console.log("inside error");
+
           setSsoError(data?.error);
+          setIsLoading(false);
         }
         if (data?.url) {
           setSsoError();
           window.location = data?.url;
+          // setIsLoading(false);
         }
-        // window.location = data?.url;
       });
   }
-  // function organizationAPI(values) {
-  //   const requestOptions = {
-  //     method: "POST",
-  //     headers: { "Content-Type": "application/json" },
-  //     body: JSON.stringify({
-  //       org: values.org,
-  //       domains: values.dom,
-  //     }),
-  //   };
-  //   fetch(
-  //     // process.env.REACT_APP_API_URL + "http://localhost:7744/organization_id",
-  //     "http://localhost:7744/organization_id",
-  //     requestOptions
-  //   )
-  //     .then((response) => response.json())
-
-  //     .then((data) => {
-  //       console.log(data);
-  //       setOrgID(data?.orgId);
-  //       SSOLogin(data?.orgId);
-  //     });
-  // }
 
   const handleFailure = (error) => {
     resetLogin();
@@ -175,200 +161,140 @@ const Login = () => {
   };
   return (
     <div className='h-screen flex justify-center items-center'>
-      <Dialog
-        onClose={handleCloseDialog}
-        aria-labelledby='projects-dialog'
-        open={dialog}
-        fullWidth
-        PaperProps={{
-          style: { borderRadius: 8 },
-        }}
-        disableBackdropClick
-      >
-        <div className='p-4'>
-          <div className='flex flex-row items-center justify-between mb-3'>
-            <h5>Organization Details </h5>
+      <Card className='w-1/2 max-w-sm flex flex-col justify-center items-center p-5'>
+        {!isLoading && (
+          <img
+            src={Logo}
+            alt='conektto logo'
+            className='mb-4 p-3'
+            style={{ maxWidth: "128px" }}
+          />
+        )}
 
-            <AppIcon aria-label='close' onClick={handleCloseDialog}>
-              <CloseIcon />
-            </AppIcon>
-          </div>
+        {!isLoading && !dialog && (
+          <>
+            {!isLoggingIn && (
+              <div className='mb-2 flex flex-col '>
+                <LinkedIn
+                  className='mb-2'
+                  clientId={Constants.linkedClientId}
+                  onFailure={handleFailure}
+                  onSuccess={handleSuccess}
+                  redirectUri={encodeURIComponent(redirect_uri)}
+                  redirectPath={"/signin"}
+                  scope='r_liteprofile r_emailaddress'
+                >
+                  <img
+                    src={linkedin}
+                    alt='Log in with Linked In'
+                    style={{ maxWidth: "180px" }}
+                    className='w-full'
+                  />
+                </LinkedIn>
 
-          <div className='h-40'>
-            <Formik
-              initialValues={{
-                org: formValues?.org ?? "",
-                dom: formValues?.dom ?? "",
-              }}
-              innerRef={formRef}
-              validationSchema={Yup.object().shape({
-                org: Yup.string().required("Organization Name is required."),
-                dom: Yup.string().required("Domain is required."),
-              })}
-              enableReinitialize
-            >
-              {({
-                errors,
-                touched,
-                values,
-                submitForm,
-                validateForm,
-                handleChange,
-                handleBlur,
-                setErrors,
-              }) => {
-                setFormValues(values);
-                return (
-                  <Form>
-                    <Grid item xs={10}>
-                      <p className='text-mediumLabel mb-2'>Organization Name</p>
-                      <Field
-                        id='org'
-                        name='org'
-                        fullWidth
-                        color='primary'
-                        // placeholder='127.0.0.1'
-                        error={touched.host && Boolean(errors.host)}
-                        helperText={
-                          <ErrorMessage name='org'>
-                            {(msg) => <div style={{ color: "red" }}>{msg}</div>}
-                          </ErrorMessage>
-                        }
-                        onKeyUp={(e) => {
-                          const { value } = e.target;
-                          // debouncedSetHost(value);
-                        }}
-                        style={{
-                          // border: "1px solid #d2d2d2",
-                          height: "60px",
-                          // borderRadius: "4px",
-                          width: "100%",
-                          color: "primary",
-                          backgroundColor: "#ffffff",
-                          borderColor: touched.type && errors.type && "red",
-                        }}
-                        variant='outlined'
-                        inputProps={{ maxLength: 55 }}
-                        // disabled={addProjectMutation?.isSuccess}
-                        as={TextField}
-                      />
-                      {touched.type && errors.type && (
-                        <FormHelperText htmlFor='render-select' error>
-                          {errors.type}
-                        </FormHelperText>
-                      )}
-                    </Grid>
-                    <Grid item xs={10}>
-                      <p className='text-mediumLabel mt-2 py-2'>Domain Name</p>
-                      <Field
-                        id='dom'
-                        name='dom'
-                        fullWidth
-                        color='primary'
-                        // placeholder=''
-                        error={touched.host && Boolean(errors.host)}
-                        helperText={
-                          <ErrorMessage name='dom'>
-                            {(msg) => <div style={{ color: "red" }}>{msg}</div>}
-                          </ErrorMessage>
-                        }
-                        onKeyUp={(e) => {
-                          const { value } = e.target;
-                          // debouncedSetHost(value);
-                        }}
-                        style={{
-                          // border: "1px solid #d2d2d2",
-                          height: "60px",
-                          // borderRadius: "4px",
-                          width: "100%",
-                          color: "primary",
-                          backgroundColor: "#ffffff",
-                          borderColor: touched.type && errors.type && "red",
-                        }}
-                        variant='outlined'
-                        inputProps={{ maxLength: 55 }}
-                        // disabled={addProjectMutation?.isSuccess}
-                        as={TextField}
-                      />
-                    </Grid>
-                  </Form>
-                );
-              }}
-            </Formik>
-            {ssoError && (
-              <p className=' mt-5 text-overline2 text-accent-red ml-5 my-2'>
-                {ssoError}
+                <img
+                  src={sso}
+                  onClick={() => {
+                    setDialog(true);
+                  }}
+                  alt='Log in with SSO'
+                  style={{ maxWidth: "180px" }}
+                  className='w-full cursor-pointer ... '
+                />
+              </div>
+            )}
+
+            {isLoggingIn && (
+              <div>
+                <CircularProgress size={20} />
+              </div>
+            )}
+
+            {loginError && (
+              <p className='text-overline2 text-accent-red'>
+                {loginError?.message}
               </p>
             )}
-          </div>
-
-          <div className='border-t-2 mt-4 border-neutral-gray7 flex flex-row items-center justify-end pt-4'>
-            <PrimaryButton
-              onClick={() => {
-                if (formRef.current) {
-                  formRef.current.handleSubmit();
-                  if (formRef.current.isValid) {
-                    console.log(formValues);
-                    SSOLogin(formValues);
-                  }
-                }
-                // console.log("clicked next");
-              }}
-            >
-              Next
-            </PrimaryButton>
-          </div>
-        </div>
-      </Dialog>
-      <Card className='w-1/2 max-w-sm flex flex-col justify-center items-center p-5'>
-        <img
-          src={Logo}
-          alt='conektto logo'
-          className='mb-4 p-3'
-          style={{ maxWidth: "128px" }}
-        />
-
-        {!isLoggingIn && (
-          <div className='mb-2 flex flex-col '>
-            <LinkedIn
-              className='mb-2'
-              clientId={Constants.linkedClientId}
-              onFailure={handleFailure}
-              onSuccess={handleSuccess}
-              redirectUri={encodeURIComponent(redirect_uri)}
-              redirectPath={"/signin"}
-              scope='r_liteprofile r_emailaddress'
-            >
-              <img
-                src={linkedin}
-                alt='Log in with Linked In'
-                style={{ maxWidth: "180px" }}
-                className='w-full'
-              />
-            </LinkedIn>
-
-            <img
-              src={sso}
-              onClick={() => {
-                setDialog(true);
-              }}
-              alt='Log in with SSO'
-              style={{ maxWidth: "180px" }}
-              className='w-full cursor-pointer ... '
-            />
-          </div>
+          </>
         )}
+        {isLoading && <LoaderWithMessage message='Loading data' />}
 
-        {isLoggingIn && (
-          <div>
-            <CircularProgress size={20} />
-          </div>
-        )}
-
-        {loginError && (
-          <p className='text-overline2 text-accent-red'>
-            {loginError?.message}
-          </p>
+        {!isLoading && dialog && (
+          <>
+            <div className='mb-2 flex flex-col'>
+              {" "}
+              <Formik
+                initialValues={{ email: "" }}
+                validationSchema={Yup.object().shape({
+                  email: Yup.string().email().required("Required"),
+                })}
+              >
+                {(props) => {
+                  const {
+                    values,
+                    touched,
+                    errors,
+                    dirty,
+                    isSubmitting,
+                    handleChange,
+                    handleBlur,
+                    handleSubmit,
+                    handleReset,
+                  } = props;
+                  return (
+                    <Form onSubmit={handleSubmit}>
+                      <label htmlFor='email' style={{ display: "block" }}>
+                        Email
+                      </label>
+                      <input
+                        id='email'
+                        placeholder='Enter your email'
+                        type='text'
+                        value={values.email}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        className={
+                          errors.email && touched.email
+                            ? "text-input error"
+                            : "text-input"
+                        }
+                      />
+                      {errors.email && touched.email && (
+                        <div className='input-feedback'>{errors.email}</div>
+                      )}
+                      {ssoError && (
+                        <p className=' mt-5 text-overline2 text-accent-red ml-5 my-2'>
+                          {ssoError}
+                        </p>
+                      )}
+                      <div className='flex flex-row place-content-end gap-2'>
+                        {" "}
+                        <button
+                          id='button1'
+                          onClick={() => {
+                            setDialog(false);
+                          }}
+                          // disabled={isSubmitting}
+                        >
+                          Back
+                        </button>
+                        <button
+                          id='button2'
+                          // disabled={isSubmitting}
+                          onClick={() => {
+                            console.log("clicked");
+                            SSOLogin(values);
+                          }}
+                        >
+                          Next
+                        </button>
+                      </div>
+                    </Form>
+                  );
+                }}
+              </Formik>
+            </div>
+          </>
         )}
       </Card>
     </div>
