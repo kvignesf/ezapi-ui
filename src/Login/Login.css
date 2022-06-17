@@ -1,26 +1,12 @@
-/* * {
-  box-sizing: border-box;
-  font-family: "Times New Roman", Times, serif;
-} */
-
-/* body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial,
-    sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-  font-size: 14px;
-  line-height: 1.5;
-  color: #24292e;
-  background-color: #fff;
-} */
-
-.app {
+.login-page .app {
   margin: 2rem;
 }
 
-a {
+.login-page a {
   color: #08c;
 }
 
-code {
+.login-page code {
   background: #eee;
   padding: 0.1rem;
   font-family: "Menlo";
@@ -28,7 +14,7 @@ code {
   color: #ff00aa;
 }
 
-input {
+.login-page input {
   padding: 0.5rem;
   font-size: 16px;
   width: 100%;
@@ -37,24 +23,24 @@ input {
   border: 1px solid #ccc;
 }
 
-input:focus {
+.login-page input[type="text"]:focus {
   border-color: #007eff;
   box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075),
     0 0 0 3px rgba(0, 126, 255, 0.1);
   outline: none;
 }
 
-input.error {
+.login-page input.error {
   border-color: red;
 }
 
-label {
+.login-page label {
   font-weight: bold;
   display: block;
   margin-bottom: 0.5rem;
 }
 
-.input-feedback {
+.login-page .input-feedback {
   color: red;
   margin-top: 0.25rem;
 }
@@ -91,18 +77,3 @@ label {
   outline: none;
   -webkit-appearance: none;
 }
-
-/* button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed !important;
-}
-
-button + button {
-  margin-left: 0.5rem;
-}
-
-button.outline {
-  background-color: #eee;
-  border: 1px solid #aaa;
-  color: #555;
-} */
