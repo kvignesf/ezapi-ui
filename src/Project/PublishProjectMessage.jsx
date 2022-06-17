@@ -34,6 +34,12 @@ const PublishProjectMessage = ({
 
   const history = useHistory();
 
+  const isAllowedProjectsLimitReached = () => {
+    return (
+      publishProjectError?.response?.data?.errorType === "ALLOWED_PROJECTS_LIMIT_EXHAUSTED"
+    );
+  };
+
   const isPublishLimitReached = () => {
     return (
       publishProjectError?.response?.data?.errorType === "PUBLISH_LIMIT_REACHED"
@@ -70,6 +76,8 @@ const PublishProjectMessage = ({
             ? "Upgrade Plan"
             : isPublishLimitReached()
             ? "Republish Limit Exceeded"
+            : isAllowedProjectsLimitReached()
+            ? "Allowed Project Limit Exceeded"
             : "Publish Failure"}
         </p>
         <AppIcon
@@ -95,6 +103,10 @@ const PublishProjectMessage = ({
         )}
 
         {publishProjectError && isTrialPeriodExpired() && (
+          <p className='text-accent-red text-overline2'>{publishProjectError?.response?.data?.message}</p>
+        )}
+
+        {publishProjectError && isAllowedProjectsLimitReached() && (
           <p className='text-accent-red text-overline2'>{publishProjectError?.response?.data?.message}</p>
         )}
 
@@ -175,7 +187,7 @@ const PublishProjectMessage = ({
             Cancel
           </TextButton>
 
-          {isPublishLimitReached() || isTrialPeriodExpired() ? (
+          {isPublishLimitReached() || isTrialPeriodExpired() || isAllowedProjectsLimitReached() ? (
             <PrimaryButton
             onClick={() => {
             history.push(routes.pricing);
