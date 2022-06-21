@@ -14,6 +14,7 @@ const Messages = {
   LINKEDIN_REQUIRED: "Need to login using LinkedIn",
   PAYMENT_FAILURE: "Something went wrong during payment",
   PAYMENT_RETRY: "Something went wrong during payment, please try again.",
+  FUNCTION_REQUIRED: "Please select a function name",
 
   VALIDATE_RETRY: "Failed to validate project, please try again.",
   PUBLISH_RETRY: "Failed to publish the project, please try again.",

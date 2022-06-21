@@ -17,6 +17,8 @@ import Colors from "../../shared/colors";
 import AddOrEditParameter from "./Parameters/AddOrEditParameter/AddOrEditParameter";
 import Database from "./Database/Database";
 import tableAtom from "../../shared/atom/tableAtom";
+import CustomParameters from "./CustomParameters/CustomParameters";
+import AddOrEditCustomParameter from "./CustomParameters/AddOrEditCustomParameter/AddOrEditCustomParameter";
 
 const Match = ({ projectType, ...props }) => {
   const [currentTab, setTab] = useState(null);
@@ -50,6 +52,15 @@ const Match = ({ projectType, ...props }) => {
     }
   };
 
+  const showAddCustomParameterDialog = () => {
+    if (canEdit()) {
+      setDialog({
+        show: true,
+        type: "add-custom-parameter",
+      });
+    }
+  };
+
   const handleCloseDialog = () => {
     setDialog({
       show: false,
@@ -71,6 +82,9 @@ const Match = ({ projectType, ...props }) => {
       >
         {dialog?.type === "add-parameter" && canEdit() && (
           <AddOrEditParameter onClose={handleCloseDialog} />
+        )}
+        {dialog?.type === "add-custom-parameter" && canEdit() && (
+          <AddOrEditCustomParameter onClose={handleCloseDialog} />
         )}
       </Dialog>
 
@@ -235,19 +249,36 @@ const Match = ({ projectType, ...props }) => {
                   style={{ outline: "none", border: "none" }}
                   value={"db"}
                 />
+                
               )}
+              {projectType === "db" && (
+                <Tab 
+                label={<TabLabel label={"Custom Parameter"} /> }
+                style={{ outline: "none", border: "none" }} 
+                value={"customParam"}
+              />
+                
+              )}
+              
             </Tabs>
           )}
         </div>
 
-        {currentTab === "param" && canEdit() && (
+        {(currentTab === "param" || currentTab === "customParam") && canEdit() && (
           <div
             className='flex flex-row items-center cursor-pointer hover:opacity-80 mr-8 border-1 rounded-md border-brand-secondary px-2 py-2'
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-
-              showAddParameterDialog();
+              if(currentTab === "param") 
+              {  
+                showAddParameterDialog();
+              }
+              if(currentTab === "customParam") 
+              {  
+                showAddCustomParameterDialog();
+              }
+              
             }}
           >
             <AppIcon
@@ -271,7 +302,9 @@ const Match = ({ projectType, ...props }) => {
           <Parameters />
         ) : currentTab === "db" ? (
           <Database />
-        ) : null}
+        ) : currentTab === 'customParam' ? (
+          <CustomParameters /> 
+        ): null}
       </div>
     </div>
   );
