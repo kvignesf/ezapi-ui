@@ -5,6 +5,8 @@ import { ErrorMessage, Field, FieldArray, Form, Formik } from "formik";
 import AddIcon from "@material-ui/icons/Add";
 import {
   CircularProgress,
+  Fade,
+  Menu,
   MenuItem,
   Select,
   Tab,
@@ -29,6 +31,7 @@ import {
 import tablesDataAtom from "../../../../shared/atom/tablesDataAtom";
 import { useEffect } from "react";
 import Colors from "../../../../shared/colors";
+import { useCanEdit } from "../../../../shared/utils";
 
 const AddOrEditCustomParameter = ({ parameter, onClose }) => {
   const formRef = useRef(null);
@@ -36,12 +39,15 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
   const [currentTab, setTab] = useState(0);
   const [tablesDataState, setTablesDataState] = useRecoilState(tablesDataAtom);
   const [columns, setColumns] = useState([]);
+  const [menuAnchorEl, setMenuAnchorEl] = useState(false);
+  const canEdit = useCanEdit()
   const initialFilters = {
     filters: parameter?.filters ?? [
       {
         columnName: "",
         conditionKey: "",
         value: "",
+        relation: null
       },
     ],
   }
@@ -50,15 +56,15 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
     columnName: "",
     conditionKey: "",
     value: "",
+    relation: ""
   }
 
   useEffect(() => {
-    if (parameter?.tableName) {
-      let table = tablesDataState.find(
+    if (parameter?.tableName && tablesDataState) {
+      let table = tablesDataState?.find(
         (item) => item.name === parameter?.tableName
       );
-    
-      setColumns(table.selectedColumns);
+      setColumns(table?.selectedColumns);
     }
   }, [parameter, tablesDataState])
 
@@ -108,7 +114,7 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
       ...values,
     });
 
-    
+
   };
 
   const resetMutationState = () => {
@@ -133,18 +139,38 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
     return null;
   }
 
-  const handleNext = () => {
+  const handleNext = (index) => {
+    if (index < currentTab) {
+      setTab(index)
+    } else {
+      let flag = true;
+      if (formRef.current?.values) {
+        const { name, type, tableName, columnName, functionName, filters } = formRef.current.values;
+        if (currentTab === 0 && (name.length === 0 || type.length === 0)) {
+          flag = false;
+          formRef.current.touched.name = true;
+          formRef.current.touched.type = true;
+        } else if (currentTab === 1 && (tableName.length === 0 || columnName.length === 0 || functionName.length === 0)) {
+          flag = false;
+          formRef.current.touched.tableName = true;
+          formRef.current.touched.columnName = true;
+          formRef.current.touched.functionName = true;
+        } else if (currentTab === 2) {
 
-   
-    if (formRef.current?.values) {
-      const { name, type } = formRef.current?.values;
-
-      if (name.length === 0 || type.length === 0)
+        }
+        if (flag) {
+          formRef.current.touched.name = false;
+          formRef.current.touched.type = false;
+          formRef.current.touched.tableName = false;
+          formRef.current.touched.columnName = false;
+          formRef.current.touched.functionName = false;
+          setTab(currentTab + 1)
+        }
         formRef.current.validateForm();
-      else if (name && type && currentTab !== 2) setTab(currentTab + 1);
+      }
     }
   };
-
+  
   return (
     <div className="flex flex-col">
       <div className="p-4 flex flex-row justify-between border-b-1">
@@ -164,15 +190,16 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
           </AppIcon>
         )}
       </div>
-      <div>
+      <div >
         <Tabs
           value={currentTab}
           onChange={(_, index) => {
-            setTab(index);
+            handleNext(index);
           }}
           aria-label="add custom parameter tabs"
           indicatorColor="primary"
           textColor="primary"
+          variant="fullWidth"
         >
           <Tab
             label={<TabLabel label={"Naming"} />}
@@ -204,7 +231,7 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
                 innerRef={formRef}
                 onSubmit={handleSubmit}
               >
-                {({ errors, touched, values, handleChange, handleBlur }) => (
+                {({ errors, touched, values, handleChange }) => (
                   <Form>
                     <div className="mb-4">
                       <p className="text-overline2 mb-2">Attribute Name</p>
@@ -243,7 +270,6 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
                         </p>
                       )}
                     </div>
-
                     <div className="mb-4">
                       <p className="text-overline2 mb-2">Type</p>
                       <Field
@@ -260,9 +286,6 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
                         helperText={<ErrorMessage name="type" />}
                         onKeyUp={(e) => {
                           resetMutationState();
-                        }}
-                        handleChange={(e) => {
-                          handleChange(e);
                         }}
                         as={(value) => {
                           return (
@@ -345,11 +368,11 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
                         onChange={(e) => {
                           handleChange(e);
                           let tableName = e.target.value;
-                         
+
                           let table = tablesDataState.find(
                             (item) => item.name === tableName
                           );
-                         
+
                           setColumns(table.selectedColumns);
                         }}
                         as={(value) => {
@@ -526,9 +549,9 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
                 {({ errors, touched, values, handleChange, handleBlur }) => (
                   <Form>
                     <div className="mb-4">
-                      <div className="flex flex-row ml-6">
-                        <div>Where</div>
-                        <div className="w-full ml-6 mr-14">
+                      <div className="flex flex-row ml-12 mr-12">
+                        <p className="font-semibold text-base mr-4">Where</p>
+                        <div className="w-full">
                           <p className="text-overline2 mb-2">Table Name</p>
                           <Field
                             id="tableName"
@@ -559,56 +582,48 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
                       <FieldArray name="filters">
                         {({ remove, push }) => (
                           <>
-                            <div>
+                            <div className="ml-4">
                               {values.filters &&
                                 values.filters.length > 0 &&
                                 values.filters.map((filter, index) => (
-                                  <div key={index} className="ml-24 mr-14 mts-2">
-                                    <div className="mb-4">
-                                      <p className="text-overline2 mb-1">
-                                        Column Name
-                                      </p>
-                                      <Field
-                                        id={`filters.${index}.columnName`}
-                                        name={`filters.${index}.columnName`}
-                                        style={{ height: "48px" }}
+                                  <div key={index} className="flex flex-row justify-items-stretch mb-8">
+                                    <div className="w-20 mr-5">
+                                      {index !== 0 && <Field
+                                        id={`filters.${index}.relation`}
+                                        name={`filters.${index}.relation`}
+                                        style={{ height: "44px" }}
                                         fullWidth
-                                        handleChange={handleChange}
                                         color="primary"
                                         variant="outlined"
-                                        disabled={
-                                          isAddingCustomParameter ||
-                                          isEditingCustomParameter
-                                        }
-                                        error={
-                                          touched.columnName &&
-                                          Boolean(errors.columnName)
-                                        }
+                                        handleChange={handleChange}
+                                        // disabled={isAddingCustomParameter || isEditingCustomParameter}
+                                        // error={touched.name && Boolean(errors.name)}
                                         helperText={
-                                          <ErrorMessage name="columnName" />
+                                          <ErrorMessage name="relation" />
                                         }
-                                        onKeyUp={(e) => {
-                                          resetMutationState();
-                                        }}
+                                        // onKeyUp={(e) => {
+                                        //   resetMutationState();
+                                        // }}
+
                                         as={(value) => {
                                           return (
                                             <div className="flex flex-col">
                                               <Select
-                                                labelId={`filters.${index}.columnName`}
-                                                id={`filters.${index}.columnName`}
+                                                labelId={`select.${index}.relation`}
+                                                id={`select.${index}.relation`}
                                                 variant="outlined"
                                                 className="w-full"
                                                 {...value}
                                               >
-                                                {columns.map((column) => {
-                                                  return (
-                                                    <MenuItem
-                                                      value={column.name}
-                                                    >
-                                                      {column.name}
-                                                    </MenuItem>
-                                                  );
-                                                })}
+                                                {Constants.customParamtersFilterRelations.map(
+                                                  (key) => {
+                                                    return (
+                                                      <MenuItem value={key}>
+                                                        {key}
+                                                      </MenuItem>
+                                                    );
+                                                  }
+                                                )}
                                               </Select>
                                               {value?.error && (
                                                 <p
@@ -619,53 +634,60 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
                                                     color: "#f44336",
                                                   }}
                                                 >
-                                                  {errors?.columnName}
+                                                  {errors?.type}
                                                 </p>
                                               )}
                                             </div>
                                           );
                                         }}
-                                      />
+                                      />}
                                     </div>
-                                    <div className="flex flex-row">
-                                      <div className="mr-4">
-                                        <p className="text-overline2 mb-1">Condition Key</p>
+                                    <div className="mt-2 mr-4" style={{ width: "73%" }}>
+                                      <div className="mb-4">
+                                        <p className="text-overline2 mb-1">
+                                          Column Name
+                                        </p>
                                         <Field
-                                          id={`filters.${index}.conditionKey`}
-                                          name={`filters.${index}.conditionKey`}
-                                          style={{ height: "44px" }}
+                                          id={`filters.${index}.columnName`}
+                                          name={`filters.${index}.columnName`}
+                                          style={{ height: "48px" }}
                                           fullWidth
+                                          handleChange={handleChange}
                                           color="primary"
                                           variant="outlined"
-                                          handleChange={handleChange}
-                                          // disabled={isAddingCustomParameter || isEditingCustomParameter}
-                                          // error={touched.name && Boolean(errors.name)}
-                                          helperText={
-                                            <ErrorMessage name="attribute" />
+                                          disabled={
+                                            isAddingCustomParameter ||
+                                            isEditingCustomParameter
                                           }
-                                          // onKeyUp={(e) => {
-                                          //   resetMutationState();
-                                          // }}
-
+                                          error={
+                                            touched.columnName &&
+                                            Boolean(errors.columnName)
+                                          }
+                                          helperText={
+                                            <ErrorMessage name="columnName" />
+                                          }
+                                          onKeyUp={(e) => {
+                                            resetMutationState();
+                                          }}
                                           as={(value) => {
                                             return (
                                               <div className="flex flex-col">
                                                 <Select
-                                                  labelId={`select.${index}.conditionKey`}
-                                                  id={`select.${index}.conditionKey`}
+                                                  labelId={`filters.${index}.columnName`}
+                                                  id={`filters.${index}.columnName`}
                                                   variant="outlined"
                                                   className="w-full"
                                                   {...value}
                                                 >
-                                                  {Constants.customParametersConditionKeys.map(
-                                                    (key) => {
-                                                      return (
-                                                        <MenuItem value={key}>
-                                                          {key}
-                                                        </MenuItem>
-                                                      );
-                                                    }
-                                                  )}
+                                                  {columns.map((column) => {
+                                                    return (
+                                                      <MenuItem
+                                                        value={column.name}
+                                                      >
+                                                        {column.name}
+                                                      </MenuItem>
+                                                    );
+                                                  })}
                                                 </Select>
                                                 {value?.error && (
                                                   <p
@@ -676,7 +698,7 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
                                                       color: "#f44336",
                                                     }}
                                                   >
-                                                    {errors?.type}
+                                                    {errors?.columnName}
                                                   </p>
                                                 )}
                                               </div>
@@ -684,40 +706,145 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
                                           }}
                                         />
                                       </div>
-                                      <div className="ml-4">
-                                        <p className="text-overline2 mb-1">Value</p>
-                                        <Field
-                                          id={`filters.${index}.value`}
-                                          name={`filters.${index}.value`}
-                                          style={{ height: "48px" }}
-                                          fullWidth
-                                          color="primary"
-                                          variant="outlined"
-                                          // disabled={isAddingCustomParameter || isEditingCustomParameter}
-                                          // error={touched.name && Boolean(errors.name)}
-                                          helperText={
-                                            <ErrorMessage name="attribute" />
-                                          }
-                                          // onKeyUp={(e) => {
-                                          //   resetMutationState();
-                                          // }}
-                                          inputProps={{
-                                            style: {
-                                              height: "6px",
-                                            },
-                                          }}
-                                          as={TextField}
-                                        />
+                                      <div className="flex flex-row w-full">
+                                        <div className="mr-4 w-2/5">
+                                          <p className="text-overline2 mb-1">Condition Key</p>
+                                          <Field
+                                            id={`filters.${index}.conditionKey`}
+                                            name={`filters.${index}.conditionKey`}
+                                            style={{ height: "44px" }}
+                                            fullWidth
+                                            color="primary"
+                                            variant="outlined"
+                                            handleChange={handleChange}
+                                            // disabled={isAddingCustomParameter || isEditingCustomParameter}
+                                            // error={touched.name && Boolean(errors.name)}
+                                            helperText={
+                                              <ErrorMessage name="attribute" />
+                                            }
+                                            // onKeyUp={(e) => {
+                                            //   resetMutationState();
+                                            // }}
+
+                                            as={(value) => {
+                                              return (
+                                                <div className="flex flex-col">
+                                                  <Select
+                                                    labelId={`select.${index}.conditionKey`}
+                                                    id={`select.${index}.conditionKey`}
+                                                    variant="outlined"
+                                                    className="w-full"
+                                                    {...value}
+                                                  >
+                                                    {Constants.customParametersConditionKeys.map(
+                                                      (key) => {
+                                                        return (
+                                                          <MenuItem value={key}>
+                                                            {key}
+                                                          </MenuItem>
+                                                        );
+                                                      }
+                                                    )}
+                                                  </Select>
+                                                  {value?.error && (
+                                                    <p
+                                                      className="py-1"
+                                                      style={{
+                                                        fontSize: "0.75rem",
+                                                        marginLeft: "1rem",
+                                                        color: "#f44336",
+                                                      }}
+                                                    >
+                                                      {errors?.type}
+                                                    </p>
+                                                  )}
+                                                </div>
+                                              );
+                                            }}
+                                          />
+                                        </div>
+                                        <div className="ml-4 w-3/5">
+                                          <p className="text-overline2 mb-1">Value</p>
+                                          <Field
+                                            id={`filters.${index}.value`}
+                                            name={`filters.${index}.value`}
+                                            style={{ height: "48px" }}
+                                            fullWidth
+                                            color="primary"
+                                            variant="outlined"
+                                            // disabled={isAddingCustomParameter || isEditingCustomParameter}
+                                            // error={touched.name && Boolean(errors.name)}
+                                            helperText={
+                                              <ErrorMessage name="attribute" />
+                                            }
+                                            // onKeyUp={(e) => {
+                                            //   resetMutationState();
+                                            // }}
+                                            inputProps={{
+                                              style: {
+                                                height: "6px",
+                                              },
+                                            }}
+                                            as={TextField}
+                                          />
+                                        </div>
                                       </div>
                                     </div>
-                                    <div className="mt-4">
-                                      <button className="cursor-pointer mt-4 float-right" onClick={() => { remove(index) }}>Delete</button>
+                                    <div className='mt-4'>
+                                      <div>
+                                        {canEdit() ? (
+                                          <AppIcon
+                                            style={{ padding: "0px" }}
+                                            onClick={(e) => {
+                                              e.preventDefault();
+                                              e.stopPropagation();
+
+                                              setMenuAnchorEl(e.currentTarget);
+                                            }}
+                                          >
+                                            <MoreVertIcon
+                                              style={{ width: "20px", height: "min-content" }}
+                                            />
+                                          </AppIcon>
+                                        ) : (
+                                          <div style={{ width: "20px", height: "min-content" }} />
+                                        )} </div>
+                                      {canEdit() && (
+                                        <Menu
+                                          id='param-menu'
+                                          anchorEl={menuAnchorEl}
+                                          keepMounted
+                                          open={Boolean(menuAnchorEl)}
+                                          onClose={() => {
+                                            setMenuAnchorEl(null);
+                                          }}
+                                          TransitionComponent={Fade}
+                                          style={{ borderRadius: "1rem", zIndex: "10000" }}
+                                        >
+                                          <MenuItem
+                                            onClick={() => {
+                                              setMenuAnchorEl(null);
+                                            }}
+                                          >
+                                            Edit
+                                          </MenuItem>
+                                          <MenuItem
+                                            onClick={() => {
+                                              setMenuAnchorEl(null);
+                                              remove(index)
+                                            }}
+                                            style={{ color: Colors.accent.red }}
+                                          >
+                                            Delete
+                                          </MenuItem>
+                                        </Menu>
+                                      )}
                                     </div>
                                   </div>
                                 ))}
 
                             </div>
-                            <div className='float-right flex flex-row items-center cursor-pointer hover:opacity-80 mr-14 mt-2 border-1 rounded-md border-brand-secondary px-2 py-2'
+                            <div className='float-right flex flex-row items-center cursor-pointer hover:opacity-80 mr-12 mt-2 border-1 rounded-md border-brand-secondary px-2 py-2'
                               onClick={() => { push(temp) }}>
                               <AppIcon
                                 size='20px'

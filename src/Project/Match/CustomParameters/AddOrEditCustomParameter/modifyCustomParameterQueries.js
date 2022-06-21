@@ -14,6 +14,12 @@ const addCustomParameter = async ({
   filtersRelation = [],
 }) => {
   try {
+    let isFiltersEmpty = false;
+    if (filters?.length === 1) {
+      if (filters[0].columnName.length === 0 || filters[0].conditionKey.length === 0 || filters[0].value.length === 0) {
+       isFiltersEmpty = true
+      }
+    }
     const { data } = await client.post(endpoint.addCustomParameter, {
       projectID: projectId,
       data: {
@@ -22,8 +28,7 @@ const addCustomParameter = async ({
         tableName,
         columnName,
         functionName,
-        filters,
-        filtersRelation,
+        filters : isFiltersEmpty ? []: filters,
       },
     });
     return data;
@@ -52,9 +57,14 @@ const editCustomParameter = async ({
   columnName,
   functionName,
   filters,
-  filtersRelation = [],
 }) => {
   try {
+    let isFiltersEmpty = false;
+    if (filters?.length === 1) {
+      if (filters[0].columnName.length === 0 || filters[0].conditionKey.length === 0 || filters[0].value.length === 0) {
+       isFiltersEmpty = true
+      }
+    }
     const { data } = await client.patch(endpoint.editCustomParameter, {
       projectID: projectId,
       parameterID: id,
@@ -64,8 +74,7 @@ const editCustomParameter = async ({
         tableName,
         columnName,
         functionName,
-        filters,
-        filtersRelation,
+        filters : isFiltersEmpty ? []: filters,
       },
     });
     return data;

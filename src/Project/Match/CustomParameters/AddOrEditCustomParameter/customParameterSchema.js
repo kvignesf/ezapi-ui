@@ -10,7 +10,6 @@ const schema = Yup.object().shape({
   columnName: Yup.string().required(Messages.COLUMN_REQUIRED),
   functionName: Yup.string().required(Messages.FUNCTION_REQUIRED),
   filters: Yup.array(),
-  filtersRelation: Yup.array(),
 });
 
 export default schema;

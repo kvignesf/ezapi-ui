@@ -34,7 +34,8 @@ const Constants = {
     integer: ["count", "sum", "min", "max", "average"],
     array: ["distinct", "top10"]
   },
-  customParametersConditionKeys:[">", "<", "=", "Null", "NotNull"]
+  customParametersConditionKeys:[">", "<", "=", "Null", "NotNull"],
+  customParamtersFilterRelations:["AND", "OR"]
 };
 
 export default Constants;
