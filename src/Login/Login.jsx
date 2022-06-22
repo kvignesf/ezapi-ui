@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import Card from "@material-ui/core/Card";
+import Snackbar from "@material-ui/core/Snackbar";
 import AppIcon from "../shared/components/AppIcon";
 import { Field, ErrorMessage, Form, Formik } from "formik";
 import CloseIcon from "@material-ui/icons/Close";
@@ -81,6 +82,9 @@ const Login = () => {
   useEffect(() => {
     const queryParams = new URLSearchParams(window.location.search);
     const code = queryParams.get("code");
+    // const error = queryParams.get("error");
+    // console.log("error: " + error);
+    // console.log(code);
     if (code) {
       setIsLoading(true);
       const requestOptions = {
@@ -299,6 +303,13 @@ const Login = () => {
             </>
           )}
         </Card>
+        {/* {( <Snackbar open={open} autoHideDuration={3000} onClose={handleClose}>
+            <Alert onClose={handleClose} severity={severity}>
+              {errorMessage}
+            </Alert>
+          </Snackbar>)
+         
+        } */}
       </div>
     </div>
   );
