@@ -67,7 +67,7 @@ import EzapiFooter from "../shared/components/EzapiFooter";
 import Scrollbar from "react-smooth-scrollbar";
 
 const Project = () => {
-  console.log("Project");
+  // console.log("Project");
   const { projectId } = useParams();
   const history = useHistory();
   const firstName = getFirstName();
