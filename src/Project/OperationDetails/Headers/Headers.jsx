@@ -27,6 +27,7 @@ import {
   useGetParentName,
   useGetFullPath,
   isItemSame,
+  isCustomParam,
 } from "../../../shared/utils";
 import DragAndDropMessage from "../../../shared/components/DragAndDropMessage";
 import primaryAtom from "../../../shared/atom/primaryAtom";
@@ -80,7 +81,7 @@ const Headers = ({ request = true, responseCode }) => {
 
     if (
       (isAttribute(item) || isColumn(item)) &&
-      !isArray(item) &&
+      (!isArray(item) || isCustomParam(item)) &&
       !isSchema(item) &&
       !isObject(item)
     ) {

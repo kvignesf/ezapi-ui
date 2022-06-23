@@ -32,6 +32,10 @@ const Match = ({ projectType, ...props }) => {
     data: null,
   });
   const canEdit = useCanEdit();
+  const customParamENV =
+    process.env.REACT_APP_FEATURE_CUSTOM_PARAMETER ?
+      process.env.REACT_APP_FEATURE_CUSTOM_PARAMETER :
+      "true";
 
   useEffect(() => {
     if (projectType === "schema" || projectType === "both") {
@@ -249,17 +253,15 @@ const Match = ({ projectType, ...props }) => {
                   style={{ outline: "none", border: "none" }}
                   value={"db"}
                 />
-                
+
               )}
-              {projectType === "db" && (
-                <Tab 
-                label={<TabLabel label={"Custom Parameter"} /> }
-                style={{ outline: "none", border: "none" }} 
-                value={"customParam"}
-              />
-                
+              {(projectType === "db" && customParamENV === "true") && (
+                <Tab
+                  label={<TabLabel label={"Custom Parameter"} />}
+                  style={{ outline: "none", border: "none" }}
+                  value={"customParam"}
+                />
               )}
-              
             </Tabs>
           )}
         </div>
@@ -270,15 +272,13 @@ const Match = ({ projectType, ...props }) => {
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              if(currentTab === "param") 
-              {  
+              if (currentTab === "param") {
                 showAddParameterDialog();
               }
-              if(currentTab === "customParam") 
-              {  
+              if (currentTab === "customParam") {
                 showAddCustomParameterDialog();
               }
-              
+
             }}
           >
             <AppIcon
@@ -303,8 +303,8 @@ const Match = ({ projectType, ...props }) => {
         ) : currentTab === "db" ? (
           <Database />
         ) : currentTab === 'customParam' ? (
-          <CustomParameters /> 
-        ): null}
+          <CustomParameters />
+        ) : null}
       </div>
     </div>
   );

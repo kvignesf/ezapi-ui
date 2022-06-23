@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import React, { useState } from 'react'
 import { useParams } from 'react-router'
-import { useRecoilState } from 'recoil';
+import { useRecoilValue } from 'recoil';
 import AddIcon from "@material-ui/icons/Add";
 import {
   CircularProgress,
@@ -27,16 +27,53 @@ import DeleteCustomParameter from './DeleteCustomParameter/DeleteCustomParameter
 
 const CustomParameters = () => {
   const { projectId } = useParams();
-  const { isLoading: isFetchingCustomParameters,
+  const {
+    isLoading: isFetchingCustomParameters,
     data: customParameters,
     error: getCustomParametersError
-  } = useGetCustomParameters(projectId, { refetchtchOnWindowFocus: false })
+  } = useGetCustomParameters(projectId,{
+      refetchOnWindowFocus: false
+    })
 
-  const operationState = useRecoilState(operationAtomWithMiddleware);
+  const [dialog, setDialog] = useState({
+    show: false,
+    type: null,
+    data: null,
+  });
+
+  const operationState = useRecoilValue(operationAtomWithMiddleware);
   const canEdit = useCanEdit()
+
+  const showAddParameterDialog = () => {
+    setDialog({
+      show: true,
+      type: "add-custom-parameter",
+    });
+  };
+
+  const handleCloseDialog = () => {
+    setDialog({
+      show: false,
+      data: null,
+    });
+  };
 
   return (
     <>
+      <Dialog
+        onClose={handleCloseDialog}
+        aria-labelledby='dashboard-dialog'
+        open={dialog?.show ?? false}
+        fullWidth
+        PaperProps={{
+          style: { borderRadius: 8 },
+        }}
+        disableBackdropClick
+      >
+        {dialog?.type === "add-custom-parameter" && canEdit() && (
+          <AddOrEditCustomParameter onClose={handleCloseDialog} />
+        )}
+      </Dialog>
 
       <div className='m-4 h-full mb-16'>
         <div
@@ -95,7 +132,7 @@ const CustomParameters = () => {
                 }}
               >
                 {customParameters?.data?.map((param) => {
-                  return <CustomParamRow param={param} key={param?.id} />
+                  return <CustomParamRow param={param} key={param?.customParamID} />
                 })}
               </Scrollbar>
 
@@ -126,7 +163,7 @@ const CustomParameters = () => {
                     e.preventDefault();
                     e.stopPropagation();
 
-                    // showAddParameterDialog();
+                    showAddParameterDialog();
                   }}
                 >
                   <div className='flex flex-row items-center'>
@@ -225,6 +262,7 @@ const CustomParamRow = ({ param }) => {
             <DeleteCustomParameter onClose={handleCloseDialog} parameter={param} />
           )}
         </Dialog>
+        
         <div
           key={param.id}
           onMouseEnter={(e) => {
@@ -245,6 +283,7 @@ const CustomParamRow = ({ param }) => {
           }}
           className='bg-white mb-1 rounded-md flex flex-row p-1 py-2 items-center'
         >
+
           <AppIcon className='mr-1 opacity-50'>
             <DragIndicatorIcon
               className={"cursor-move"}

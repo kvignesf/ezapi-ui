@@ -17,6 +17,7 @@ const Messages = {
   FUNCTION_REQUIRED: "Please select a function name",
   CONDITION_REQUIRED: "Please select a condtion",
   VALUE_REQUIRED: "Please enter a valid value",
+  RELATION_REQUIRED: "Please select a relation",
 
 
 

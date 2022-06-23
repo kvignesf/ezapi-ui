@@ -15,11 +15,10 @@ const getCustomParameters = async ({ queryKey }) => {
   }
 };
 
+
 export const useGetCustomParameters = (projectId, options = {}) => {
-  const query = useQuery(
-    [queries.customParameters, { projectId }],
-    getCustomParameters,
-    { ...options }
-  );
+  const query = useQuery([queries.customParameters, { projectId }], getCustomParameters, {
+    ...options,
+  });
   return query;
 };

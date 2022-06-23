@@ -50,7 +50,7 @@ export const useAddCustomParameter = () => {
 
 const editCustomParameter = async ({
   projectId,
-  id,
+  customParamID,
   name,
   type,
   tableName,
@@ -67,7 +67,7 @@ const editCustomParameter = async ({
     }
     const { data } = await client.patch(endpoint.editCustomParameter, {
       projectID: projectId,
-      parameterID: id,
+      customParamID,
       data: {
         name,
         type,

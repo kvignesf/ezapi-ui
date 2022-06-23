@@ -15,6 +15,7 @@ import {
 } from "@material-ui/core";
 import { useRecoilState } from "recoil";
 import MoreVertIcon from "@material-ui/icons/MoreVert";
+import debounce from "lodash.debounce";
 
 import AppIcon from "../../../../shared/components/AppIcon";
 import {
@@ -32,6 +33,7 @@ import tablesDataAtom from "../../../../shared/atom/tablesDataAtom";
 import { useEffect } from "react";
 import Colors from "../../../../shared/colors";
 import { useCanEdit } from "../../../../shared/utils";
+import Messages from "../../../../shared/messages";
 
 const AddOrEditCustomParameter = ({ parameter, onClose }) => {
   const formRef = useRef(null);
@@ -40,6 +42,8 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
   const [tablesDataState, setTablesDataState] = useRecoilState(tablesDataAtom);
   const [columns, setColumns] = useState([]);
   const [menuAnchorEl, setMenuAnchorEl] = useState(false);
+  const [filterErrors, setFilterErrors] = useState([])
+  const [isAlreadyChecked, setIsAlreadyChecked] = useState(false)
   const canEdit = useCanEdit()
   const initialFilters = {
     filters: parameter?.filters ?? [
@@ -104,7 +108,7 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
     if (parameter) {
       editCustomParam({
         projectId,
-        id: parameter?.id,
+        customParamID: parameter?.customParamID,
         ...values,
       });
       return;
@@ -140,10 +144,15 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
   }
 
   const handleNext = (index) => {
+    let flag = true;
+
     if (index < currentTab) {
       setTab(index)
-    } else {
-      let flag = true;
+    } else if (parameter && index) {
+      setTab(index)
+    }
+    else {
+
       if (formRef.current?.values) {
         const { name, type, tableName, columnName, functionName, filters } = formRef.current.values;
         if (currentTab === 0 && (name.length === 0 || type.length === 0)) {
@@ -164,13 +173,75 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
           formRef.current.touched.tableName = false;
           formRef.current.touched.columnName = false;
           formRef.current.touched.functionName = false;
+          if (currentTab === 0 && formRef.current.values.type !== parameter?.type) {
+            formRef.current.values.functionName = ""
+          }
           setTab(currentTab + 1)
         }
         formRef.current.validateForm();
       }
     }
   };
-  
+
+
+
+  const validateFilters = (filters) => {
+
+    let flag = true,
+      errors = [];
+    if (filters && filters.length > 0) {
+      setIsAlreadyChecked(true)
+      errors = filters.map((filter, index) => {
+        let error = {};
+
+        const {
+          columnName,
+          conditionKey,
+          value,
+          relation,
+        } = filter;
+
+        if (columnName.length > 0) {
+          error.columnName = null;
+        } else {
+          error.columnName = Messages.COLUMN_REQUIRED;
+          flag = false;
+        }
+
+        if (conditionKey.length > 0) {
+          error.conditionKey = null;
+        } else {
+          error.conditionKey = Messages.CONDITION_REQUIRED;
+          flag = false;
+        }
+
+        if (value.length > 0) {
+          error.value = null;
+        } else {
+          error.value = Messages.VALUE_REQUIRED;
+          flag = false;
+        }
+
+        if (index !== 0 && relation.length > 0) {
+          error.relation = null;
+        } else if (index !== 0) {
+          error.relation = Messages.RELATION_REQUIRED;
+          flag = false;
+        }
+        return error;
+      });
+    }
+    setFilterErrors(errors);
+    return flag;
+  };
+
+  const handleDone = () => {
+    const { filters } = formRef.current.values;
+    if (validateFilters(filters)) {
+      formRef.current.submitForm()
+    }
+  }
+
   return (
     <div className="flex flex-col">
       <div className="p-4 flex flex-row justify-between border-b-1">
@@ -279,6 +350,8 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
                         fullWidth
                         color="primary"
                         variant="outlined"
+                        handleChange={handleChange}
+
                         disabled={
                           isAddingCustomParameter || isEditingCustomParameter
                         }
@@ -569,15 +642,6 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
                             as={TextField}
                           />
                         </div>
-                        {/* <div className='ml-5'>
-                        <AppIcon
-                            style={{ padding: "0px" }}
-                          >
-                            <MoreVertIcon
-                              style={{ width: "20px", height: "min-content" }}
-                            />
-                        </AppIcon>
-                       </div> */}
                       </div>
                       <FieldArray name="filters">
                         {({ remove, push }) => (
@@ -586,7 +650,7 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
                               {values.filters &&
                                 values.filters.length > 0 &&
                                 values.filters.map((filter, index) => (
-                                  <div key={index} className="flex flex-row justify-items-stretch mb-8">
+                                  <div key={index + filterErrors?.[index]} className="flex flex-row justify-items-stretch mb-8">
                                     <div className="w-20 mr-5">
                                       {index !== 0 && <Field
                                         id={`filters.${index}.relation`}
@@ -595,9 +659,16 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
                                         fullWidth
                                         color="primary"
                                         variant="outlined"
-                                        handleChange={handleChange}
-                                        // disabled={isAddingCustomParameter || isEditingCustomParameter}
-                                        // error={touched.name && Boolean(errors.name)}
+                                        onChange={
+                                          (e) => {
+                                            handleChange(e);
+                                            setTimeout(() => {
+                                              isAlreadyChecked && validateFilters(formRef.current.values.filters);
+                                            },600)
+                                          }
+                                        }
+                                        disabled={isAddingCustomParameter || isEditingCustomParameter}
+                                        error={filterErrors[index]?.relation}
                                         helperText={
                                           <ErrorMessage name="relation" />
                                         }
@@ -613,6 +684,14 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
                                                 id={`select.${index}.relation`}
                                                 variant="outlined"
                                                 className="w-full"
+                                                onChange={
+                                                  (e) => {
+                                                    handleChange(e)
+                                                    setTimeout(() => {
+                                                      isAlreadyChecked && validateFilters(formRef.current.values.filters);
+                                                    },600)
+                                                  }
+                                                }
                                                 {...value}
                                               >
                                                 {Constants.customParamtersFilterRelations.map(
@@ -625,7 +704,7 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
                                                   }
                                                 )}
                                               </Select>
-                                              {value?.error && (
+                                              {filterErrors?.[index]?.relation && (
                                                 <p
                                                   className="py-1"
                                                   style={{
@@ -634,7 +713,7 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
                                                     color: "#f44336",
                                                   }}
                                                 >
-                                                  {errors?.type}
+                                                  {filterErrors?.[index]?.relation}
                                                 </p>
                                               )}
                                             </div>
@@ -652,20 +731,21 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
                                           name={`filters.${index}.columnName`}
                                           style={{ height: "48px" }}
                                           fullWidth
-                                          handleChange={handleChange}
                                           color="primary"
                                           variant="outlined"
+                                          onChange={
+                                            (e) => {
+                                              handleChange(e);
+                                              setTimeout(() => {
+                                                isAlreadyChecked && validateFilters(formRef.current.values.filters);
+                                              },500)
+                                            }
+                                          }
                                           disabled={
                                             isAddingCustomParameter ||
                                             isEditingCustomParameter
                                           }
-                                          error={
-                                            touched.columnName &&
-                                            Boolean(errors.columnName)
-                                          }
-                                          helperText={
-                                            <ErrorMessage name="columnName" />
-                                          }
+                                          error={filterErrors[index]?.columnName}
                                           onKeyUp={(e) => {
                                             resetMutationState();
                                           }}
@@ -689,7 +769,7 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
                                                     );
                                                   })}
                                                 </Select>
-                                                {value?.error && (
+                                                {filterErrors?.[index] && (
                                                   <p
                                                     className="py-1"
                                                     style={{
@@ -698,7 +778,7 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
                                                       color: "#f44336",
                                                     }}
                                                   >
-                                                    {errors?.columnName}
+                                                    {filterErrors?.[index]?.columnName}
                                                   </p>
                                                 )}
                                               </div>
@@ -716,15 +796,22 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
                                             fullWidth
                                             color="primary"
                                             variant="outlined"
-                                            handleChange={handleChange}
+                                            onChange={
+                                              (e) => {
+                                                handleChange(e);
+                                                setTimeout(() => {
+                                                  isAlreadyChecked && validateFilters(formRef.current.values.filters);
+                                                },500)
+                                              }
+                                            }
                                             // disabled={isAddingCustomParameter || isEditingCustomParameter}
-                                            // error={touched.name && Boolean(errors.name)}
+                                            error={filterErrors[index]?.conditionKey}
                                             helperText={
                                               <ErrorMessage name="attribute" />
                                             }
-                                            // onKeyUp={(e) => {
-                                            //   resetMutationState();
-                                            // }}
+                                            onKeyUp={(e) => {
+                                              resetMutationState();
+                                            }}
 
                                             as={(value) => {
                                               return (
@@ -746,7 +833,7 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
                                                       }
                                                     )}
                                                   </Select>
-                                                  {value?.error && (
+                                                  {filterErrors?.[index]?.conditionKey && (
                                                     <p
                                                       className="py-1"
                                                       style={{
@@ -755,7 +842,7 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
                                                         color: "#f44336",
                                                       }}
                                                     >
-                                                      {errors?.type}
+                                                      {filterErrors?.[index]?.conditionKey}
                                                     </p>
                                                   )}
                                                 </div>
@@ -772,14 +859,22 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
                                             fullWidth
                                             color="primary"
                                             variant="outlined"
+                                            onChange={
+                                              (e) => {
+                                                handleChange(e);
+                                                setTimeout(() => {
+                                                  isAlreadyChecked && validateFilters(formRef.current.values.filters);
+                                                },500)
+                                              }
+                                            }
                                             // disabled={isAddingCustomParameter || isEditingCustomParameter}
-                                            // error={touched.name && Boolean(errors.name)}
+                                            error={filterErrors[index]?.value}
                                             helperText={
                                               <ErrorMessage name="attribute" />
                                             }
-                                            // onKeyUp={(e) => {
-                                            //   resetMutationState();
-                                            // }}
+                                            onKeyUp={(e) => {
+                                              resetMutationState();
+                                            }}
                                             inputProps={{
                                               style: {
                                                 height: "6px",
@@ -787,6 +882,18 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
                                             }}
                                             as={TextField}
                                           />
+                                          {filterErrors?.[index]?.value && (
+                                            <p
+                                              className="py-1"
+                                              style={{
+                                                fontSize: "0.75rem",
+                                                marginLeft: "1rem",
+                                                color: "#f44336",
+                                              }}
+                                            >
+                                              {filterErrors?.[index]?.value}
+                                            </p>
+                                          )}
                                         </div>
                                       </div>
                                     </div>
@@ -845,7 +952,12 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
 
                             </div>
                             <div className='float-right flex flex-row items-center cursor-pointer hover:opacity-80 mr-12 mt-2 border-1 rounded-md border-brand-secondary px-2 py-2'
-                              onClick={() => { push(temp) }}>
+                              onClick={() => {
+                                if (validateFilters(values.filters)) {
+                                  setIsAlreadyChecked(false)
+                                  push(temp)
+                                }
+                              }}>
                               <AppIcon
                                 size='20px'
                                 color={Colors.brand.secondary}
@@ -867,41 +979,54 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
         </div>
         {addCustomParamError && (
           <p className='text-accent-red text-overline2'>
-            {addCustomParamError?.response?.data?.message}
+            {addCustomParamError?.response?.data?.error?.error}
           </p>
         )}
 
         {editCustomParamError && (
           <p className='text-accent-red text-overline2'>
-            {editCustomParamError?.message}
+            {editCustomParamError?.error?.error}
           </p>
         )}
       </div>
-      <div className="border-t-1 p-4 flex flex-row justify-end items-center">
-        {!isAddingCustomParameter && !isEditingCustomParameter ? (<>
-          <TextButton
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              onClose();
-            }}
-          >
-            Cancel
-          </TextButton>
-          <PrimaryButton
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              if (currentTab !== 2) {
-                handleNext();
-              } else {
-                formRef.current.submitForm()
-              }
-            }}
-          >
-            {currentTab === 2 ? "Done" : "Next"}
-          </PrimaryButton>
-        </>) :
+      <div className="border-t-2 border-neutral-gray7 flex flex-row items-center justify-end pt-4 mb-4 mr-4 ml-4">
+        {!isAddingCustomParameter && !isEditingCustomParameter ? (
+          <>
+            {currentTab === 2 && (
+              <TextButton
+                onClick={() => {
+                  formRef.current.values.filters = []
+                  formRef.current.submitForm()
+                }}
+                classes="flex-1 -ml-4 text-brand-secondary"
+              >
+                Skip for now
+              </TextButton>
+            )}
+            <TextButton
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onClose();
+              }}
+            >
+              Cancel
+            </TextButton>
+            <PrimaryButton
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (currentTab !== 2) {
+                  handleNext();
+                } else {
+                  handleDone()
+                  // formRef.current.submitForm();
+                }
+              }}
+            >
+              {currentTab === 2 ? "Done" : "Next"}
+            </PrimaryButton>
+          </>) :
           <CircularProgress
             style={{
               width: "24px",
