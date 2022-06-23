@@ -448,18 +448,31 @@ const BodyItem = ({ request = true, responseCode, itemRef }) => {
       });
     }
   };
-  const isArrayChecked = (item, isArrayValue) => {
+  const isArrayChecked = (item, isArrayValue, reqType) => {
     setOperationDetails((operationDetails) => {
       if (request) {
-        const index = operationDetails.operationRequest.body.findIndex(
-          (x) => x?.name === item?.name
-        );
-        if (index !== -1) {
-          const newOperationDetails = _.cloneDeep(operationDetails);
+        // console.log(operationDetails?.operationRequest);
+        // console.log(item);
+        var requestData = null;
+        var requestIndex = null;
+        operationDetails?.operationRequest?.body.map((row, index) => {
+          if (row.payloadId === item.payloadId) {
+            requestData = row;
+            requestIndex = index;
+          }
+        });
+        console.log(requestData, requestIndex);
 
-          newOperationDetails.operationRequest.body.splice(index, 1);
+        if (requestData && requestIndex >= 0) {
+          const clonedOperationDetails = _.cloneDeep(operationDetails);
+          const clonedRequestData = _.cloneDeep(requestData);
 
-          return newOperationDetails;
+          clonedRequestData.isArray = isArrayValue;
+          // console.log(clonedOperationDetails.operationRequest?.body);
+          clonedOperationDetails.operationRequest.body[requestIndex] =
+            clonedRequestData;
+
+          return clonedOperationDetails;
         }
       } else {
         const responseData = operationDetails?.operationResponse?.find(
@@ -727,11 +740,11 @@ const BodyItem = ({ request = true, responseCode, itemRef }) => {
             return newOperationDetails;
           }
         } else {
-          console.log("1: " + operationDetails);
+          // console.log("1: " + operationDetails);
           const responseIndex = operationDetails?.operationResponse?.findIndex(
             (item) => item.responseCode === responseCode
           );
-          console.log("2: " + responseIndex);
+          // console.log("2: " + responseIndex);
           if (responseIndex !== -1) {
             const responseData =
               operationDetails?.operationResponse[responseIndex];
@@ -770,7 +783,7 @@ const BodyItem = ({ request = true, responseCode, itemRef }) => {
 
               clonedOperationDetails.operationResponse[responseIndex] =
                 clonedResponseData;
-              console.log(clonedOperationDetails);
+              // console.log(clonedOperationDetails);
               return clonedOperationDetails;
             }
           }
@@ -1338,45 +1351,7 @@ const DatabaseLabel = ({
       data: null,
     });
   };
-  useEffect(() => {
-    // setOperationDetails((operationDetails) => {
-    //   if (request) {
-    //     const newOperationDetails = _.cloneDeep(operationDetails);
-    //     // Get parent table index
-    //     const parentTableIndex =
-    //       newOperationDetails.operationRequest.body.findIndex(
-    //         (bodyItem) =>
-    //           isDatabase(bodyItem) &&
-    //           tableLabelItem?.sourceName === bodyItem?.sourceName
-    //       );
-    //     console.log(parentTableIndex);
-    //     if (parentTableIndex !== -1) {
-    //       // Clone parent table
-    //       const clonedParentTable = _.cloneDeep(
-    //         newOperationDetails.operationRequest.body[parentTableIndex]
-    //       );
-    //       // Get column
-    //       // const columnIndex = clonedParentTable?.selectedColumns?.findIndex(
-    //       //   (columnItem) => column?.sourceName === columnItem?.sourceName
-    //       // );
-    //       // if (columnIndex !== -1) {
-    //       //   // Clone column
-    //       //   const clonedColumn = _.cloneDeep(
-    //       //     clonedParentTable.selectedColumns[columnIndex]
-    //       //   );
-    //       //   // Set updated name to column
-    //       //   clonedColumn.name = name;
-    //       //   // Set cloned column to table
-    //       //   clonedParentTable.selectedColumns[columnIndex] = clonedColumn;
-    //       //   // Set table to operations body
-    //       //   newOperationDetails.operationRequest.body[parentTableIndex] =
-    //       //     clonedParentTable;
-    //       // }
-    //       return newOperationDetails;
-    //     }
-    //   }
-    // });
-  }, [isArray]);
+
   return (
     <ReactHoverObserver>
       {({ isHovering }) => {
@@ -1416,7 +1391,7 @@ const DatabaseLabel = ({
                     {tableLabelItem?.sourceName &&
                     !_.isEmpty(tableLabelItem?.sourceName) ? (
                       <p className='text-overline2'>
-                        {tableLabelItem?.sourceName}1
+                        {tableLabelItem?.sourceName}
                       </p>
                     ) : null}
                   </div>
@@ -1441,7 +1416,7 @@ const DatabaseLabel = ({
                         e.preventDefault();
                         e.stopPropagation();
 
-                        isArrayChecked(tableLabelItem, !isArray);
+                        isArrayChecked(tableLabelItem, !isArray, request);
                         setIsArray(!isArray);
                       }}
                       style={{
