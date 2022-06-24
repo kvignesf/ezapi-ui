@@ -1307,7 +1307,7 @@ const DatabaseLabel = ({
   isArrayChecked,
 }) => {
   const [optionsMenuAnchorEl, setOptionsMenuAnchorEl] = useState(false);
-  const [isArray, setIsArray] = useState(false);
+  const [isArray, setIsArray] = useState(tableLabelItem.isArray);
   const [dialog, setDialog] = useState({
     show: false,
     type: null,
