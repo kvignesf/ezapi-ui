@@ -113,6 +113,7 @@ const Request = ({
       buildcustomPath(operationState?.operationRequest?.endpoint);
     }
   }, [operationState?.operationRequest?.endpoint]);
+
   function CalcPathParArr() {
     let pathParamArray = operationState.operationRequest.pathParams;
     var tempArr = [];
@@ -136,6 +137,7 @@ const Request = ({
 
   useEffect(() => {
     buildcustomPath(customPath);
+    postSinkRequest(customPath);
   }, [operationState.operationRequest.pathParams]);
 
   const [currentTab, setTab] = useState(0);
