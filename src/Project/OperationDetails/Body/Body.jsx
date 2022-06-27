@@ -72,7 +72,9 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
   const { fetch: fetchFullPath } = useGetFullPath();
 
   const itemDropped = (item) => {
+    console.log("item dropped :" + item);
     if (isColumn(item)) {
+      console.log("column :" + item);
       if (item?.foreign) {
         final_arr.push(item?.foreign?.table);
         let condition = tablesData
@@ -105,10 +107,12 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
       isColumn(item) ||
       isArrayOrObjectAttribute(item)
     ) {
+      console.log("other :" + item);
       setOperationDetails((operationDetails) => {
         const path = fetchFullPath(item);
 
         if (request) {
+          console.log("request : true");
           if (
             !operationDetails.operationRequest.body.find((x) =>
               isItemSame(x, item, path)
@@ -117,8 +121,15 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
           ) {
             const newOperationDetails = _.cloneDeep(operationDetails);
             const clonedItem = _.cloneDeep(item);
-
+            if (isArrayOrObjectAttribute(item)) {
+              console.log("inside array");
+              clonedItem.required = true;
+              clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
+              clonedItem.parentName = path ?? "/";
+            }
             if (isAttribute(item)) {
+              console.log("inside attribute");
+              clonedItem.required = true;
               clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
               clonedItem.parentName = path ?? "/";
             } else if (isColumn(item)) {
@@ -130,6 +141,7 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
             return newOperationDetails;
           }
         } else {
+          console.log("request : false");
           const responseData = getResponseData(operationDetails);
           const responseIndex = getResponseIndex(operationDetails);
 
@@ -141,8 +153,13 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
             const clonedOperationDetails = _.cloneDeep(operationDetails);
             const clonedResponseData = _.cloneDeep(responseData);
             const clonedItem = _.cloneDeep(item);
-
+            if (isArrayOrObjectAttribute(item)) {
+              clonedItem.required = true;
+              clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
+              clonedItem.parentName = path ?? "/";
+            }
             if (isAttribute(item)) {
+              clonedItem.required = true;
               clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
               clonedItem.parentName = path ?? "/";
             } else if (isColumn(item)) {
@@ -308,6 +325,7 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
                     if (!clonedRef.hasOwnProperty("selectedColumns")) {
                       clonedRef["selectedColumns"] = [];
                     }
+                  } else {
                   }
 
                   return (
@@ -989,8 +1007,8 @@ const BodyItem = ({ request = true, responseCode, itemRef }) => {
 
                     <div className='flex-1'>
                       <Checkbox
-                        // checked={ref?.required ?? false}
-                        checked={true}
+                        checked={ref?.required ?? false}
+                        // checked={true}
                         style={{
                           color: Colors.brand.secondary,
                           padding: "0",
@@ -1167,8 +1185,8 @@ const BodySubTreeItems = ({ currentRef: some }) => {
 
                   <div className='flex-1'>
                     <Checkbox
-                      // checked={ref?.required}
-                      checked={true}
+                      checked={ref?.required}
+                      // checked={true}
                       style={{
                         color: Colors.brand.secondary,
                         padding: "0",
@@ -1266,8 +1284,8 @@ const AttributeLabel = ({ labelItem, deleteItem }) => {
                 <div className='flex ml-3 justify-self-start'>
                   <p className='text-overline2'>
                     <Checkbox
-                      // checked={labelItem?.required}
-                      checked={true}
+                      checked={labelItem?.required}
+                      // checked={true}
                       style={{
                         color: Colors.brand.secondary,
                         padding: "0",
@@ -1410,7 +1428,6 @@ const DatabaseLabel = ({
                   <div> {/* empty datattype */}</div>
                   <div className='flex  ml-1 justify-self-start'>
                     <Checkbox
-                      // checked={columnLabelItem?.required}
                       checked={isArray}
                       onClick={(e) => {
                         e.preventDefault();
@@ -1601,8 +1618,7 @@ const ColumnLabel = ({
                   <div className='flex ml-3 justify-self-start'>
                     <p className='text-overline2'>
                       <Checkbox
-                        // checked={columnLabelItem?.required}
-                        checked={true}
+                        checked={columnLabelItem?.required}
                         style={{
                           color: Colors.brand.secondary,
                           padding: "0",
