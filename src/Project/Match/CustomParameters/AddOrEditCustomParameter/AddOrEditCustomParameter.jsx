@@ -15,7 +15,6 @@ import {
 } from "@material-ui/core";
 import { useRecoilState } from "recoil";
 import MoreVertIcon from "@material-ui/icons/MoreVert";
-import debounce from "lodash.debounce";
 
 import AppIcon from "../../../../shared/components/AppIcon";
 import {
@@ -40,11 +39,15 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
   const { projectId } = useParams();
   const [currentTab, setTab] = useState(0);
   const [tablesDataState, setTablesDataState] = useRecoilState(tablesDataAtom);
-  const [columns, setColumns] = useState([]);
+  const [columns, setColumns] = useState();
+  const [filterColumns, setFilterColumns] = useState([]);
+  const [tableName, setTableName] = useState(parameter?.tableName)
   const [menuAnchorEl, setMenuAnchorEl] = useState(false);
   const [filterErrors, setFilterErrors] = useState([])
   const [isAlreadyChecked, setIsAlreadyChecked] = useState(false)
+  const [columnsType, setColumnsType] = useState(parameter?.type)
   const canEdit = useCanEdit()
+  const [emptyColumnsError, setEmptyColumnsError] = useState();
   const initialFilters = {
     filters: parameter?.filters ?? [
       {
@@ -64,13 +67,29 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
   }
 
   useEffect(() => {
-    if (parameter?.tableName && tablesDataState) {
+    if (tableName && tablesDataState) {
       let table = tablesDataState?.find(
-        (item) => item.name === parameter?.tableName
+        (item) => item.name === tableName
       );
-      setColumns(table?.selectedColumns);
+      setFilterColumns(table?.selectedColumns)
+      if (columnsType === "integer") {
+        let cols = table?.selectedColumns.filter(
+          (item) => item.type === "integer"
+        );
+        setColumns(cols);
+      } else {
+        setColumns(table?.selectedColumns)
+      }
     }
-  }, [parameter, tablesDataState])
+  }, [tableName, tablesDataState, columnsType]);
+
+  useEffect(() => {
+    if (columns && columns.length === 0) {
+      setEmptyColumnsError("Please select different type. None of the columns match selected type")
+    } else {
+      setEmptyColumnsError()
+    }
+  }, [columns])
 
   const {
     isLoading: isAddingCustomParameter,
@@ -80,8 +99,6 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
     reset: resetAddCustomParam,
   } = useAddCustomParameter();
 
-
-
   const {
     isLoading: isEditingCustomParameter,
     isSuccess: isEditCustomSuccess,
@@ -89,20 +106,6 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
     mutate: editCustomParam,
     reset: resetEditCustomParam,
   } = useEditCustomParameter();
-
-  // const debouncedSetType = useCallback(
-  //   debounce((nextValue) => {
-  //     resetMutationState();
-
-  //     setProjectDetails((currProjectDetails) => {
-  //       return {
-  //         ...currProjectDetails,
-  //         type: nextValue,
-  //       };
-  //     });
-  //   }, 300),
-  //   [] // will be created only once initially
-  // );
 
   const handleSubmit = (values) => {
     if (parameter) {
@@ -139,22 +142,21 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
   };
 
   if (isAddSuccess || isEditCustomSuccess) {
+    formRef.current.resetForm();
     onClose();
     return null;
   }
 
   const handleNext = (index) => {
     let flag = true;
-
     if (index < currentTab) {
       setTab(index)
     } else if (parameter && index) {
       setTab(index)
     }
     else {
-
       if (formRef.current?.values) {
-        const { name, type, tableName, columnName, functionName, filters } = formRef.current.values;
+        const { name, type, tableName, columnName, functionName } = formRef.current.values;
         if (currentTab === 0 && (name.length === 0 || type.length === 0)) {
           flag = false;
           formRef.current.touched.name = true;
@@ -164,29 +166,29 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
           formRef.current.touched.tableName = true;
           formRef.current.touched.columnName = true;
           formRef.current.touched.functionName = true;
-        } else if (currentTab === 2) {
-
         }
+
         if (flag) {
           formRef.current.touched.name = false;
           formRef.current.touched.type = false;
           formRef.current.touched.tableName = false;
           formRef.current.touched.columnName = false;
           formRef.current.touched.functionName = false;
-          if (currentTab === 0 && formRef.current.values.type !== parameter?.type) {
-            formRef.current.values.functionName = ""
+          if (
+            currentTab === 0 &&
+            parameter &&
+            formRef.current.values.type !== parameter?.type
+          ) {
+            formRef.current.values.functionName = "";
           }
-          setTab(currentTab + 1)
+          setTab(currentTab + 1);
         }
         formRef.current.validateForm();
       }
     }
   };
 
-
-
   const validateFilters = (filters) => {
-
     let flag = true,
       errors = [];
     if (filters && filters.length > 0) {
@@ -253,7 +255,7 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-
+              formRef.current.resetForm();
               onClose();
             }}
           >
@@ -328,7 +330,7 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
                         }}
                         as={TextField}
                       />
-                      {errors?.name && (
+                      {touched.name && errors?.name && (
                         <p
                           className="py-1"
                           style={{
@@ -350,8 +352,10 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
                         fullWidth
                         color="primary"
                         variant="outlined"
-                        handleChange={handleChange}
-
+                        onChange={(e) => {
+                          handleChange(e);
+                          setColumnsType(e.target.value)
+                        }}
                         disabled={
                           isAddingCustomParameter || isEditingCustomParameter
                         }
@@ -440,13 +444,7 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
                         }}
                         onChange={(e) => {
                           handleChange(e);
-                          let tableName = e.target.value;
-
-                          let table = tablesDataState.find(
-                            (item) => item.name === tableName
-                          );
-
-                          setColumns(table.selectedColumns);
+                          setTableName(e.target.value)
                         }}
                         as={(value) => {
                           return (
@@ -510,7 +508,7 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
                                 className="w-full"
                                 {...value}
                               >
-                                {columns.map((column) => {
+                                {columns?.map((column) => {
                                   return (
                                     <MenuItem value={column.name}>
                                       {column.name}
@@ -528,6 +526,18 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
                                   }}
                                 >
                                   {errors?.columnName}
+                                </p>
+                              )}
+                              {emptyColumnsError && (
+                                <p
+                                  className="py-1"
+                                  style={{
+                                    fontSize: "0.75rem",
+                                    marginLeft: "1rem",
+                                    color: "#f44336",
+                                  }}
+                                >
+                                  {emptyColumnsError}
                                 </p>
                               )}
                             </div>
@@ -650,7 +660,7 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
                               {values.filters &&
                                 values.filters.length > 0 &&
                                 values.filters.map((filter, index) => (
-                                  <div key={index + filterErrors?.[index]} className="flex flex-row justify-items-stretch mb-8">
+                                  <div key={index} className="flex flex-row justify-items-stretch mb-8">
                                     <div className="w-20 mr-5">
                                       {index !== 0 && <Field
                                         id={`filters.${index}.relation`}
@@ -664,7 +674,7 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
                                             handleChange(e);
                                             setTimeout(() => {
                                               isAlreadyChecked && validateFilters(formRef.current.values.filters);
-                                            },600)
+                                            }, 600)
                                           }
                                         }
                                         disabled={isAddingCustomParameter || isEditingCustomParameter}
@@ -689,7 +699,7 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
                                                     handleChange(e)
                                                     setTimeout(() => {
                                                       isAlreadyChecked && validateFilters(formRef.current.values.filters);
-                                                    },600)
+                                                    }, 600)
                                                   }
                                                 }
                                                 {...value}
@@ -738,7 +748,7 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
                                               handleChange(e);
                                               setTimeout(() => {
                                                 isAlreadyChecked && validateFilters(formRef.current.values.filters);
-                                              },500)
+                                              }, 500)
                                             }
                                           }
                                           disabled={
@@ -759,7 +769,7 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
                                                   className="w-full"
                                                   {...value}
                                                 >
-                                                  {columns.map((column) => {
+                                                  {filterColumns?.map((column) => {
                                                     return (
                                                       <MenuItem
                                                         value={column.name}
@@ -801,7 +811,7 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
                                                 handleChange(e);
                                                 setTimeout(() => {
                                                   isAlreadyChecked && validateFilters(formRef.current.values.filters);
-                                                },500)
+                                                }, 500)
                                               }
                                             }
                                             // disabled={isAddingCustomParameter || isEditingCustomParameter}
@@ -864,7 +874,7 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
                                                 handleChange(e);
                                                 setTimeout(() => {
                                                   isAlreadyChecked && validateFilters(formRef.current.values.filters);
-                                                },500)
+                                                }, 500)
                                               }
                                             }
                                             // disabled={isAddingCustomParameter || isEditingCustomParameter}
@@ -1007,6 +1017,7 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
+                formRef.current.resetForm();
                 onClose();
               }}
             >
