@@ -38,6 +38,10 @@ export const endpoint = Object.freeze({
   downloadCodegen: "/download_codegen",
   testDBConnection: "/testDBConnection",
   exportDBSchema: "/db_to_python",
+  getCustomParameter: "/customParameters/get",
+  addCustomParameter: "/customParameters/add",
+  editCustomParameter: "/customParameters/edit",
+  deleteCustomParameter: "/customParameters/delete",
 
   // Payment
   products2: "/products",

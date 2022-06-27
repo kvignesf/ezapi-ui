@@ -26,6 +26,7 @@ import {
   useGetParentName,
   useGetFullPath,
   isItemSame,
+  isCustomParam,
 } from "../../../shared/utils";
 import AppIcon from "../../../shared/components/AppIcon";
 import DragAndDropMessage from "../../../shared/components/DragAndDropMessage";
@@ -74,7 +75,7 @@ const QueryParams = ({ request = true }) => {
     }
     if (
       (isAttribute(item) || isColumn(item)) &&
-      !isArray(item) &&
+      (!isArray(item) || isCustomParam(item)) &&
       !isSchema(item) &&
       !isObject(item)
     ) {
