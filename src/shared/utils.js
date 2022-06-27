@@ -73,7 +73,7 @@ export const isAttribute = (object) => {
     object?.type &&
     !_.isEmpty(object?.type) &&
     object?.paramType !== "column" &&
-    _.includes(Constants.acceptedTypes, object?.type)
+    (_.includes(Constants.acceptedTypes, object?.type)|| isCustomParam(object))
   );
 };
 
@@ -113,6 +113,10 @@ export const isFullMatch = (object) => {
 export const isPartialMatch = (object) => {
   return object?.match_type?.toLowerCase() === "partial";
 };
+
+export const isCustomParam = (object) => {
+  return object?.paramType === "customParam"; 
+}
 
 export const isNoMatch = (object) => {
   return (

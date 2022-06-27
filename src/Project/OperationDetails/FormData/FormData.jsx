@@ -22,6 +22,7 @@ import {
   useGetFullPath,
   useGetParentName,
   isItemSame,
+  isCustomParam,
 } from "../../../shared/utils";
 import DragAndDropMessage from "../../../shared/components/DragAndDropMessage";
 import Row from "../Row";
@@ -68,7 +69,7 @@ const FormData = ({ request = true }) => {
     }
     if (
       (isAttribute(item) || isColumn(item)) &&
-      !isArray(item) &&
+      (!isArray(item) || isCustomParam(item)) &&
       !isSchema(item) &&
       !isObject(item)
     ) {
