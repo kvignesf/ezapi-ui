@@ -72,7 +72,7 @@ const PathParams = ({ request = true }) => {
     }
     if (
       (isAttribute(item) || isColumn(item)) &&
-      (!isArray(item) || isCustomParam(item)) &&
+      !isArray(item) &&
       !isSchema(item) &&
       !isObject(item)
     ) {

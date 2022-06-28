@@ -456,7 +456,7 @@ const AddOrEditCustomParameter = ({
                                 {...value}
                               >
                                 {Constants.customParameterDataTypes.map(
-                                  (type) => {
+                                  (type, index) => {
                                     var upCaseType =
                                       type
                                         .charAt(0)
@@ -464,6 +464,7 @@ const AddOrEditCustomParameter = ({
                                       type.slice(1);
                                     return (
                                       <MenuItem
+                                        key={index}
                                         value={type}
                                       >
                                         {upCaseType}
@@ -559,9 +560,10 @@ const AddOrEditCustomParameter = ({
                                 {...value}
                               >
                                 {tablesDataState?.map(
-                                  (table) => {
+                                  (table, index) => {
                                     return (
                                       <MenuItem
+                                        key={index}
                                         value={table.name}
                                       >
                                         {table.name}
@@ -622,15 +624,18 @@ const AddOrEditCustomParameter = ({
                                 className="w-full"
                                 {...value}
                               >
-                                {columns?.map((column) => {
-                                  return (
-                                    <MenuItem
-                                      value={column.name}
-                                    >
-                                      {column.name}
-                                    </MenuItem>
-                                  );
-                                })}
+                                {columns?.map(
+                                  (column, index) => {
+                                    return (
+                                      <MenuItem
+                                        key={index}
+                                        value={column.name}
+                                      >
+                                        {column.name}
+                                      </MenuItem>
+                                    );
+                                  }
+                                )}
                               </Select>
                               {value?.error && (
                                 <p
@@ -706,7 +711,7 @@ const AddOrEditCustomParameter = ({
                                   Constants.customParameterFunctionTypes[
                                     formRef.current?.values
                                       ?.type
-                                  ].map((type) => {
+                                  ].map((type, index) => {
                                     var upCaseType =
                                       type
                                         .charAt(0)
@@ -714,6 +719,7 @@ const AddOrEditCustomParameter = ({
                                       type.slice(1);
                                     return (
                                       <MenuItem
+                                        key={index}
                                         value={type}
                                       >
                                         {upCaseType}

@@ -83,9 +83,12 @@ const FilterItem = ({
                       {...value}
                     >
                       {Constants.customParamtersFilterRelations.map(
-                        (key) => {
+                        (key, index) => {
                           return (
-                            <MenuItem value={key}>
+                            <MenuItem
+                              key={index}
+                              value={key}
+                            >
                               {key}
                             </MenuItem>
                           );
@@ -149,13 +152,18 @@ const FilterItem = ({
                       className="w-full"
                       {...value}
                     >
-                      {filterColumns?.map((column) => {
-                        return (
-                          <MenuItem value={column.name}>
-                            {column.name}
-                          </MenuItem>
-                        );
-                      })}
+                      {filterColumns?.map(
+                        (column, index) => {
+                          return (
+                            <MenuItem
+                              key={index}
+                              value={column.name}
+                            >
+                              {column.name}
+                            </MenuItem>
+                          );
+                        }
+                      )}
                     </Select>
                     {filterErrors?.[index] && (
                       <p
@@ -214,9 +222,12 @@ const FilterItem = ({
                         {...value}
                       >
                         {Constants.customParametersConditionKeys.map(
-                          (key) => {
+                          (key, index) => {
                             return (
-                              <MenuItem value={key}>
+                              <MenuItem
+                                key={index}
+                                value={key}
+                              >
                                 {key}
                               </MenuItem>
                             );
@@ -317,7 +328,7 @@ const FilterItem = ({
                   height: "min-content",
                 }}
               />
-            )}{" "}
+            )}
           </div>
           {canEdit() && (
             <Menu

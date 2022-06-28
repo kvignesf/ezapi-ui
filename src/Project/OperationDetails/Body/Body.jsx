@@ -72,9 +72,7 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
   const { fetch: fetchFullPath } = useGetFullPath();
 
   const itemDropped = (item) => {
-    console.log("item dropped :" + item);
     if (isColumn(item)) {
-      console.log("column :" + item);
       if (item?.foreign) {
         final_arr.push(item?.foreign?.table);
         let condition = tablesData
@@ -107,12 +105,10 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
       isColumn(item) ||
       isArrayOrObjectAttribute(item)
     ) {
-      console.log("other :" + item);
       setOperationDetails((operationDetails) => {
         const path = fetchFullPath(item);
 
         if (request) {
-          console.log("request : true");
           if (
             !operationDetails.operationRequest.body.find((x) =>
               isItemSame(x, item, path)
@@ -122,13 +118,11 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
             const newOperationDetails = _.cloneDeep(operationDetails);
             const clonedItem = _.cloneDeep(item);
             if (isArrayOrObjectAttribute(item)) {
-              console.log("inside array");
               clonedItem.required = true;
               clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
               clonedItem.parentName = path ?? "/";
             }
             if (isAttribute(item)) {
-              console.log("inside attribute");
               clonedItem.required = true;
               clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
               clonedItem.parentName = path ?? "/";
@@ -141,7 +135,6 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
             return newOperationDetails;
           }
         } else {
-          console.log("request : false");
           const responseData = getResponseData(operationDetails);
           const responseIndex = getResponseIndex(operationDetails);
 
@@ -469,8 +462,6 @@ const BodyItem = ({ request = true, responseCode, itemRef }) => {
   const isArrayChecked = (item, isArrayValue, reqType) => {
     setOperationDetails((operationDetails) => {
       if (request) {
-        // console.log(operationDetails?.operationRequest);
-        // console.log(item);
         var requestData = null;
         var requestIndex = null;
         operationDetails?.operationRequest?.body.map((row, index) => {
@@ -479,14 +470,12 @@ const BodyItem = ({ request = true, responseCode, itemRef }) => {
             requestIndex = index;
           }
         });
-        console.log(requestData, requestIndex);
 
         if (requestData && requestIndex >= 0) {
           const clonedOperationDetails = _.cloneDeep(operationDetails);
           const clonedRequestData = _.cloneDeep(requestData);
 
           clonedRequestData.isArray = isArrayValue;
-          // console.log(clonedOperationDetails.operationRequest?.body);
           clonedOperationDetails.operationRequest.body[requestIndex] =
             clonedRequestData;
 
@@ -511,8 +500,6 @@ const BodyItem = ({ request = true, responseCode, itemRef }) => {
           const clonedOperationDetails = _.cloneDeep(operationDetails);
           const clonedResponseData = _.cloneDeep(responseData);
           //  const clonedTable = _.cloneDeep(clonedResponseData.body[tableIndex]);
-          console.log(clonedResponseData.body[tableIndex]);
-          console.log(clonedOperationDetails.operationResponse[responseIndex]);
           clonedResponseData.body[tableIndex].isArray = isArrayValue;
 
           clonedOperationDetails.operationResponse[responseIndex] =
@@ -712,9 +699,7 @@ const BodyItem = ({ request = true, responseCode, itemRef }) => {
   };
 
   const renameColumnOfTable = (column, table, name) => {
-    // console.log("here??");
     if (canEdit()) {
-      // console.log("heree2222");
       setOperationDetails((operationDetails) => {
         if (request) {
           const newOperationDetails = _.cloneDeep(operationDetails);
@@ -726,7 +711,7 @@ const BodyItem = ({ request = true, responseCode, itemRef }) => {
                 isDatabase(bodyItem) &&
                 table?.sourceName === bodyItem?.sourceName
             );
-          console.log(parentTableIndex);
+          
           if (parentTableIndex !== -1) {
             // Clone parent table
             const clonedParentTable = _.cloneDeep(
@@ -758,11 +743,9 @@ const BodyItem = ({ request = true, responseCode, itemRef }) => {
             return newOperationDetails;
           }
         } else {
-          // console.log("1: " + operationDetails);
           const responseIndex = operationDetails?.operationResponse?.findIndex(
             (item) => item.responseCode === responseCode
           );
-          // console.log("2: " + responseIndex);
           if (responseIndex !== -1) {
             const responseData =
               operationDetails?.operationResponse[responseIndex];
@@ -801,7 +784,6 @@ const BodyItem = ({ request = true, responseCode, itemRef }) => {
 
               clonedOperationDetails.operationResponse[responseIndex] =
                 clonedResponseData;
-              // console.log(clonedOperationDetails);
               return clonedOperationDetails;
             }
           }
