@@ -46,8 +46,13 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
   const [filterErrors, setFilterErrors] = useState([])
   const [isAlreadyChecked, setIsAlreadyChecked] = useState(false)
   const [columnsType, setColumnsType] = useState(parameter?.type)
+  const [isTypeChanged, setIsTypeChanged] = useState(false);
   const canEdit = useCanEdit()
   const [emptyColumnsError, setEmptyColumnsError] = useState();
+  const [tabsError, setTabsError] = useState({
+    tab0: false,
+    tab1: false,
+  });
   const initialFilters = {
     filters: parameter?.filters ?? [
       {
@@ -80,6 +85,7 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
       } else {
         setColumns(table?.selectedColumns)
       }
+
     }
   }, [tableName, tablesDataState, columnsType]);
 
@@ -91,6 +97,15 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
     }
   }, [columns])
 
+  useEffect(() => {
+    if (isTypeChanged) {
+      formRef.current.values.functionName = "";
+      formRef.current.values.columnName = ""
+      setIsTypeChanged(false)
+      setTabsError({...tabsError, tab1: false})
+    }
+  }, [isTypeChanged, tabsError])
+  
   const {
     isLoading: isAddingCustomParameter,
     isSuccess: isAddSuccess,
@@ -120,8 +135,6 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
       projectId,
       ...values,
     });
-
-
   };
 
   const resetMutationState = () => {
@@ -149,42 +162,62 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
 
   const handleNext = (index) => {
     let flag = true;
-    if (index < currentTab) {
-      setTab(index)
-    } else if (parameter && index) {
-      setTab(index)
+    if ((index < currentTab) || (tabsError.tab0 && tabsError.tab1)) {
+      setTab(index);
     }
-    else {
-      if (formRef.current?.values) {
-        const { name, type, tableName, columnName, functionName } = formRef.current.values;
-        if (currentTab === 0 && (name.length === 0 || type.length === 0)) {
-          flag = false;
-          formRef.current.touched.name = true;
-          formRef.current.touched.type = true;
-        } else if (currentTab === 1 && (tableName.length === 0 || columnName.length === 0 || functionName.length === 0)) {
-          flag = false;
-          formRef.current.touched.tableName = true;
-          formRef.current.touched.columnName = true;
-          formRef.current.touched.functionName = true;
+    else if (formRef.current?.values) {
+      const {
+        name,
+        type,
+        tableName,
+        columnName,
+        functionName,
+      } = formRef.current.values;
+      if (
+        currentTab === 0 &&
+        (name.length === 0 || type.length === 0)
+      ) {
+        flag = false;
+        formRef.current.touched.name = true;
+        formRef.current.touched.type = true;
+        setTabsError({...tabsError, tab0: false})
+      } else if (
+        currentTab === 1 &&
+        (tableName.length === 0 ||
+          columnName.length === 0 ||
+          functionName.length === 0)
+      ) {
+        flag = false;
+        formRef.current.touched.tableName = true;
+        formRef.current.touched.columnName = true;
+        formRef.current.touched.functionName = true;
+        setTabsError({...tabsError, tab1: false})
+      }
+
+      if (flag) {
+        formRef.current.touched.name = false;
+        formRef.current.touched.type = false;
+        formRef.current.touched.tableName = false;
+        formRef.current.touched.columnName = false;
+        formRef.current.touched.functionName = false;
+        if (
+          currentTab === 0 &&
+          formRef.current.values.type !== columnsType
+        ) {
+          formRef.current.values.columnName = "";
+          formRef.current.values.functionName = "";
+          setTabsError({...tabsError, tab1: false})
         }
 
-        if (flag) {
-          formRef.current.touched.name = false;
-          formRef.current.touched.type = false;
-          formRef.current.touched.tableName = false;
-          formRef.current.touched.columnName = false;
-          formRef.current.touched.functionName = false;
-          if (
-            currentTab === 0 &&
-            parameter &&
-            formRef.current.values.type !== parameter?.type
-          ) {
-            formRef.current.values.functionName = "";
-          }
-          setTab(currentTab + 1);
-        }
-        formRef.current.validateForm();
+        if (currentTab === 0) setTabsError({ ...tabsError, tab0: true })
+        if (currentTab === 1) setTabsError({ ...tabsError, tab1: true })
+        
+        setTab(currentTab + 1);
       }
+      formRef.current.validateForm();
+    } else if ((parameter && index) || (tabsError.tab0 && tabsError.tab1)) {
+     
+      setTab(index);
     }
   };
 
@@ -355,6 +388,7 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
                         onChange={(e) => {
                           handleChange(e);
                           setColumnsType(e.target.value)
+                          setIsTypeChanged(true)
                         }}
                         disabled={
                           isAddingCustomParameter || isEditingCustomParameter
@@ -938,13 +972,7 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
                                           TransitionComponent={Fade}
                                           style={{ borderRadius: "1rem", zIndex: "10000" }}
                                         >
-                                          <MenuItem
-                                            onClick={() => {
-                                              setMenuAnchorEl(null);
-                                            }}
-                                          >
-                                            Edit
-                                          </MenuItem>
+
                                           <MenuItem
                                             onClick={() => {
                                               setMenuAnchorEl(null);
@@ -953,6 +981,13 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
                                             style={{ color: Colors.accent.red }}
                                           >
                                             Delete
+                                          </MenuItem>
+                                          <MenuItem
+                                            onClick={() => {
+                                              setMenuAnchorEl(null);
+                                            }}
+                                          >
+                                            Duplicate
                                           </MenuItem>
                                         </Menu>
                                       )}
