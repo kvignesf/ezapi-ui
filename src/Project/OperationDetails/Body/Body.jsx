@@ -118,7 +118,6 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
             const newOperationDetails = _.cloneDeep(operationDetails);
             const clonedItem = _.cloneDeep(item);
             if (isArrayOrObjectAttribute(item)) {
-              // console.log("inside array");
               clonedItem.required = true;
               clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
               clonedItem.parentName = path ?? "/";
@@ -471,8 +470,6 @@ const BodyItem = ({ request = true, responseCode, itemRef, projectType }) => {
   const isArrayChecked = (item, isArrayValue, reqType) => {
     setOperationDetails((operationDetails) => {
       if (request) {
-        // console.log(operationDetails?.operationRequest);
-        // console.log(item);
         var requestData = null;
         var requestIndex = null;
         operationDetails?.operationRequest?.body.map((row, index) => {
@@ -481,14 +478,12 @@ const BodyItem = ({ request = true, responseCode, itemRef, projectType }) => {
             requestIndex = index;
           }
         });
-        // console.log(requestData, requestIndex);
 
         if (requestData && requestIndex >= 0) {
           const clonedOperationDetails = _.cloneDeep(operationDetails);
           const clonedRequestData = _.cloneDeep(requestData);
 
           clonedRequestData.isArray = isArrayValue;
-          // console.log(clonedOperationDetails.operationRequest?.body);
           clonedOperationDetails.operationRequest.body[requestIndex] =
             clonedRequestData;
 
@@ -513,8 +508,6 @@ const BodyItem = ({ request = true, responseCode, itemRef, projectType }) => {
           const clonedOperationDetails = _.cloneDeep(operationDetails);
           const clonedResponseData = _.cloneDeep(responseData);
           //  const clonedTable = _.cloneDeep(clonedResponseData.body[tableIndex]);
-          // console.log(clonedResponseData.body[tableIndex]);
-          // console.log(clonedOperationDetails.operationResponse[responseIndex]);
           clonedResponseData.body[tableIndex].isArray = isArrayValue;
 
           clonedOperationDetails.operationResponse[responseIndex] =
@@ -714,9 +707,7 @@ const BodyItem = ({ request = true, responseCode, itemRef, projectType }) => {
   };
 
   const renameColumnOfTable = (column, table, name) => {
-    // console.log("here??");
     if (canEdit()) {
-      // console.log("heree2222");
       setOperationDetails((operationDetails) => {
         if (request) {
           const newOperationDetails = _.cloneDeep(operationDetails);
@@ -728,7 +719,7 @@ const BodyItem = ({ request = true, responseCode, itemRef, projectType }) => {
                 isDatabase(bodyItem) &&
                 table?.sourceName === bodyItem?.sourceName
             );
-          // console.log(parentTableIndex);
+          
           if (parentTableIndex !== -1) {
             // Clone parent table
             const clonedParentTable = _.cloneDeep(
@@ -760,11 +751,9 @@ const BodyItem = ({ request = true, responseCode, itemRef, projectType }) => {
             return newOperationDetails;
           }
         } else {
-          // console.log("1: " + operationDetails);
           const responseIndex = operationDetails?.operationResponse?.findIndex(
             (item) => item.responseCode === responseCode
           );
-          // console.log("2: " + responseIndex);
           if (responseIndex !== -1) {
             const responseData =
               operationDetails?.operationResponse[responseIndex];
@@ -803,7 +792,6 @@ const BodyItem = ({ request = true, responseCode, itemRef, projectType }) => {
 
               clonedOperationDetails.operationResponse[responseIndex] =
                 clonedResponseData;
-              // console.log(clonedOperationDetails);
               return clonedOperationDetails;
             }
           }
