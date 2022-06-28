@@ -72,9 +72,7 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
   const { fetch: fetchFullPath } = useGetFullPath();
 
   const itemDropped = (item) => {
-    console.log("item dropped :" + item);
     if (isColumn(item)) {
-      console.log("column :" + item);
       if (item?.foreign) {
         final_arr.push(item?.foreign?.table);
         let condition = tablesData
@@ -107,12 +105,10 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
       isColumn(item) ||
       isArrayOrObjectAttribute(item)
     ) {
-      console.log("other :" + item);
       setOperationDetails((operationDetails) => {
         const path = fetchFullPath(item);
 
         if (request) {
-          console.log("request : true");
           if (
             !operationDetails.operationRequest.body.find((x) =>
               isItemSame(x, item, path)
@@ -122,13 +118,12 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
             const newOperationDetails = _.cloneDeep(operationDetails);
             const clonedItem = _.cloneDeep(item);
             if (isArrayOrObjectAttribute(item)) {
-              console.log("inside array");
+              // console.log("inside array");
               clonedItem.required = true;
               clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
               clonedItem.parentName = path ?? "/";
             }
             if (isAttribute(item)) {
-              console.log("inside attribute");
               clonedItem.required = true;
               clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
               clonedItem.parentName = path ?? "/";
@@ -141,7 +136,6 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
             return newOperationDetails;
           }
         } else {
-          console.log("request : false");
           const responseData = getResponseData(operationDetails);
           const responseIndex = getResponseIndex(operationDetails);
 
@@ -197,20 +191,25 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
         <div className=' ml-3 p-2 border-t-2 border-b-2 bg-neutral-gray8 mb-1/2'>
           <div className=' w-full grid grid-cols-5 gap-2 '>
             {" "}
-            <p className='text-overline2 text-neutral-gray4 uppercase font-bold'>
+            {/* <p className='text-overline2 text-neutral-gray4 uppercase font-bold'>
               {projectType === "schema" || projectType === "both"
                 ? "Schema/Attribute"
                 : projectType === "db"
                 ? "Table/Column"
                 : "-"}
-            </p>
-            <div className='flex justify-self-start '>
-              {" "}
-              {projectType === "db" && (
+            </p> */}
+            {projectType === "db" && (
+              <div className='flex justify-self-start '>
+                {" "}
                 <p className='text-overline2 uppercase text-neutral-gray4 font-bold'>
-                  Schema/Attribute
+                  Table/Column
                 </p>
-              )}
+              </div>
+            )}
+            <div className='flex justify-self-start '>
+              <p className='text-overline2 uppercase text-neutral-gray4 font-bold'>
+                Schema/Attribute
+              </p>
             </div>
             <div className='flex justify-self-start '>
               <p className='text-overline2 uppercase text-neutral-gray4 font-bold'>
@@ -275,6 +274,7 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
 
                   return (
                     <BodyItem
+                      projectType={projectType}
                       key={item.name}
                       itemRef={clonedRef ?? item}
                       request={request}
@@ -330,6 +330,7 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
 
                   return (
                     <BodyItem
+                      projectType={projectType}
                       key={item.name}
                       itemRef={clonedRef ?? item}
                       request={request}
@@ -361,7 +362,8 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
 let treeIndex = 1;
 
 // This can either be a schema or table
-const BodyItem = ({ request = true, responseCode, itemRef }) => {
+const BodyItem = ({ request = true, responseCode, itemRef, projectType }) => {
+  // console.log(projectType);
   const [bodyItem, setItem] = useState(itemRef);
   const setOperationDetails = useSetRecoilState(operationAtomWithMiddleware);
   const { projectId } = useParams();
@@ -479,7 +481,7 @@ const BodyItem = ({ request = true, responseCode, itemRef }) => {
             requestIndex = index;
           }
         });
-        console.log(requestData, requestIndex);
+        // console.log(requestData, requestIndex);
 
         if (requestData && requestIndex >= 0) {
           const clonedOperationDetails = _.cloneDeep(operationDetails);
@@ -511,8 +513,8 @@ const BodyItem = ({ request = true, responseCode, itemRef }) => {
           const clonedOperationDetails = _.cloneDeep(operationDetails);
           const clonedResponseData = _.cloneDeep(responseData);
           //  const clonedTable = _.cloneDeep(clonedResponseData.body[tableIndex]);
-          console.log(clonedResponseData.body[tableIndex]);
-          console.log(clonedOperationDetails.operationResponse[responseIndex]);
+          // console.log(clonedResponseData.body[tableIndex]);
+          // console.log(clonedOperationDetails.operationResponse[responseIndex]);
           clonedResponseData.body[tableIndex].isArray = isArrayValue;
 
           clonedOperationDetails.operationResponse[responseIndex] =
@@ -726,7 +728,7 @@ const BodyItem = ({ request = true, responseCode, itemRef }) => {
                 isDatabase(bodyItem) &&
                 table?.sourceName === bodyItem?.sourceName
             );
-          console.log(parentTableIndex);
+          // console.log(parentTableIndex);
           if (parentTableIndex !== -1) {
             // Clone parent table
             const clonedParentTable = _.cloneDeep(
@@ -909,17 +911,20 @@ const BodyItem = ({ request = true, responseCode, itemRef }) => {
   };
 
   if (isAttribute(bodyItem) || isArray(bodyItem) || isObject(bodyItem)) {
+    // console.log("1");
     return (
       <AttributeLabel
         labelItem={bodyItem}
         deleteItem={deleteItem}
         request={request}
         responseCode={responseCode}
+        projectType={projectType}
       />
     );
   }
 
   if (isColumn(bodyItem)) {
+    // console.log("2");
     return (
       <ColumnLabel
         columnLabelItem={bodyItem}
@@ -949,6 +954,7 @@ const BodyItem = ({ request = true, responseCode, itemRef }) => {
           <SchemaLabel
             labelItem={bodyItem}
             deleteItem={deleteItem}
+            isArrayChecked={isArrayChecked}
             isLoading={isLoadingSubSchema}
             request={request}
             responseCode={responseCode}
@@ -967,8 +973,11 @@ const BodyItem = ({ request = true, responseCode, itemRef }) => {
     >
       {isSchema(bodyItem) &&
         bodyItem?.data?.map((ref) => {
+          // console.log("isSCHEMAAA", ref);
+
           // Sub schema/array/object
           if (isSchema(ref) || isArray(ref) || isObject(ref)) {
+            // console.log("schema->sch/arra/obj");
             const clonedRef = _.cloneDeep(ref);
 
             if (!clonedRef.hasOwnProperty("data")) {
@@ -981,39 +990,44 @@ const BodyItem = ({ request = true, responseCode, itemRef }) => {
 
             return <BodySubTreeItems currentRef={clonedRef} />;
           } else if (isAttribute(ref)) {
+            // console.log("schema->attribute");
             return (
               <TreeItem
                 key={ref?.payloadId ?? ref?.name ?? treeIndex++}
                 nodeId={ref?.payloadId ?? ref?.name ?? treeIndex++}
                 label={
-                  <div className='flex flex-row p-1 justify-between items-center border-b-2'>
-                    <div className='flex flex-row items-center justify-start flex-1'>
-                      <img
-                        src={AttributeIcon}
-                        alt='conektto logo'
-                        className='bg-white mr-2'
-                        style={{
-                          height: "24px",
-                          width: "24px",
-                        }}
-                      />
+                  <div className='flex flex-row p-1 justify-between items-center border-b-2 h-8'>
+                    <div className='flex flex-row items-center justify-start w-full'>
+                      <div className='w-full grid grid-cols-5 gap-2 items-center '>
+                        <div className='flex justify-self-start items-center'>
+                          {" "}
+                          <img
+                            src={AttributeIcon}
+                            alt='conektto logo'
+                            className='bg-white mr-2'
+                            style={{
+                              height: "24px",
+                              width: "24px",
+                            }}
+                          />
+                          <p className='text-overline2'>{ref?.name}</p>
+                        </div>
 
-                      <p className='text-overline2'>{ref?.name}</p>
-                    </div>
-
-                    <div className='flex-1'>
-                      <p>{ref?.type}</p>
-                    </div>
-
-                    <div className='flex-1'>
-                      <Checkbox
-                        checked={ref?.required ?? false}
-                        // checked={true}
-                        style={{
-                          color: Colors.brand.secondary,
-                          padding: "0",
-                        }}
-                      />
+                        <div className='flex-1'>
+                          <p>{ref?.type}</p>
+                        </div>
+                        <div> {/* empty isarray */}</div>
+                        <div className='flex-1'>
+                          <Checkbox
+                            checked={ref?.required ?? false}
+                            // checked={true}
+                            style={{
+                              color: Colors.brand.secondary,
+                              padding: "0",
+                            }}
+                          />
+                        </div>
+                      </div>
                     </div>
                   </div>
                 }
@@ -1024,6 +1038,7 @@ const BodyItem = ({ request = true, responseCode, itemRef }) => {
 
       {isDatabase(bodyItem) &&
         bodyItem?.selectedColumns?.map((ref) => {
+          // console.log("isDatabase");
           return (
             <ColumnLabel
               columnLabelItem={ref}
@@ -1045,6 +1060,7 @@ const BodyItem = ({ request = true, responseCode, itemRef }) => {
 
 // This is shown only for arrays, schemas, objects of a parent schema
 const BodySubTreeItems = ({ currentRef: some }) => {
+  // console.log("inside bodysubtreeitems");
   const [currentRef, setCurrentRef] = useState(some);
   const { projectId } = useParams();
   const {
@@ -1106,7 +1122,7 @@ const BodySubTreeItems = ({ currentRef: some }) => {
       nodeId={currentRef?.payloadId ?? currentRef?.name ?? treeIndex++}
       label={
         <div className='flex flex-row p-1 justify-between border-b-2'>
-          <div className='flex flex-row items-center justify-center'>
+          <div className='flex flex-row items-center justify-center '>
             <img
               src={SchemaIcon}
               alt='conektto logo'
@@ -1156,7 +1172,7 @@ const BodySubTreeItems = ({ currentRef: some }) => {
           if (!clonedRef.hasOwnProperty("isLoaded")) {
             clonedRef["isLoaded"] = false;
           }
-
+          // console.log("cl=>" + clonedRef);
           return <BodySubTreeItems currentRef={clonedRef} />;
         } else if (isAttribute(ref)) {
           return (
@@ -1176,7 +1192,7 @@ const BodySubTreeItems = ({ currentRef: some }) => {
                       }}
                     />
 
-                    <p className='text-overline2 '>{ref?.name}</p>
+                    <p className='text-overline2 '>{ref?.name} </p>
                   </div>
 
                   <div className='flex-1'>
@@ -1203,47 +1219,80 @@ const BodySubTreeItems = ({ currentRef: some }) => {
   );
 };
 
-const SchemaLabel = ({ labelItem, isLoading, deleteItem }) => {
+const SchemaLabel = ({
+  labelItem,
+  request,
+  isLoading,
+  deleteItem,
+  isArrayChecked,
+}) => {
+  // console.log("inside schemalabel");
   const canEdit = useCanEdit();
+  const [isArray, setIsArray] = useState(labelItem.isArray);
 
   return (
     <ReactHoverObserver>
       {({ isHovering }) => {
         return (
-          <div className='flex flex-row p-1 justify-between items-center border-b-2'>
-            <div className='flex flex-row items-center justify-start w-1/3'>
-              <img
-                src={SchemaIcon}
-                alt='conektto logo'
-                className='bg-white mr-4'
-                style={{ height: "24px", width: "24px" }}
-              />
+          <div className='flex flex-row p-1 justify-between items-center border-b-2 h-8'>
+            <div className='flex flex-row items-center justify-start w-full'>
+              <div className='w-full grid grid-cols-5 gap-2 items-center'>
+                <div className='flex justify-self-start items-center'>
+                  {" "}
+                  <img
+                    src={SchemaIcon}
+                    alt='conektto logo'
+                    className='bg-white mr-4'
+                    style={{ height: "24px", width: "24px" }}
+                  />
+                  <p className='text-overline2'>{labelItem?.name}</p>
+                </div>
 
-              <p className='text-overline2'>{labelItem?.name}</p>
+                <div> {/* empty datattype */}</div>
+                <div className='flex  ml-1 justify-self-start'>
+                  {/* empty isArray */}
+                  {/* <Checkbox
+                    checked={isArray}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
 
-              {isLoading && (
-                <CircularProgress
-                  style={{
-                    marginLeft: "0.5rem",
-                    width: "20px",
-                    height: "20px",
+                      isArrayChecked(labelItem, !isArray, request);
+                      setIsArray(!isArray);
+                    }}
+                    style={{
+                      color: Colors.brand.secondary,
+                      padding: "0",
+                    }}
+                  /> */}
+                </div>
+                <div> {/* empty required */}</div>
+                {/* {isLoading && (
+                  <CircularProgress
+                    style={{
+                      marginLeft: "0.5rem",
+                      width: "20px",
+                      height: "20px",
+                    }}
+                  />
+                )} */}
+              </div>
+            </div>
+            <div className='w-6'>
+              {" "}
+              {isHovering && canEdit() && (
+                <AppIcon
+                  onClick={(ev) => {
+                    ev?.preventDefault();
+                    ev?.stopPropagation();
+
+                    deleteItem(labelItem);
                   }}
-                />
+                >
+                  <DeleteIcon />
+                </AppIcon>
               )}
             </div>
-
-            {isHovering && canEdit() && (
-              <AppIcon
-                onClick={(ev) => {
-                  ev?.preventDefault();
-                  ev?.stopPropagation();
-
-                  deleteItem(labelItem);
-                }}
-              >
-                <DeleteIcon />
-              </AppIcon>
-            )}
           </div>
         );
       }}
@@ -1251,7 +1300,7 @@ const SchemaLabel = ({ labelItem, isLoading, deleteItem }) => {
   );
 };
 
-const AttributeLabel = ({ labelItem, deleteItem }) => {
+const AttributeLabel = ({ labelItem, deleteItem, projectType }) => {
   const canEdit = useCanEdit();
 
   return (
@@ -1260,40 +1309,76 @@ const AttributeLabel = ({ labelItem, deleteItem }) => {
         return (
           <div className='flex flex-row p-1 h-8 justify-between items-center border-b-2 ml-6 hover:bg-neutral-gray8'>
             <div className='flex flex-row items-center justify-start flex-1'>
-              <div className=' w-full grid grid-cols-5 gap-2 '>
-                {" "}
-                <div className='flex justify-self-start'>
-                  <img
-                    src={AttributeIcon}
-                    alt='conektto logo'
-                    className='bg-white mr-4'
-                    style={{ height: "24px", width: "24px" }}
-                  />
-
-                  <p className='text-overline2'>{labelItem?.name}</p>
-                </div>
-                <div className='flex justify-self-start'>
-                  {/* empty: no scheme attribute */}
-                </div>
-                <div className='ml-1 flex justify-self-start'>
-                  <p className='text-overline2'>{labelItem?.type}</p>
-                </div>
-                <div className='flex justify-self-start'>
-                  {/* empty: no isarray Checkbox */}
-                </div>
-                <div className='flex ml-3 justify-self-start'>
-                  <p className='text-overline2'>
-                    <Checkbox
-                      checked={labelItem?.required}
-                      // checked={true}
-                      style={{
-                        color: Colors.brand.secondary,
-                        padding: "0",
-                      }}
+              {projectType === "db" && (
+                <div className=' w-full grid grid-cols-5 gap-2 items-center '>
+                  {" "}
+                  <div className='flex justify-self-start items-center'>
+                    <img
+                      src={AttributeIcon}
+                      alt='conektto logo'
+                      className='bg-white mr-4'
+                      style={{ height: "24px", width: "24px" }}
                     />
-                  </p>
+
+                    <p className='text-overline2'>{labelItem?.name} </p>
+                  </div>
+                  <div className='flex justify-self-start'>
+                    {/* empty: no scheme attribute */}
+                  </div>
+                  <div className='ml-1 flex justify-self-start'>
+                    <p className='text-overline2'>{labelItem?.type}</p>
+                  </div>
+                  <div className='flex justify-self-start'>
+                    {/* empty: no isarray Checkbox */}
+                  </div>
+                  <div className='flex ml-3 justify-self-start'>
+                    <p className='text-overline2'>
+                      <Checkbox
+                        checked={labelItem?.required}
+                        // checked={true}
+                        style={{
+                          color: Colors.brand.secondary,
+                          padding: "0",
+                        }}
+                      />
+                    </p>
+                  </div>
                 </div>
-              </div>
+              )}
+              {projectType === "schema" ||
+                (projectType === "both" && (
+                  <div className=' w-full grid grid-cols-5 gap-2 items-center'>
+                    {" "}
+                    <div className='flex justify-self-start items-center'>
+                      <img
+                        src={AttributeIcon}
+                        alt='conektto logo'
+                        className='bg-white mr-4'
+                        style={{ height: "24px", width: "24px" }}
+                      />
+
+                      <p className='text-overline2'>{labelItem?.name}</p>
+                    </div>
+                    <div className='ml-1 flex justify-self-start'>
+                      <p className='text-overline2'>{labelItem?.type}</p>
+                    </div>
+                    <div className='flex justify-self-start'>
+                      {/* empty: no isarray Checkbox */}
+                    </div>
+                    <div className='flex ml-3 justify-self-start'>
+                      <p className='text-overline2'>
+                        <Checkbox
+                          checked={labelItem?.required}
+                          // checked={true}
+                          style={{
+                            color: Colors.brand.secondary,
+                            padding: "0",
+                          }}
+                        />
+                      </p>
+                    </div>
+                  </div>
+                ))}
             </div>
 
             <div className='w-6'>
@@ -1397,9 +1482,9 @@ const DatabaseLabel = ({
 
             <div className='flex flex-row p-1 justify-between items-center border-b-2 h-8'>
               <div className='flex flex-row items-center justify-start w-full '>
-                <div className='w-full grid grid-cols-5 gap-2 '>
+                <div className='w-full grid grid-cols-5 gap-2 items-center '>
                   {" "}
-                  <div className='flex justify-self-start'>
+                  <div className='flex justify-self-start items-center'>
                     <img
                       src={TableIcon}
                       alt='conektto logo'
@@ -1589,9 +1674,9 @@ const ColumnLabel = ({
 
             <div className=' flex flex-row p-1 h-8 justify-between items-center border-b-2 ml-6 hover:bg-neutral-gray8'>
               <div className='flex flex-row items-center justify-start flex-1'>
-                <div className=' w-full grid grid-cols-5 gap-2 '>
+                <div className=' w-full grid grid-cols-5 gap-2 items-center '>
                   {" "}
-                  <div className='flex  '>
+                  <div className='flex justify-self-start items-center '>
                     <img
                       src={ColumnIcon}
                       alt='conektto logo'
