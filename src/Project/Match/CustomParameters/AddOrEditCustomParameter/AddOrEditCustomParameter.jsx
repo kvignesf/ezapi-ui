@@ -1,13 +1,7 @@
 import React, { useRef, useState } from "react";
 import { useParams } from "react-router";
 import CloseIcon from "@material-ui/icons/Close";
-import {
-  ErrorMessage,
-  Field,
-  FieldArray,
-  Form,
-  Formik,
-} from "formik";
+import { ErrorMessage, Field, FieldArray, Form, Formik } from "formik";
 import AddIcon from "@material-ui/icons/Add";
 import {
   CircularProgress,
@@ -34,37 +28,44 @@ import {
 import tablesDataAtom from "../../../../shared/atom/tablesDataAtom";
 import { useEffect } from "react";
 import Colors from "../../../../shared/colors";
-import { useCanEdit } from "../../../../shared/utils";
 import Messages from "../../../../shared/messages";
 import FilterItem from "./FilterItem/FilterItem";
 
-const AddOrEditCustomParameter = ({
-  parameter,
-  onClose,
-}) => {
+const AddOrEditCustomParameter = ({ parameter, onClose }) => {
   const formRef = useRef(null);
   const { projectId } = useParams();
   const [currentTab, setTab] = useState(0);
-  const [tablesDataState, setTablesDataState] =
-    useRecoilState(tablesDataAtom);
+  const [tablesDataState, setTablesDataState] = useRecoilState(tablesDataAtom);
   const [columns, setColumns] = useState();
   const [filterColumns, setFilterColumns] = useState([]);
-  const [tableName, setTableName] = useState(
-    parameter?.tableName
-  );
+  const [tableName, setTableName] = useState(parameter?.tableName);
   const [filterErrors, setFilterErrors] = useState([]);
-  const [isAlreadyChecked, setIsAlreadyChecked] =
-    useState(false);
-  const [columnsType, setColumnsType] = useState(
-    parameter?.type
-  );
+  const [isAlreadyChecked, setIsAlreadyChecked] = useState(false);
+  const [columnsType, setColumnsType] = useState(parameter?.type);
   const [isTypeChanged, setIsTypeChanged] = useState(false);
-  const [emptyColumnsError, setEmptyColumnsError] =
-    useState();
+  const [emptyColumnsError, setEmptyColumnsError] = useState();
+
   const [tabsError, setTabsError] = useState({
-    tab0: false,
-    tab1: false,
+    tab0: parameter ? true : false,
+    tab1: parameter ? true : false,
   });
+
+  const {
+    isLoading: isAddingCustomParameter,
+    isSuccess: isAddSuccess,
+    error: addCustomParamError,
+    mutate: addCustomParam,
+    reset: resetAddCustomParam,
+  } = useAddCustomParameter();
+
+  const {
+    isLoading: isEditingCustomParameter,
+    isSuccess: isEditCustomSuccess,
+    error: editCustomParamError,
+    mutate: editCustomParam,
+    reset: resetEditCustomParam,
+  } = useEditCustomParameter();
+
   const initialFilters = {
     filters: parameter?.filters ?? [
       {
@@ -85,9 +86,7 @@ const AddOrEditCustomParameter = ({
 
   useEffect(() => {
     if (tableName && tablesDataState) {
-      let table = tablesDataState?.find(
-        (item) => item.name === tableName
-      );
+      let table = tablesDataState?.find((item) => item.name === tableName);
       setFilterColumns(table?.selectedColumns);
       if (columnsType === "integer") {
         let cols = table?.selectedColumns.filter(
@@ -119,22 +118,6 @@ const AddOrEditCustomParameter = ({
     }
   }, [isTypeChanged, tabsError]);
 
-  const {
-    isLoading: isAddingCustomParameter,
-    isSuccess: isAddSuccess,
-    error: addCustomParamError,
-    mutate: addCustomParam,
-    reset: resetAddCustomParam,
-  } = useAddCustomParameter();
-
-  const {
-    isLoading: isEditingCustomParameter,
-    isSuccess: isEditCustomSuccess,
-    error: editCustomParamError,
-    mutate: editCustomParam,
-    reset: resetEditCustomParam,
-  } = useEditCustomParameter();
-
   const handleSubmit = (values) => {
     if (parameter) {
       editCustomParam({
@@ -162,11 +145,7 @@ const AddOrEditCustomParameter = ({
       return;
     }
 
-    if (
-      isAddingCustomParameter ||
-      isAddSuccess ||
-      addCustomParamError
-    ) {
+    if (isAddingCustomParameter || isAddSuccess || addCustomParamError) {
       resetAddCustomParam();
     }
   };
@@ -179,23 +158,12 @@ const AddOrEditCustomParameter = ({
 
   const handleNext = (index) => {
     let flag = true;
-    if (
-      index < currentTab ||
-      (tabsError.tab0 && tabsError.tab1)
-    ) {
+    if (index < currentTab || (tabsError.tab0 && tabsError.tab1)) {
       setTab(index);
     } else if (formRef.current?.values) {
-      const {
-        name,
-        type,
-        tableName,
-        columnName,
-        functionName,
-      } = formRef.current.values;
-      if (
-        currentTab === 0 &&
-        (name.length === 0 || type.length === 0)
-      ) {
+      const { name, type, tableName, columnName, functionName } =
+        formRef.current.values;
+      if (currentTab === 0 && (name.length === 0 || type.length === 0)) {
         flag = false;
         formRef.current.touched.name = true;
         formRef.current.touched.type = true;
@@ -219,27 +187,19 @@ const AddOrEditCustomParameter = ({
         formRef.current.touched.tableName = false;
         formRef.current.touched.columnName = false;
         formRef.current.touched.functionName = false;
-        if (
-          currentTab === 0 &&
-          formRef.current.values.type !== columnsType
-        ) {
+        if (currentTab === 0 && formRef.current.values.type !== columnsType) {
           formRef.current.values.columnName = "";
           formRef.current.values.functionName = "";
           setTabsError({ ...tabsError, tab1: false });
         }
 
-        if (currentTab === 0)
-          setTabsError({ ...tabsError, tab0: true });
-        if (currentTab === 1)
-          setTabsError({ ...tabsError, tab1: true });
+        if (currentTab === 0) setTabsError({ ...tabsError, tab0: true });
+        if (currentTab === 1) setTabsError({ ...tabsError, tab1: true });
 
         setTab(currentTab + 1);
       }
       formRef.current.validateForm();
-    } else if (
-      (parameter && index) ||
-      (tabsError.tab0 && tabsError.tab1)
-    ) {
+    } else if ((parameter && index) || (tabsError.tab0 && tabsError.tab1)) {
       setTab(index);
     }
   };
@@ -252,12 +212,7 @@ const AddOrEditCustomParameter = ({
       errors = filters.map((filter, index) => {
         let error = {};
 
-        const {
-          columnName,
-          conditionKey,
-          value,
-          relation,
-        } = filter;
+        const { columnName, conditionKey, value, relation } = filter;
 
         if (columnName.length > 0) {
           error.columnName = null;
@@ -353,27 +308,17 @@ const AddOrEditCustomParameter = ({
                   type: parameter?.type ?? "",
                   tableName: parameter?.tableName ?? "",
                   columnName: parameter?.columnName ?? "",
-                  functionName:
-                    parameter?.functionName ?? "",
-                  filters:
-                    parameter?.filters ??
-                    initialFilters.filters,
+                  functionName: parameter?.functionName ?? "",
+                  filters: parameter?.filters ?? initialFilters.filters,
                 }}
                 validationSchema={addCustomParameterSchema}
                 innerRef={formRef}
                 onSubmit={handleSubmit}
               >
-                {({
-                  errors,
-                  touched,
-                  values,
-                  handleChange,
-                }) => (
+                {({ errors, touched, values, handleChange }) => (
                   <Form>
                     <div className="mb-4">
-                      <p className="text-overline2 mb-2">
-                        Attribute Name
-                      </p>
+                      <p className="text-overline2 mb-2">Attribute Name</p>
                       <Field
                         id="name"
                         name="name"
@@ -382,16 +327,10 @@ const AddOrEditCustomParameter = ({
                         color="primary"
                         variant="outlined"
                         disabled={
-                          isAddingCustomParameter ||
-                          isEditingCustomParameter
+                          isAddingCustomParameter || isEditingCustomParameter
                         }
-                        error={
-                          touched.name &&
-                          Boolean(errors.name)
-                        }
-                        helperText={
-                          <ErrorMessage name="attribute" />
-                        }
+                        error={touched.name && Boolean(errors.name)}
+                        helperText={<ErrorMessage name="attribute" />}
                         onKeyUp={(e) => {
                           resetMutationState();
                         }}
@@ -416,9 +355,7 @@ const AddOrEditCustomParameter = ({
                       )}
                     </div>
                     <div className="mb-4">
-                      <p className="text-overline2 mb-2">
-                        Type
-                      </p>
+                      <p className="text-overline2 mb-2">Type</p>
                       <Field
                         id="type"
                         name="type"
@@ -432,16 +369,10 @@ const AddOrEditCustomParameter = ({
                           setIsTypeChanged(true);
                         }}
                         disabled={
-                          isAddingCustomParameter ||
-                          isEditingCustomParameter
+                          isAddingCustomParameter || isEditingCustomParameter
                         }
-                        error={
-                          touched.type &&
-                          Boolean(errors.type)
-                        }
-                        helperText={
-                          <ErrorMessage name="type" />
-                        }
+                        error={touched.type && Boolean(errors.type)}
+                        helperText={<ErrorMessage name="type" />}
                         onKeyUp={(e) => {
                           resetMutationState();
                         }}
@@ -458,15 +389,10 @@ const AddOrEditCustomParameter = ({
                                 {Constants.customParameterDataTypes.map(
                                   (type, index) => {
                                     var upCaseType =
-                                      type
-                                        .charAt(0)
-                                        .toUpperCase() +
+                                      type.charAt(0).toUpperCase() +
                                       type.slice(1);
                                     return (
-                                      <MenuItem
-                                        key={index}
-                                        value={type}
-                                      >
+                                      <MenuItem key={index} value={type}>
                                         {upCaseType}
                                       </MenuItem>
                                     );
@@ -502,28 +428,17 @@ const AddOrEditCustomParameter = ({
                   type: parameter?.type ?? "",
                   tableName: parameter?.tableName ?? "",
                   columnName: parameter?.columnName ?? "",
-                  functionName:
-                    parameter?.functionName ?? "",
-                  filters:
-                    parameter?.filters ??
-                    initialFilters.filters,
+                  functionName: parameter?.functionName ?? "",
+                  filters: parameter?.filters ?? initialFilters.filters,
                 }}
                 validationSchema={addCustomParameterSchema}
                 innerRef={formRef}
                 onSubmit={handleSubmit}
               >
-                {({
-                  errors,
-                  touched,
-                  values,
-                  handleChange,
-                  handleBlur,
-                }) => (
+                {({ errors, touched, values, handleChange, handleBlur }) => (
                   <Form>
                     <div className="mb-4">
-                      <p className="text-overline2 mb-2">
-                        Table Name
-                      </p>
+                      <p className="text-overline2 mb-2">Table Name</p>
                       <Field
                         id="tableName"
                         name="tableName"
@@ -532,16 +447,10 @@ const AddOrEditCustomParameter = ({
                         color="primary"
                         variant="outlined"
                         disabled={
-                          isAddingCustomParameter ||
-                          isEditingCustomParameter
+                          isAddingCustomParameter || isEditingCustomParameter
                         }
-                        error={
-                          touched.tableName &&
-                          Boolean(errors.tableName)
-                        }
-                        helperText={
-                          <ErrorMessage name="tableName" />
-                        }
+                        error={touched.tableName && Boolean(errors.tableName)}
+                        helperText={<ErrorMessage name="tableName" />}
                         onKeyUp={(e) => {
                           resetMutationState();
                         }}
@@ -559,18 +468,13 @@ const AddOrEditCustomParameter = ({
                                 className="w-full"
                                 {...value}
                               >
-                                {tablesDataState?.map(
-                                  (table, index) => {
-                                    return (
-                                      <MenuItem
-                                        key={index}
-                                        value={table.name}
-                                      >
-                                        {table.name}
-                                      </MenuItem>
-                                    );
-                                  }
-                                )}
+                                {tablesDataState?.map((table, index) => {
+                                  return (
+                                    <MenuItem key={index} value={table.name}>
+                                      {table.name}
+                                    </MenuItem>
+                                  );
+                                })}
                               </Select>
                               {value?.error && (
                                 <p
@@ -590,9 +494,7 @@ const AddOrEditCustomParameter = ({
                       />
                     </div>
                     <div className="mb-4">
-                      <p className="text-overline2 mb-2">
-                        Column Name
-                      </p>
+                      <p className="text-overline2 mb-2">Column Name</p>
                       <Field
                         id="columnName"
                         name="columnName"
@@ -601,16 +503,10 @@ const AddOrEditCustomParameter = ({
                         color="primary"
                         variant="outlined"
                         disabled={
-                          isAddingCustomParameter ||
-                          isEditingCustomParameter
+                          isAddingCustomParameter || isEditingCustomParameter
                         }
-                        error={
-                          touched.columnName &&
-                          Boolean(errors.columnName)
-                        }
-                        helperText={
-                          <ErrorMessage name="columnName" />
-                        }
+                        error={touched.columnName && Boolean(errors.columnName)}
+                        helperText={<ErrorMessage name="columnName" />}
                         onKeyUp={(e) => {
                           resetMutationState();
                         }}
@@ -624,18 +520,13 @@ const AddOrEditCustomParameter = ({
                                 className="w-full"
                                 {...value}
                               >
-                                {columns?.map(
-                                  (column, index) => {
-                                    return (
-                                      <MenuItem
-                                        key={index}
-                                        value={column.name}
-                                      >
-                                        {column.name}
-                                      </MenuItem>
-                                    );
-                                  }
-                                )}
+                                {columns?.map((column, index) => {
+                                  return (
+                                    <MenuItem key={index} value={column.name}>
+                                      {column.name}
+                                    </MenuItem>
+                                  );
+                                })}
                               </Select>
                               {value?.error && (
                                 <p
@@ -667,9 +558,7 @@ const AddOrEditCustomParameter = ({
                       />
                     </div>
                     <div className="mb-4">
-                      <p className="text-overline2 mb-2">
-                        Function
-                      </p>
+                      <p className="text-overline2 mb-2">Function</p>
                       <Field
                         id="functionName"
                         name="functionName"
@@ -678,16 +567,12 @@ const AddOrEditCustomParameter = ({
                         color="primary"
                         variant="outlined"
                         disabled={
-                          isAddingCustomParameter ||
-                          isEditingCustomParameter
+                          isAddingCustomParameter || isEditingCustomParameter
                         }
                         error={
-                          touched.functionName &&
-                          Boolean(errors.functionName)
+                          touched.functionName && Boolean(errors.functionName)
                         }
-                        helperText={
-                          <ErrorMessage name="attribute" />
-                        }
+                        helperText={<ErrorMessage name="attribute" />}
                         onKeyUp={(e) => {
                           resetMutationState();
                         }}
@@ -706,22 +591,15 @@ const AddOrEditCustomParameter = ({
                                 className="w-full"
                                 {...value}
                               >
-                                {formRef.current?.values
-                                  ?.type &&
+                                {formRef.current?.values?.type &&
                                   Constants.customParameterFunctionTypes[
-                                    formRef.current?.values
-                                      ?.type
+                                    formRef.current?.values?.type
                                   ].map((type, index) => {
                                     var upCaseType =
-                                      type
-                                        .charAt(0)
-                                        .toUpperCase() +
+                                      type.charAt(0).toUpperCase() +
                                       type.slice(1);
                                     return (
-                                      <MenuItem
-                                        key={index}
-                                        value={type}
-                                      >
+                                      <MenuItem key={index} value={type}>
                                         {upCaseType}
                                       </MenuItem>
                                     );
@@ -756,34 +634,21 @@ const AddOrEditCustomParameter = ({
                   type: parameter?.type ?? "",
                   tableName: parameter?.tableName ?? "",
                   columnName: parameter?.columnName ?? "",
-                  functionName:
-                    parameter?.functionName ?? "",
-                  filters:
-                    parameter?.filters ??
-                    initialFilters.filters,
+                  functionName: parameter?.functionName ?? "",
+                  filters: parameter?.filters ?? initialFilters.filters,
                 }}
                 validationSchema={addCustomParameterSchema}
                 innerRef={formRef}
                 enableReinitialize={false}
                 onSubmit={handleSubmit}
               >
-                {({
-                  errors,
-                  touched,
-                  values,
-                  handleChange,
-                  handleBlur,
-                }) => (
+                {({ errors, touched, values, handleChange, handleBlur }) => (
                   <Form>
                     <div className="mb-4">
                       <div className="flex flex-row ml-12 mr-12">
-                        <p className="font-semibold text-base mr-4">
-                          Where
-                        </p>
+                        <p className="font-semibold text-base mr-4">Where</p>
                         <div className="w-full">
-                          <p className="text-overline2 mb-2">
-                            Table Name
-                          </p>
+                          <p className="text-overline2 mb-2">Table Name</p>
                           <Field
                             id="tableName"
                             name="tableName"
@@ -807,61 +672,39 @@ const AddOrEditCustomParameter = ({
                             <div className="ml-4">
                               {values.filters &&
                                 values.filters.length > 0 &&
-                                values.filters.map(
-                                  (filter, index) => (
-                                    <FilterItem
-                                      index={index}
-                                      filterColumns={
-                                        filterColumns
-                                      }
-                                      filterErrors={
-                                        filterErrors
-                                      }
-                                      formRef={formRef}
-                                      handleChange={
-                                        handleChange
-                                      }
-                                      isAddingCustomParameter={
-                                        isAddingCustomParameter
-                                      }
-                                      isEditingCustomParameter={
-                                        isEditingCustomParameter
-                                      }
-                                      isAlreadyChecked={
-                                        isAlreadyChecked
-                                      }
-                                      remove={remove}
-                                      resetMutationState={
-                                        resetMutationState
-                                      }
-                                      validateFilters={
-                                        validateFilters
-                                      }
-                                      key={index}
-                                    />
-                                  )
-                                )}
+                                values.filters.map((filter, index) => (
+                                  <FilterItem
+                                    index={index}
+                                    filterColumns={filterColumns}
+                                    filterErrors={filterErrors}
+                                    formRef={formRef}
+                                    handleChange={handleChange}
+                                    isAddingCustomParameter={
+                                      isAddingCustomParameter
+                                    }
+                                    isEditingCustomParameter={
+                                      isEditingCustomParameter
+                                    }
+                                    isAlreadyChecked={isAlreadyChecked}
+                                    remove={remove}
+                                    resetMutationState={resetMutationState}
+                                    validateFilters={validateFilters}
+                                    key={index}
+                                  />
+                                ))}
                             </div>
                             <div
                               className="float-right flex flex-row items-center cursor-pointer hover:opacity-80 mr-12 mt-2 border-1 rounded-md border-brand-secondary px-2 py-2"
                               onClick={() => {
-                                if (
-                                  validateFilters(
-                                    values.filters
-                                  )
-                                ) {
-                                  setIsAlreadyChecked(
-                                    false
-                                  );
+                                if (validateFilters(values.filters)) {
+                                  setIsAlreadyChecked(false);
                                   push(temp);
                                 }
                               }}
                             >
                               <AppIcon
                                 size="20px"
-                                color={
-                                  Colors.brand.secondary
-                                }
+                                color={Colors.brand.secondary}
                                 style={{
                                   marginRight: "0.5rem",
                                 }}
@@ -888,10 +731,7 @@ const AddOrEditCustomParameter = ({
         </div>
         {addCustomParamError && (
           <p className="text-accent-red text-overline2">
-            {
-              addCustomParamError?.response?.data?.error
-                ?.error
-            }
+            {addCustomParamError?.response?.data?.error?.error}
           </p>
         )}
 
@@ -902,8 +742,7 @@ const AddOrEditCustomParameter = ({
         )}
       </div>
       <div className="border-t-2 border-neutral-gray7 flex flex-row items-center justify-end pt-4 mb-4 mr-4 ml-4">
-        {!isAddingCustomParameter &&
-        !isEditingCustomParameter ? (
+        {!isAddingCustomParameter && !isEditingCustomParameter ? (
           <>
             {currentTab === 2 && (
               <TextButton
