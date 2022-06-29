@@ -81,7 +81,7 @@ const Headers = ({ request = true, responseCode }) => {
 
     if (
       (isAttribute(item) || isColumn(item)) &&
-      (!isArray(item) || isCustomParam(item)) &&
+      !isArray(item)  &&
       !isSchema(item) &&
       !isObject(item)
     ) {
