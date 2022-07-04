@@ -719,7 +719,7 @@ const BodyItem = ({ request = true, responseCode, itemRef, projectType }) => {
                 isDatabase(bodyItem) &&
                 table?.sourceName === bodyItem?.sourceName
             );
-          
+
           if (parentTableIndex !== -1) {
             // Clone parent table
             const clonedParentTable = _.cloneDeep(
@@ -1389,7 +1389,7 @@ const AttributeLabel = ({ labelItem, deleteItem, projectType }) => {
     </ReactHoverObserver>
   );
 };
-
+//drag and drop tables
 const DatabaseLabel = ({
   tableLabelItem,
   request,
@@ -1577,7 +1577,7 @@ const DatabaseLabel = ({
     </ReactHoverObserver>
   );
 };
-
+//columns within a table
 const ColumnLabel = ({
   columnLabelItem,
   request,
@@ -1586,6 +1586,10 @@ const ColumnLabel = ({
   renameColumn,
   isNameTaken,
 }) => {
+  if (columnLabelItem.auto == true) {
+    deleteColumn(columnLabelItem);
+  }
+
   const [optionsMenuAnchorEl, setOptionsMenuAnchorEl] = useState(false);
   const [dialog, setDialog] = useState({
     show: false,
