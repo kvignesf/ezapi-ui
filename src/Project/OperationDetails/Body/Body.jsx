@@ -1410,10 +1410,6 @@ const DatabaseLabel = ({
   const canEdit = useCanEdit();
 
   const setOperationDetails = useSetRecoilState(operationAtomWithMiddleware);
-  let [operationData, setOperationDetails2] = useRecoilState(
-    operationAtomWithMiddleware
-  );
-  console.log(operationData?.operation?.operationType);
 
   useDoubleClick({
     onSingleClick: (e) => {},
