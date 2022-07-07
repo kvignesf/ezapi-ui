@@ -64,6 +64,8 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
   let [operationData, setOperationDetails] = useRecoilState(
     operationAtomWithMiddleware
   );
+  // operationData;
+  // console.log(operationData?.operation?.operationType);
   const { height, width } = useWindowSize();
   const { getExandedIds, setExpandedIds } = useExpandedIds([]);
   const [primaryKeyRef, setPrimaryKeyRef] = useRecoilState(primaryAtom);
@@ -1408,6 +1410,10 @@ const DatabaseLabel = ({
   const canEdit = useCanEdit();
 
   const setOperationDetails = useSetRecoilState(operationAtomWithMiddleware);
+  let [operationData, setOperationDetails2] = useRecoilState(
+    operationAtomWithMiddleware
+  );
+  console.log(operationData?.operation?.operationType);
 
   useDoubleClick({
     onSingleClick: (e) => {},
@@ -1586,7 +1592,16 @@ const ColumnLabel = ({
   renameColumn,
   isNameTaken,
 }) => {
-  if (columnLabelItem.auto == true) {
+  let [operationData, setOperationDetails] = useRecoilState(
+    operationAtomWithMiddleware
+  );
+  console.log(operationData?.operation?.operationType);
+  if (
+    columnLabelItem.auto == true &&
+    request == true &&
+    operationData?.operation?.operationType?.toLowerCase() == "post"
+  ) {
+    console.log("inside");
     deleteColumn(columnLabelItem);
   }
 
