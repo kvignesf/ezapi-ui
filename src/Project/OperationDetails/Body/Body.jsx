@@ -1597,7 +1597,7 @@ const ColumnLabel = ({
     request == true &&
     operationData?.operation?.operationType?.toLowerCase() == "post"
   ) {
-    console.log("inside");
+    // console.log("inside");
     deleteColumn(columnLabelItem);
   }
 
