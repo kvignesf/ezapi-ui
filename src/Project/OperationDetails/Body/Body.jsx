@@ -1586,7 +1586,7 @@ const ColumnLabel = ({
   renameColumn,
   isNameTaken,
 }) => {
-  if (columnLabelItem.auto == true) {
+  if (columnLabelItem.auto == true && request == true) {
     deleteColumn(columnLabelItem);
   }
 
