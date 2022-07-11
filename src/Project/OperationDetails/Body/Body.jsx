@@ -5,6 +5,7 @@ import {
   useSetRecoilState,
   useRecoilValue,
 } from "recoil";
+import Tooltip from "@mui/material/Tooltip";
 import { CircularProgress } from "@material-ui/core";
 import _ from "lodash";
 import debounce from "lodash.debounce";
@@ -361,7 +362,7 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
 };
 
 let treeIndex = 1;
-
+const truncateLength = 20; //max character length limit of names to enable truncate
 // This can either be a schema or table
 const BodyItem = ({ request = true, responseCode, itemRef, projectType }) => {
   // console.log(projectType);
@@ -1289,10 +1290,27 @@ const SchemaLabel = ({
     </ReactHoverObserver>
   );
 };
-
+//parameters
 const AttributeLabel = ({ labelItem, deleteItem, projectType }) => {
   const canEdit = useCanEdit();
-
+  const [openTooltip, setOpenTooltip] = useState(false);
+  const [isHover, setIsHover] = React.useState([false, labelItem?.name]);
+  function truncate(str, n) {
+    return str.length > n ? str.substr(0, n - 1) + "..." : str;
+  }
+  function handleToolTipOpen() {
+    if (
+      isHover[0] &&
+      isHover[1] == labelItem?.name &&
+      labelItem?.name.length > truncateLength
+    ) {
+      console.log("it is true");
+      setOpenTooltip(true);
+    } else {
+      console.log("it is false");
+      setOpenTooltip(false);
+    }
+  }
   return (
     <ReactHoverObserver>
       {({ isHovering }) => {
@@ -1309,8 +1327,26 @@ const AttributeLabel = ({ labelItem, deleteItem, projectType }) => {
                       className='bg-white mr-4'
                       style={{ height: "24px", width: "24px" }}
                     />
-
-                    <p className='text-overline2'>{labelItem?.name} </p>
+                    <Tooltip
+                      title={labelItem?.name}
+                      open={openTooltip}
+                      onClose={handleToolTipOpen}
+                      onOpen={handleToolTipOpen}
+                      placement='left-start'
+                    >
+                      <p
+                        className='text-overline2'
+                        onMouseEnter={() => {
+                          setIsHover([true, labelItem?.name]);
+                        }}
+                        onMouseLeave={() => {
+                          setIsHover([false, labelItem?.name]);
+                        }}
+                      >
+                        {" "}
+                        {truncate(labelItem?.name, truncateLength)}{" "}
+                      </p>
+                    </Tooltip>
                   </div>
                   <div className='flex justify-self-start'>
                     {/* empty: no scheme attribute */}
@@ -1346,8 +1382,25 @@ const AttributeLabel = ({ labelItem, deleteItem, projectType }) => {
                         className='bg-white mr-4'
                         style={{ height: "24px", width: "24px" }}
                       />
-
-                      <p className='text-overline2'>{labelItem?.name}</p>
+                      <Tooltip
+                        title={labelItem?.name}
+                        open={openTooltip}
+                        onClose={handleToolTipOpen}
+                        onOpen={handleToolTipOpen}
+                        placement='left-start'
+                      >
+                        <p
+                          onMouseEnter={() => {
+                            setIsHover([true, labelItem?.name]);
+                          }}
+                          onMouseLeave={() => {
+                            setIsHover([false, labelItem?.name]);
+                          }}
+                          className='text-overline2'
+                        >
+                          {truncate(labelItem?.name, truncateLength)}{" "}
+                        </p>
+                      </Tooltip>{" "}
                     </div>
                     <div className='ml-1 flex justify-self-start'>
                       <p className='text-overline2'>{labelItem?.type}</p>
@@ -1401,6 +1454,11 @@ const DatabaseLabel = ({
 }) => {
   const [optionsMenuAnchorEl, setOptionsMenuAnchorEl] = useState(false);
   const [isArray, setIsArray] = useState(tableLabelItem.isArray);
+  const [openTooltip, setOpenTooltip] = useState(false);
+  const [isHover, setIsHover] = React.useState([
+    false,
+    tableLabelItem?.sourceName,
+  ]);
   const [dialog, setDialog] = useState({
     show: false,
     type: null,
@@ -1444,7 +1502,23 @@ const DatabaseLabel = ({
       data: null,
     });
   };
-
+  function truncate(str, n) {
+    return str.length > n ? str.substr(0, n - 1) + "..." : str;
+  }
+  function handleToolTipOpen() {
+    if (
+      isHover[0] &&
+      isHover[1] == tableLabelItem?.sourceName &&
+      tableLabelItem?.sourceName.length > truncateLength
+    ) {
+      console.log("it is true");
+      setOpenTooltip(true);
+    } else {
+      console.log("it is false");
+      setOpenTooltip(false);
+    }
+  }
+  // console.log(tableLabelItem?.sourceName);
   return (
     <ReactHoverObserver>
       {({ isHovering }) => {
@@ -1483,9 +1557,26 @@ const DatabaseLabel = ({
                     />
                     {tableLabelItem?.sourceName &&
                     !_.isEmpty(tableLabelItem?.sourceName) ? (
-                      <p className='text-overline2'>
-                        {tableLabelItem?.sourceName}
-                      </p>
+                      <Tooltip
+                        title={tableLabelItem?.sourceName}
+                        open={openTooltip}
+                        onClose={handleToolTipOpen}
+                        onOpen={handleToolTipOpen}
+                        placement='left-start'
+                      >
+                        <p
+                          id='tableNameTruncate'
+                          onMouseEnter={() => {
+                            setIsHover([true, tableLabelItem?.sourceName]);
+                          }}
+                          onMouseLeave={() => {
+                            setIsHover([false, tableLabelItem?.sourceName]);
+                          }}
+                          className='text-overline2'
+                        >
+                          {truncate(tableLabelItem?.sourceName, truncateLength)}
+                        </p>
+                      </Tooltip>
                     ) : null}
                   </div>
                   <div className='flex -ml-4 justify-self-start'>
@@ -1579,7 +1670,7 @@ const DatabaseLabel = ({
     </ReactHoverObserver>
   );
 };
-//columns within a table
+//attributes && columns within a table
 const ColumnLabel = ({
   columnLabelItem,
   request,
@@ -1591,7 +1682,12 @@ const ColumnLabel = ({
   let [operationData, setOperationDetails] = useRecoilState(
     operationAtomWithMiddleware
   );
-  console.log(operationData?.operation?.operationType);
+  const [openTooltip, setOpenTooltip] = useState(false);
+  const [isHover, setIsHover] = React.useState([
+    false,
+    columnLabelItem?.sourceNames,
+  ]);
+  // console.log(operationData?.operation?.operationType);
   if (
     columnLabelItem.auto == true &&
     request == true &&
@@ -1643,7 +1739,22 @@ const ColumnLabel = ({
       data: null,
     });
   };
-
+  function truncate(str, n) {
+    return str.length > n ? str.substr(0, n - 1) + "..." : str;
+  }
+  function handleToolTipOpen() {
+    if (
+      isHover[0] &&
+      isHover[1] == columnLabelItem?.sourceName &&
+      columnLabelItem?.sourceName.length > truncateLength
+    ) {
+      console.log("it is true");
+      setOpenTooltip(true);
+    } else {
+      console.log("it is false");
+      setOpenTooltip(false);
+    }
+  }
   return (
     <ReactHoverObserver>
       {({ isHovering }) => {
@@ -1686,10 +1797,25 @@ const ColumnLabel = ({
                       className='bg-white mr-4'
                       style={{ height: "24px", width: "24px" }}
                     />
-
-                    <p className='text-overline2'>
-                      {columnLabelItem?.sourceName}
-                    </p>
+                    <Tooltip
+                      title={columnLabelItem?.sourceName}
+                      open={openTooltip}
+                      onClose={handleToolTipOpen}
+                      onOpen={handleToolTipOpen}
+                      placement='left-start'
+                    >
+                      <p
+                        className='text-overline2'
+                        onMouseEnter={() => {
+                          setIsHover([true, columnLabelItem?.sourceName]);
+                        }}
+                        onMouseLeave={() => {
+                          setIsHover([false, columnLabelItem?.sourceName]);
+                        }}
+                      >
+                        {truncate(columnLabelItem?.sourceName, truncateLength)}
+                      </p>
+                    </Tooltip>
                   </div>
                   <div
                     className='flex justify-self-start  cursor-pointer select-none'
