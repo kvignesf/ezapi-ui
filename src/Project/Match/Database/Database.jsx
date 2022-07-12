@@ -48,6 +48,7 @@ const Database = () => {
         return 0;
       });
 
+
       const threePartIndex = Math.ceil(clonedTablesData.length / 3);
 
       const thirdPart = clonedTablesData.splice(-threePartIndex);
@@ -101,9 +102,7 @@ const Database = () => {
             section={"2"}
             items={content[1]}
             onItemClick={(item) => {
-              console.log(item);
               if (isDatabase(item)) {
-                console.log("inside");
                 setTableState((tableState) => {
                   const clonedTableState = _.cloneDeep(tableState);
 

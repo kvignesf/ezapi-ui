@@ -18,29 +18,24 @@ import AddOrEditParameter from "./Parameters/AddOrEditParameter/AddOrEditParamet
 import Database from "./Database/Database";
 import tableAtom from "../../shared/atom/tableAtom";
 import CustomParameters from "./CustomParameters/CustomParameters";
-import StoredProcedures from "./StoredProcedures/StoredProcedures";
 import AddOrEditCustomParameter from "./CustomParameters/AddOrEditCustomParameter/AddOrEditCustomParameter";
-import StoredProcedure from "./StoredProcedures/StoredProcedures";
-import storedProcedureAom from "../../shared/atom/storedProcedureAtom";
 
 const Match = ({ projectType, ...props }) => {
   const [currentTab, setTab] = useState(null);
   const [schemaState, setSchemaState] = useRecoilState(schemaAtom);
   const resetSchemaState = useResetRecoilState(schemaAtom);
   const [tableState, setTableState] = useRecoilState(tableAtom);
-  const [storedProcedureState, setStoredProcedureState] =
-    useRecoilState(storedProcedureAom);
   const resetTableState = useResetRecoilState(tableAtom);
-  const resetStoredProcedureState = useResetRecoilState(storedProcedureAom);
   const [dialog, setDialog] = useState({
     show: false,
     type: null,
     data: null,
   });
   const canEdit = useCanEdit();
-  const customParamENV = process.env.REACT_APP_FEATURE_CUSTOM_PARAMETER
-    ? process.env.REACT_APP_FEATURE_CUSTOM_PARAMETER
-    : "true";
+  const customParamENV =
+    process.env.REACT_APP_FEATURE_CUSTOM_PARAMETER ?
+      process.env.REACT_APP_FEATURE_CUSTOM_PARAMETER :
+      "true";
 
   useEffect(() => {
     if (projectType === "schema" || projectType === "both") {
@@ -229,48 +224,6 @@ const Match = ({ projectType, ...props }) => {
                 )}
               </div>
             </div>
-          ) : storedProcedureState?.selected ? (
-            <div className='flex flex-row items-center ml-3 py-3'>
-              <AppIcon
-                style={{ marginRight: "0.5rem" }}
-                onClick={(e) => {
-                  e?.preventDefault();
-                  e?.stopPropagation();
-
-                  resetStoredProcedureState();
-                }}
-              >
-                <ArrowBackIcon style={{ fontSize: "1.25rem" }} />
-              </AppIcon>
-
-              <div className='flex flex-row items-center'>
-                <p
-                  className='text-overline3 text-neutral-gray4 cursor-pointer hover:opacity-70'
-                  onClick={(e) => {
-                    e?.preventDefault();
-                    e?.stopPropagation();
-
-                    resetStoredProcedureState();
-                  }}
-                >
-                  Stored Procedure
-                </p>
-
-                {storedProcedureState?.selected && (
-                  <div className='flex flex-row items-center'>
-                    <p className='mx-1 text-neutral-gray3'> / </p>
-
-                    <p
-                      className={classNames(
-                        "text-overline3 cursor-pointer hover:opacity-70"
-                      )}
-                    >
-                      {storedProcedureState?.selected?.storedProcedure}
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
           ) : (
             <Tabs
               value={currentTab}
@@ -300,19 +253,13 @@ const Match = ({ projectType, ...props }) => {
                   style={{ outline: "none", border: "none" }}
                   value={"db"}
                 />
+
               )}
-              {projectType === "db" && customParamENV === "true" && (
+              {(projectType === "db" && customParamENV === "true") && (
                 <Tab
                   label={<TabLabel label={"Custom Parameter"} />}
                   style={{ outline: "none", border: "none" }}
                   value={"customParam"}
-                />
-              )}
-              {projectType === "db" && (
-                <Tab
-                  label={<TabLabel label={"Stored Procedures"} />}
-                  style={{ outline: "none", border: "none" }}
-                  value={"storedProcedures"}
                 />
               )}
             </Tabs>
@@ -331,6 +278,7 @@ const Match = ({ projectType, ...props }) => {
               if (currentTab === "customParam") {
                 showAddCustomParameterDialog();
               }
+
             }}
           >
             <AppIcon
@@ -354,10 +302,8 @@ const Match = ({ projectType, ...props }) => {
           <Parameters />
         ) : currentTab === "db" ? (
           <Database />
-        ) : currentTab === "customParam" ? (
+        ) : currentTab === 'customParam' ? (
           <CustomParameters />
-        ) : currentTab === "storedProcedures" ? (
-          <StoredProcedures />
         ) : null}
       </div>
     </div>
