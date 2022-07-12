@@ -73,7 +73,7 @@ export const isAttribute = (object) => {
     object?.type &&
     !_.isEmpty(object?.type) &&
     object?.paramType !== "column" &&
-    (_.includes(Constants.acceptedTypes, object?.type)|| isCustomParam(object))
+    (_.includes(Constants.acceptedTypes, object?.type) || isCustomParam(object))
   );
 };
 
@@ -81,7 +81,7 @@ export const isArrayOrObjectAttribute = (object) => {
   return (
     object?.type &&
     _.isEmpty(object?.ref) &&
-    object?.paramType !== 'column' &&
+    object?.paramType !== "column" &&
     _.includes(Constants.bodyAcceptedTypes, object?.type)
   );
 };
@@ -96,6 +96,14 @@ export const isSchema = (object) => {
 
 export const isDatabase = (object) => {
   return object?.type === "ezapi_table";
+};
+export const isStoredProcedure = (object) => {
+  // return object?.type === "storedProcedure";
+  return true;
+};
+export const isInputOrOutput = (object) => {
+  // return object?.type === "storedProcedure";
+  return false;
 };
 
 export const isColumn = (object) => {
@@ -115,8 +123,8 @@ export const isPartialMatch = (object) => {
 };
 
 export const isCustomParam = (object) => {
-  return object?.paramType === "customParam"; 
-}
+  return object?.paramType === "customParam";
+};
 
 export const isNoMatch = (object) => {
   return (
@@ -265,7 +273,11 @@ export const generateSyncOperationRequestRequest = (operationRequest) => {
         }
 
         return clonedItem;
-      } else if (isAttribute(item) || isColumn(item) || isArrayOrObjectAttribute(item)) {
+      } else if (
+        isAttribute(item) ||
+        isColumn(item) ||
+        isArrayOrObjectAttribute(item)
+      ) {
         return item;
       }
     });
@@ -467,7 +479,12 @@ export const generateSyncOperationResponseRequest = (operationResponse) => {
           }
 
           return clonedItem;
-        } else if (isAttribute(item) || isColumn(item) || isDatabase(item) || isArrayOrObjectAttribute(item)) {
+        } else if (
+          isAttribute(item) ||
+          isColumn(item) ||
+          isDatabase(item) ||
+          isArrayOrObjectAttribute(item)
+        ) {
           return item;
         }
       });

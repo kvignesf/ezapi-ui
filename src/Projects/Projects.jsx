@@ -568,6 +568,7 @@ const Content = ({ showCreateProjectDialog }) => {
 };
 
 const Projects = () => {
+  // console.log("accToken: " + acc_token);
   const [stay, setStay] = React.useState(true);
   const [renderNow, setRenderNow] = React.useState(false);
   const location = useLocation();

@@ -19,8 +19,6 @@ const DatabaseSection = ({ items, onItemClick, section }) => {
   const operationState = useRecoilValue(operationAtomWithMiddleware);
   const primaryKeyRef = useRecoilValue(primaryAtom);
 
-  
-
   const isItemsTypeTable = () => {
     if (items && !_.isEmpty(items)) {
       const firstItem = items[0];
@@ -62,11 +60,11 @@ const DatabaseSection = ({ items, onItemClick, section }) => {
                   index={index}
                   item={item}
                   section={section}
-                  primaryKey = {primaryKeyRef}
+                  primaryKey={primaryKeyRef}
                   onClick={(e) => {
                     e?.preventDefault();
                     e?.stopPropagation();
-
+                    console.log(item);
                     onItemClick(item);
                   }}
                 />
