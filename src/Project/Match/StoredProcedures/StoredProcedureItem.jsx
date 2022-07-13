@@ -30,29 +30,11 @@ const StoredProcedureItem = ({
   primaryKey,
   onItemClick2,
 }) => {
-  const [dialog, setDialog] = useState({
-    show: false,
-    type: null,
-    data: null,
-  });
-  const [{ isDragging }, drag, dragPreview] = useDrag(
-    () => ({
-      type: "drag_item",
-      item: item,
-      collect: (monitor) => ({
-        isDragging: monitor.isDragging(),
-      }),
-    }),
-    [item]
-  );
-  const canEdit = useCanEdit();
-
   return (
     <div
       // ref={canEdit() ? drag : null}
       style={{
         backgroundColor: "white",
-        opacity: isDragging ? 0.5 : 1,
       }}
       className='p-2 mb-2 rounded-md flex flex-row items-center'
       onClick={(e) => {

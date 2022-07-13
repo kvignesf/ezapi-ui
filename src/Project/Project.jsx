@@ -226,23 +226,21 @@ const Project = () => {
         operationAtomWithMiddleware
       );
       const operationState = operationAtomLoadable?.contents;
-
       const saveRequestApiRequest = generateSyncOperationRequestRequest(
         operationState?.operationRequest
       );
       const saveResponseApiRequest = generateSyncOperationResponseRequest(
         operationState?.operationResponse
       );
-
-      syncOperation({
-        projectId: operationState?.projectId,
-
-        operationId: operationState?.operation?.operationId,
-        pathId: operationState?.path?.pathId,
-        resourceId: operationState?.resource?.resourceId,
-        requestData: saveRequestApiRequest,
-        responseData: saveResponseApiRequest,
-      });
+      console.log("save====> ", saveRequestApiRequest);
+      // syncOperation({
+      //   projectId: operationState?.projectId,
+      //   operationId: operationState?.operation?.operationId,
+      //   pathId: operationState?.path?.pathId,
+      //   resourceId: operationState?.resource?.resourceId,
+      //   requestData: saveRequestApiRequest,
+      //   responseData: saveResponseApiRequest,
+      // });
     }
   };
 

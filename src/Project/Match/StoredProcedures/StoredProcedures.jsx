@@ -52,8 +52,10 @@ const StoredProcedures = () => {
       );
 
       setContent({
+        "name": storedProcedureState?.selected?.storedProcedure,
         "contentType": "input/output",
         "data": [inputData, outputData],
+        "type": storedProcedureState?.selected?.type,
       });
     } else if (storedProceduresData && !_.isEmpty(storedProceduresData)) {
       setStoredProcedureState(storedProceduresData);
@@ -61,8 +63,10 @@ const StoredProcedures = () => {
       const clonedStoredProceduresData = _.cloneDeep(storedProceduresData);
 
       setContent({
+        "name": storedProcedureState?.selected?.storedProcedure,
         "contentType": "storedProcedures",
         "data": clonedStoredProceduresData,
+        "type": storedProcedureState?.selected?.type,
       });
     }
   }, [storedProceduresData, storedProcedureState?.selected]);
@@ -110,7 +114,7 @@ const StoredProcedures = () => {
             <div className='flex-1 h-fit bg-neutral-gray7 rounded-md p-2'>
               <StoredProcedureSection
                 section={"1"}
-                items={content?.data[0]}
+                items={content}
                 onItemClick={(item) => {
                   //do nothing
                 }}
@@ -119,7 +123,7 @@ const StoredProcedures = () => {
             <div className='flex-1 h-fit bg-neutral-gray7 rounded-md p-2'>
               <StoredProcedureSection
                 section={"2"}
-                items={content?.data[1]}
+                items={content}
                 onItemClick={(item) => {
                   //do nothing
                 }}

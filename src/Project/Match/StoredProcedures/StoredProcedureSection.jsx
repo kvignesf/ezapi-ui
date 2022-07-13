@@ -24,18 +24,30 @@ import primaryAtom from "../../../shared/atom/primaryAtom";
 import _ from "lodash";
 
 const StoredProcedureSection = ({ items, onItemClick, section }) => {
+  var storedProcedureObjectItem;
+  if (section != 0) {
+    storedProcedureObjectItem = items;
+    if (section == 1) {
+      storedProcedureObjectItem["draggedFrom"] = "input";
+    } else if (section == 2) {
+      storedProcedureObjectItem["draggedFrom"] = "output";
+    }
+
+    items = items?.data[section - 1];
+  }
+  // console.log(storedProcedureObjectItem);
   const operationState = useRecoilValue(operationAtomWithMiddleware);
   const primaryKeyRef = useRecoilValue(primaryAtom);
   const canEdit = useCanEdit();
   const [{ isDragging }, drag, dragPreview] = useDrag(
     () => ({
       type: "drag_item",
-      item: items,
+      item: storedProcedureObjectItem,
       collect: (monitor) => ({
         isDragging: monitor.isDragging(),
       }),
     }),
-    [items]
+    [storedProcedureObjectItem]
   );
   return (
     <div
@@ -87,7 +99,7 @@ const StoredProcedureSection = ({ items, onItemClick, section }) => {
                   section={section}
                   primaryKey={primaryKeyRef}
                   onItemClick2={(item) => {
-                    console.log("inside draggable" + item);
+                    // console.log("inside draggable" + item);
                     onItemClick(item);
                   }}
                 />

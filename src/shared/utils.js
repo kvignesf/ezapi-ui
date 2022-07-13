@@ -90,7 +90,9 @@ export const isSchema = (object) => {
   return (
     object?.type === "ref" ||
     object?.type === "ezapi_ref" ||
-    (object?.data !== null && object?.data !== undefined)
+    (object?.data !== null &&
+      object?.data !== undefined &&
+      !object?.contentType)
   );
 };
 
@@ -98,12 +100,14 @@ export const isDatabase = (object) => {
   return object?.type === "ezapi_table";
 };
 export const isStoredProcedure = (object) => {
-  // return object?.type === "storedProcedure";
-  return true;
+  return object?.type === "storedProcedure";
 };
-export const isInputOrOutput = (object) => {
-  // return object?.type === "storedProcedure";
-  return false;
+export const isInput = (object) => {
+  return object?.type === "input";
+};
+export const isOutput = (object) => {
+  return object?.type === "output";
+  // return false;
 };
 
 export const isColumn = (object) => {
