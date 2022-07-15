@@ -219,7 +219,7 @@ const Project = () => {
     resetOperationState();
     resetSchemaState();
   };
-  // console.log(operationState);
+
   const saveProject = () => {
     if (canEdit(userRole)) {
       const { loadable: operationAtomLoadable } = getRecoilValueInfo(
@@ -233,7 +233,7 @@ const Project = () => {
       const saveResponseApiRequest = generateSyncOperationResponseRequest(
         operationState?.operationResponse
       );
-      console.log("save====> ", saveResponseApiRequest);
+
       syncOperation({
         projectId: operationState?.projectId,
         operationId: operationState?.operation?.operationId,

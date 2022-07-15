@@ -100,7 +100,7 @@ export const isDatabase = (object) => {
   return object?.type === "ezapi_table";
 };
 export const isStoredProcedure = (object) => {
-  return object?.type === "storedProcedure";
+  return object?.type === "stored_procedure";
 };
 export const isInput = (object) => {
   return object?.type === "input";
@@ -407,7 +407,8 @@ export const parseGetOperationRequestResponse = (requestAPIData) => {
       if (
         operationResponse?.body?.ezapi_ref ||
         isAttribute(operationResponse?.body) ||
-        isColumn(operationResponse?.body)
+        isColumn(operationResponse?.body) ||
+        isStoredProcedure(operationResponse?.body)
       ) {
         request.body = [_.cloneDeep(operationResponse?.body)];
       }
@@ -582,7 +583,8 @@ export const parseGetOperationResponseResponse = (operationResponse) => {
       if (
         responseData?.content?.ezapi_ref ||
         isAttribute(responseData?.content) ||
-        isColumn(responseData?.content)
+        isColumn(responseData?.content) ||
+        isStoredProcedure(responseData?.content)
       ) {
         // if (responseData?.content) {
 

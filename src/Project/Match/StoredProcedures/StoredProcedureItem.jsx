@@ -15,7 +15,10 @@ import AddIcon from "@mui/icons-material/Add";
 import AppIcon from "../../../shared/components/AppIcon";
 import Colors from "../../../shared/colors";
 import AttributeIcon from "../../../static/images/attribute.svg";
-import TableIcon from "../../../static/images/table-icon.svg";
+import StoredProcedureIcon from "../../../static/images/stored-procedure.svg";
+import InputIcon from "../../../static/images/input.svg";
+import OutputIcon from "../../../static/images/output.svg";
+
 import ColumnIcon from "../../../static/images/column-icon.svg";
 import autoGenrateIcon from "../../../static/images/auto-generate.svg";
 import {
@@ -57,7 +60,6 @@ const StoredProcedureItem = ({
   // };
   function insertStateProcedures(item) {
     setOperationDetails((operationDetails) => {
-      // console.log(operationDetails, item);
       const path = fetchFullPath(item);
       if (
         !operationDetails.operationRequest.body.find((x) =>
@@ -79,14 +81,12 @@ const StoredProcedureItem = ({
         delete clonedItem.projectid;
         delete clonedItem.outputAttributes;
         newOperationDetails.operationRequest.body.push(clonedItem);
-        // console.log("end    ", clonedItem);
         return newOperationDetails;
       }
 
       // response
       const clonedOperationDetails = _.cloneDeep(operationDetails);
       const clonedItem = _.cloneDeep(item);
-      console.log(clonedItem);
       // clonedResponseData.body.push(clonedItem);
 
       // clonedOperationDetails.operationResponse[responseIndex] =
@@ -114,7 +114,13 @@ const StoredProcedureItem = ({
     >
       <img
         className='mr-2'
-        src={TableIcon}
+        src={
+          section == 0
+            ? StoredProcedureIcon
+            : section == 1
+            ? InputIcon
+            : OutputIcon
+        }
         style={{ width: "24px", height: "24px" }}
       />
 

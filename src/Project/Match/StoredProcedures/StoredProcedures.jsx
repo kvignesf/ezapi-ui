@@ -44,7 +44,6 @@ const StoredProcedures = () => {
 
   useEffect(() => {
     if (storedProcedureState?.selected) {
-      // console.log(storedProcedureState);
       const inputData = _.cloneDeep(
         storedProcedureState?.selected?.inputAttributes
       );
