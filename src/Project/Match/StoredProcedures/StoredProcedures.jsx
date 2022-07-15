@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import _ from "lodash";
 import TableIcon from "../../../static/images/table-icon.svg";
+import AddIcon from "@mui/icons-material/Add";
 import { useRecoilState } from "recoil";
 import storedProcedureAtom from "../../../shared/atom/storedProcedureAtom";
 import LoaderWithMessage from "../../../shared/components/LoaderWithMessage";
@@ -43,7 +44,7 @@ const StoredProcedures = () => {
 
   useEffect(() => {
     if (storedProcedureState?.selected) {
-      console.log(storedProcedureState);
+      // console.log(storedProcedureState);
       const inputData = _.cloneDeep(
         storedProcedureState?.selected?.inputAttributes
       );

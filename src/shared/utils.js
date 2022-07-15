@@ -107,7 +107,6 @@ export const isInput = (object) => {
 };
 export const isOutput = (object) => {
   return object?.type === "output";
-  // return false;
 };
 
 export const isColumn = (object) => {
@@ -280,6 +279,7 @@ export const generateSyncOperationRequestRequest = (operationRequest) => {
       } else if (
         isAttribute(item) ||
         isColumn(item) ||
+        isStoredProcedure(item) ||
         isArrayOrObjectAttribute(item)
       ) {
         return item;
@@ -487,7 +487,8 @@ export const generateSyncOperationResponseRequest = (operationResponse) => {
           isAttribute(item) ||
           isColumn(item) ||
           isDatabase(item) ||
-          isArrayOrObjectAttribute(item)
+          isArrayOrObjectAttribute(item) ||
+          isStoredProcedure(item)
         ) {
           return item;
         }
