@@ -73,7 +73,7 @@ export const isAttribute = (object) => {
     object?.type &&
     !_.isEmpty(object?.type) &&
     object?.paramType !== "column" &&
-    (_.includes(Constants.acceptedTypes, object?.type)|| isCustomParam(object))
+    (_.includes(Constants.acceptedTypes, object?.type) || isCustomParam(object))
   );
 };
 
@@ -81,7 +81,7 @@ export const isArrayOrObjectAttribute = (object) => {
   return (
     object?.type &&
     _.isEmpty(object?.ref) &&
-    object?.paramType !== 'column' &&
+    object?.paramType !== "column" &&
     _.includes(Constants.bodyAcceptedTypes, object?.type)
   );
 };
@@ -90,12 +90,23 @@ export const isSchema = (object) => {
   return (
     object?.type === "ref" ||
     object?.type === "ezapi_ref" ||
-    (object?.data !== null && object?.data !== undefined)
+    (object?.data !== null &&
+      object?.data !== undefined &&
+      !object?.contentType)
   );
 };
 
 export const isDatabase = (object) => {
   return object?.type === "ezapi_table";
+};
+export const isStoredProcedure = (object) => {
+  return object?.type === "stored_procedure";
+};
+export const isInput = (object) => {
+  return object?.type === "input";
+};
+export const isOutput = (object) => {
+  return object?.type === "output";
 };
 
 export const isColumn = (object) => {
@@ -115,8 +126,8 @@ export const isPartialMatch = (object) => {
 };
 
 export const isCustomParam = (object) => {
-  return object?.paramType === "customParam"; 
-}
+  return object?.paramType === "customParam";
+};
 
 export const isNoMatch = (object) => {
   return (
@@ -265,7 +276,12 @@ export const generateSyncOperationRequestRequest = (operationRequest) => {
         }
 
         return clonedItem;
-      } else if (isAttribute(item) || isColumn(item) || isArrayOrObjectAttribute(item)) {
+      } else if (
+        isAttribute(item) ||
+        isColumn(item) ||
+        isStoredProcedure(item) ||
+        isArrayOrObjectAttribute(item)
+      ) {
         return item;
       }
     });
@@ -391,7 +407,8 @@ export const parseGetOperationRequestResponse = (requestAPIData) => {
       if (
         operationResponse?.body?.ezapi_ref ||
         isAttribute(operationResponse?.body) ||
-        isColumn(operationResponse?.body)
+        isColumn(operationResponse?.body) ||
+        isStoredProcedure(operationResponse?.body)
       ) {
         request.body = [_.cloneDeep(operationResponse?.body)];
       }
@@ -467,7 +484,13 @@ export const generateSyncOperationResponseRequest = (operationResponse) => {
           }
 
           return clonedItem;
-        } else if (isAttribute(item) || isColumn(item) || isDatabase(item) || isArrayOrObjectAttribute(item)) {
+        } else if (
+          isAttribute(item) ||
+          isColumn(item) ||
+          isDatabase(item) ||
+          isArrayOrObjectAttribute(item) ||
+          isStoredProcedure(item)
+        ) {
           return item;
         }
       });
@@ -560,7 +583,8 @@ export const parseGetOperationResponseResponse = (operationResponse) => {
       if (
         responseData?.content?.ezapi_ref ||
         isAttribute(responseData?.content) ||
-        isColumn(responseData?.content)
+        isColumn(responseData?.content) ||
+        isStoredProcedure(responseData?.content)
       ) {
         // if (responseData?.content) {
 
@@ -728,13 +752,13 @@ export const useCanEdit = () => {
 export const isItemSame = (item1, item2, fullPath) => {
   if (isAttribute(item1)) {
     // return item1.parentName === fullPath && item1.name === item2.name;
-    return item1.name === item2.name;
+    return item1?.name === item2?.name;
   } else if (isColumn(item1)) {
     return (
       item1.tableName === fullPath && item1.sourceName === item2.sourceName
     );
   } else {
-    return item1.name === item2.name;
+    return item1?.name === item2?.name;
   }
 };
 
