@@ -71,7 +71,7 @@ const StoredProcedureItem = ({
 
         clonedItem["name"] = clonedItem.storedProcedure;
         clonedItem["required"] = true;
-        clonedItem["payloadId"] = "H4pIyr5l6UJ";
+        clonedItem["payloadId"] = null;
         delete clonedItem._id;
         delete clonedItem.storedProcedure;
         delete clonedItem.schema;
@@ -106,7 +106,7 @@ const StoredProcedureItem = ({
         // clonedItem["outputAttributes"] = clonedItem.data[1];
         clonedItem["name"] = clonedItem.storedProcedure;
         clonedItem["required"] = true;
-        clonedItem["payloadId"] = "H4pIyr5l6UJ";
+        clonedItem["payloadId"] = null;
 
         delete clonedItem._id;
         delete clonedItem.storedProcedure;

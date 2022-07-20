@@ -25,7 +25,7 @@ import CustomParameters from "./CustomParameters/CustomParameters";
 import StoredProcedures from "./StoredProcedures/StoredProcedures";
 import AddOrEditCustomParameter from "./CustomParameters/AddOrEditCustomParameter/AddOrEditCustomParameter";
 import StoredProcedure from "./StoredProcedures/StoredProcedures";
-import storedProcedureAom from "../../shared/atom/storedProcedureAtom";
+import storedProcedureAtom from "../../shared/atom/storedProcedureAtom";
 
 const Match = ({ projectType, ...props }) => {
   let [operationData, setOperationDetails] = useRecoilState(
@@ -36,9 +36,9 @@ const Match = ({ projectType, ...props }) => {
   const resetSchemaState = useResetRecoilState(schemaAtom);
   const [tableState, setTableState] = useRecoilState(tableAtom);
   const [storedProcedureState, setStoredProcedureState] =
-    useRecoilState(storedProcedureAom);
+    useRecoilState(storedProcedureAtom);
   const resetTableState = useResetRecoilState(tableAtom);
-  const resetStoredProcedureState = useResetRecoilState(storedProcedureAom);
+  const resetStoredProcedureState = useResetRecoilState(storedProcedureAtom);
   const [dialog, setDialog] = useState({
     show: false,
     type: null,

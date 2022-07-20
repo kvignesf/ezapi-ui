@@ -4,9 +4,9 @@ export const defaultState = {
   selected: null,
 };
 
-const storedProcedureAom = atom({
+const storedProcedureAtom = atom({
   key: "storedProcedure",
   default: defaultState,
 });
 
-export default storedProcedureAom;
+export default storedProcedureAtom;

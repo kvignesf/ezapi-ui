@@ -22,7 +22,8 @@ import Colors from "../../shared/colors";
 import { useCanEdit } from "../../shared/utils";
 import { useGetResources } from "./resourcesQuery";
 import { UserRoleContext, useUserRole } from "../UserRoleContext";
-
+import storedProcedureAtom from "../../shared/atom/storedProcedureAtom";
+import { useRecoilState, useResetRecoilState } from "recoil";
 const useStyles = makeStyles({
   root: {
     height: 240,
@@ -37,6 +38,7 @@ const Resources = ({
   onOperationSelect,
   ...props
 }) => {
+  const resetStoredProcedureState = useResetRecoilState(storedProcedureAtom);
   const classes = useStyles();
   const {
     isLoading: isLoadingResources,
@@ -225,6 +227,8 @@ const Resources = ({
                                         resetSelectedOperation();
                                       }}
                                       onClick={(e) => {
+                                        resetStoredProcedureState();
+
                                         e.stopPropagation();
                                         onOperationSelect(
                                           operationNodeId,
