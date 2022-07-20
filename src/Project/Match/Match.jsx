@@ -10,7 +10,11 @@ import Schema from "./Schema";
 import schemaAtom from "../../shared/atom/schemaAtom";
 import AppIcon from "../../shared/components/AppIcon";
 import classNames from "classnames";
-import { isArray, useCanEdit } from "../../shared/utils";
+import {
+  isArray,
+  operationAtomWithMiddleware,
+  useCanEdit,
+} from "../../shared/utils";
 import TabLabel from "../../shared/components/TabLabel";
 import Parameters from "./Parameters/Parameters";
 import Colors from "../../shared/colors";
@@ -24,6 +28,9 @@ import StoredProcedure from "./StoredProcedures/StoredProcedures";
 import storedProcedureAom from "../../shared/atom/storedProcedureAtom";
 
 const Match = ({ projectType, ...props }) => {
+  let [operationData, setOperationDetails] = useRecoilState(
+    operationAtomWithMiddleware
+  );
   const [currentTab, setTab] = useState(null);
   const [schemaState, setSchemaState] = useRecoilState(schemaAtom);
   const resetSchemaState = useResetRecoilState(schemaAtom);
@@ -308,13 +315,15 @@ const Match = ({ projectType, ...props }) => {
                   value={"customParam"}
                 />
               )}
-              {projectType === "db" && (
-                <Tab
-                  label={<TabLabel label={"Stored Procedures"} />}
-                  style={{ outline: "none", border: "none" }}
-                  value={"storedProcedures"}
-                />
-              )}
+              {projectType === "db" &&
+                operationData?.operation?.operationType?.toLowerCase() ==
+                  "post" && (
+                  <Tab
+                    label={<TabLabel label={"Stored Procedures"} />}
+                    style={{ outline: "none", border: "none" }}
+                    value={"storedProcedures"}
+                  />
+                )}
             </Tabs>
           )}
         </div>

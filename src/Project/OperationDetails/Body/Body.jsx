@@ -183,6 +183,7 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
             } else if (isColumn(item)) {
               clonedItem.tableName = fetchParentName(clonedItem) ?? "global";
             }
+
             if (isStoredProcedure(item)) {
               if (item["draggedFrom"] == "output") {
                 clonedItem["outputAttributes"] = clonedItem.data[1];
@@ -200,7 +201,7 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
 
             clonedOperationDetails.operationResponse[responseIndex] =
               clonedResponseData;
-
+            // console.log(clonedOperationDetails);
             return clonedOperationDetails;
           }
         }
@@ -353,6 +354,7 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
                   let clonedRef;
 
                   if (isSchema(item)) {
+                    console.log("insideee", item);
                     clonedRef = _.cloneDeep(item);
 
                     if (!clonedRef.hasOwnProperty("data")) {
@@ -366,12 +368,6 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
                     }
                   } else if (isStoredProcedure(item)) {
                     clonedRef = _.cloneDeep(item);
-
-                    if (!clonedRef.hasOwnProperty("data")) {
-                      clonedRef["data"] = [];
-                    } else if (clonedRef["draggedFrom"] == "output") {
-                      clonedRef["data"] = clonedRef["data"][1];
-                    }
                   } else {
                   }
 
@@ -1134,6 +1130,7 @@ const BodyItem = ({ request = true, responseCode, itemRef, projectType }) => {
 
 // This is shown only for arrays, schemas, objects of a parent schema
 const BodySubTreeItems = ({ currentRef: some }) => {
+  console.log("inside bodysubtree items");
   const [currentRef, setCurrentRef] = useState(some);
   const { projectId } = useParams();
   const {

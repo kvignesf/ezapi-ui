@@ -226,7 +226,7 @@ const Project = () => {
         operationAtomWithMiddleware
       );
       const operationState = operationAtomLoadable?.contents;
-      console.log(operationState);
+      // console.log(operationState);
       const saveRequestApiRequest = generateSyncOperationRequestRequest(
         operationState?.operationRequest
       );

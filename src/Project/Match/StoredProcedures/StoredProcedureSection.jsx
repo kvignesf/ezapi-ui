@@ -96,6 +96,7 @@ const StoredProcedureSection = ({ items, onItemClick, section }) => {
                 <StoredProcedureItem
                   index={index}
                   item={item}
+                  itemObject={storedProcedureObjectItem}
                   section={section}
                   primaryKey={primaryKeyRef}
                   onItemClick2={(item) => {
