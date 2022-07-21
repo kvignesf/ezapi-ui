@@ -37,6 +37,7 @@ import {
 } from "../../../shared/utils";
 
 const StoredProcedureItem = ({
+  isAddClicked,
   index,
   section,
   item,
@@ -156,6 +157,7 @@ const StoredProcedureItem = ({
       {section == 0 ? (
         <AppIcon
           onClick={(e) => {
+            isAddClicked(true, item?.storedProcedure);
             e?.preventDefault();
             e?.stopPropagation();
             insertStateProcedures(item);
