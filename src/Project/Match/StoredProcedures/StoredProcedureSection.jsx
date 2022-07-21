@@ -73,7 +73,11 @@ const StoredProcedureSection = ({ items, onItemClick, section }) => {
           </AppIcon>
         )}
         <p className='flex w-full text-overline2 mb-2 '>
-          {section == 0 ? "StoredProcedure" : section == 1 ? "Input" : "Output"}
+          {section == 0
+            ? "Stored Procedures"
+            : section == 1
+            ? "Input"
+            : "Output"}
         </p>
         <p className=' text-overline2'>{items?.length}</p>
       </div>
