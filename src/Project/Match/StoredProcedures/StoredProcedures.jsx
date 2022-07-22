@@ -16,6 +16,8 @@ import { useRecoilValue } from "recoil";
 import { useDrag } from "react-dnd";
 import StoredProcedureSection from "./StoredProcedureSection";
 import { operationAtomWithMiddleware } from "../../../shared/utils";
+import Snackbar from "@material-ui/core/Snackbar";
+import MuiAlert from "@material-ui/lab/Alert";
 
 const StoredProcedures = () => {
   const { projectId } = useParams();
@@ -31,13 +33,16 @@ const StoredProcedures = () => {
   const [isHovering, setHovering] = useState(false);
   const [content, setContent] = useState(null);
   const [menuAnchorEl, setMenuAnchorEl] = useState(false);
+  const [addClicked, setAddClicked] = useState([false, null]);
   const [dialog, setDialog] = useState({
     show: false,
     type: null,
     data: null,
   });
   const canEdit = useCanEdit();
-
+  const Alert = React.forwardRef(function Alert(props, ref) {
+    return <MuiAlert elevation={6} ref={ref} variant='filled' {...props} />;
+  });
   useEffect(() => {
     fetchStoredProceduresData({ projectId });
   }, []);
@@ -80,12 +85,10 @@ const StoredProcedures = () => {
       />
     );
   }
-  // if (!content || _.isEmpty(content)) {
-  //   return (
-  //     <div className='h-full flex flex-col justify-center items-center'>
-  //       <p className='text-overline2'>No tables available</p>
-  //     </div>
-  //   );
+
+  function handleClose() {
+    setAddClicked([false, null]);
+  }
 
   return (
     <div className='mx-4 py-4'>
@@ -93,6 +96,7 @@ const StoredProcedures = () => {
         {content?.contentType == "storedProcedures" && (
           <div className='flex-1 h-fit bg-neutral-gray7 rounded-md p-2'>
             <StoredProcedureSection
+              isAddClicked={(value, name) => setAddClicked([value, name])}
               section={"0"}
               items={content?.data?.data}
               onItemClick={(item) => {
@@ -106,6 +110,20 @@ const StoredProcedures = () => {
                 });
               }}
             />
+
+            <Snackbar
+              open={addClicked[0]}
+              autoHideDuration={3000}
+              onClose={handleClose}
+            >
+              <Alert
+                onClose={handleClose}
+                severity='success'
+                sx={{ width: "100%" }}
+              >
+                {addClicked[1]} added in Request Body and Response Body
+              </Alert>
+            </Snackbar>
           </div>
         )}
         {content?.contentType == "input/output" && (

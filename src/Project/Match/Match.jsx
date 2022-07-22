@@ -58,6 +58,14 @@ const Match = ({ projectType, ...props }) => {
       setTab("param");
     }
   }, [projectType]);
+  useEffect(() => {
+    if (
+      projectType === "db" &&
+      operationData?.operation?.operationType?.toLowerCase() != "post"
+    ) {
+      setTab("db");
+    }
+  }, [operationData?.operation?.operationType]);
 
   const showAddParameterDialog = () => {
     if (canEdit()) {

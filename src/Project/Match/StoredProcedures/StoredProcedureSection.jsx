@@ -23,7 +23,12 @@ import primaryAtom from "../../../shared/atom/primaryAtom";
 
 import _ from "lodash";
 
-const StoredProcedureSection = ({ items, onItemClick, section }) => {
+const StoredProcedureSection = ({
+  items,
+  onItemClick,
+  section,
+  isAddClicked,
+}) => {
   var storedProcedureObjectItem;
   if (section != 0) {
     storedProcedureObjectItem = items;
@@ -73,7 +78,11 @@ const StoredProcedureSection = ({ items, onItemClick, section }) => {
           </AppIcon>
         )}
         <p className='flex w-full text-overline2 mb-2 '>
-          {section == 0 ? "StoredProcedure" : section == 1 ? "Input" : "Output"}
+          {section == 0
+            ? "Stored Procedures"
+            : section == 1
+            ? "Input"
+            : "Output"}
         </p>
         <p className=' text-overline2'>{items?.length}</p>
       </div>
@@ -94,6 +103,7 @@ const StoredProcedureSection = ({ items, onItemClick, section }) => {
             {items?.map((item, index) => {
               return (
                 <StoredProcedureItem
+                  isAddClicked={isAddClicked}
                   index={index}
                   item={item}
                   itemObject={storedProcedureObjectItem}
