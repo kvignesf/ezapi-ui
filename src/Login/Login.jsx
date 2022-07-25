@@ -163,6 +163,7 @@ const Login = () => {
   const handleCloseDialog = () => {
     setDialog(false);
   };
+
   return (
     <div className='login-page'>
       {" "}
@@ -231,15 +232,31 @@ const Login = () => {
                 {" "}
                 <Formik
                   initialValues={{ email: "" }}
-                  validationSchema={Yup.object().shape({
-                    email: Yup.string().email().required("Required"),
-                  })}
+                  validate={(values) => {
+                    const errors = {};
+                    if (!values.email) {
+                      errors.email = "Required";
+                    } else if (
+                      !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(
+                        values.email
+                      )
+                    ) {
+                      errors.email = "Invalid email address";
+                    }
+                    return errors;
+                  }}
+                  onSubmit={(values, errors) => {
+                    SSOLogin(values);
+                  }}
+                  // validateOnChange={false}
+                  // validateOnBlur={false}
                 >
                   {(props) => {
                     const {
                       values,
                       touched,
                       errors,
+
                       dirty,
                       isSubmitting,
                       handleChange,
@@ -248,7 +265,15 @@ const Login = () => {
                       handleReset,
                     } = props;
                     return (
-                      <Form onSubmit={handleSubmit}>
+                      <Form
+                        onSubmit={handleSubmit}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            console.log("inside");
+                            handleSubmit();
+                          }
+                        }}
+                      >
                         <label htmlFor='email' style={{ display: "block" }}>
                           Email
                         </label>
@@ -277,21 +302,18 @@ const Login = () => {
                           {" "}
                           <button
                             id='button1'
-                            onClick={() => {
+                            type='button'
+                            onClick={(e) => {
+                              console.log("inside back");
+                              e.preventDefault();
                               setDialog(false);
+                              setSsoError("");
                             }}
                             // disabled={isSubmitting}
                           >
                             Back
                           </button>
-                          <button
-                            id='button2'
-                            // disabled={isSubmitting}
-                            onClick={() => {
-                              // console.log("clicked");
-                              SSOLogin(values);
-                            }}
-                          >
+                          <button type='submit' id='button2'>
                             Next
                           </button>
                         </div>
