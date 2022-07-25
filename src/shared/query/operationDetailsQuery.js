@@ -82,7 +82,7 @@ export const getOperation = async ({
   try {
     const { data: getRequestApiData } = await client.post(
       `/operationData/request/${operationId}`,
-      { projectId, resourceId, pathId, endpoint }
+      { projectId, resourceId, pathId }
     );
 
     const { data: getResponseApiData } = await client.post(

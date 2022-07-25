@@ -269,7 +269,6 @@ const Login = () => {
                         onSubmit={handleSubmit}
                         onKeyDown={(e) => {
                           if (e.key === "Enter") {
-                            console.log("inside");
                             handleSubmit();
                           }
                         }}
@@ -304,7 +303,6 @@ const Login = () => {
                             id='button1'
                             type='button'
                             onClick={(e) => {
-                              console.log("inside back");
                               e.preventDefault();
                               setDialog(false);
                               setSsoError("");
