@@ -170,8 +170,8 @@ export const useWindowSize = () => {
 export const generateSyncOperationRequestRequest = (operationRequest) => {
   let request = {
     headers: [],
-    authorization: null,
-    endpoint: null,
+    authorization: "",
+    endpoint: "",
     path: [],
     query: [],
     formData: [],
