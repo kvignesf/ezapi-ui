@@ -67,7 +67,6 @@ import primaryAtom from "../../../shared/atom/primaryAtom";
 import tablesDataAtom from "../../../shared/atom/tablesDataAtom";
 import { SignalCellularNullSharp } from "@mui/icons-material";
 
-let final_arr = [];
 const Body = ({ request = true, responseCode, projectType = "schema" }) => {
   let [operationData, setOperationDetails] = useRecoilState(
     operationAtomWithMiddleware
@@ -82,6 +81,7 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
   const { fetch: fetchFullPath } = useGetFullPath();
 
   const itemDropped = (item) => {
+    let final_arr = [];
     if (isColumn(item)) {
       if (item?.foreign) {
         final_arr.push(item?.foreign?.table);
