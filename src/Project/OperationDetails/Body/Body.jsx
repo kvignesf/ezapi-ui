@@ -201,7 +201,7 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
 
             clonedOperationDetails.operationResponse[responseIndex] =
               clonedResponseData;
-            // console.log(clonedOperationDetails);
+
             return clonedOperationDetails;
           }
         }
@@ -354,7 +354,6 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
                   let clonedRef;
 
                   if (isSchema(item)) {
-                    console.log("insideee", item);
                     clonedRef = _.cloneDeep(item);
 
                     if (!clonedRef.hasOwnProperty("data")) {
@@ -404,7 +403,7 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
 
 let treeIndex = 1;
 const truncateLength = 20; //max character length limit of names to enable truncate
-// This can either be a schema or table
+// This can either be a schema or table or stored procedure
 const BodyItem = ({ request = true, responseCode, itemRef, projectType }) => {
   const [bodyItem, setItem] = useState(itemRef);
   const setOperationDetails = useSetRecoilState(operationAtomWithMiddleware);
@@ -1024,7 +1023,9 @@ const BodyItem = ({ request = true, responseCode, itemRef, projectType }) => {
             }
 
             return <BodySubTreeItems currentRef={clonedRef} />;
-          } else if (isAttribute(ref)) {
+          }
+          //attributes within a schema
+          else if (isAttribute(ref)) {
             return (
               <TreeItem
                 key={ref?.payloadId ?? ref?.name ?? treeIndex++}
@@ -1051,16 +1052,7 @@ const BodyItem = ({ request = true, responseCode, itemRef, projectType }) => {
                           <p>{ref?.type}</p>
                         </div>
                         <div> {/* empty isarray */}</div>
-                        <div className='flex-1'>
-                          <Checkbox
-                            checked={ref?.required ?? false}
-                            // checked={true}
-                            style={{
-                              color: Colors.brand.secondary,
-                              padding: "0",
-                            }}
-                          />
-                        </div>
+                        <div className='flex-1'>{/* empty isRequired */}</div>
                       </div>
                     </div>
                   </div>
@@ -1130,7 +1122,6 @@ const BodyItem = ({ request = true, responseCode, itemRef, projectType }) => {
 
 // This is shown only for arrays, schemas, objects of a parent schema
 const BodySubTreeItems = ({ currentRef: some }) => {
-  console.log("inside bodysubtree items");
   const [currentRef, setCurrentRef] = useState(some);
   const { projectId } = useParams();
   const {
@@ -1269,14 +1260,15 @@ const BodySubTreeItems = ({ currentRef: some }) => {
                   </div>
 
                   <div className='flex-1'>
-                    <Checkbox
+                    {/* <Checkbox
                       checked={ref?.required}
                       // checked={true}
                       style={{
                         color: Colors.brand.secondary,
                         padding: "0",
                       }}
-                    />
+                    /> */}
+                    {/* isRequired checkbox not needed */}
                   </div>
                 </div>
               }
@@ -1473,7 +1465,7 @@ const AttributeLabel = ({ labelItem, deleteItem, projectType }) => {
                           }}
                           className='text-overline2'
                         >
-                          {truncate(labelItem?.name, truncateLength)}{" "}
+                          {truncate(labelItem?.name, truncateLength)}
                         </p>
                       </Tooltip>{" "}
                     </div>
@@ -1484,7 +1476,7 @@ const AttributeLabel = ({ labelItem, deleteItem, projectType }) => {
                       {/* empty: no isarray Checkbox */}
                     </div>
                     <div className='flex ml-3 justify-self-start'>
-                      <p className='text-overline2'>
+                      {/* <p className='text-overline2'>
                         <Checkbox
                           checked={labelItem?.required}
                           // checked={true}
@@ -1493,7 +1485,8 @@ const AttributeLabel = ({ labelItem, deleteItem, projectType }) => {
                             padding: "0",
                           }}
                         />
-                      </p>
+                      </p> */}
+                      {/* isRequired not needed for now */}
                     </div>
                   </div>
                 ))}
