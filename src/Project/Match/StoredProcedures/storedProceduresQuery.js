@@ -7,11 +7,9 @@ import { getApiError } from "../../../shared/utils";
 const getStoredProcedures = async ({ projectId }) => {
   try {
     const { data } = await client.get(
-      `${endpoint.storedProcedures}/d23c2b69-444e-480d-9979-d48c103f37a2`
+      `${endpoint.storedProcedures}/` + projectId
     );
-    // const { data } = await client.get(
-    //   `${endpoint.storedProcedures}/projectId`
-    // );
+
     return data;
   } catch (error) {
     throw getApiError(error);
