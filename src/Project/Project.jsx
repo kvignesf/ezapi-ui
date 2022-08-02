@@ -37,6 +37,7 @@ import {
 import AddOrEditResource from "./Resources/AddOrEditResource";
 import Resources from "./Resources/Resources";
 import Match from "./Match";
+import Simulate from "./Simulate.jsx";
 import OperationDetails from "./OperationDetails";
 import { useSyncOperation } from "../shared/query/operationDetailsQuery";
 import { useSubmitProject } from "./projectQueries";
@@ -562,7 +563,9 @@ const Project = () => {
             <div className='flex justify-center flex-1'>
               <Tabs
                 value={currentTab}
-                onChange={(_, index) => {}}
+                onChange={(_, index) => {
+                  setCurrentTab(index);
+                }}
                 aria-label='add project tabs'
                 indicatorColor='primary'
                 textColor='primary'
@@ -570,13 +573,16 @@ const Project = () => {
                 <Tab
                   label={<TabLabel label={"Design"} />}
                   style={{ outline: "none", border: "none" }}
+                  // indicatorColor='primary'
+                  // textColor='primary'
                 />
 
-                {/* <Tab
-                  label={<TabLabel label={"Visualize"} />}
+                <Tab
+                  label={<TabLabel label={"Simulate"} />}
                   style={{ outline: "none", border: "none" }}
-                  disabled
-                /> */}
+                  // indicatorColor='primary'
+                  // textColor='primary'
+                />
               </Tabs>
             </div>
 
@@ -642,87 +648,89 @@ const Project = () => {
             </div>
           </header>
 
-          {currentTab === 0 && (
-            <div className='flex flex-row mt-14'>
-              <section
-                className='border-r-2'
-                style={{
-                  width: "300px",
+          <div className='flex flex-row mt-14'>
+            <section
+              className='border-r-2'
+              style={{
+                width: "300px",
 
-                  height: `calc(100vh - 100px)`,
-                }}
-              >
-                <Scrollbar style={{ height: `calc(100vh - 100px)` }}>
-                  <Resources
-                    className='h-full flex flex-col'
-                    projectId={projectId}
-                    selectedIndex={operationState.operationIndex}
-                    onOperationSelect={(index, resource, path, operation) => {
-                      if (
-                        index === null &&
-                        resource === null &&
-                        path === null &&
-                        operation === null
-                      ) {
-                        if (showUnsavedPopup && operationState?.isModified) {
-                          showSaveOperationWarning("reset_operation_state");
-                        } else {
-                          resetOperationState();
-                        }
-                      } else if (index !== operationState.operationIndex) {
-                        if (showUnsavedPopup && operationState?.isModified) {
-                          showSaveOperationWarning("reset_operation_state");
-                        } else {
-                          // console.log(operationState);
-                          const cloned = _.cloneDeep(operationState);
-                          cloned.operation = operation;
-                          cloned.resource = resource;
-                          cloned.path = path;
-                          cloned.operationIndex = index;
-
-                          // console.log(cloned);
-
-                          setOperationState(cloned);
-                        }
+                height: `calc(100vh - 100px)`,
+              }}
+            >
+              <Scrollbar style={{ height: `calc(100vh - 100px)` }}>
+                <Resources
+                  className='h-full flex flex-col'
+                  projectId={projectId}
+                  selectedIndex={operationState.operationIndex}
+                  onOperationSelect={(index, resource, path, operation) => {
+                    if (
+                      index === null &&
+                      resource === null &&
+                      path === null &&
+                      operation === null
+                    ) {
+                      if (showUnsavedPopup && operationState?.isModified) {
+                        showSaveOperationWarning("reset_operation_state");
+                      } else {
+                        resetOperationState();
                       }
-                    }}
-                  />
-                </Scrollbar>
-              </section>
+                    } else if (index !== operationState.operationIndex) {
+                      if (showUnsavedPopup && operationState?.isModified) {
+                        showSaveOperationWarning("reset_operation_state");
+                      } else {
+                        // console.log(operationState);
+                        const cloned = _.cloneDeep(operationState);
+                        cloned.operation = operation;
+                        cloned.resource = resource;
+                        cloned.path = path;
+                        cloned.operationIndex = index;
 
-              <section
-                className='w-full flex flex-col'
-                style={{ height: `calc(100vh - 112px)` }}
-              >
-                <div
-                  className={classNames(``, {
-                    "h-1/2": operationState.operationIndex,
-                    "h-full": !operationState.operationIndex,
-                  })}
-                >
-                  <Match
-                    projectType={projectDetails?.projectType}
-                    style={{ height: "100%" }}
-                  />
-                </div>
+                        // console.log(cloned);
 
-                {operationState.resource &&
-                  operationState.path &&
-                  operationState.operation && (
-                    <div
-                      className={classNames({
-                        "h-1/2": operationState.operationIndex !== null,
-                      })}
-                    >
-                      <OperationDetails
-                        projectType={projectDetails?.projectType}
-                        canEdit={canEdit(userRole)}
-                      />
-                    </div>
-                  )}
-              </section>
-            </div>
-          )}
+                        setOperationState(cloned);
+                      }
+                    }
+                  }}
+                />
+              </Scrollbar>
+            </section>
+            <section
+              className='w-full flex flex-col'
+              style={{ height: `calc(100vh - 112px)` }}
+            >
+              {currentTab === 0 && (
+                <>
+                  {" "}
+                  <div
+                    className={classNames(``, {
+                      "h-1/2": operationState.operationIndex,
+                      "h-full": !operationState.operationIndex,
+                    })}
+                  >
+                    <Match
+                      projectType={projectDetails?.projectType}
+                      style={{ height: "100%" }}
+                    />
+                  </div>
+                  {operationState.resource &&
+                    operationState.path &&
+                    operationState.operation && (
+                      <div
+                        className={classNames({
+                          "h-1/2": operationState.operationIndex !== null,
+                        })}
+                      >
+                        <OperationDetails
+                          projectType={projectDetails?.projectType}
+                          canEdit={canEdit(userRole)}
+                        />
+                      </div>
+                    )}
+                </>
+              )}
+              {currentTab === 1 && <Simulate />}
+            </section>
+          </div>
 
           <EzapiFooter />
         </DndProvider>
