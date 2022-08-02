@@ -100,7 +100,7 @@ export const isDatabase = (object) => {
   return object?.type === "ezapi_table";
 };
 export const isStoredProcedure = (object) => {
-  return object?.type === "stored_procedure";
+  return object?.type === "storedProcedure";
 };
 export const isInput = (object) => {
   return object?.type === "input";

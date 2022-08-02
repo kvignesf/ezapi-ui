@@ -38,7 +38,7 @@ import Row from "../Row";
 import schemaAtom from "../../../shared/atom/schemaAtom";
 import primaryAtom from "../../../shared/atom/primaryAtom";
 import tablesDataAtom from "../../../shared/atom/tablesDataAtom";
-// var final_arr = [];
+
 const QueryParams = ({ request = true }) => {
   let [operationDetails, setOperationDetails] = useRecoilState(
     operationAtomWithMiddleware
