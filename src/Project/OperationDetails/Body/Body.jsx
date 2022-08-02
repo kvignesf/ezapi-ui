@@ -81,34 +81,9 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
   const { fetch: fetchFullPath } = useGetFullPath();
 
   const itemDropped = (item) => {
-    // console.log(item);
+    console.log(item);
     let final_arr = [];
-    if (isColumn(item)) {
-      if (item?.foreign) {
-        final_arr.push(item?.foreign?.table);
-        let condition = tablesData
-          .filter((table) => {
-            return table.name === item.foreign.table;
-          })[0]
-          .selectedColumns.filter((column) => {
-            return column.name === item.foreign.column;
-          })[0];
 
-        while (condition?.foreign) {
-          final_arr.push(condition.foreign.table);
-          condition = tablesData
-            .filter((table) => {
-              return table.name === condition.foreign.table;
-            })[0]
-            .selectedColumns.filter((column) => {
-              return column.name === condition.foreign.column;
-            })[0];
-        }
-      } else {
-        final_arr = [];
-      }
-      setPrimaryKeyRef(final_arr);
-    }
     if (
       isSchema(item) ||
       isDatabase(item) ||
@@ -145,8 +120,41 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
             } else if (isColumn(item)) {
               clonedItem.tableName = fetchParentName(clonedItem) ?? "global";
             }
+            if (isColumn(item)) {
+              if (item?.foreign) {
+                final_arr.push(item?.foreign?.table);
+                let condition = tablesData
+                  .filter((table) => {
+                    return table.name === item.foreign.table;
+                  })[0]
+                  .selectedColumns.filter((column) => {
+                    return column.name === item.foreign.column;
+                  })[0];
+
+                while (condition?.foreign) {
+                  final_arr.push(condition.foreign.table);
+                  condition = tablesData
+                    .filter((table) => {
+                      return table.name === condition.foreign.table;
+                    })[0]
+                    .selectedColumns.filter((column) => {
+                      return column.name === condition.foreign.column;
+                    })[0];
+                }
+              } else {
+                final_arr = [];
+              }
+              setPrimaryKeyRef(final_arr);
+            }
+
+            let inputExists = false;
+            item?.data?.[0]?.map((row) => {
+              if (row.type == "input") {
+                inputExists = true;
+              }
+            });
             if (isStoredProcedure(item)) {
-              if (item["draggedFrom"] == "input") {
+              if (item["draggedFrom"] == "input" && inputExists) {
                 // console.log("inside 3");
                 clonedItem["inputAttributes"] = clonedItem.data[0];
                 clonedItem["required"] = true;
@@ -187,9 +195,18 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
             } else if (isColumn(item)) {
               clonedItem.tableName = fetchParentName(clonedItem) ?? "global";
             }
+            let outputExists = false;
+            item?.data?.[1]?.map((row) => {
+              if (row.type == "output") {
+                console.log(row);
+                outputExists = true;
+              }
+            });
+            console.log(outputExists);
 
             if (isStoredProcedure(item)) {
-              if (item["draggedFrom"] == "output") {
+              console.log("inn??");
+              if (item["draggedFrom"] == "output" && outputExists) {
                 clonedItem["outputAttributes"] = clonedItem.data[1];
                 clonedItem["required"] = true;
                 clonedItem["payloadId"] = null;
