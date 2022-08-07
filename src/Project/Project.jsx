@@ -65,10 +65,12 @@ import RepublishInfo from "./RepublishInfo";
 import ProfileMenu from "../shared/components/ProfileMenu";
 import EzapiLogo from "../shared/components/EzapiLogo";
 import EzapiFooter from "../shared/components/EzapiFooter";
+import { getAccessToken, setUserId } from "../shared/storage";
 import Scrollbar from "react-smooth-scrollbar";
 
 const Project = () => {
   // console.log("Project");
+  const acc_token = getAccessToken();
   const { projectId } = useParams();
   const history = useHistory();
   const firstName = getFirstName();
@@ -123,7 +125,8 @@ const Project = () => {
   });
   const getRecoilValueInfo = useGetRecoilValueInfo_UNSTABLE();
   const [userRole, setRole] = useState(null);
-
+  const [simulateVirtualData, setSimulateVirtualData] = useState(null);
+  const [simulateData, setSimulateData] = useState(null);
   const [autoSyncIntervalId, setAutoSync] = useState(0);
   const [showUnsavedPopup, setUnsavedPopup] = useState(true);
 
@@ -133,6 +136,24 @@ const Project = () => {
     }
     return () => stopAutoSync();
   }, [userRole]);
+
+  useEffect(() => {
+    if (currentTab == 1) {
+      fetch(
+        process.env.REACT_APP_API_URL +
+          "/virtualData?projectId=cd1f5756-4834-4dd4-b6bf-d4eb1ab9ea90",
+        {
+          headers: {
+            Authorization: `Bearer ${acc_token}`,
+          },
+        }
+      )
+        .then((res) => res.json())
+        .then((result) => {
+          setSimulateVirtualData(result);
+        });
+    }
+  }, [currentTab]);
 
   useEffect(() => {
     setMemberList(projectDetails?.["members"]);
@@ -691,6 +712,28 @@ const Project = () => {
                       }
                     }
                   }}
+                  onSimulateSelect={(operation) => {
+                    fetch(process.env.REACT_APP_API_URL + "/simulate", {
+                      headers: {
+                        Authorization: `Bearer ${acc_token}`,
+                        "Content-Type": "application/json",
+                      },
+                      method: "POST",
+
+                      body: JSON.stringify({
+                        projectId: "cd1f5756-4834-4dd4-b6bf-d4eb1ab9ea90",
+                        httpMethod: operation.httpMethod,
+                        endpoint: operation.endpoint,
+                      }),
+                    })
+                      .then((res) => res.json())
+                      .then((result) => {
+                        console.log(result.data[0]);
+                        setSimulateData(result.data[0]);
+                      });
+                  }}
+                  currentTab={currentTab}
+                  simulateData={simulateVirtualData}
                 />
               </Scrollbar>
             </section>
@@ -728,7 +771,7 @@ const Project = () => {
                     )}
                 </>
               )}
-              {currentTab === 1 && <Simulate />}
+              {currentTab === 1 && <Simulate simulateData={simulateData} />}
             </section>
           </div>
 
