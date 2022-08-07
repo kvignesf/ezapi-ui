@@ -12,6 +12,9 @@ const getStoredProcedures = async ({ projectId }) => {
     const { data } = await client.get(
       `${endpoint.storedProcedures}/6229daec-8552-490c-beab-79519ee93081`
     );
+    // const { data } = await client.get(
+    //   `${endpoint.storedProcedures}/6229daec-8552-490c-beab-79519ee93081`
+    // );
 
     return data;
   } catch (error) {
