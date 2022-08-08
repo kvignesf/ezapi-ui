@@ -66,6 +66,7 @@ const useStyles = makeStyles({
 });
 
 const Dashboard = ({ selectedIndex, children, pricingDefaultCheck }) => {
+  // console.log(acc_token);
   const styles = useStyles();
   const history = useHistory();
   const [dialog, setDialog] = useState({

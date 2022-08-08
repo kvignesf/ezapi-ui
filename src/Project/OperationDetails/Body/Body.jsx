@@ -144,7 +144,7 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
               } else {
                 final_arr = [];
               }
-              setPrimaryKeyRef(final_arr);
+              // setPrimaryKeyRef(final_arr);
             }
 
             let inputExists = false;

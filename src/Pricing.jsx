@@ -50,6 +50,7 @@ export const usePricingData = () => {
 };
 
 const Pricing = () => {
+  console.log(acc_token);
   const history = useHistory();
   const headings = ["PROJECTS", "API LIFECYCLE", "CONNECTORS", "VALIDITY"];
   const rowNames = [

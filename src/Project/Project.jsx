@@ -37,6 +37,7 @@ import {
 import AddOrEditResource from "./Resources/AddOrEditResource";
 import Resources from "./Resources/Resources";
 import Match from "./Match";
+import Simulate from "./Simulate.jsx";
 import OperationDetails from "./OperationDetails";
 import { useSyncOperation } from "../shared/query/operationDetailsQuery";
 import { useSubmitProject } from "./projectQueries";
@@ -64,10 +65,12 @@ import RepublishInfo from "./RepublishInfo";
 import ProfileMenu from "../shared/components/ProfileMenu";
 import EzapiLogo from "../shared/components/EzapiLogo";
 import EzapiFooter from "../shared/components/EzapiFooter";
+import { getAccessToken, setUserId } from "../shared/storage";
 import Scrollbar from "react-smooth-scrollbar";
 
 const Project = () => {
   // console.log("Project");
+  const acc_token = getAccessToken();
   const { projectId } = useParams();
   const history = useHistory();
   const firstName = getFirstName();
@@ -122,7 +125,8 @@ const Project = () => {
   });
   const getRecoilValueInfo = useGetRecoilValueInfo_UNSTABLE();
   const [userRole, setRole] = useState(null);
-
+  const [simulateVirtualData, setSimulateVirtualData] = useState(null);
+  const [simulateData, setSimulateData] = useState(null);
   const [autoSyncIntervalId, setAutoSync] = useState(0);
   const [showUnsavedPopup, setUnsavedPopup] = useState(true);
 
@@ -132,6 +136,25 @@ const Project = () => {
     }
     return () => stopAutoSync();
   }, [userRole]);
+
+  useEffect(() => {
+    if (currentTab == 1) {
+      fetch(
+        // process.env.REACT_APP_API_URL +
+        //   "/virtualData?projectId=cd1f5756-4834-4dd4-b6bf-d4eb1ab9ea90",
+        process.env.REACT_APP_API_URL + "/virtualData?projectId=" + projectId,
+        {
+          headers: {
+            Authorization: `Bearer ${acc_token}`,
+          },
+        }
+      )
+        .then((res) => res.json())
+        .then((result) => {
+          setSimulateVirtualData(result);
+        });
+    }
+  }, [currentTab]);
 
   useEffect(() => {
     setMemberList(projectDetails?.["members"]);
@@ -562,7 +585,9 @@ const Project = () => {
             <div className='flex justify-center flex-1'>
               <Tabs
                 value={currentTab}
-                onChange={(_, index) => {}}
+                onChange={(_, index) => {
+                  setCurrentTab(index);
+                }}
                 aria-label='add project tabs'
                 indicatorColor='primary'
                 textColor='primary'
@@ -570,13 +595,16 @@ const Project = () => {
                 <Tab
                   label={<TabLabel label={"Design"} />}
                   style={{ outline: "none", border: "none" }}
+                  // indicatorColor='primary'
+                  // textColor='primary'
                 />
 
-                {/* <Tab
-                  label={<TabLabel label={"Visualize"} />}
+                <Tab
+                  label={<TabLabel label={"Simulate"} />}
                   style={{ outline: "none", border: "none" }}
-                  disabled
-                /> */}
+                  // indicatorColor='primary'
+                  // textColor='primary'
+                />
               </Tabs>
             </div>
 
@@ -642,87 +670,111 @@ const Project = () => {
             </div>
           </header>
 
-          {currentTab === 0 && (
-            <div className='flex flex-row mt-14'>
-              <section
-                className='border-r-2'
-                style={{
-                  width: "300px",
+          <div className='flex flex-row mt-14'>
+            <section
+              className='border-r-2'
+              style={{
+                width: "300px",
 
-                  height: `calc(100vh - 100px)`,
-                }}
-              >
-                <Scrollbar style={{ height: `calc(100vh - 100px)` }}>
-                  <Resources
-                    className='h-full flex flex-col'
-                    projectId={projectId}
-                    selectedIndex={operationState.operationIndex}
-                    onOperationSelect={(index, resource, path, operation) => {
-                      if (
-                        index === null &&
-                        resource === null &&
-                        path === null &&
-                        operation === null
-                      ) {
-                        if (showUnsavedPopup && operationState?.isModified) {
-                          showSaveOperationWarning("reset_operation_state");
-                        } else {
-                          resetOperationState();
-                        }
-                      } else if (index !== operationState.operationIndex) {
-                        if (showUnsavedPopup && operationState?.isModified) {
-                          showSaveOperationWarning("reset_operation_state");
-                        } else {
-                          // console.log(operationState);
-                          const cloned = _.cloneDeep(operationState);
-                          cloned.operation = operation;
-                          cloned.resource = resource;
-                          cloned.path = path;
-                          cloned.operationIndex = index;
-
-                          // console.log(cloned);
-
-                          setOperationState(cloned);
-                        }
+                height: `calc(100vh - 100px)`,
+              }}
+            >
+              <Scrollbar style={{ height: `calc(100vh - 100px)` }}>
+                <Resources
+                  className='h-full flex flex-col'
+                  projectId={projectId}
+                  selectedIndex={operationState.operationIndex}
+                  onOperationSelect={(index, resource, path, operation) => {
+                    if (
+                      index === null &&
+                      resource === null &&
+                      path === null &&
+                      operation === null
+                    ) {
+                      if (showUnsavedPopup && operationState?.isModified) {
+                        showSaveOperationWarning("reset_operation_state");
+                      } else {
+                        resetOperationState();
                       }
-                    }}
-                  />
-                </Scrollbar>
-              </section>
+                    } else if (index !== operationState.operationIndex) {
+                      if (showUnsavedPopup && operationState?.isModified) {
+                        showSaveOperationWarning("reset_operation_state");
+                      } else {
+                        // console.log(operationState);
+                        const cloned = _.cloneDeep(operationState);
+                        cloned.operation = operation;
+                        cloned.resource = resource;
+                        cloned.path = path;
+                        cloned.operationIndex = index;
 
-              <section
-                className='w-full flex flex-col'
-                style={{ height: `calc(100vh - 112px)` }}
-              >
-                <div
-                  className={classNames(``, {
-                    "h-1/2": operationState.operationIndex,
-                    "h-full": !operationState.operationIndex,
-                  })}
-                >
-                  <Match
-                    projectType={projectDetails?.projectType}
-                    style={{ height: "100%" }}
-                  />
-                </div>
+                        // console.log(cloned);
 
-                {operationState.resource &&
-                  operationState.path &&
-                  operationState.operation && (
-                    <div
-                      className={classNames({
-                        "h-1/2": operationState.operationIndex !== null,
-                      })}
-                    >
-                      <OperationDetails
-                        projectType={projectDetails?.projectType}
-                        canEdit={canEdit(userRole)}
-                      />
-                    </div>
-                  )}
-              </section>
-            </div>
-          )}
+                        setOperationState(cloned);
+                      }
+                    }
+                  }}
+                  onSimulateSelect={(operation) => {
+                    fetch(process.env.REACT_APP_API_URL + "/simulate", {
+                      headers: {
+                        Authorization: `Bearer ${acc_token}`,
+                        "Content-Type": "application/json",
+                      },
+                      method: "POST",
+
+                      body: JSON.stringify({
+                        projectId: projectId,
+                        httpMethod: operation.httpMethod,
+                        endpoint: operation.endpoint,
+                      }),
+                    })
+                      .then((res) => res.json())
+                      .then((result) => {
+                        console.log(result.data[0]);
+                        setSimulateData(result.data[0]);
+                      });
+                  }}
+                  currentTab={currentTab}
+                  simulateData={simulateVirtualData}
+                />
+              </Scrollbar>
+            </section>
+            <section
+              className='w-full flex flex-col'
+              style={{ height: `calc(100vh - 112px)` }}
+            >
+              {currentTab === 0 && (
+                <>
+                  {" "}
+                  <div
+                    className={classNames(``, {
+                      "h-1/2": operationState.operationIndex,
+                      "h-full": !operationState.operationIndex,
+                    })}
+                  >
+                    <Match
+                      projectType={projectDetails?.projectType}
+                      style={{ height: "100%" }}
+                    />
+                  </div>
+                  {operationState.resource &&
+                    operationState.path &&
+                    operationState.operation && (
+                      <div
+                        className={classNames({
+                          "h-1/2": operationState.operationIndex !== null,
+                        })}
+                      >
+                        <OperationDetails
+                          projectType={projectDetails?.projectType}
+                          canEdit={canEdit(userRole)}
+                        />
+                      </div>
+                    )}
+                </>
+              )}
+              {currentTab === 1 && <Simulate simulateData={simulateData} />}
+            </section>
+          </div>
 
           <EzapiFooter />
         </DndProvider>

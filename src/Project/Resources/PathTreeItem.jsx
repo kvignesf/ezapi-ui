@@ -14,11 +14,13 @@ import AddOrEditPath from "./AddOrEditPath";
 import AddOrEditOperation from "./AddOrEditOperation";
 import DeletePath from "./DeletePath";
 import { useCanEdit } from "../../shared/utils";
+import { PatternSharp } from "@mui/icons-material";
 
 const PathTreeItem = ({
   nodeId,
   resourceId,
   path,
+  currentTab,
   children,
   resetSelectedOperation,
   ...rest
@@ -126,7 +128,7 @@ const PathTreeItem = ({
                     /
                   </p>
                   <p className='text-overline2 overflow-hidden whitespace-nowrap overflow-ellipsis w-30'>
-                    {path?.pathName}
+                    {path.pathName ? path.pathName : path}
                   </p>
                 </div>
 
