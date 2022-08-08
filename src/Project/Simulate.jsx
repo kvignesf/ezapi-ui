@@ -25,13 +25,23 @@ const styles = (theme) => ({
   },
 });
 const Simulate = ({ simulateData }, props) => {
+  const APIColor = {
+    get: "#71c72c",
+    post: "#ff8800",
+    patch: "#2c71c7",
+    delete: "#e53535",
+    put: "#2c71c7",
+    trace: "#71c72c",
+    head: "#71c72c",
+  };
   const [currentTab, setCurrentTab] = useState(0);
   const [textBoxValue, setTextBoxValue] = useState();
   const [responseData, setResponseData] = useState("");
+  const [apiButtonColor, setApiButtonColor] = useState("get");
 
   useEffect(() => {
     // console.log(currentTab);
-
+    setApiButtonColor(APIColor[simulateData?.httpMethod]);
     switch (currentTab) {
       case 0:
         setTextBoxValue(JSON.stringify(simulateData?.formData, null, 4));
@@ -53,86 +63,106 @@ const Simulate = ({ simulateData }, props) => {
   const focused = true;
   return (
     <div className='flex-1 relative w-full p-2'>
-      <div className=' flex flex-row gap-2'>
-        <Button variant='outlined' size='small'>
-          {simulateData ? simulateData?.httpMethod.toUpperCase() : "GET"}
-        </Button>
-
-        <TextField
-          // inputProps={{ readOnly: true }}
-          placeholder='Endpoint'
-          className={styles("").root}
-          key={simulateData}
-          fullWidth
-          variant='outlined'
-          /* styles the wrapper */
-          style={{ height }}
-          /* styles the label component */
-          InputLabelProps={{
-            style: {
-              height,
-              ...(!focused && { top: `${labelOffset}px` }),
-            },
-          }}
-          /* styles the input component */
-          inputProps={{
-            readOnly: true,
-            style: {
-              height,
-              padding: "0 14px",
-            },
-          }}
-          value={simulateData?.endpoint}
-        />
-        <PrimaryButton
-          onClick={() =>
-            setResponseData(JSON.stringify(simulateData?.responseBody, null, 4))
-          }
-        >
-          SEND
-        </PrimaryButton>
-      </div>
       <div className='h-1/2'>
-        <div className=' flex flex-row mb-3'>
-          {" "}
-          <Tabs
-            value={currentTab}
-            onChange={(_, index) => {
-              setCurrentTab(index);
+        {" "}
+        <div className=' flex flex-row gap-2'>
+          <Button
+            disableElevation
+            disableRipple
+            variant='outlined'
+            size='small'
+            sx={{
+              color: apiButtonColor,
+              ml: 1,
+              "&.MuiButtonBase-root:hover": {
+                background: "none",
+                borderColor: apiButtonColor,
+                cursor: "default",
+              },
+              borderColor: apiButtonColor,
             }}
-            aria-label='add project tabs'
-            indicatorColor='primary'
-            textColor='primary'
           >
-            <Tab
-              label={<TabLabel label={"Form Data"} />}
-              style={{ outline: "none", border: "none" }}
-            />
+            {simulateData ? simulateData?.httpMethod.toUpperCase() : "GET"}
+          </Button>
 
-            <Tab
-              label={<TabLabel label={"Headers"} />}
-              style={{ outline: "none", border: "none" }}
-            />
-
-            <Tab
-              label={<TabLabel label={"Request Body"} />}
-              style={{ outline: "none", border: "none" }}
-            />
-          </Tabs>
+          <TextField
+            // inputProps={{ readOnly: true }}
+            placeholder='Endpoint'
+            className={styles("").root}
+            key={simulateData}
+            fullWidth
+            variant='outlined'
+            /* styles the wrapper */
+            style={{ height }}
+            /* styles the label component */
+            InputLabelProps={{
+              style: {
+                height,
+                ...(!focused && { top: `${labelOffset}px` }),
+              },
+            }}
+            /* styles the input component */
+            inputProps={{
+              readOnly: true,
+              style: {
+                height,
+                padding: "0 14px",
+              },
+            }}
+            value={simulateData?.endpoint}
+          />
+          <PrimaryButton
+            onClick={() =>
+              setResponseData(
+                JSON.stringify(simulateData?.responseBody, null, 4)
+              )
+            }
+          >
+            SEND
+          </PrimaryButton>
         </div>
+        <div>
+          <div className=' flex flex-row mb-3'>
+            {" "}
+            <Tabs
+              value={currentTab}
+              onChange={(_, index) => {
+                setCurrentTab(index);
+              }}
+              aria-label='add project tabs'
+              indicatorColor='primary'
+              textColor='primary'
+            >
+              <Tab
+                label={<TabLabel label={"Form Data"} />}
+                style={{ outline: "none", border: "none" }}
+              />
 
-        <TextField
-          inputProps={{ readOnly: true }}
-          key={simulateData}
-          fullWidth
-          id='outlined-multiline-static'
-          multiline
-          rows={6}
-          value={textBoxValue}
-        />
+              <Tab
+                label={<TabLabel label={"Headers"} />}
+                style={{ outline: "none", border: "none" }}
+              />
+
+              <Tab
+                label={<TabLabel label={"Request Body"} />}
+                style={{ outline: "none", border: "none" }}
+              />
+            </Tabs>
+          </div>
+
+          <TextField
+            inputProps={{ readOnly: true }}
+            key={simulateData}
+            fullWidth
+            id='outlined-multiline-static'
+            multiline
+            rows={6}
+            value={textBoxValue}
+          />
+        </div>
       </div>
 
-      <div className='h-1/2'>
+      <div className='h-1/2 pt-2'>
         {" "}
         <div className='border-t-2 h-full '>
           <div className=' flex flex-row'>
@@ -154,14 +184,14 @@ const Simulate = ({ simulateData }, props) => {
           </div>
           <div className='p-2 h-full'>
             {" "}
-            <p className='p-2'>Status : 200</p>
+            {/* <p className='p-2'>Status : 200</p> */}
             <TextField
               inputProps={{ readOnly: true }}
               key={simulateData}
               fullWidth
               id='outlined-multiline-static'
               multiline
-              rows={6}
+              rows={7}
               value={responseData}
             />
           </div>

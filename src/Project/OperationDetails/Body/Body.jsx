@@ -144,7 +144,7 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
               } else {
                 final_arr = [];
               }
-              setPrimaryKeyRef(final_arr);
+              // setPrimaryKeyRef(final_arr);
             }
 
             let inputExists = false;
@@ -1914,20 +1914,11 @@ const ColumnLabel = ({
                   <div className='flex ml-3 justify-self-start'>
                     <p className='text-overline2'>
                       <Checkbox
-                        defaultChecked={columnLabelItem?.required}
+                        checked={columnLabelItem?.required}
                         style={{
                           color: Colors.brand.secondary,
                           padding: "0",
                         }}
-                        // checked={isArray}
-                        // onClick={(e) => {
-                        //   e.preventDefault();
-                        //   e.stopPropagation();
-
-                        //   isArrayChecked(tableLabelItem, !isArray, request);
-                        //   setIsArray(!isArray);
-                        // }}
-                        // contentEditable={true}
                       />
                     </p>
                   </div>

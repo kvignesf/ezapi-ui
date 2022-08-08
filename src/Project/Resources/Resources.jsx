@@ -81,7 +81,7 @@ const Resources = ({
   }, []);
   useEffect(() => {
     var tempArr = [...pathArr];
-    simulateData?.data.map((item) => {
+    simulateData?.data?.map((item) => {
       var tempEndpoint = item["endpoint"];
       var tempPath;
       if (tempEndpoint.includes("?")) {
@@ -116,7 +116,7 @@ const Resources = ({
     });
   };
 
-  if (isLoadingResources) {
+  if (isLoadingResources || (currentTab == 1 && !simulateData)) {
     return (
       <LoaderWithMessage
         message='Fetching resources'
