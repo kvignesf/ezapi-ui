@@ -140,8 +140,9 @@ const Project = () => {
   useEffect(() => {
     if (currentTab == 1) {
       fetch(
-        process.env.REACT_APP_API_URL +
-          "/virtualData?projectId=cd1f5756-4834-4dd4-b6bf-d4eb1ab9ea90",
+        // process.env.REACT_APP_API_URL +
+        //   "/virtualData?projectId=cd1f5756-4834-4dd4-b6bf-d4eb1ab9ea90",
+        process.env.REACT_APP_API_URL + "/virtualData?projectId=" + projectId,
         {
           headers: {
             Authorization: `Bearer ${acc_token}`,
@@ -721,7 +722,7 @@ const Project = () => {
                       method: "POST",
 
                       body: JSON.stringify({
-                        projectId: "cd1f5756-4834-4dd4-b6bf-d4eb1ab9ea90",
+                        projectId: projectId,
                         httpMethod: operation.httpMethod,
                         endpoint: operation.endpoint,
                       }),

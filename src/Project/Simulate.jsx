@@ -3,62 +3,65 @@ import TabLabel from "../shared/components/TabLabel";
 import Colors from "../shared/colors";
 import { Tab, Tabs, makeStyles } from "@material-ui/core";
 import Box from "@mui/material/Box";
+import { withStyles } from "@material-ui/core/styles";
 import Card from "@mui/material/Card";
 import CardActions from "@mui/material/CardActions";
 import CardContent from "@mui/material/CardContent";
 import classNames from "classnames";
 import Button from "@mui/material/Button";
+import { MuiThemeProvider } from "@material-ui/core/styles";
 import Typography from "@mui/material/Typography";
 import { PrimaryButton } from "../shared/components/AppButton";
 import TextField from "@mui/material/TextField";
-import { createTheme, ThemeProvider } from "@mui/material/styles";
-// const theme = createTheme({
-//   palette: {
-//     custom: {
-//       green: "#71C72C",
-//     },
-//   },
-// });
 
-const Simulate = ({ simulateData }) => {
+import { createTheme, ThemeProvider } from "@mui/material/styles";
+
+const styles = (theme) => ({
+  root: {
+    marginRight: 8,
+    "& .MuiInputBase-root.Mui-disabled": {
+      color: "green", // (default alpha is 0.38)
+    },
+  },
+});
+const Simulate = ({ simulateData }, props) => {
   const [currentTab, setCurrentTab] = useState(0);
-  const [textBoxValue, setTextBoxValue] = useState(0);
+  const [textBoxValue, setTextBoxValue] = useState();
   const [responseData, setResponseData] = useState("");
 
   useEffect(() => {
-    console.log(currentTab);
+    // console.log(currentTab);
 
     switch (currentTab) {
       case 0:
-        setTextBoxValue(JSON.stringify(simulateData?.formData));
+        setTextBoxValue(JSON.stringify(simulateData?.formData, null, 4));
         break;
       case 1:
-        setTextBoxValue(JSON.stringify(simulateData?.headers));
+        setTextBoxValue(JSON.stringify(simulateData?.headers, null, 4));
         break;
       case 2:
-        setTextBoxValue(JSON.stringify(simulateData?.requestBody));
+        setTextBoxValue(JSON.stringify(simulateData?.requestBody, null, 4));
         break;
       default:
-        setTextBoxValue(JSON.stringify(simulateData?.formData));
+        setTextBoxValue(JSON.stringify(simulateData?.formData, null, 4));
     }
   }, [currentTab, simulateData]);
   const height = 42;
 
-  // magic number which must be set appropriately for height
   const labelOffset = -6;
 
-  // get this from your form library, for instance in
-  // react-final-form it's fieldProps.meta.active
-  // or provide it yourself - see notes below
   const focused = true;
   return (
     <div className='flex-1 relative w-full p-2'>
       <div className=' flex flex-row gap-2'>
         <Button variant='outlined' size='small'>
-          {simulateData?.httpMethod.toUpperCase()}
+          {simulateData ? simulateData?.httpMethod.toUpperCase() : "GET"}
         </Button>
 
         <TextField
+          // inputProps={{ readOnly: true }}
+          placeholder='Endpoint'
+          className={styles("").root}
           key={simulateData}
           fullWidth
           variant='outlined'
@@ -73,6 +76,7 @@ const Simulate = ({ simulateData }) => {
           }}
           /* styles the input component */
           inputProps={{
+            readOnly: true,
             style: {
               height,
               padding: "0 14px",
@@ -82,7 +86,7 @@ const Simulate = ({ simulateData }) => {
         />
         <PrimaryButton
           onClick={() =>
-            setResponseData(JSON.stringify(simulateData?.responseBody))
+            setResponseData(JSON.stringify(simulateData?.responseBody, null, 4))
           }
         >
           SEND
@@ -116,10 +120,9 @@ const Simulate = ({ simulateData }) => {
             />
           </Tabs>
         </div>
-        {/* <Card className='p-2 h-40' sx={{ minWidth: 275 }}>
-          form data details
-        </Card> */}
+
         <TextField
+          inputProps={{ readOnly: true }}
           key={simulateData}
           fullWidth
           id='outlined-multiline-static'
@@ -153,6 +156,7 @@ const Simulate = ({ simulateData }) => {
             {" "}
             <p className='p-2'>Status : 200</p>
             <TextField
+              inputProps={{ readOnly: true }}
               key={simulateData}
               fullWidth
               id='outlined-multiline-static'

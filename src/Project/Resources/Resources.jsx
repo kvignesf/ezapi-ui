@@ -80,17 +80,19 @@ const Resources = ({
     );
   }, []);
   useEffect(() => {
-    console.log(simulateData);
     var tempArr = [...pathArr];
     simulateData?.data.map((item) => {
       var tempEndpoint = item["endpoint"];
-      var tempPath = tempEndpoint.slice(
-        tempEndpoint.indexOf("/") + 1,
-        tempEndpoint.indexOf("?")
-      );
-      // pathArr.push(tempPath);
+      var tempPath;
+      if (tempEndpoint.includes("?")) {
+        tempPath = tempEndpoint.slice(
+          tempEndpoint.indexOf("/") + 1,
+          tempEndpoint.indexOf("?")
+        );
+      } else {
+        tempPath = tempEndpoint.substr(1);
+      }
       if (tempArr.indexOf(tempPath) === -1) {
-        console.log("no dups");
         tempArr.push(tempPath);
       }
     });
@@ -195,7 +197,7 @@ const Resources = ({
           >
             {resources?.map((resource, resourceIndex) => {
               const resourceNodeIndex = treeNodeIndex++;
-              console.log(resource);
+              // console.log(resource);
               return (
                 <ResourceTreeItem
                   key={resourceNodeIndex}
@@ -321,26 +323,31 @@ const Resources = ({
                       {simulateData?.data && !_.isEmpty(simulateData?.data)
                         ? simulateData.data?.map(
                             (operation, operationIndex) => {
-                              const operationNodeId = treeNodeIndex++;
+                              if (
+                                operation?.endpoint == "/" + path ||
+                                operation?.endpoint.includes("/" + path + "?")
+                              ) {
+                                const operationNodeId = treeNodeIndex++;
 
-                              return (
-                                <OperationTreeItem
-                                  key={operationNodeId}
-                                  nodeId={operationNodeId}
-                                  // resourceId={resource?.resourceId}
-                                  pathId={path?.pathId}
-                                  type={operation?.httpMethod.toUpperCase()}
-                                  // operation={operation}
-                                  resetSelectedOperation={() => {
-                                    resetSelectedOperation();
-                                  }}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
+                                return (
+                                  <OperationTreeItem
+                                    key={operationNodeId}
+                                    nodeId={operationNodeId}
+                                    // resourceId={resource?.resourceId}
+                                    pathId={path?.pathId}
+                                    type={operation?.httpMethod.toUpperCase()}
+                                    // operation={operation}
+                                    resetSelectedOperation={() => {
+                                      resetSelectedOperation();
+                                    }}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
 
-                                    onSimulateSelect(operation);
-                                  }}
-                                />
-                              );
+                                      onSimulateSelect(operation);
+                                    }}
+                                  />
+                                );
+                              }
                             }
                           )
                         : null}
