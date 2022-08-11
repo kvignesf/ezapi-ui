@@ -323,12 +323,16 @@ const Resources = ({
                       {simulateData?.data && !_.isEmpty(simulateData?.data)
                         ? simulateData.data?.map(
                             (operation, operationIndex) => {
+                              // console.log(operation);
                               if (
                                 operation?.endpoint == "/" + path ||
                                 operation?.endpoint.includes("/" + path + "?")
                               ) {
                                 const operationNodeId = treeNodeIndex++;
 
+                                var opName = operation.operation_id.slice(
+                                  operation.operation_id.indexOf("/") + 1
+                                );
                                 return (
                                   <OperationTreeItem
                                     key={operationNodeId}
@@ -336,7 +340,7 @@ const Resources = ({
                                     // resourceId={resource?.resourceId}
                                     pathId={path?.pathId}
                                     type={operation?.httpMethod.toUpperCase()}
-                                    // operation={operation}
+                                    operation={opName}
                                     resetSelectedOperation={() => {
                                       resetSelectedOperation();
                                     }}

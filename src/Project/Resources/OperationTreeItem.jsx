@@ -3,7 +3,7 @@ import ReactHoverObserver from "react-hover-observer";
 import AddIcon from "@material-ui/icons/Add";
 import MoreVertIcon from "@material-ui/icons/MoreVert";
 import { Dialog, Fade, Menu, MenuItem } from "@material-ui/core";
-
+import { Typography } from "@mui/material";
 import ApiMethod, { Method } from "../../shared/components/ApiMethod";
 import AppIcon from "../../shared/components/AppIcon";
 import StyledTreeItem from "./StyledTreeItem";
@@ -12,7 +12,7 @@ import AddOrEditOperation from "./AddOrEditOperation";
 import AddOrEditPath from "./AddOrEditPath";
 import DeleteOperation from "./DeleteOperation";
 import { useCanEdit } from "../../shared/utils";
-
+import "./OperationTreeItem.css";
 const OperationTreeItem = ({
   nodeId,
   resourceId,
@@ -66,7 +66,9 @@ const OperationTreeItem = ({
       type: null,
     });
   };
-
+  function truncate(str, n) {
+    return str.length > n ? str.substr(0, n - 1) + "..." : str;
+  }
   return (
     <div {...rest}>
       <Dialog
@@ -107,8 +109,10 @@ const OperationTreeItem = ({
                 <div className='flex flex-row flex-1 items-center'>
                   <ApiMethod type={type} style={{ marginRight: "0.5rem" }} />
 
-                  <p className='text-overline2 overflow-hidden whitespace-nowrap overflow-ellipsis w-16'>
-                    {operation?.operationName}
+                  <p className='text-overline2 overflow-hidden whitespace-nowrap overflow-ellipsis w-28'>
+                    {operation.operationName
+                      ? operation.operationName
+                      : operation}
                   </p>
                 </div>
 

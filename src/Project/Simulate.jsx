@@ -63,7 +63,7 @@ const Simulate = ({ simulateData }, props) => {
   const focused = true;
   return (
     <div className='flex-1 relative w-full p-2'>
-      <div className='h-1/2'>
+      <div className='h-1/2 mb-3'>
         {" "}
         <div className=' flex flex-row gap-2'>
           <Button
@@ -122,7 +122,7 @@ const Simulate = ({ simulateData }, props) => {
           </PrimaryButton>
         </div>
         <div>
-          <div className=' flex flex-row mb-3'>
+          <div className=' flex flex-row mb-1'>
             {" "}
             <Tabs
               value={currentTab}
@@ -162,39 +162,37 @@ const Simulate = ({ simulateData }, props) => {
         </div>
       </div>
 
-      <div className='h-1/2 pt-2'>
+      <div className='h-1/2 '>
         {" "}
-        <div className='border-t-2 h-full '>
-          <div className=' flex flex-row'>
-            <Tabs
-              value={0}
-              aria-label='add project tabs'
-              indicatorColor='primary'
-              textColor='primary'
-              style={{ width: "min-content" }}
-            >
-              <Tab
-                label={<TabLabel label={"Response Body"} />}
-                style={{
-                  borderRight: `2px solid ${Colors.neutral.gray6}`,
-                  outline: "none",
-                }}
-              />
-            </Tabs>
-          </div>
-          <div className='p-2 h-full'>
-            {" "}
-            {/* <p className='p-2'>Status : 200</p> */}
-            <TextField
-              inputProps={{ readOnly: true }}
-              key={simulateData}
-              fullWidth
-              id='outlined-multiline-static'
-              multiline
-              rows={7}
-              value={responseData}
+        <div className=' flex flex-row mb-1'>
+          <Tabs
+            value={0}
+            aria-label='add project tabs'
+            indicatorColor='primary'
+            textColor='primary'
+            style={{ width: "min-content" }}
+          >
+            <Tab
+              label={<TabLabel label={"Response Body"} />}
+              // style={{
+              //   borderRight: `2px solid ${Colors.neutral.gray6}`,
+              //   outline: "none",
+              // }}
             />
-          </div>
+          </Tabs>
+        </div>
+        <div className=' h-full'>
+          {" "}
+          {/* <p className='p-2'>Status : 200</p> */}
+          <TextField
+            inputProps={{ readOnly: true }}
+            key={simulateData}
+            fullWidth
+            id='outlined-multiline-static'
+            multiline
+            rows={6}
+            value={responseData}
+          />
         </div>
       </div>
     </div>
