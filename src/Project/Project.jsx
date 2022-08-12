@@ -140,11 +140,9 @@ const Project = () => {
   useEffect(() => {
     if (currentTab == 1) {
       fetch(
-        process.env.REACT_APP_API_URL +
-          // "/virtualData?projectId=00d479e3-bb64-48ce-84e7-c28a4d8988c3",
-          process.env.REACT_APP_API_URL +
-          "/virtualData?projectId=" +
-          projectId,
+        // process.env.REACT_APP_API_URL +
+        // "/virtualData?projectId=00d479e3-bb64-48ce-84e7-c28a4d8988c3",
+        process.env.REACT_APP_API_URL + "/virtualData?projectId=" + projectId,
         {
           headers: {
             Authorization: `Bearer ${acc_token}`,
