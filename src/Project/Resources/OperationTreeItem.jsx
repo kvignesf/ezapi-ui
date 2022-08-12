@@ -110,7 +110,7 @@ const OperationTreeItem = ({
                   <ApiMethod type={type} style={{ marginRight: "0.5rem" }} />
 
                   <p className='text-overline2 overflow-hidden whitespace-nowrap overflow-ellipsis w-28'>
-                    {operation.operationName
+                    {operation?.operationName
                       ? operation.operationName
                       : operation}
                   </p>

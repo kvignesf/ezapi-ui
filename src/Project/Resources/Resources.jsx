@@ -85,7 +85,7 @@ const Resources = ({
       var tempEndpoint = item["endpoint"];
       var tempPath;
       if (tempEndpoint.includes("?")) {
-        tempPath = tempEndpoint.slice(
+        tempPath = tempEndpoint?.slice(
           tempEndpoint.indexOf("/") + 1,
           tempEndpoint.indexOf("?")
         );
@@ -330,7 +330,7 @@ const Resources = ({
                               ) {
                                 const operationNodeId = treeNodeIndex++;
 
-                                var opName = operation.operation_id.slice(
+                                var opName = operation?.operation_id?.slice(
                                   operation.operation_id.indexOf("/") + 1
                                 );
                                 return (
