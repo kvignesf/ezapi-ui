@@ -17,6 +17,8 @@ import {
   useSetRecoilState,
   useGetRecoilValueInfo_UNSTABLE,
 } from "recoil";
+import { getApiError } from "../shared/utils";
+
 import CloudUploadIcon from "@material-ui/icons/CloudUpload";
 import { ClassNames } from "@emotion/react";
 import classNames from "classnames";
@@ -141,7 +143,7 @@ const Project = () => {
     if (currentTab == 1) {
       fetch(
         // process.env.REACT_APP_API_URL +
-        // "/virtualData?projectId=00d479e3-bb64-48ce-84e7-c28a4d8988c3",
+        //   "/virtualData?projectId=00d479e3-bb64-48ce-84e7-c28a4d8988c3",
         process.env.REACT_APP_API_URL + "/virtualData?projectId=" + projectId,
         {
           headers: {
@@ -149,9 +151,23 @@ const Project = () => {
           },
         }
       )
-        .then((res) => res.json())
+        .then((res) => {
+          if (res.ok) {
+            console.log("ok");
+            return res.json();
+          } else {
+            console.log("not ok");
+            const error = (res && res.message) || res.status;
+            return Promise.reject(error);
+          }
+        })
         .then((result) => {
+          console.log(result);
           setSimulateVirtualData(result);
+        })
+        .catch((error) => {
+          console.error("There was an error!", error);
+          throw getApiError(error);
         });
     }
   }, [currentTab]);
