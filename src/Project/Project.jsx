@@ -127,6 +127,7 @@ const Project = () => {
   });
   const getRecoilValueInfo = useGetRecoilValueInfo_UNSTABLE();
   const [userRole, setRole] = useState(null);
+
   const [simulateVirtualData, setSimulateVirtualData] = useState(null);
   const [simulateData, setSimulateData] = useState(null);
   const [autoSyncIntervalId, setAutoSync] = useState(0);
@@ -142,9 +143,9 @@ const Project = () => {
   useEffect(() => {
     if (currentTab == 1) {
       fetch(
-        // process.env.REACT_APP_API_URL +
-        //   "/virtualData?projectId=00d479e3-bb64-48ce-84e7-c28a4d8988c3",
-        process.env.REACT_APP_API_URL + "virtualData?projectId=" + projectId,
+        process.env.REACT_APP_API_URL +
+          "/virtualData?projectId=00d479e3-bb64-48ce-84e7-c28a4d8988c3",
+        // process.env.REACT_APP_API_URL + "/virtualData?projectId=" + projectId,
         {
           headers: {
             Authorization: `Bearer ${acc_token}`,
@@ -153,18 +154,17 @@ const Project = () => {
       )
         .then((res) => {
           if (res.ok) {
-            console.log("ok");
             return res.json();
           } else {
-            console.log("not ok");
             const error = (res && res.message) || res.status;
             return Promise.reject(error);
           }
         })
         .then((result) => {
-          console.log(result);
           setSimulateVirtualData(result);
+          simulateAPI(result?.data?.[0]);
         })
+
         .catch((error) => {
           console.error("There was an error!", error);
           throw getApiError(error);
@@ -265,7 +265,6 @@ const Project = () => {
         operationAtomWithMiddleware
       );
       const operationState = operationAtomLoadable?.contents;
-      // console.log(operationState);
       const saveRequestApiRequest = generateSyncOperationRequestRequest(
         operationState?.operationRequest
       );
@@ -417,6 +416,39 @@ const Project = () => {
       type: "republish-status",
       data: null,
     });
+  };
+
+  const simulateAPI = (operation) => {
+    console.log("inside", operation);
+    fetch(process.env.REACT_APP_API_URL + "/simulate", {
+      headers: {
+        Authorization: `Bearer ${acc_token}`,
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+
+      body: JSON.stringify({
+        // projectId: projectId,
+        projectId: "00d479e3-bb64-48ce-84e7-c28a4d8988c3",
+        httpMethod: operation.httpMethod,
+        endpoint: operation.endpoint,
+      }),
+    })
+      .then((res) => {
+        if (res.ok) {
+          return res.json();
+        } else {
+          const error = (res && res.message) || res.status;
+          return Promise.reject(error);
+        }
+      })
+      .then((result) => {
+        setSimulateData(result?.data?.[0]);
+      })
+      .catch((error) => {
+        console.error("There was an error!", error);
+        throw getApiError(error);
+      });
   };
 
   return (
@@ -699,7 +731,6 @@ const Project = () => {
                 <Resources
                   className='h-full flex flex-col'
                   projectId={projectId}
-                  selectedIndex={operationState.operationIndex}
                   onOperationSelect={(index, resource, path, operation) => {
                     if (
                       index === null &&
@@ -729,26 +760,7 @@ const Project = () => {
                       }
                     }
                   }}
-                  onSimulateSelect={(operation) => {
-                    fetch(process.env.REACT_APP_API_URL + "simulate", {
-                      headers: {
-                        Authorization: `Bearer ${acc_token}`,
-                        "Content-Type": "application/json",
-                      },
-                      method: "POST",
-
-                      body: JSON.stringify({
-                        projectId: projectId,
-                        httpMethod: operation.httpMethod,
-                        endpoint: operation.endpoint,
-                      }),
-                    })
-                      .then((res) => res.json())
-                      .then((result) => {
-                        console.log(result.data[0]);
-                        setSimulateData(result.data[0]);
-                      });
-                  }}
+                  onSimulateSelect={(operation) => simulateAPI(operation)}
                   currentTab={currentTab}
                   simulateData={simulateVirtualData}
                 />

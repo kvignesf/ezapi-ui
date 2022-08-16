@@ -43,9 +43,17 @@ const syncOperation = async ({
       }
     );
 
+    const { data: saveSimulateArtefactsData } = await client.post(
+      `simulate_artefacts`,
+      {
+        projectId,
+      }
+    );
+
     return {
       saveRequestApiData,
       saveResponseApiData,
+      saveSimulateArtefactsData,
     };
   } catch (error) {
     throw getApiError(error);

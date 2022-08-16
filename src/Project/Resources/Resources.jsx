@@ -62,7 +62,7 @@ const Resources = ({
   const canEdit = useCanEdit();
 
   const [expanded, setExpanded] = React.useState([]);
-  const [expandNow, setExpandNow] = React.useState([]);
+  const [selectedEndpoint, setSelectedEndpoint] = React.useState(0);
   const [pathArr, setPathArr] = React.useState([]);
   const handleToggle = (event, nodeIds) => {
     setExpanded(nodeIds);
@@ -75,6 +75,7 @@ const Resources = ({
   };
   useEffect(() => {
     //console.log(treeNodeIndex);
+
     setExpanded((oldExpanded) =>
       oldExpanded.length === 0 ? Array.from(Array(1000).keys()) : []
     );
@@ -300,7 +301,6 @@ const Resources = ({
               <ArrowRightIcon style={{ color: Colors.neutral.gray3 }} />
             }
             style={{ pointerEvents: "auto" }}
-            selected={selectedIndex}
           >
             {pathArr && !_.isEmpty(pathArr)
               ? pathArr?.map((path, pathIndex) => {
@@ -337,7 +337,7 @@ const Resources = ({
                                   <OperationTreeItem
                                     key={operationNodeId}
                                     nodeId={operationNodeId}
-                                    // resourceId={resource?.resourceId}
+                                    selected={selectedEndpoint}
                                     pathId={path?.pathId}
                                     type={operation?.httpMethod.toUpperCase()}
                                     operation={opName}
@@ -347,7 +347,10 @@ const Resources = ({
                                     onClick={(e) => {
                                       e.stopPropagation();
 
-                                      onSimulateSelect(operation);
+                                      setSelectedEndpoint(operationIndex);
+                                      if (operationIndex != selectedEndpoint) {
+                                        onSimulateSelect(operation);
+                                      }
                                     }}
                                   />
                                 );

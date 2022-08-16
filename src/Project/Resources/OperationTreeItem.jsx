@@ -19,6 +19,7 @@ const OperationTreeItem = ({
   pathId,
   type,
   operation,
+  selected,
   resetSelectedOperation,
   ...rest
 }) => {
@@ -104,6 +105,7 @@ const OperationTreeItem = ({
         {({ isHovering }) => (
           <StyledTreeItem
             nodeId={nodeId}
+            selected={selected}
             label={
               <div className='flex flex-row items-center pr-1 h-6'>
                 <div className='flex flex-row flex-1 items-center'>
