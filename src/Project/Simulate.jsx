@@ -40,8 +40,12 @@ const Simulate = ({ simulateData }, props) => {
   const [apiButtonColor, setApiButtonColor] = useState("get");
 
   useEffect(() => {
-    // console.log(currentTab);
     setApiButtonColor(APIColor[simulateData?.httpMethod]);
+    // console.log(simulateData);
+    if (simulateData?.responseBody != responseData) {
+      setResponseData("");
+    }
+
     switch (currentTab) {
       case 0:
         setTextBoxValue(JSON.stringify(simulateData?.formData, null, 4));
