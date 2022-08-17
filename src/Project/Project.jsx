@@ -167,7 +167,7 @@ const Project = () => {
 
         .catch((error) => {
           console.error("There was an error!", error);
-          throw getApiError(error);
+          // throw getApiError(error);
         });
     }
   }, [currentTab]);
@@ -647,12 +647,14 @@ const Project = () => {
                   // textColor='primary'
                 />
 
-                <Tab
-                  label={<TabLabel label={"Simulate"} />}
-                  style={{ outline: "none", border: "none" }}
-                  // indicatorColor='primary'
-                  // textColor='primary'
-                />
+                {isOperationSelected() && (
+                  <Tab
+                    label={<TabLabel label={"Simulate"} />}
+                    style={{ outline: "none", border: "none" }}
+                    // indicatorColor='primary'
+                    // textColor='primary'
+                  />
+                )}
               </Tabs>
             </div>
 
