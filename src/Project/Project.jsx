@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useHistory, useParams } from "react-router";
+import { useGetResources } from "./Resources/resourcesQuery";
 import ArrowBackIcon from "@material-ui/icons/ArrowBack";
 import {
   CircularProgress,
@@ -71,7 +72,6 @@ import { getAccessToken, setUserId } from "../shared/storage";
 import Scrollbar from "react-smooth-scrollbar";
 
 const Project = () => {
-  // console.log("Project");
   const acc_token = getAccessToken();
   const { projectId } = useParams();
   const history = useHistory();
@@ -90,6 +90,15 @@ const Project = () => {
   const [operationState, setOperationState] = useRecoilState(
     operationAtomWithMiddleware
   );
+  const {
+    isLoading: isLoadingResources,
+    data: resources,
+    isFetching: isLoadingResourcesBg,
+    error: getResourcesError,
+  } = useGetResources(projectId, {
+    refetchOnWindowFocus: false,
+  });
+  console.log(resources);
   const {
     isLoading: isSyncingOperation,
     isSuccess: isSyncOperationSuccess,
@@ -382,6 +391,16 @@ const Project = () => {
       operationState?.path != null
     );
   };
+  const isOperationExists = () => {
+    var numberOfOp = 0;
+    resources?.map((resource) => {
+      resource?.path?.map((path) => {
+        numberOfOp = numberOfOp + path?.operations?.length;
+      });
+    });
+
+    return numberOfOp;
+  };
 
   const isPublishLimitReached = () => {
     return (
@@ -647,7 +666,7 @@ const Project = () => {
                   // textColor='primary'
                 />
 
-                {isOperationSelected() && (
+                {isOperationExists() && (
                   <Tab
                     label={<TabLabel label={"Simulate"} />}
                     style={{ outline: "none", border: "none" }}
