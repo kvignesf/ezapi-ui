@@ -46,7 +46,7 @@ const syncOperation = async ({
     const { data: saveSimulateArtefactsData } = await client.post(
       `simulation_artefacts`,
       {
-        projectId,
+        projectid: projectId,
       }
     );
 
