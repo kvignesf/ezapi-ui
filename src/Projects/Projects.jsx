@@ -39,6 +39,7 @@ import LoaderWithMessage from "../shared/components/LoaderWithMessage";
 import { getUserId } from "../shared/storage";
 import routes, { generateRoute } from "../shared/routes";
 import Logo from "../static/images/logo/svg.svg";
+import ApigeeLogo from "../static/images/logo/apigeeLogo.svg";
 import DatabaseLogo from "../static/images/logo/database_download.svg";
 import { useCanEdit } from "../shared/utils";
 import { getAccessToken } from "../shared/storage";
@@ -315,6 +316,33 @@ const ProjectRow = ({
                       e?.stopPropagation();
 
                       onDownloadDatabase();
+                    }}
+                  />
+                </div>
+              </Tooltip>
+            )}
+          {project?.status?.toLowerCase() === "complete" &&
+            project?.isConnectDB &&
+            (project?.datagen_count > 0 || project?.datagen_perf_count > 0) &&
+            project?.lastDataGenRequestOffline &&
+            !isDownloadingDatabase && (
+              <Tooltip title='Apigee Logo'>
+                <div
+                  style={{
+                    marginTop: "12px",
+                    width: "36px",
+                    height: "36px",
+                  }}
+                >
+                  <img
+                    src={ApigeeLogo}
+                    alt='Apigee logo'
+                    className='cursor-pointer'
+                    onClick={(e) => {
+                      e?.preventDefault();
+                      e?.stopPropagation();
+
+                      // onDownloadDatabase();
                     }}
                   />
                 </div>
