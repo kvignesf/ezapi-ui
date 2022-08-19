@@ -81,7 +81,7 @@ const Resources = ({
     );
   }, []);
   useEffect(() => {
-    var tempArr = [...pathArr];
+    var tempArr = [];
     simulateData?.data?.map((item) => {
       var tempEndpoint = item["endpoint"];
       var tempPath;
