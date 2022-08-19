@@ -98,7 +98,7 @@ const Project = () => {
   } = useGetResources(projectId, {
     refetchOnWindowFocus: false,
   });
-  console.log(resources);
+  // console.log(resources);
   const {
     isLoading: isSyncingOperation,
     isSuccess: isSyncOperationSuccess,
@@ -369,7 +369,7 @@ const Project = () => {
   const handleInviteClick = () => {
     async function projectdetails() {
       const { data } = await client.get(`${endpoint.project}/${projectId}`);
-      console.log(data?.["members"]);
+      // console.log(data?.["members"]);
       setMemberList(data?.["members"]);
       setDataFetched(true);
     }
@@ -438,7 +438,6 @@ const Project = () => {
   };
 
   const simulateAPI = (operation) => {
-    console.log("inside", operation);
     fetch(process.env.REACT_APP_API_URL + "/simulate", {
       headers: {
         Authorization: `Bearer ${acc_token}`,

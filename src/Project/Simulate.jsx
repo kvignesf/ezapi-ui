@@ -42,9 +42,6 @@ const Simulate = ({ simulateData }, props) => {
   useEffect(() => {
     setApiButtonColor(APIColor[simulateData?.httpMethod]);
     // console.log(simulateData);
-    if (simulateData?.responseBody != responseData) {
-      setResponseData("");
-    }
 
     switch (currentTab) {
       case 0:
@@ -60,6 +57,11 @@ const Simulate = ({ simulateData }, props) => {
         setTextBoxValue(JSON.stringify(simulateData?.formData, null, 4));
     }
   }, [currentTab, simulateData]);
+  useEffect(() => {
+    if (simulateData?.responseBody != responseData) {
+      setResponseData("");
+    }
+  }, [simulateData]);
   const height = 42;
 
   const labelOffset = -6;
@@ -116,11 +118,25 @@ const Simulate = ({ simulateData }, props) => {
             value={simulateData?.endpoint}
           />
           <PrimaryButton
-            onClick={() =>
-              setResponseData(
-                JSON.stringify(simulateData?.responseBody, null, 4)
-              )
-            }
+            onClick={() => {
+              if (
+                document.getElementById("responseBodyTextField").value == "" &&
+                responseData == ""
+              ) {
+                setResponseData(
+                  JSON.stringify(simulateData?.responseBody, null, 4)
+                );
+              } else {
+                document.getElementById("responseBodyTextField").value = "";
+                setTimeout(() => {
+                  setResponseData(
+                    JSON.stringify(simulateData?.responseBody, null, 4)
+                  );
+                  document.getElementById("responseBodyTextField").value =
+                    responseData;
+                }, 250);
+              }
+            }}
           >
             SEND
           </PrimaryButton>
@@ -158,7 +174,7 @@ const Simulate = ({ simulateData }, props) => {
             inputProps={{ readOnly: true }}
             key={simulateData}
             fullWidth
-            id='outlined-multiline-static'
+            // id='responseBodyTextField'
             multiline
             rows={6}
             value={textBoxValue}
@@ -192,7 +208,7 @@ const Simulate = ({ simulateData }, props) => {
             inputProps={{ readOnly: true }}
             key={simulateData}
             fullWidth
-            id='outlined-multiline-static'
+            id='responseBodyTextField'
             multiline
             rows={6}
             value={responseData}

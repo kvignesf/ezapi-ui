@@ -1,17 +1,17 @@
-import { useStripe } from '@stripe/react-stripe-js';
-import _ from 'lodash';
-import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { useHistory, useParams } from 'react-router-dom';
-import { useRecoilValue } from 'recoil';
-import Messages from '../shared/messages';
-import { getAccessToken } from '../shared/storage';
+import { useStripe } from "@stripe/react-stripe-js";
+import _ from "lodash";
+import { useMutation, useQuery, useQueryClient } from "react-query";
+import { useHistory, useParams } from "react-router-dom";
+import { useRecoilValue } from "recoil";
+import Messages from "../shared/messages";
+import { getAccessToken } from "../shared/storage";
 
-import client, { endpoint } from '../shared/network/client';
-import { clearQueryCache, queries } from '../shared/network/queryClient';
-import routes from '../shared/routes';
-import { clearSession, setAccessToken } from '../shared/storage';
-import { getApiError, delay } from '../shared/utils';
-import { CircleNotificationsOutlined } from '@mui/icons-material';
+import client, { endpoint } from "../shared/network/client";
+import { clearQueryCache, queries } from "../shared/network/queryClient";
+import routes from "../shared/routes";
+import { clearSession, setAccessToken } from "../shared/storage";
+import { getApiError, delay } from "../shared/utils";
+import { CircleNotificationsOutlined } from "@mui/icons-material";
 
 const getProducts = async () => {
   try {
@@ -93,13 +93,13 @@ const initiatePayment = async ({
       }
     );
     await delay(1000);
-    console.log(currentPlan);
-    if (currentPlan == '') {
+    // console.log(currentPlan);
+    if (currentPlan == "") {
       update_planFlag = false;
     } else {
       update_planFlag = true;
     }
-    console.log(update_planFlag);
+    // console.log(update_planFlag);
     const subscribeData = await client.post(
       endpoint.subscribe,
       {
@@ -112,8 +112,8 @@ const initiatePayment = async ({
         },
       }
     );
-    console.log(addCardResponse);
-    console.log(subscribeData);
+    // console.log(addCardResponse);
+    // console.log(subscribeData);
     return [addCardResponse, subscribeData];
   } catch (error) {
     throw getApiError(error);
