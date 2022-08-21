@@ -108,7 +108,6 @@ const Pricing = () => {
   const [basicButton, setBasicButton] = React.useState("SUBSCRIBE");
   const [pocButton, setPOCButton] = React.useState("SUBSCRIBE");
   const [proButton, setProButton] = React.useState("SUBSCRIBE");
-  const [pocButton, setPOCButton] = React.useState("SUBSCRIBE");
   //const [user_id, setUserId] = useState();
 
   const planTypeCardData2 = [];
