@@ -3,14 +3,17 @@ before_script:
   - 'echo \REACT_APP_API_URL\ = \"$APIURL\">> .env.test'
   - 'echo \REACT_APP_LINKEDIN_CLIENT_ID\ = \"$LINKEDINCLIENTID\">> .env.test'
   - 'echo \REACT_APP_STRIPE_KEY\ = \"$REACT_APP_STRIPE_TEST_KEY\">> .env.test'
+  - 'echo \REACT_APP_DEPLOY_ENV\ = \"$TREACT_APP_DEPLOY_ENV\">> .env.test'
   -  cat .env.test
   - 'echo \REACT_APP_API_URL\ = \"$SAPIURL\">> .env.stage'
   - 'echo \REACT_APP_LINKEDIN_CLIENT_ID\ = \"$SLINKEDINCLIENTID\">> .env.stage'
   - 'echo \REACT_APP_STRIPE_KEY\ = \"$REACT_APP_STRIPE_TEST_KEY\">> .env.stage'
+  - 'echo \REACT_APP_DEPLOY_ENV\ = \"$SREACT_APP_DEPLOY_ENV\">> .env.stage'
   -  cat .env.stage  
   - 'echo \REACT_APP_API_URL\ = \"$PAPIURL\">> .env.prod'
   - 'echo \REACT_APP_LINKEDIN_CLIENT_ID\ = \"$PLINKEDINCLIENTID\">> .env.prod'
   - 'echo \REACT_APP_STRIPE_KEY\ = \"$REACT_APP_STRIPE_KEY\">> .env.prod'
+  - 'echo \REACT_APP_DEPLOY_ENV\ = \"$PREACT_APP_DEPLOY_ENV\">> .env.prod'
   -  cat .env.prod
 include:
   project: 'ezapi_poc/infra_poc'
