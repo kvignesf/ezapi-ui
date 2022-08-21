@@ -1,16 +1,16 @@
-import _ from 'lodash';
-import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { useHistory } from 'react-router-dom';
-import { useRecoilValue } from 'recoil';
+import _ from "lodash";
+import { useMutation, useQuery, useQueryClient } from "react-query";
+import { useHistory } from "react-router-dom";
+import { useRecoilValue } from "recoil";
 
-import client, { endpoint } from '../shared/network/client';
-import { clearQueryCache, queries } from '../shared/network/queryClient';
-import routes from '../shared/routes';
-import { clearSession, setAccessToken } from '../shared/storage';
-import { getApiError } from '../shared/utils';
-import projectAtom from './projectAtom';
-import Snackbar from '@mui/material/Snackbar';
-import { getUserId } from '../shared/storage';
+import client, { endpoint } from "../shared/network/client";
+import { clearQueryCache, queries } from "../shared/network/queryClient";
+import routes from "../shared/routes";
+import { clearSession, setAccessToken } from "../shared/storage";
+import { getApiError } from "../shared/utils";
+import projectAtom from "./projectAtom";
+import Snackbar from "@mui/material/Snackbar";
+import { getUserId } from "../shared/storage";
 
 let keyPath, certPath, caCertPath, savedProjectId;
 
@@ -38,14 +38,14 @@ const userProfile = async () => {
 export const usePricingData = () => {
   return useQuery([queries.products], pricingData, {
     refetchOnWindowFocus: false,
-    fetchPolicy: "no-cache", 
+    fetchPolicy: "no-cache",
   });
 };
 
 export const useUserProfile = () => {
   return useQuery([queries.userProfile], userProfile, {
     refetchOnWindowFocus: false,
-    fetchPolicy: "no-cache", 
+    fetchPolicy: "no-cache",
   });
 };
 
@@ -108,13 +108,14 @@ export const useExportDBSchema = (aiMutation, onSuccess) => {
   return mutation;
 };
 
-const addProject = async ({ name, invitees }) => {
+const addProject = async ({ name, invitees, isDesign }) => {
   try {
     const { data } = await client.post(
       endpoint.project,
       {
         projectName: name,
         invites: invitees,
+        isDesign: isDesign,
       },
       {
         timeout: 90000,
@@ -193,10 +194,10 @@ export const useAddProject = (onSuccess) => {
             dbtype: projectDetails?.dbType,
           });
         } else if (
-          !_.isEmpty(projectDetails?.host) &&
-          !_.isEmpty(projectDetails?.port) &&
-          !_.isEmpty(projectDetails?.username) &&
-          !_.isEmpty(projectDetails?.database) &&
+          !_.isEmpty(projectDetails?.host) ||
+          !_.isEmpty(projectDetails?.port) ||
+          !_.isEmpty(projectDetails?.username) ||
+          !_.isEmpty(projectDetails?.database) ||
           !_.isEmpty(projectDetails?.type)
         ) {
           if (
@@ -213,16 +214,16 @@ export const useAddProject = (onSuccess) => {
           } else {
             exportDBSchemaMutation.mutate({
               projectId: data?.projectId,
-              sslMode: 'N',
+              sslMode: "N",
               server: projectDetails?.host,
               port: projectDetails?.port,
               username: projectDetails?.username,
               password: projectDetails?.password,
               database: projectDetails?.database,
               type: projectDetails?.type,
-              keyPath: '',
-              certPath: '',
-              rootPath: '',
+              keyPath: "",
+              certPath: "",
+              rootPath: "",
             });
           }
         } else {
@@ -248,16 +249,16 @@ export const useAddProject = (onSuccess) => {
 
 const uploadProjectKey = async ({ projectId, file, userId, test }) => {
   const bodyFormData = new FormData();
-  bodyFormData.append('upload', file);
-  bodyFormData.append('userid', userId);
-  bodyFormData.append('test', test);
+  bodyFormData.append("upload", file);
+  bodyFormData.append("userid", userId);
+  bodyFormData.append("test", test);
   try {
     const { data } = await client.post(
       endpoint.projects + `/${projectId}/upload_To_GCP`,
       bodyFormData,
       {
         headers: {
-          'Content-Type': 'multipart/form-data',
+          "Content-Type": "multipart/form-data",
         },
         timeout: 480000,
       }
@@ -270,9 +271,9 @@ const uploadProjectKey = async ({ projectId, file, userId, test }) => {
 
 const uploadProjectCertificate = async ({ projectId, file, userId, test }) => {
   const bodyFormData = new FormData();
-  bodyFormData.append('upload', file);
-  bodyFormData.append('userid', userId);
-  bodyFormData.append('test', test);
+  bodyFormData.append("upload", file);
+  bodyFormData.append("userid", userId);
+  bodyFormData.append("test", test);
 
   try {
     const { data } = await client.post(
@@ -280,7 +281,7 @@ const uploadProjectCertificate = async ({ projectId, file, userId, test }) => {
       bodyFormData,
       {
         headers: {
-          'Content-Type': 'multipart/form-data',
+          "Content-Type": "multipart/form-data",
         },
         timeout: 480000,
       }
@@ -298,16 +299,16 @@ const uploadProjectCACertificate = async ({
   test,
 }) => {
   const bodyFormData = new FormData();
-  bodyFormData.append('upload', file);
-  bodyFormData.append('userid', userId);
-  bodyFormData.append('test', test);
+  bodyFormData.append("upload", file);
+  bodyFormData.append("userid", userId);
+  bodyFormData.append("test", test);
   try {
     const { data } = await client.post(
       endpoint.projects + `/${projectId}/upload_To_GCP`,
       bodyFormData,
       {
         headers: {
-          'Content-Type': 'multipart/form-data',
+          "Content-Type": "multipart/form-data",
         },
         timeout: 480000,
       }
@@ -322,10 +323,10 @@ const uploadProjectSpecs = async ({ projectId, files }) => {
   const bodyFormData = new FormData();
 
   files.forEach((file) => {
-    bodyFormData.append('upload', file);
+    bodyFormData.append("upload", file);
   });
-  bodyFormData.append('type', 'apiSpec');
-  bodyFormData.append('dbtype', 'spec');
+  bodyFormData.append("type", "apiSpec");
+  bodyFormData.append("dbtype", "spec");
 
   try {
     const { data } = await client.post(
@@ -333,7 +334,7 @@ const uploadProjectSpecs = async ({ projectId, files }) => {
       bodyFormData,
       {
         headers: {
-          'Content-Type': 'multipart/form-data',
+          "Content-Type": "multipart/form-data",
         },
         timeout: 480000,
       }
@@ -442,7 +443,7 @@ export const useUploadProjectCACertificate = (
         } else if (keyPath && certPath && caCertPath) {
           exportDBSchemaMutation.mutate({
             projectId: savedProjectId,
-            sslMode: 'Y',
+            sslMode: "Y",
             server: projectDetails?.host,
             port: projectDetails?.port,
             username: projectDetails?.username,
@@ -482,11 +483,10 @@ export const useUploadProjectSpecs = (
             dbtype: projectDetails?.dbType,
           });
         } else if (
-          !_.isEmpty(projectDetails?.specs) &&
-          !_.isEmpty(projectDetails?.host) &&
-          !_.isEmpty(projectDetails?.port) &&
-          !_.isEmpty(projectDetails?.username) &&
-          !_.isEmpty(projectDetails?.database) &&
+          !_.isEmpty(projectDetails?.host) ||
+          !_.isEmpty(projectDetails?.port) ||
+          !_.isEmpty(projectDetails?.username) ||
+          !_.isEmpty(projectDetails?.database) ||
           !_.isEmpty(projectDetails?.type)
         ) {
           if (
@@ -502,16 +502,16 @@ export const useUploadProjectSpecs = (
           } else {
             exportDBSchemaMutation.mutate({
               projectId: data?.projectId,
-              sslMode: 'N',
+              sslMode: "N",
               server: projectDetails?.host,
               port: projectDetails?.port,
               username: projectDetails?.username,
               password: projectDetails?.password,
               database: projectDetails?.database,
               type: projectDetails?.type,
-              keyPath: '',
-              certPath: '',
-              rootPath: '',
+              keyPath: "",
+              certPath: "",
+              rootPath: "",
             });
           }
         } else {
@@ -529,11 +529,11 @@ const uploadProjectDbs = async ({ projectId, files, dbtype }) => {
   const bodyFormData = new FormData();
 
   files.forEach((file) => {
-    bodyFormData.append('upload', file);
+    bodyFormData.append("upload", file);
   });
 
-  bodyFormData.append('type', 'db');
-  bodyFormData.append('dbtype', dbtype);
+  bodyFormData.append("type", "db");
+  bodyFormData.append("dbtype", dbtype);
 
   try {
     const { data } = await client.post(
@@ -541,7 +541,7 @@ const uploadProjectDbs = async ({ projectId, files, dbtype }) => {
       bodyFormData,
       {
         headers: {
-          'Content-Type': 'multipart/form-data',
+          "Content-Type": "multipart/form-data",
         },
         timeout: 480000,
       }

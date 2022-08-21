@@ -40,7 +40,6 @@ const PublishProjectMessage = ({
     );
   };
 
-
   const isPublishLimitReached = () => {
     return (
       publishProjectError?.response?.data?.errorType === "PUBLISH_LIMIT_REACHED"

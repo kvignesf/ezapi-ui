@@ -13,6 +13,7 @@ export const queries = {
   orders: "orders",
   productVideos: "productVideos",
   userProfile: "userProfile",
+  customParameters:"customParameters"
 };
 
 const queryClient = new QueryClient({

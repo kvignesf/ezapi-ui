@@ -1,5 +1,9 @@
 import React, { useState, useCallback, useEffect } from "react";
-import { useRecoilValue, useRecoilState, useGetRecoilValueInfo_UNSTABLE } from "recoil";
+import {
+  useRecoilValue,
+  useRecoilState,
+  useGetRecoilValueInfo_UNSTABLE,
+} from "recoil";
 import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
 import TableCell from "@material-ui/core/TableCell";
@@ -22,6 +26,7 @@ import {
   operationAtomWithMiddleware,
   useGetFullPath,
   isItemSame,
+  isCustomParam,
 } from "../../../shared/utils";
 import DragAndDropMessage from "../../../shared/components/DragAndDropMessage";
 import Row from "../Row";
@@ -29,7 +34,6 @@ import schemaAtom from "../../../shared/atom/schemaAtom";
 import tableAtom from "../../../shared/atom/tableAtom";
 import primaryAtom from "../../../shared/atom/primaryAtom";
 import tablesDataAtom from "../../../shared/atom/tablesDataAtom";
-
 
 const PathParams = ({ request = true }) => {
   const [operationDetails, setOperationDetails] = useRecoilState(
@@ -42,30 +46,31 @@ const PathParams = ({ request = true }) => {
   const { fetch: fetchParentName } = useGetParentName();
   const { fetch: fetchFullPath } = useGetFullPath();
 
-  let final_arr = []
   const itemDropped = (item) => {
-    if(isColumn(item)){
-      if(item?.foreign)
-      {
-        final_arr.push(item?.foreign?.table);        
-        let condition = tablesData.filter((table)=>{
-          return table.name === item.foreign.table
-        })[0].selectedColumns.filter((column)=>{
-          return column.name === item.foreign.column
-        })[0]
-        
-        while(condition?.foreign){       
-        final_arr.push(condition.foreign.table);
-        condition = tablesData.filter((table)=>{
-          return table.name === condition.foreign.table
-        })[0].selectedColumns.filter((column)=>{
-          return column.name === condition.foreign.column
-        })[0]
-       
-      }
-      }
-      else{
-        final_arr = []
+    let final_arr = [];
+    if (isColumn(item)) {
+      if (item?.foreign) {
+        final_arr.push(item?.foreign?.table);
+        let condition = tablesData
+          .filter((table) => {
+            return table.name === item.foreign.table;
+          })[0]
+          .selectedColumns.filter((column) => {
+            return column.name === item.foreign.column;
+          })[0];
+
+        while (condition?.foreign) {
+          final_arr.push(condition.foreign.table);
+          condition = tablesData
+            .filter((table) => {
+              return table.name === condition.foreign.table;
+            })[0]
+            .selectedColumns.filter((column) => {
+              return column.name === condition.foreign.column;
+            })[0];
+        }
+      } else {
+        final_arr = [];
       }
       setPrimaryKeyRef(final_arr);
     }
@@ -291,7 +296,7 @@ const PathParams = ({ request = true }) => {
     >
       <TableContainer
         style={{
-          maxHeight: height > 750 ? "27vh" : height > 600 ? "23vh" : "20vh",
+          maxHeight: height > 750 ? "27vh" : height > 600 ? "24vh" : "20vh",
         }}
       >
         <Table
@@ -329,7 +334,7 @@ const PathParams = ({ request = true }) => {
                         onDescriptionUpdate(item, value);
                       }}
                       onRequiredUpdate={(item, value) => {
-                        // onRequiredUpdate(item, value);
+                        onRequiredUpdate(item, value);
                       }}
                       onNameUpdate={(item, name) => {
                         onNameUpdate(item, name);
@@ -343,7 +348,12 @@ const PathParams = ({ request = true }) => {
 
           {!request &&
             !_.isEmpty(operationDetails?.operationResponse?.pathParams) && (
-              <TableBody className='w-full max-h-6'>
+              <TableBody
+                style={{
+                  overflowX: "auto",
+                }}
+                className='w-full max-h-6'
+              >
                 {operationDetails?.operationResponse?.pathParams?.map((row) => {
                   return (
                     <Row
@@ -353,7 +363,7 @@ const PathParams = ({ request = true }) => {
                         onDescriptionUpdate(item, value);
                       }}
                       onRequiredUpdate={(item, value) => {
-                        // onRequiredUpdate(item, value);
+                        onRequiredUpdate(item, value);
                       }}
                       isNameTaken={isNameTaken}
                     />

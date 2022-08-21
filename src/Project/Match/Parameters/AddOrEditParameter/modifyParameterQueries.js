@@ -28,7 +28,7 @@ const addParameter = async ({
     });
     return data;
   } catch (error) {
-    throw getApiError(error);
+    throw error;
   }
 };
 

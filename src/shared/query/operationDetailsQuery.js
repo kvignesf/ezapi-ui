@@ -15,6 +15,7 @@ import {
 const syncOperation = async ({
   projectId,
   resourceId,
+
   pathId,
   operationId,
   requestData,
@@ -27,6 +28,7 @@ const syncOperation = async ({
         projectId,
         resourceId,
         pathId,
+
         ...requestData,
       }
     );
@@ -41,9 +43,17 @@ const syncOperation = async ({
       }
     );
 
+    const { data: saveSimulateArtefactsData } = await client.post(
+      `simulation_artefacts`,
+      {
+        projectid: projectId,
+      }
+    );
+
     return {
       saveRequestApiData,
       saveResponseApiData,
+      saveSimulateArtefactsData,
     };
   } catch (error) {
     throw getApiError(error);
@@ -60,7 +70,7 @@ export const useSyncOperation = () => {
         operationAtomWithMiddleware
       );
       const clonedOperationState = _.cloneDeep(operationAtomLoadable?.contents);
-
+      // console.log(clonedOperationState);
       clonedOperationState.isModified = false;
 
       setOperationState(clonedOperationState);
@@ -70,7 +80,13 @@ export const useSyncOperation = () => {
   return mutation;
 };
 
-const getOperation = async ({ projectId, resourceId, pathId, operationId }) => {
+export const getOperation = async ({
+  projectId,
+  resourceId,
+  pathId,
+  operationId,
+  endpoint,
+}) => {
   try {
     const { data: getRequestApiData } = await client.post(
       `/operationData/request/${operationId}`,
@@ -100,12 +116,10 @@ export const useGetOperation = () => {
         setOperationState((operationState) => {
           const clonedOperationState = _.cloneDeep(operationState);
           const parsedOperationRequest = parseGetOperationRequestResponse(
-            data?.getRequestApiData?.requestBody
+            data?.getRequestApiData
           );
-
           clonedOperationState.operationRequest = parsedOperationRequest;
           clonedOperationState.projectId = variables?.projectId;
-
           return clonedOperationState;
         });
       }

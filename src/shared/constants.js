@@ -12,11 +12,14 @@ const Constants = {
   allResponses: responses,
   mandatoryResponse: responses[0],
   parameterDataTypes: [
+    "array",
+    "object",
     "integer",
     "long",
     "float",
     "double",
     "string",
+
     "byte",
     "binary",
     "boolean",
@@ -24,7 +27,15 @@ const Constants = {
     "dateTime",
     "password",
   ],
+  customParameterDataTypes:["integer", "array"],
   acceptedTypes: ["integer", "number", "string", "boolean"],
+  bodyAcceptedTypes:["array","object"],
+  customParameterFunctionTypes: {
+    integer: ["count", "sum", "min", "max", "average"],
+    array: ["distinct", "top10"]
+  },
+  customParametersConditionKeys:[">", "<", "=", "Null", "NotNull"],
+  customParamtersFilterRelations:["AND", "OR"]
 };
 
 export default Constants;
