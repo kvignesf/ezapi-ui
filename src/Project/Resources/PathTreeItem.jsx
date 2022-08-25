@@ -17,10 +17,11 @@ import { useCanEdit } from "../../shared/utils";
 import { PatternSharp } from "@mui/icons-material";
 
 const PathTreeItem = ({
+  currentTab,
   nodeId,
   resourceId,
   path,
-  currentTab,
+
   children,
   resetSelectedOperation,
   ...rest
@@ -132,7 +133,7 @@ const PathTreeItem = ({
                   </p>
                 </div>
 
-                {isHovering && canEdit() && (
+                {isHovering && currentTab == 0 && canEdit() && (
                   <div>
                     <AppIcon
                       onClick={handleAddOperationClick}
@@ -148,7 +149,7 @@ const PathTreeItem = ({
                   </div>
                 )}
 
-                {isHovering && canEdit() && (
+                {isHovering && currentTab == 0 && canEdit() && (
                   <div>
                     <AppIcon onClick={handleMenuClick}>
                       <MoreVertIcon

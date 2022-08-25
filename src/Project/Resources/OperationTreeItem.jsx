@@ -14,6 +14,7 @@ import DeleteOperation from "./DeleteOperation";
 import { useCanEdit } from "../../shared/utils";
 import "./OperationTreeItem.css";
 const OperationTreeItem = ({
+  currentTab,
   nodeId,
   resourceId,
   pathId,
@@ -118,7 +119,7 @@ const OperationTreeItem = ({
                   </p>
                 </div>
 
-                {isHovering && canEdit() && (
+                {isHovering && currentTab == 0 && canEdit() && (
                   <div>
                     <AppIcon onClick={handleMenuClick}>
                       <MoreVertIcon

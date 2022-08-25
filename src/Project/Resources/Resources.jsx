@@ -170,7 +170,7 @@ const Resources = ({
           <CircularProgress size='16px' className='mr-2' />
         )}
 
-        {canEdit() && (
+        {canEdit() && currentTab == 0 && (
           <AppIcon
             style={{ padding: "0", margin: "0" }}
             onClick={showAddResourceDialog}
@@ -201,6 +201,7 @@ const Resources = ({
               // console.log(resource);
               return (
                 <ResourceTreeItem
+                  currentTab={currentTab}
                   key={resourceNodeIndex}
                   nodeId={resourceNodeIndex}
                   resource={resource}
@@ -218,6 +219,7 @@ const Resources = ({
 
                         return (
                           <PathTreeItem
+                            currentTab={currentTab}
                             key={pathNodeId}
                             nodeId={pathNodeId}
                             resourceId={resource?.resourceId}
@@ -237,6 +239,7 @@ const Resources = ({
 
                                     return (
                                       <OperationTreeItem
+                                        currentTab={currentTab}
                                         key={operationNodeId}
                                         nodeId={operationNodeId}
                                         resourceId={resource?.resourceId}
