@@ -1,10 +1,4 @@
-import {
-  Fade,
-  Menu,
-  MenuItem,
-  Select,
-  TextField,
-} from "@material-ui/core";
+import { Fade, Menu, MenuItem, Select, TextField } from "@material-ui/core";
 import { ErrorMessage, Field } from "formik";
 import React, { useState } from "react";
 import MoreVertIcon from "@material-ui/icons/MoreVert";
@@ -30,54 +24,44 @@ const FilterItem = ({
   const canEdit = useCanEdit();
   const [menuAnchorEl, setMenuAnchorEl] = useState(false);
   return (
-    <div className="flex flex-row justify-items-stretch mb-8">
-      <div
-        key={index}
-        className="flex flex-row justify-items-stretch mb-8"
-      >
-        <div className="w-20 mr-5">
+    <div className='flex flex-row justify-items-stretch mb-8'>
+      <div key={index} className='flex flex-row justify-items-stretch mb-8'>
+        <div className='w-20 mr-5'>
           {index !== 0 && (
             <Field
               id={`filters.${index}.relation`}
               name={`filters.${index}.relation`}
               style={{ height: "44px" }}
               fullWidth
-              color="primary"
-              variant="outlined"
+              color='primary'
+              variant='outlined'
               onChange={(e) => {
                 handleChange(e);
                 setTimeout(() => {
                   isAlreadyChecked &&
-                    validateFilters(
-                      formRef.current.values.filters
-                    );
+                    validateFilters(formRef.current.values.filters);
                 }, 600);
               }}
-              disabled={
-                isAddingCustomParameter ||
-                isEditingCustomParameter
-              }
+              disabled={isAddingCustomParameter || isEditingCustomParameter}
               error={filterErrors[index]?.relation}
-              helperText={<ErrorMessage name="relation" />}
+              helperText={<ErrorMessage name='relation' />}
               // onKeyUp={(e) => {
               //   resetMutationState();
               // }}
 
               as={(value) => {
                 return (
-                  <div className="flex flex-col">
+                  <div className='flex flex-col'>
                     <Select
                       labelId={`select.${index}.relation`}
                       id={`select.${index}.relation`}
-                      variant="outlined"
-                      className="w-full"
+                      variant='outlined'
+                      className='w-full'
                       onChange={(e) => {
                         handleChange(e);
                         setTimeout(() => {
                           isAlreadyChecked &&
-                            validateFilters(
-                              formRef.current.values.filters
-                            );
+                            validateFilters(formRef.current.values.filters);
                         }, 600);
                       }}
                       {...value}
@@ -85,10 +69,7 @@ const FilterItem = ({
                       {Constants.customParamtersFilterRelations.map(
                         (key, index) => {
                           return (
-                            <MenuItem
-                              key={index}
-                              value={key}
-                            >
+                            <MenuItem key={index} value={key}>
                               {key}
                             </MenuItem>
                           );
@@ -97,7 +78,7 @@ const FilterItem = ({
                     </Select>
                     {filterErrors?.[index]?.relation && (
                       <p
-                        className="py-1"
+                        className='py-1'
                         style={{
                           fontSize: "0.75rem",
                           marginLeft: "1rem",
@@ -113,61 +94,49 @@ const FilterItem = ({
             />
           )}
         </div>
-        <div className="mt-2 mr-4" style={{ width: "73%" }}>
-          <div className="mb-4">
-            <p className="text-overline2 mb-1">
-              Column Name
-            </p>
+        <div className='mt-2 mr-4' style={{ width: "73%" }}>
+          <div className='mb-4'>
+            <p className='text-overline2 mb-1'>Column Name</p>
             <Field
               id={`filters.${index}.columnName`}
               name={`filters.${index}.columnName`}
               style={{ height: "48px" }}
               fullWidth
-              color="primary"
-              variant="outlined"
+              color='primary'
+              variant='outlined'
               onChange={(e) => {
                 handleChange(e);
                 setTimeout(() => {
                   isAlreadyChecked &&
-                    validateFilters(
-                      formRef.current.values.filters
-                    );
+                    validateFilters(formRef.current.values.filters);
                 }, 500);
               }}
-              disabled={
-                isAddingCustomParameter ||
-                isEditingCustomParameter
-              }
+              disabled={isAddingCustomParameter || isEditingCustomParameter}
               error={filterErrors[index]?.columnName}
               onKeyUp={(e) => {
                 resetMutationState();
               }}
               as={(value) => {
                 return (
-                  <div className="flex flex-col">
+                  <div className='flex flex-col'>
                     <Select
                       labelId={`filters.${index}.columnName`}
                       id={`filters.${index}.columnName`}
-                      variant="outlined"
-                      className="w-full"
+                      variant='outlined'
+                      className='w-full'
                       {...value}
                     >
-                      {filterColumns?.map(
-                        (column, index) => {
-                          return (
-                            <MenuItem
-                              key={index}
-                              value={column.name}
-                            >
-                              {column.name}
-                            </MenuItem>
-                          );
-                        }
-                      )}
+                      {filterColumns?.map((column, index) => {
+                        return (
+                          <MenuItem key={index} value={column.name}>
+                            {column.name}
+                          </MenuItem>
+                        );
+                      })}
                     </Select>
                     {filterErrors?.[index] && (
                       <p
-                        className="py-1"
+                        className='py-1'
                         style={{
                           fontSize: "0.75rem",
                           marginLeft: "1rem",
@@ -182,72 +151,70 @@ const FilterItem = ({
               }}
             />
           </div>
-          <div className="flex flex-row w-full">
-            <div className="mr-4 w-2/5">
-              <p className="text-overline2 mb-1">
-                Condition Key
-              </p>
+          <div className='flex flex-row w-full'>
+            <div className='mr-4 w-2/5'>
+              <p className='text-overline2 mb-1'>Condition Key</p>
               <Field
                 id={`filters.${index}.conditionKey`}
                 name={`filters.${index}.conditionKey`}
                 style={{ height: "44px" }}
                 fullWidth
-                color="primary"
-                variant="outlined"
+                color='primary'
+                variant='outlined'
                 onChange={(e) => {
+                  if (e.target.value == "Null" || e.target.value == "NotNull") {
+                    formRef.current.values.filters[index].value =
+                      e.target.value;
+                  } else {
+                    if (
+                      formRef.current.values.filters[index].value == "Null" ||
+                      formRef.current.values.filters[index].value == "NotNull"
+                    ) {
+                      formRef.current.values.filters[index].value = "";
+                    }
+                  }
                   handleChange(e);
                   setTimeout(() => {
                     isAlreadyChecked &&
-                      validateFilters(
-                        formRef.current.values.filters
-                      );
+                      validateFilters(formRef.current.values.filters);
                   }, 500);
                 }}
                 // disabled={isAddingCustomParameter || isEditingCustomParameter}
                 error={filterErrors[index]?.conditionKey}
-                helperText={
-                  <ErrorMessage name="attribute" />
-                }
+                helperText={<ErrorMessage name='attribute' />}
                 onKeyUp={(e) => {
                   resetMutationState();
                 }}
                 as={(value) => {
                   return (
-                    <div className="flex flex-col">
+                    <div className='flex flex-col'>
                       <Select
                         labelId={`select.${index}.conditionKey`}
                         id={`select.${index}.conditionKey`}
-                        variant="outlined"
-                        className="w-full"
+                        variant='outlined'
+                        className='w-full'
                         {...value}
                       >
                         {Constants.customParametersConditionKeys.map(
                           (key, index) => {
                             return (
-                              <MenuItem
-                                key={index}
-                                value={key}
-                              >
+                              <MenuItem key={index} value={key}>
                                 {key}
                               </MenuItem>
                             );
                           }
                         )}
                       </Select>
-                      {filterErrors?.[index]
-                        ?.conditionKey && (
+                      {filterErrors?.[index]?.conditionKey && (
                         <p
-                          className="py-1"
+                          className='py-1'
                           style={{
                             fontSize: "0.75rem",
                             marginLeft: "1rem",
                             color: "#f44336",
                           }}
                         >
-                          {
-                            filterErrors?.[index]
-                              ?.conditionKey
-                          }
+                          {filterErrors?.[index]?.conditionKey}
                         </p>
                       )}
                     </div>
@@ -255,29 +222,25 @@ const FilterItem = ({
                 }}
               />
             </div>
-            <div className="ml-4 w-3/5">
-              <p className="text-overline2 mb-1">Value</p>
+            <div className='ml-4 w-3/5'>
+              <p className='text-overline2 mb-1'>Value</p>
               <Field
                 id={`filters.${index}.value`}
                 name={`filters.${index}.value`}
                 style={{ height: "48px" }}
                 fullWidth
-                color="primary"
-                variant="outlined"
+                color='primary'
+                variant='outlined'
                 onChange={(e) => {
                   handleChange(e);
                   setTimeout(() => {
                     isAlreadyChecked &&
-                      validateFilters(
-                        formRef.current.values.filters
-                      );
+                      validateFilters(formRef.current.values.filters);
                   }, 500);
                 }}
                 // disabled={isAddingCustomParameter || isEditingCustomParameter}
                 error={filterErrors[index]?.value}
-                helperText={
-                  <ErrorMessage name="attribute" />
-                }
+                helperText={<ErrorMessage name='attribute' />}
                 onKeyUp={(e) => {
                   resetMutationState();
                 }}
@@ -290,7 +253,7 @@ const FilterItem = ({
               />
               {filterErrors?.[index]?.value && (
                 <p
-                  className="py-1"
+                  className='py-1'
                   style={{
                     fontSize: "0.75rem",
                     marginLeft: "1rem",
@@ -303,7 +266,7 @@ const FilterItem = ({
             </div>
           </div>
         </div>
-        <div className="mt-4">
+        <div className='mt-4'>
           <div>
             {canEdit() ? (
               <AppIcon
@@ -332,7 +295,7 @@ const FilterItem = ({
           </div>
           {canEdit() && (
             <Menu
-              id="param-menu"
+              id='param-menu'
               anchorEl={menuAnchorEl}
               keepMounted
               open={Boolean(menuAnchorEl)}
