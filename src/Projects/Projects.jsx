@@ -32,6 +32,7 @@ import {
   useDownloadSpecs,
   useGetProjects,
   useDownloadDatabase,
+  useDownloadApigee,
 } from "./projectQueries";
 import EmptyLogo from "../static/images/empty-state.svg";
 import { PrimaryButton } from "../shared/components/AppButton";
@@ -39,7 +40,7 @@ import LoaderWithMessage from "../shared/components/LoaderWithMessage";
 import { getUserId } from "../shared/storage";
 import routes, { generateRoute } from "../shared/routes";
 import Logo from "../static/images/logo/svg.svg";
-import ApigeeLogo from "../static/images/logo/apigeeLogo.svg";
+import ApigeeLogo from "../static/images/logo/CloudLogo.png";
 import DatabaseLogo from "../static/images/logo/database_download.svg";
 import { useCanEdit } from "../shared/utils";
 import { getAccessToken } from "../shared/storage";
@@ -130,6 +131,8 @@ const ProjectRow = ({
     useDownloadSpecs();
   const { isLoading: isDownloadingDatabase, mutate: downloadDatabase } =
     useDownloadDatabase();
+  const { isLoading: isDownloadingApigee, mutate: downloadApigee } =
+    useDownloadApigee();
   const { isLoading: isDownloadingArtifacts, mutate: downloadArtifacts } =
     useDownloadArtifacts();
   const { isLoading: isDownloadingCodegen, mutate: downloadCodegen } =
@@ -145,6 +148,10 @@ const ProjectRow = ({
 
   const onDownloadDatabase = () => {
     downloadDatabase({ projectId: project?.projectId });
+  };
+
+  const onDownloadApigee = () => {
+    downloadApigee({ projectId: project?.projectId });
   };
 
   const onDownloadArtifact = () => {
@@ -322,17 +329,17 @@ const ProjectRow = ({
               </Tooltip>
             )}
           {project?.status?.toLowerCase() === "complete" &&
-            project?.isConnectDB &&
-            (project?.datagen_count > 0 || project?.datagen_perf_count > 0) &&
-            project?.lastDataGenRequestOffline &&
-            !isDownloadingDatabase && (
-              <Tooltip title='Apigee Logo'>
+            project?.publishStatus?.SankyGeneration?.success &&
+            project?.publishStatus?.ArtefactGeneration?.success &&
+            !isDownloadingApigee && (
+              <Tooltip title='Download Apigee'>
                 <div
                   style={{
                     marginTop: "12px",
                     width: "36px",
                     height: "36px",
                   }}
+                  className=' -ml-2'
                 >
                   <img
                     src={ApigeeLogo}
@@ -342,7 +349,7 @@ const ProjectRow = ({
                       e?.preventDefault();
                       e?.stopPropagation();
 
-                      // onDownloadDatabase();
+                      onDownloadApigee();
                     }}
                   />
                 </div>

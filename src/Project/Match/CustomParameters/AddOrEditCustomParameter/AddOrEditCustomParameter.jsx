@@ -157,8 +157,10 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
   }
 
   const handleNext = (index) => {
+    if (index === undefined) index = currentTab + 1;
+
     let flag = true;
-    if (index < currentTab || (tabsError.tab0 && tabsError.tab1)) {
+    if (index < currentTab) {
       setTab(index);
     } else if (formRef.current?.values) {
       const { name, type, tableName, columnName, functionName } =
@@ -196,7 +198,8 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
         if (currentTab === 0) setTabsError({ ...tabsError, tab0: true });
         if (currentTab === 1) setTabsError({ ...tabsError, tab1: true });
 
-        setTab(currentTab + 1);
+        // setTab(currentTab + 1);
+        setTab(index);
       }
       formRef.current.validateForm();
     } else if ((parameter && index) || (tabsError.tab0 && tabsError.tab1)) {
@@ -256,9 +259,9 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
   };
 
   return (
-    <div className="flex flex-col">
-      <div className="p-4 flex flex-row justify-between border-b-1">
-        <p className="text-subtitle1">
+    <div className='flex flex-col'>
+      <div className='p-4 flex flex-row justify-between border-b-1'>
+        <p className='text-subtitle1'>
           {parameter ? "Edit Parameter" : "Add Parameter"}
         </p>
         {!isAddingCustomParameter && !isEditCustomSuccess && (
@@ -280,10 +283,10 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
           onChange={(_, index) => {
             handleNext(index);
           }}
-          aria-label="add custom parameter tabs"
-          indicatorColor="primary"
-          textColor="primary"
-          variant="fullWidth"
+          aria-label='add custom parameter tabs'
+          indicatorColor='primary'
+          textColor='primary'
+          variant='fullWidth'
         >
           <Tab
             label={<TabLabel label={"Naming"} />}
@@ -299,9 +302,9 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
           />
         </Tabs>
 
-        <div className="p-4">
+        <div className='p-4'>
           {currentTab === 0 ? (
-            <div className="h-80">
+            <div className='h-80'>
               <Formik
                 initialValues={{
                   name: parameter?.name ?? "",
@@ -317,20 +320,20 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
               >
                 {({ errors, touched, values, handleChange }) => (
                   <Form>
-                    <div className="mb-4">
-                      <p className="text-overline2 mb-2">Attribute Name</p>
+                    <div className='mb-4'>
+                      <p className='text-overline2 mb-2'>Attribute Name</p>
                       <Field
-                        id="name"
-                        name="name"
+                        id='name'
+                        name='name'
                         style={{ height: "48px" }}
                         fullWidth
-                        color="primary"
-                        variant="outlined"
+                        color='primary'
+                        variant='outlined'
                         disabled={
                           isAddingCustomParameter || isEditingCustomParameter
                         }
                         error={touched.name && Boolean(errors.name)}
-                        helperText={<ErrorMessage name="attribute" />}
+                        helperText={<ErrorMessage name='attribute' />}
                         onKeyUp={(e) => {
                           resetMutationState();
                         }}
@@ -343,7 +346,7 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
                       />
                       {touched.name && errors?.name && (
                         <p
-                          className="py-1"
+                          className='py-1'
                           style={{
                             fontSize: "0.75rem",
                             marginLeft: "1rem",
@@ -354,15 +357,15 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
                         </p>
                       )}
                     </div>
-                    <div className="mb-4">
-                      <p className="text-overline2 mb-2">Type</p>
+                    <div className='mb-4'>
+                      <p className='text-overline2 mb-2'>Type</p>
                       <Field
-                        id="type"
-                        name="type"
+                        id='type'
+                        name='type'
                         style={{ height: "48px" }}
                         fullWidth
-                        color="primary"
-                        variant="outlined"
+                        color='primary'
+                        variant='outlined'
                         onChange={(e) => {
                           handleChange(e);
                           setColumnsType(e.target.value);
@@ -372,18 +375,18 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
                           isAddingCustomParameter || isEditingCustomParameter
                         }
                         error={touched.type && Boolean(errors.type)}
-                        helperText={<ErrorMessage name="type" />}
+                        helperText={<ErrorMessage name='type' />}
                         onKeyUp={(e) => {
                           resetMutationState();
                         }}
                         as={(value) => {
                           return (
-                            <div className="flex flex-col">
+                            <div className='flex flex-col'>
                               <Select
-                                labelId="label type"
-                                id="type ID"
-                                variant="outlined"
-                                className="w-full"
+                                labelId='label type'
+                                id='type ID'
+                                variant='outlined'
+                                className='w-full'
                                 {...value}
                               >
                                 {Constants.customParameterDataTypes.map(
@@ -401,7 +404,7 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
                               </Select>
                               {value?.error && (
                                 <p
-                                  className="py-1"
+                                  className='py-1'
                                   style={{
                                     fontSize: "0.75rem",
                                     marginLeft: "1rem",
@@ -421,7 +424,7 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
               </Formik>
             </div>
           ) : currentTab === 1 ? (
-            <div className="h-80">
+            <div className='h-80'>
               <Formik
                 initialValues={{
                   name: parameter?.name ?? "",
@@ -437,20 +440,20 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
               >
                 {({ errors, touched, values, handleChange, handleBlur }) => (
                   <Form>
-                    <div className="mb-4">
-                      <p className="text-overline2 mb-2">Table Name</p>
+                    <div className='mb-4'>
+                      <p className='text-overline2 mb-2'>Table Name</p>
                       <Field
-                        id="tableName"
-                        name="tableName"
+                        id='tableName'
+                        name='tableName'
                         style={{ height: "48px" }}
                         fullWidth
-                        color="primary"
-                        variant="outlined"
+                        color='primary'
+                        variant='outlined'
                         disabled={
                           isAddingCustomParameter || isEditingCustomParameter
                         }
                         error={touched.tableName && Boolean(errors.tableName)}
-                        helperText={<ErrorMessage name="tableName" />}
+                        helperText={<ErrorMessage name='tableName' />}
                         onKeyUp={(e) => {
                           resetMutationState();
                         }}
@@ -460,12 +463,12 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
                         }}
                         as={(value) => {
                           return (
-                            <div className="flex flex-col">
+                            <div className='flex flex-col'>
                               <Select
-                                labelId="label tableName"
-                                id="tableName"
-                                variant="outlined"
-                                className="w-full"
+                                labelId='label tableName'
+                                id='tableName'
+                                variant='outlined'
+                                className='w-full'
                                 {...value}
                               >
                                 {tablesDataState?.map((table, index) => {
@@ -478,7 +481,7 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
                               </Select>
                               {value?.error && (
                                 <p
-                                  className="py-1"
+                                  className='py-1'
                                   style={{
                                     fontSize: "0.75rem",
                                     marginLeft: "1rem",
@@ -493,31 +496,31 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
                         }}
                       />
                     </div>
-                    <div className="mb-4">
-                      <p className="text-overline2 mb-2">Column Name</p>
+                    <div className='mb-4'>
+                      <p className='text-overline2 mb-2'>Column Name</p>
                       <Field
-                        id="columnName"
-                        name="columnName"
+                        id='columnName'
+                        name='columnName'
                         style={{ height: "48px" }}
                         fullWidth
-                        color="primary"
-                        variant="outlined"
+                        color='primary'
+                        variant='outlined'
                         disabled={
                           isAddingCustomParameter || isEditingCustomParameter
                         }
                         error={touched.columnName && Boolean(errors.columnName)}
-                        helperText={<ErrorMessage name="columnName" />}
+                        helperText={<ErrorMessage name='columnName' />}
                         onKeyUp={(e) => {
                           resetMutationState();
                         }}
                         as={(value) => {
                           return (
-                            <div className="flex flex-col">
+                            <div className='flex flex-col'>
                               <Select
-                                labelId="columnName"
-                                id="columnName"
-                                variant="outlined"
-                                className="w-full"
+                                labelId='columnName'
+                                id='columnName'
+                                variant='outlined'
+                                className='w-full'
                                 {...value}
                               >
                                 {columns?.map((column, index) => {
@@ -530,7 +533,7 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
                               </Select>
                               {value?.error && (
                                 <p
-                                  className="py-1"
+                                  className='py-1'
                                   style={{
                                     fontSize: "0.75rem",
                                     marginLeft: "1rem",
@@ -542,7 +545,7 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
                               )}
                               {emptyColumnsError && (
                                 <p
-                                  className="py-1"
+                                  className='py-1'
                                   style={{
                                     fontSize: "0.75rem",
                                     marginLeft: "1rem",
@@ -557,22 +560,22 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
                         }}
                       />
                     </div>
-                    <div className="mb-4">
-                      <p className="text-overline2 mb-2">Function</p>
+                    <div className='mb-4'>
+                      <p className='text-overline2 mb-2'>Function</p>
                       <Field
-                        id="functionName"
-                        name="functionName"
+                        id='functionName'
+                        name='functionName'
                         style={{ height: "48px" }}
                         fullWidth
-                        color="primary"
-                        variant="outlined"
+                        color='primary'
+                        variant='outlined'
                         disabled={
                           isAddingCustomParameter || isEditingCustomParameter
                         }
                         error={
                           touched.functionName && Boolean(errors.functionName)
                         }
-                        helperText={<ErrorMessage name="attribute" />}
+                        helperText={<ErrorMessage name='attribute' />}
                         onKeyUp={(e) => {
                           resetMutationState();
                         }}
@@ -583,12 +586,12 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
                         }}
                         as={(value) => {
                           return (
-                            <div className="flex flex-col">
+                            <div className='flex flex-col'>
                               <Select
-                                labelId="functionName-label"
-                                id="functionName-select"
-                                variant="outlined"
-                                className="w-full"
+                                labelId='functionName-label'
+                                id='functionName-select'
+                                variant='outlined'
+                                className='w-full'
                                 {...value}
                               >
                                 {formRef.current?.values?.type &&
@@ -607,7 +610,7 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
                               </Select>
                               {value?.error && (
                                 <p
-                                  className="py-1"
+                                  className='py-1'
                                   style={{
                                     fontSize: "0.75rem",
                                     marginLeft: "1rem",
@@ -627,7 +630,7 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
               </Formik>
             </div>
           ) : (
-            <div className="h-80 overflow-auto">
+            <div className='h-80 overflow-auto'>
               <Formik
                 initialValues={{
                   name: parameter?.name ?? "",
@@ -644,18 +647,18 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
               >
                 {({ errors, touched, values, handleChange, handleBlur }) => (
                   <Form>
-                    <div className="mb-4">
-                      <div className="flex flex-row ml-12 mr-12">
-                        <p className="font-semibold text-base mr-4">Where</p>
-                        <div className="w-full">
-                          <p className="text-overline2 mb-2">Table Name</p>
+                    <div className='mb-4'>
+                      <div className='flex flex-row ml-12 mr-12'>
+                        <p className='font-semibold text-base mr-4'>Where</p>
+                        <div className='w-full'>
+                          <p className='text-overline2 mb-2'>Table Name</p>
                           <Field
-                            id="tableName"
-                            name="tableName"
+                            id='tableName'
+                            name='tableName'
                             style={{ height: "48px" }}
                             fullWidth
-                            color="primary"
-                            variant="outlined"
+                            color='primary'
+                            variant='outlined'
                             disabled={true}
                             inputProps={{
                               style: {
@@ -666,10 +669,10 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
                           />
                         </div>
                       </div>
-                      <FieldArray name="filters">
+                      <FieldArray name='filters'>
                         {({ remove, push }) => (
                           <>
-                            <div className="ml-4">
+                            <div className='ml-4'>
                               {values.filters &&
                                 values.filters.length > 0 &&
                                 values.filters.map((filter, index) => (
@@ -694,7 +697,7 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
                                 ))}
                             </div>
                             <div
-                              className="float-right flex flex-row items-center cursor-pointer hover:opacity-80 mr-12 mt-2 border-1 rounded-md border-brand-secondary px-2 py-2"
+                              className='float-right flex flex-row items-center cursor-pointer hover:opacity-80 mr-12 mt-2 border-1 rounded-md border-brand-secondary px-2 py-2'
                               onClick={() => {
                                 if (validateFilters(values.filters)) {
                                   setIsAlreadyChecked(false);
@@ -703,7 +706,7 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
                               }}
                             >
                               <AppIcon
-                                size="20px"
+                                size='20px'
                                 color={Colors.brand.secondary}
                                 style={{
                                   marginRight: "0.5rem",
@@ -715,7 +718,7 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
                                   }}
                                 />
                               </AppIcon>
-                              <p className="text-overline2 text-brand-secondary">
+                              <p className='text-overline2 text-brand-secondary'>
                                 Add
                               </p>
                             </div>
@@ -730,18 +733,18 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
           )}
         </div>
         {addCustomParamError && (
-          <p className="text-accent-red text-overline2">
+          <p className='text-accent-red text-overline2'>
             {addCustomParamError?.response?.data?.error?.error}
           </p>
         )}
 
         {editCustomParamError && (
-          <p className="text-accent-red text-overline2">
+          <p className='text-accent-red text-overline2'>
             {editCustomParamError?.error?.error}
           </p>
         )}
       </div>
-      <div className="border-t-2 border-neutral-gray7 flex flex-row items-center justify-end pt-4 mb-4 mr-4 ml-4">
+      <div className='border-t-2 border-neutral-gray7 flex flex-row items-center justify-end pt-4 mb-4 mr-4 ml-4'>
         {!isAddingCustomParameter && !isEditingCustomParameter ? (
           <>
             {currentTab === 2 && (
@@ -750,7 +753,7 @@ const AddOrEditCustomParameter = ({ parameter, onClose }) => {
                   formRef.current.values.filters = [];
                   formRef.current.submitForm();
                 }}
-                classes="flex-1 -ml-4 text-brand-secondary"
+                classes='flex-1 -ml-4 text-brand-secondary'
               >
                 Skip for now
               </TextButton>
