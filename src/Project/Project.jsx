@@ -465,7 +465,7 @@ const Project = () => {
       })
       .catch((error) => {
         console.error("There was an error!", error);
-        throw getApiError(error);
+        // throw getApiError(error);
       });
   };
 

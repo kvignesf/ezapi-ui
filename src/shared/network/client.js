@@ -36,6 +36,7 @@ export const endpoint = Object.freeze({
   downloadArtifact: "/download_apiops",
   downloadDatabase: "/download_gendata",
   downloadCodegen: "/download_codegen",
+  downloadApigee: "/download_apigee",
   testDBConnection: "/testDBConnection",
   exportDBSchema: "/db_to_python",
   getCustomParameter: "/customParameters/get",

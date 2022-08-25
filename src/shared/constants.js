@@ -27,15 +27,18 @@ const Constants = {
     "dateTime",
     "password",
   ],
-  customParameterDataTypes:["integer", "array"],
+  customParameterDataTypes: ["integer", "array", "DateTime"],
+  // customParameterDataTypes: ["integer", "array"],
+
   acceptedTypes: ["integer", "number", "string", "boolean"],
-  bodyAcceptedTypes:["array","object"],
+  bodyAcceptedTypes: ["array", "object"],
   customParameterFunctionTypes: {
     integer: ["count", "sum", "min", "max", "average"],
-    array: ["distinct", "top10"]
+    array: ["distinct", "top10"],
+    DateTime: ["extract year", "extract month", "extract date", "min", "max"],
   },
-  customParametersConditionKeys:[">", "<", "=", "Null", "NotNull"],
-  customParamtersFilterRelations:["AND", "OR"]
+  customParametersConditionKeys: [">", "<", "=", "Null", "NotNull"],
+  customParamtersFilterRelations: ["AND", "OR"],
 };
 
 export default Constants;
