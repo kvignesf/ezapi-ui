@@ -691,7 +691,7 @@ const AddProject = ({ onClose, onSuccess }) => {
       {isDesign == null && (
         <div className='p-4'>
           <div className='flex flex-row items-center justify-between mb-3'>
-            {<h5>Choose Project Type</h5>}
+            {<h5>Create API Project</h5>}
 
             <AppIcon aria-label='close' onClick={onClose}>
               <CloseIcon />
@@ -707,17 +707,17 @@ const AddProject = ({ onClose, onSuccess }) => {
               }}
               classes='flex-1 -ml-4 text-brand-secondary'
             >
-              Create Design API Project
+              Design Studio
             </PrimaryButton>
           </div>
           <div className='flex justify-center p-2 px-36'>
             <PrimaryButton
               onClick={() => {
-                setIsDesign(false);
+                setIsDesign(null);
               }}
               classes='flex-1 -ml-4 text-brand-secondary'
             >
-              Create Test API Project
+              Test Studio (coming soon...)
             </PrimaryButton>
           </div>
         </div>

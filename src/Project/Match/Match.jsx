@@ -48,6 +48,9 @@ const Match = ({ projectType, ...props }) => {
   const customParamENV = process.env.REACT_APP_FEATURE_CUSTOM_PARAMETER
     ? process.env.REACT_APP_FEATURE_CUSTOM_PARAMETER
     : "true";
+  const storedProcENV = process.env.REACT_APP_FEATURE_STORED_PROCS
+    ? process.env.REACT_APP_FEATURE_STORED_PROCS
+    : "true";
 
   useEffect(() => {
     if (projectType === "schema" || projectType === "both") {
@@ -323,7 +326,7 @@ const Match = ({ projectType, ...props }) => {
                   value={"customParam"}
                 />
               )}
-              {projectType === "db" &&
+              {projectType === "db" && storedProcENV === "true" &&
                 operationData?.operation?.operationType?.toLowerCase() ==
                   "post" && (
                   <Tab

@@ -182,6 +182,23 @@ const downloadDatabase = async ({ projectId }) => {
   }
 };
 
+const downloadApigee = async ({ projectId }) => {
+  try {
+    const { data } = await client.post(
+      endpoint.downloadApigee,
+      {
+        projectId,
+      },
+      {
+        timeout: 480000,
+      }
+    );
+    return data;
+  } catch (error) {
+    throw getApiError(error);
+  }
+};
+
 export const useDownloadDatabase = () => {
   const queryClient = useQueryClient();
 
@@ -192,6 +209,24 @@ export const useDownloadDatabase = () => {
 
         // const filename = link.substring(link.lastIndexOf("/") + 1);
         const filename = "project_database";
+        saveAs(link, filename);
+      }
+    },
+  });
+
+  return mutation;
+};
+
+export const useDownloadApigee = () => {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation(downloadApigee, {
+    onSuccess: (data) => {
+      if (data?.downloadUrl && !_.isEmpty(data?.downloadUrl)) {
+        const link = data?.downloadUrl;
+
+        // const filename = link.substring(link.lastIndexOf("/") + 1);
+        const filename = "project_apigee";
         saveAs(link, filename);
       }
     },

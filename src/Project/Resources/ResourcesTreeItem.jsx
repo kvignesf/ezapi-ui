@@ -17,6 +17,7 @@ import DeleteResource from "./DeleteResource";
 import { useCanEdit } from "../../shared/utils";
 
 const ResourceTreeItem = ({
+  currentTab,
   nodeId,
   resource,
   children,
@@ -128,7 +129,7 @@ const ResourceTreeItem = ({
                   </p>
                 </div>
 
-                {isHovering && canEdit() && (
+                {isHovering && currentTab == 0 && canEdit() && (
                   <div>
                     <AppIcon
                       onClick={handleAddPathClick}
