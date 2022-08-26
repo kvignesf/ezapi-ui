@@ -713,11 +713,11 @@ const AddProject = ({ onClose, onSuccess }) => {
           <div className='flex justify-center p-2 px-36'>
             <PrimaryButton
               onClick={() => {
-                setIsDesign(false);
+                setIsDesign(null);
               }}
               classes='flex-1 -ml-4 text-brand-secondary'
             >
-              Test Studio
+              Test Studio (coming soon...)
             </PrimaryButton>
           </div>
         </div>
