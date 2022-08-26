@@ -242,123 +242,133 @@ const ProjectRow = ({
               <CircularProgress style={{ width: "24px", height: "24px" }} />
             )}
           </div>
-
           {/* Spec download */}
-          {project?.status?.toLowerCase() === "complete" &&
-            project?.publishStatus?.SpecGeneration?.success &&
-            !isDownloadingSpecs && (
-              <Tooltip title='Download Specs'>
-                <div
-                  style={{
-                    width: "32px",
-                    height: "32px",
-                  }}
-                >
-                  <img
-                    src={Logo}
-                    alt='conektto logo'
-                    className='cursor-pointer'
-                    onClick={(e) => {
-                      e?.preventDefault();
-                      e?.stopPropagation();
-
-                      onDownloadSpecs();
+          <div className='w-8'>
+            {" "}
+            {project?.status?.toLowerCase() === "complete" &&
+              project?.publishStatus?.SpecGeneration?.success &&
+              !isDownloadingSpecs && (
+                <Tooltip title='Download Specs'>
+                  <div
+                    style={{
+                      width: "32px",
+                      height: "32px",
                     }}
-                  />
-                </div>
-              </Tooltip>
-            )}
+                  >
+                    <img
+                      src={Logo}
+                      alt='conektto logo'
+                      className='cursor-pointer'
+                      onClick={(e) => {
+                        e?.preventDefault();
+                        e?.stopPropagation();
 
-          {isDownloadingSpecs && (
-            <CircularProgress style={{ width: "24px", height: "24px" }} />
-          )}
+                        onDownloadSpecs();
+                      }}
+                    />
+                  </div>
+                </Tooltip>
+              )}
+            {isDownloadingSpecs && (
+              <CircularProgress style={{ width: "24px", height: "24px" }} />
+            )}
+          </div>
 
           {/* Artefact download */}
-          {project?.status?.toLowerCase() === "complete" &&
-            project?.publishStatus?.SankyGeneration?.success &&
-            project?.publishStatus?.ArtefactGeneration?.success &&
-            !isDownloadingArtifacts && (
-              <AppIcon
-                onClick={(e) => {
-                  e?.preventDefault();
-                  e?.stopPropagation();
+          <div className='w-8'>
+            {" "}
+            {project?.status?.toLowerCase() === "complete" &&
+              project?.publishStatus?.SankyGeneration?.success &&
+              project?.publishStatus?.ArtefactGeneration?.success &&
+              !isDownloadingArtifacts && (
+                <AppIcon
+                  onClick={(e) => {
+                    e?.preventDefault();
+                    e?.stopPropagation();
 
-                  onDownloadArtifact();
-                }}
-              >
-                <Tooltip title='Download Artifacts'>
-                  <SystemUpdateAltIcon
-                    style={{ color: Colors.brand.primary }}
-                  />
-                </Tooltip>
-              </AppIcon>
+                    onDownloadArtifact();
+                  }}
+                >
+                  <Tooltip title='Download Artifacts'>
+                    <SystemUpdateAltIcon
+                      style={{ color: Colors.brand.primary }}
+                    />
+                  </Tooltip>
+                </AppIcon>
+              )}
+            {isDownloadingArtifacts && (
+              <CircularProgress style={{ width: "24px", height: "24px" }} />
             )}
+          </div>
 
-          {isDownloadingArtifacts && (
-            <CircularProgress style={{ width: "24px", height: "24px" }} />
-          )}
-
-          {/* project?.isConnectDB && (project?.projectId == projectIden && enableIcon)) || ((project?.datagen_count > 0 || project?.datagen_perf_count > 0) && (projectIden == undefined || project?.projectId != projectIden) )) &&
-            !isDownloadingDatabase */}
           {/* Data download */}
-          {project?.status?.toLowerCase() === "complete" &&
-            project?.isConnectDB &&
-            (project?.datagen_count > 0 || project?.datagen_perf_count > 0) &&
-            project?.lastDataGenRequestOffline &&
-            !isDownloadingDatabase && (
-              <Tooltip title={lastDataGenerated}>
-                <div
-                  style={{
-                    marginTop: "12px",
-                    width: "36px",
-                    height: "36px",
-                  }}
-                >
-                  <img
-                    src={DatabaseLogo}
-                    alt='conektto logo'
-                    className='cursor-pointer'
-                    onClick={(e) => {
-                      e?.preventDefault();
-                      e?.stopPropagation();
-
-                      onDownloadDatabase();
+          <div className='w-8'>
+            {" "}
+            {project?.status?.toLowerCase() === "complete" &&
+              project?.isConnectDB &&
+              (project?.datagen_count > 0 || project?.datagen_perf_count > 0) &&
+              project?.lastDataGenRequestOffline &&
+              !isDownloadingDatabase && (
+                <Tooltip title={lastDataGenerated}>
+                  <div
+                    style={{
+                      marginTop: "12px",
+                      width: "36px",
+                      height: "36px",
                     }}
-                  />
-                </div>
-              </Tooltip>
-            )}
-          {project?.status?.toLowerCase() === "complete" &&
-            project?.publishStatus?.SankyGeneration?.success &&
-            project?.publishStatus?.ArtefactGeneration?.success &&
-            !isDownloadingApigee && (
-              <Tooltip title='Download Apigee'>
-                <div
-                  style={{
-                    marginTop: "12px",
-                    width: "36px",
-                    height: "36px",
-                  }}
-                  className=' -ml-2'
-                >
-                  <img
-                    src={ApigeeLogo}
-                    alt='Apigee logo'
-                    className='cursor-pointer'
-                    onClick={(e) => {
-                      e?.preventDefault();
-                      e?.stopPropagation();
+                  >
+                    <img
+                      src={DatabaseLogo}
+                      alt='conektto logo'
+                      className='cursor-pointer'
+                      onClick={(e) => {
+                        e?.preventDefault();
+                        e?.stopPropagation();
 
-                      onDownloadApigee();
+                        onDownloadDatabase();
+                      }}
+                    />
+                  </div>
+                </Tooltip>
+              )}
+            {isDownloadingDatabase && (
+              <CircularProgress style={{ width: "24px", height: "24px" }} />
+            )}
+          </div>
+          {/* Apigee download */}
+          <div className='w-8'>
+            {" "}
+            {project?.status?.toLowerCase() === "complete" &&
+              project?.publishStatus?.SankyGeneration?.success &&
+              project?.publishStatus?.ArtefactGeneration?.success &&
+              !isDownloadingApigee && (
+                <Tooltip title='Download Apigee'>
+                  <div
+                    style={{
+                      marginTop: "12px",
+                      width: "36px",
+                      height: "36px",
                     }}
-                  />
-                </div>
-              </Tooltip>
-            )}
+                    className=' -ml-1'
+                  >
+                    <img
+                      src={ApigeeLogo}
+                      alt='Apigee logo'
+                      className='cursor-pointer'
+                      onClick={(e) => {
+                        e?.preventDefault();
+                        e?.stopPropagation();
 
-          {isDownloadingDatabase && (
-            <CircularProgress style={{ width: "24px", height: "24px" }} />
-          )}
+                        onDownloadApigee();
+                      }}
+                    />
+                  </div>
+                </Tooltip>
+              )}
+            {isDownloadingApigee && (
+              <CircularProgress style={{ width: "24px", height: "24px" }} />
+            )}
+          </div>
         </div>
       </td>
 
