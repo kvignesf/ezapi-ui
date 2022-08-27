@@ -712,6 +712,10 @@ const AddProject = ({ onClose, onSuccess }) => {
           </div>
           <div className='flex justify-center p-2 px-36'>
             <PrimaryButton
+              style={{
+                color : "white",
+                background : "#9f9f9f"
+              }}
               onClick={() => {
                 setIsDesign(null);
               }}
