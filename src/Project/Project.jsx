@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useHistory, useParams } from "react-router";
+import { useGetResources } from "./Resources/resourcesQuery";
 import ArrowBackIcon from "@material-ui/icons/ArrowBack";
 import {
   CircularProgress,
@@ -8,6 +9,7 @@ import {
   Tabs,
   Tooltip,
 } from "@material-ui/core";
+import client, { endpoint } from "../shared/network/client";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import {
@@ -16,6 +18,8 @@ import {
   useSetRecoilState,
   useGetRecoilValueInfo_UNSTABLE,
 } from "recoil";
+import { getApiError } from "../shared/utils";
+
 import CloudUploadIcon from "@material-ui/icons/CloudUpload";
 import { ClassNames } from "@emotion/react";
 import classNames from "classnames";
@@ -36,6 +40,7 @@ import {
 import AddOrEditResource from "./Resources/AddOrEditResource";
 import Resources from "./Resources/Resources";
 import Match from "./Match";
+import Simulate from "./Simulate.jsx";
 import OperationDetails from "./OperationDetails";
 import { useSyncOperation } from "../shared/query/operationDetailsQuery";
 import { useSubmitProject } from "./projectQueries";
@@ -63,13 +68,17 @@ import RepublishInfo from "./RepublishInfo";
 import ProfileMenu from "../shared/components/ProfileMenu";
 import EzapiLogo from "../shared/components/EzapiLogo";
 import EzapiFooter from "../shared/components/EzapiFooter";
+import { getAccessToken, setUserId } from "../shared/storage";
 import Scrollbar from "react-smooth-scrollbar";
 
 const Project = () => {
+  const acc_token = getAccessToken();
   const { projectId } = useParams();
   const history = useHistory();
   const firstName = getFirstName();
   const lastName = getLastName();
+  const [dataFetched, setDataFetched] = useState(false);
+  const [memberList, setMemberList] = useState();
   const {
     isLoading: isFetchingProjectDetails,
     isSuccess: isProjectDetailsFetched,
@@ -81,6 +90,15 @@ const Project = () => {
   const [operationState, setOperationState] = useRecoilState(
     operationAtomWithMiddleware
   );
+  const {
+    isLoading: isLoadingResources,
+    data: resources,
+    isFetching: isLoadingResourcesBg,
+    error: getResourcesError,
+  } = useGetResources(projectId, {
+    refetchOnWindowFocus: false,
+  });
+  // console.log(resources);
   const {
     isLoading: isSyncingOperation,
     isSuccess: isSyncOperationSuccess,
@@ -118,6 +136,9 @@ const Project = () => {
   });
   const getRecoilValueInfo = useGetRecoilValueInfo_UNSTABLE();
   const [userRole, setRole] = useState(null);
+
+  const [simulateVirtualData, setSimulateVirtualData] = useState(null);
+  const [simulateData, setSimulateData] = useState(null);
   const [autoSyncIntervalId, setAutoSync] = useState(0);
   const [showUnsavedPopup, setUnsavedPopup] = useState(true);
 
@@ -128,6 +149,41 @@ const Project = () => {
     return () => stopAutoSync();
   }, [userRole]);
 
+  useEffect(() => {
+    if (currentTab == 1) {
+      fetch(
+        // process.env.REACT_APP_API_URL +
+        //   "/virtualData?projectId=00d479e3-bb64-48ce-84e7-c28a4d8988c3",
+        process.env.REACT_APP_API_URL + "/virtualData?projectId=" + projectId,
+        {
+          headers: {
+            Authorization: `Bearer ${acc_token}`,
+          },
+        }
+      )
+        .then((res) => {
+          if (res.ok) {
+            return res.json();
+          } else {
+            const error = (res && res.message) || res.status;
+            return Promise.reject(error);
+          }
+        })
+        .then((result) => {
+          setSimulateVirtualData(result);
+          simulateAPI(result?.data?.[0]);
+        })
+
+        .catch((error) => {
+          console.error("There was an error!", error);
+          // throw getApiError(error);
+        });
+    }
+  }, [currentTab]);
+
+  useEffect(() => {
+    setMemberList(projectDetails?.["members"]);
+  }, [projectDetails]);
   useEffect(() => {
     if (operationState?.isModified) {
       setUnsavedPopup(true);
@@ -141,6 +197,7 @@ const Project = () => {
   useEffect(() => {
     if (projectDetails) {
       // Get user role
+      // console.log(projectDetails?.members);
       if (projectDetails?.members && !_.isEmpty(projectDetails?.members)) {
         const userEmail = getEmailId();
         const currentUserDetails = projectDetails?.members?.find(
@@ -173,7 +230,6 @@ const Project = () => {
       dialog?.type === "save-operation-warning"
     ) {
       handleCloseDialog();
-
       resetSyncOperationMutation();
 
       // if (dialog?.data === "with-nav") {
@@ -218,7 +274,6 @@ const Project = () => {
         operationAtomWithMiddleware
       );
       const operationState = operationAtomLoadable?.contents;
-
       const saveRequestApiRequest = generateSyncOperationRequestRequest(
         operationState?.operationRequest
       );
@@ -286,6 +341,7 @@ const Project = () => {
       type: null,
       data: null,
     });
+    setDataFetched(false);
   };
 
   const navigateBack = () => {
@@ -311,6 +367,14 @@ const Project = () => {
     !_.isEmpty(verifyProjectData?.response);
 
   const handleInviteClick = () => {
+    async function projectdetails() {
+      const { data } = await client.get(`${endpoint.project}/${projectId}`);
+      // console.log(data?.["members"]);
+      setMemberList(data?.["members"]);
+      setDataFetched(true);
+    }
+    projectdetails();
+
     if (canEdit(userRole)) {
       setDialog({
         show: true,
@@ -326,6 +390,16 @@ const Project = () => {
       operationState?.resource != null &&
       operationState?.path != null
     );
+  };
+  const isOperationExists = () => {
+    var numberOfOp = 0;
+    resources?.map((resource) => {
+      resource?.path?.map((path) => {
+        numberOfOp = numberOfOp + path?.operations?.length;
+      });
+    });
+
+    return numberOfOp;
   };
 
   const isPublishLimitReached = () => {
@@ -361,6 +435,38 @@ const Project = () => {
       type: "republish-status",
       data: null,
     });
+  };
+
+  const simulateAPI = (operation) => {
+    fetch(process.env.REACT_APP_API_URL + "/simulate", {
+      headers: {
+        Authorization: `Bearer ${acc_token}`,
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+
+      body: JSON.stringify({
+        projectId: projectId,
+        //projectId: "00d479e3-bb64-48ce-84e7-c28a4d8988c3",
+        httpMethod: operation.httpMethod,
+        endpoint: operation.endpoint,
+      }),
+    })
+      .then((res) => {
+        if (res.ok) {
+          return res.json();
+        } else {
+          const error = (res && res.message) || res.status;
+          return Promise.reject(error);
+        }
+      })
+      .then((result) => {
+        setSimulateData(result?.data?.[0]);
+      })
+      .catch((error) => {
+        console.error("There was an error!", error);
+        // throw getApiError(error);
+      });
   };
 
   return (
@@ -457,10 +563,6 @@ const Project = () => {
                   if (dialog?.data === "reset_operation_state") {
                     resetProjectState();
                   }
-
-                  // if (dialog?.data === "with-nav") {
-                  //   navigateBack();
-                  // }
                 }}
                 saveProject={() => {
                   if (dialog?.data === "reset_operation_state") {
@@ -472,11 +574,11 @@ const Project = () => {
               />
             )}
 
-          {dialog?.type === "members" && (
+          {dialog?.type === "members" && dataFetched && (
             <ModifyCollaborators
               projectId={projectId}
               onClose={handleCloseDialog}
-              invitedCollaborators={projectDetails?.members}
+              invitedCollaborators={memberList}
             />
           )}
 
@@ -549,7 +651,9 @@ const Project = () => {
             <div className='flex justify-center flex-1'>
               <Tabs
                 value={currentTab}
-                onChange={(_, index) => {}}
+                onChange={(_, index) => {
+                  setCurrentTab(index);
+                }}
                 aria-label='add project tabs'
                 indicatorColor='primary'
                 textColor='primary'
@@ -557,13 +661,18 @@ const Project = () => {
                 <Tab
                   label={<TabLabel label={"Design"} />}
                   style={{ outline: "none", border: "none" }}
+                  // indicatorColor='primary'
+                  // textColor='primary'
                 />
 
-                {/* <Tab
-                  label={<TabLabel label={"Visualize"} />}
-                  style={{ outline: "none", border: "none" }}
-                  disabled
-                /> */}
+                {isOperationExists() && (
+                  <Tab
+                    label={<TabLabel label={"Simulate"} />}
+                    style={{ outline: "none", border: "none" }}
+                    // indicatorColor='primary'
+                    // textColor='primary'
+                  />
+                )}
               </Tabs>
             </div>
 
@@ -588,7 +697,7 @@ const Project = () => {
                 </PrimaryButton>
               )}
 
-              {canShowPublishCountStatus() && (
+              {canEdit(userRole) && canShowPublishCountStatus() && (
                 <div
                   className='flex flex-col py-1 px-3 border-1 border-l-0 border-brand-secondary mr-3 justify-center cursor-pointer'
                   style={{
@@ -629,83 +738,91 @@ const Project = () => {
             </div>
           </header>
 
-          {currentTab === 0 && (
-            <div className='flex flex-row mt-14'>
-              <section
-                className='border-r-2'
-                style={{
-                  width: "300px",
+          <div className='flex flex-row mt-14'>
+            <section
+              className='border-r-2'
+              style={{
+                width: "300px",
 
-                  height: `calc(100vh - 100px)`,
-                }}
-              >
-                <Scrollbar style={{ height: `calc(100vh - 100px)` }}>
-                  <Resources
-                    className='h-full flex flex-col'
-                    projectId={projectId}
-                    selectedIndex={operationState.operationIndex}
-                    onOperationSelect={(index, resource, path, operation) => {
-                      if (
-                        index === null &&
-                        resource === null &&
-                        path === null &&
-                        operation === null
-                      ) {
-                        if (showUnsavedPopup && operationState?.isModified) {
-                          showSaveOperationWarning("reset_operation_state");
-                        } else {
-                          resetOperationState();
-                        }
-                      } else if (index !== operationState.operationIndex) {
-                        if (showUnsavedPopup && operationState?.isModified) {
-                          showSaveOperationWarning("reset_operation_state");
-                        } else {
-                          const cloned = _.cloneDeep(operationState);
-                          cloned.operation = operation;
-                          cloned.resource = resource;
-                          cloned.path = path;
-                          cloned.operationIndex = index;
-
-                          setOperationState(cloned);
-                        }
+                height: `calc(100vh - 100px)`,
+              }}
+            >
+              <Scrollbar style={{ height: `calc(100vh - 100px)` }}>
+                <Resources
+                  className='h-full flex flex-col'
+                  projectId={projectId}
+                  onOperationSelect={(index, resource, path, operation) => {
+                    if (
+                      index === null &&
+                      resource === null &&
+                      path === null &&
+                      operation === null
+                    ) {
+                      if (showUnsavedPopup && operationState?.isModified) {
+                        showSaveOperationWarning("reset_operation_state");
+                      } else {
+                        resetOperationState();
                       }
-                    }}
-                  />
-                </Scrollbar>
-              </section>
+                    } else if (index !== operationState.operationIndex) {
+                      if (showUnsavedPopup && operationState?.isModified) {
+                        showSaveOperationWarning("reset_operation_state");
+                      } else {
+                        // console.log(operationState);
+                        const cloned = _.cloneDeep(operationState);
+                        cloned.operation = operation;
+                        cloned.resource = resource;
+                        cloned.path = path;
+                        cloned.operationIndex = index;
 
-              <section
-                className='w-full flex flex-col'
-                style={{ height: `calc(100vh - 112px)` }}
-              >
-                <div
-                  className={classNames(``, {
-                    "h-1/2": operationState.operationIndex,
-                    "h-full": !operationState.operationIndex,
-                  })}
-                >
-                  <Match
-                    projectType={projectDetails?.projectType}
-                    style={{ height: "100%" }}
-                  />
-                </div>
+                        // console.log(cloned);
 
-                {operationState.resource &&
-                  operationState.path &&
-                  operationState.operation && (
-                    <div
-                      className={classNames({
-                        "h-1/2": operationState.operationIndex !== null,
-                      })}
-                    >
-                      <OperationDetails
-                        projectType={projectDetails?.projectType}
-                      />
-                    </div>
-                  )}
-              </section>
-            </div>
-          )}
+                        setOperationState(cloned);
+                      }
+                    }
+                  }}
+                  onSimulateSelect={(operation) => simulateAPI(operation)}
+                  currentTab={currentTab}
+                  simulateData={simulateVirtualData}
+                />
+              </Scrollbar>
+            </section>
+            <section
+              className='w-full flex flex-col'
+              style={{ height: `calc(100vh - 112px)` }}
+            >
+              {currentTab === 0 && (
+                <>
+                  {" "}
+                  <div
+                    className={classNames(``, {
+                      "h-1/2": operationState.operationIndex,
+                      "h-full": !operationState.operationIndex,
+                    })}
+                  >
+                    <Match
+                      projectType={projectDetails?.projectType}
+                      style={{ height: "100%" }}
+                    />
+                  </div>
+                  {operationState.resource &&
+                    operationState.path &&
+                    operationState.operation && (
+                      <div
+                        className={classNames({
+                          "h-1/2": operationState.operationIndex !== null,
+                        })}
+                      >
+                        <OperationDetails
+                          projectType={projectDetails?.projectType}
+                          canEdit={canEdit(userRole)}
+                        />
+                      </div>
+                    )}
+                </>
+              )}
+              {currentTab === 1 && <Simulate simulateData={simulateData} />}
+            </section>
+          </div>
 
           <EzapiFooter />
         </DndProvider>

@@ -150,7 +150,6 @@ const AddOrEditOperation = ({
     });
   };
 
-  console.log("isEditingOperationSuccess", isEditingOperationSuccess);
   if (isEditingOperationSuccess || isAddingOperationSuccess) {
     onClose();
     return null;

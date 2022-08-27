@@ -14,11 +14,14 @@ import AddOrEditPath from "./AddOrEditPath";
 import AddOrEditOperation from "./AddOrEditOperation";
 import DeletePath from "./DeletePath";
 import { useCanEdit } from "../../shared/utils";
+import { PatternSharp } from "@mui/icons-material";
 
 const PathTreeItem = ({
+  currentTab,
   nodeId,
   resourceId,
   path,
+
   children,
   resetSelectedOperation,
   ...rest
@@ -126,11 +129,11 @@ const PathTreeItem = ({
                     /
                   </p>
                   <p className='text-overline2 overflow-hidden whitespace-nowrap overflow-ellipsis w-30'>
-                    {path?.pathName}
+                    {path.pathName ? path.pathName : path}
                   </p>
                 </div>
 
-                {isHovering && canEdit() && (
+                {isHovering && currentTab == 0 && canEdit() && (
                   <div>
                     <AppIcon
                       onClick={handleAddOperationClick}
@@ -146,7 +149,7 @@ const PathTreeItem = ({
                   </div>
                 )}
 
-                {isHovering && canEdit() && (
+                {isHovering && currentTab == 0 && canEdit() && (
                   <div>
                     <AppIcon onClick={handleMenuClick}>
                       <MoreVertIcon

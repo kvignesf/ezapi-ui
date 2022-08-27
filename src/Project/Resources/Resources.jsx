@@ -7,9 +7,10 @@ import ArrowRightIcon from "@material-ui/icons/ArrowRight";
 import AddIcon from "@material-ui/icons/Add";
 import { CircularProgress, Dialog } from "@material-ui/core";
 import _ from "lodash";
+import ApiMethod, { Method } from "../../shared/components/ApiMethod";
 
 import AppIcon from "../../shared/components/AppIcon";
-import { Method } from "../../shared/components/ApiMethod";
+
 import EmptyState from "../../static/images/empty-state.svg";
 import AddOrEditResource from "./AddOrEditResource";
 import ResourceTreeItem from "./ResourcesTreeItem";
@@ -22,7 +23,8 @@ import Colors from "../../shared/colors";
 import { useCanEdit } from "../../shared/utils";
 import { useGetResources } from "./resourcesQuery";
 import { UserRoleContext, useUserRole } from "../UserRoleContext";
-
+import storedProcedureAtom from "../../shared/atom/storedProcedureAtom";
+import { useRecoilState, useResetRecoilState } from "recoil";
 const useStyles = makeStyles({
   root: {
     height: 240,
@@ -35,8 +37,12 @@ const Resources = ({
   projectId,
   selectedIndex,
   onOperationSelect,
+  onSimulateSelect,
+  currentTab,
+  simulateData,
   ...props
 }) => {
+  const resetStoredProcedureState = useResetRecoilState(storedProcedureAtom);
   const classes = useStyles();
   const {
     isLoading: isLoadingResources,
@@ -56,8 +62,8 @@ const Resources = ({
   const canEdit = useCanEdit();
 
   const [expanded, setExpanded] = React.useState([]);
-  const [expandNow, setExpandNow] = React.useState([]);
-
+  const [selectedEndpoint, setSelectedEndpoint] = React.useState(0);
+  const [pathArr, setPathArr] = React.useState([]);
   const handleToggle = (event, nodeIds) => {
     setExpanded(nodeIds);
   };
@@ -69,10 +75,30 @@ const Resources = ({
   };
   useEffect(() => {
     //console.log(treeNodeIndex);
+
     setExpanded((oldExpanded) =>
       oldExpanded.length === 0 ? Array.from(Array(1000).keys()) : []
     );
   }, []);
+  useEffect(() => {
+    var tempArr = [];
+    simulateData?.data?.map((item) => {
+      var tempEndpoint = item["endpoint"];
+      var tempPath;
+      if (tempEndpoint.includes("?")) {
+        tempPath = tempEndpoint?.slice(
+          tempEndpoint.indexOf("/") + 1,
+          tempEndpoint.indexOf("?")
+        );
+      } else {
+        tempPath = tempEndpoint.substr(1);
+      }
+      if (tempArr.indexOf(tempPath) === -1) {
+        tempArr.push(tempPath);
+      }
+    });
+    setPathArr(tempArr);
+  }, [simulateData]);
 
   const showAddResourceDialog = () => {
     if (canEdit()) {
@@ -91,7 +117,7 @@ const Resources = ({
     });
   };
 
-  if (isLoadingResources) {
+  if (isLoadingResources || (currentTab == 1 && !simulateData)) {
     return (
       <LoaderWithMessage
         message='Fetching resources'
@@ -144,7 +170,7 @@ const Resources = ({
           <CircularProgress size='16px' className='mr-2' />
         )}
 
-        {canEdit() && (
+        {canEdit() && currentTab == 0 && (
           <AppIcon
             style={{ padding: "0", margin: "0" }}
             onClick={showAddResourceDialog}
@@ -153,116 +179,210 @@ const Resources = ({
           </AppIcon>
         )}
       </div>
-      {/* <Button onClick={handleExpandClick}>
-        {expanded.length === 0 ? "Expand all" : "Collapse all"}
-      </Button> */}
 
-      {!_.isEmpty(resources) ? (
-        // {true ? (
+      {currentTab == 0 &&
+        (!_.isEmpty(resources) ? (
+          <TreeView
+            expanded={expanded}
+            aria-label='controlled'
+            onNodeToggle={handleToggle}
+            className={classes.root}
+            defaultCollapseIcon={
+              <ArrowDropDownIcon style={{ color: Colors.neutral.gray3 }} />
+            }
+            defaultExpandIcon={
+              <ArrowRightIcon style={{ color: Colors.neutral.gray3 }} />
+            }
+            style={{ pointerEvents: "auto" }}
+            selected={selectedIndex}
+          >
+            {resources?.map((resource, resourceIndex) => {
+              const resourceNodeIndex = treeNodeIndex++;
+              // console.log(resource);
+              return (
+                <ResourceTreeItem
+                  currentTab={currentTab}
+                  key={resourceNodeIndex}
+                  nodeId={resourceNodeIndex}
+                  resource={resource}
+                  resetSelectedOperation={() => {
+                    resetSelectedOperation();
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    resetSelectedOperation();
+                  }}
+                >
+                  {resource?.path && !_.isEmpty(resource?.path)
+                    ? resource?.path?.map((path, pathIndex) => {
+                        const pathNodeId = treeNodeIndex++;
 
-        <TreeView
-          expanded={expanded}
-          aria-label='controlled'
-          onNodeToggle={handleToggle}
-          className={classes.root}
-          defaultCollapseIcon={
-            <ArrowDropDownIcon style={{ color: Colors.neutral.gray3 }} />
-          }
-          defaultExpandIcon={
-            <ArrowRightIcon style={{ color: Colors.neutral.gray3 }} />
-          }
-          style={{ pointerEvents: "auto" }}
-          selected={selectedIndex}
-        >
-          {resources?.map((resource, resourceIndex) => {
-            const resourceNodeIndex = treeNodeIndex++;
+                        return (
+                          <PathTreeItem
+                            currentTab={currentTab}
+                            key={pathNodeId}
+                            nodeId={pathNodeId}
+                            resourceId={resource?.resourceId}
+                            path={path}
+                            resetSelectedOperation={() => {
+                              resetSelectedOperation();
+                            }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              resetSelectedOperation();
+                            }}
+                          >
+                            {path?.operations && !_.isEmpty(path?.operations)
+                              ? path?.operations?.map(
+                                  (operation, operationIndex) => {
+                                    const operationNodeId = treeNodeIndex++;
 
-            return (
-              <ResourceTreeItem
-                key={resourceNodeIndex}
-                nodeId={resourceNodeIndex}
-                resource={resource}
-                resetSelectedOperation={() => {
-                  resetSelectedOperation();
-                }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  resetSelectedOperation();
-                }}
-              >
-                {resource?.path && !_.isEmpty(resource?.path)
-                  ? resource?.path?.map((path, pathIndex) => {
-                      const pathNodeId = treeNodeIndex++;
+                                    return (
+                                      <OperationTreeItem
+                                        currentTab={currentTab}
+                                        key={operationNodeId}
+                                        nodeId={operationNodeId}
+                                        resourceId={resource?.resourceId}
+                                        pathId={path?.pathId}
+                                        type={operation?.operationType}
+                                        operation={operation}
+                                        resetSelectedOperation={() => {
+                                          resetSelectedOperation();
+                                        }}
+                                        onClick={(e) => {
+                                          resetStoredProcedureState();
 
-                      return (
-                        <PathTreeItem
-                          key={pathNodeId}
-                          nodeId={pathNodeId}
-                          resourceId={resource?.resourceId}
-                          path={path}
-                          resetSelectedOperation={() => {
-                            resetSelectedOperation();
-                          }}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            resetSelectedOperation();
-                          }}
-                        >
-                          {path?.operations && !_.isEmpty(path?.operations)
-                            ? path?.operations?.map(
-                                (operation, operationIndex) => {
-                                  const operationNodeId = treeNodeIndex++;
+                                          e.stopPropagation();
+                                          onOperationSelect(
+                                            operationNodeId,
+                                            resource,
+                                            path,
+                                            operation
+                                          );
+                                        }}
+                                      />
+                                    );
+                                  }
+                                )
+                              : null}
+                          </PathTreeItem>
+                        );
+                      })
+                    : null}
+                </ResourceTreeItem>
+              );
+            })}
+          </TreeView>
+        ) : (
+          <div className='flex-1 justify-center flex flex-col items-center'>
+            <img
+              src={EmptyState}
+              className='mb-1'
+              style={{ height: "120px", width: "120px" }}
+            />
 
-                                  return (
-                                    <OperationTreeItem
-                                      key={operationNodeId}
-                                      nodeId={operationNodeId}
-                                      resourceId={resource?.resourceId}
-                                      pathId={path?.pathId}
-                                      type={operation?.operationType}
-                                      operation={operation}
-                                      resetSelectedOperation={() => {
-                                        resetSelectedOperation();
-                                      }}
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        onOperationSelect(
-                                          operationNodeId,
-                                          resource,
-                                          path,
-                                          operation
-                                        );
-                                      }}
-                                    />
-                                  );
-                                }
-                              )
-                            : null}
-                        </PathTreeItem>
-                      );
-                    })
-                  : null}
-              </ResourceTreeItem>
-            );
-          })}
-        </TreeView>
-      ) : (
-        <div className='flex-1 justify-center flex flex-col items-center'>
-          <img
-            src={EmptyState}
-            className='mb-1'
-            style={{ height: "120px", width: "120px" }}
-          />
+            <p className='text-overline2 mb-5'>You don’t have any resource</p>
 
-          <p className='text-overline2 mb-5'>You don’t have any resource</p>
+            {canEdit() && (
+              <PrimaryButton onClick={showAddResourceDialog}>
+                Create Resource
+              </PrimaryButton>
+            )}
+          </div>
+        ))}
+      {currentTab == 1 &&
+        (!_.isEmpty(pathArr) ? (
+          <TreeView
+            expanded={expanded}
+            aria-label='controlled'
+            onNodeToggle={handleToggle}
+            className={classes.root}
+            defaultCollapseIcon={
+              <ArrowDropDownIcon style={{ color: Colors.neutral.gray3 }} />
+            }
+            defaultExpandIcon={
+              <ArrowRightIcon style={{ color: Colors.neutral.gray3 }} />
+            }
+            style={{ pointerEvents: "auto" }}
+          >
+            {pathArr && !_.isEmpty(pathArr)
+              ? pathArr?.map((path, pathIndex) => {
+                  const pathNodeId = treeNodeIndex++;
 
-          {canEdit() && (
-            <PrimaryButton onClick={showAddResourceDialog}>
-              Create Resource
-            </PrimaryButton>
-          )}
-        </div>
-      )}
+                  return (
+                    <PathTreeItem
+                      key={pathNodeId}
+                      nodeId={pathNodeId}
+                      // resourceId={resource?.resourceId}
+                      path={path}
+                      resetSelectedOperation={() => {
+                        resetSelectedOperation();
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        resetSelectedOperation();
+                      }}
+                    >
+                      {simulateData?.data && !_.isEmpty(simulateData?.data)
+                        ? simulateData.data?.map(
+                            (operation, operationIndex) => {
+                              // console.log(operation);
+                              if (
+                                operation?.endpoint == "/" + path ||
+                                operation?.endpoint.includes("/" + path + "?")
+                              ) {
+                                const operationNodeId = treeNodeIndex++;
+
+                                var opName = operation?.operation_id?.slice(
+                                  operation.operation_id.indexOf("/") + 1
+                                );
+                                return (
+                                  <OperationTreeItem
+                                    key={operationNodeId}
+                                    nodeId={operationNodeId}
+                                    selected={selectedEndpoint}
+                                    pathId={path?.pathId}
+                                    type={operation?.httpMethod.toUpperCase()}
+                                    operation={opName}
+                                    resetSelectedOperation={() => {
+                                      resetSelectedOperation();
+                                    }}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+
+                                      setSelectedEndpoint(operationIndex);
+                                      if (operationIndex != selectedEndpoint) {
+                                        onSimulateSelect(operation);
+                                      }
+                                    }}
+                                  />
+                                );
+                              }
+                            }
+                          )
+                        : null}
+                    </PathTreeItem>
+                  );
+                })
+              : null}
+          </TreeView>
+        ) : (
+          <div className='flex-1 justify-center flex flex-col items-center'>
+            <img
+              src={EmptyState}
+              className='mb-1'
+              style={{ height: "120px", width: "120px" }}
+            />
+
+            <p className='text-overline2 mb-5'>You don’t have any Paths</p>
+
+            {canEdit() && (
+              <PrimaryButton onClick={showAddResourceDialog}>
+                Create Resource
+              </PrimaryButton>
+            )}
+          </div>
+        ))}
     </div>
   );
 };

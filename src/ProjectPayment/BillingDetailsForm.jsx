@@ -80,9 +80,9 @@ const BillingDetailsForm = ({ disabled = false, formRef }) => {
             } else setZipValidator(false);
           } else {
             setZipValidator(true);
-            console.log("Country-Zip Validation Not available");
+            // console.log("Country-Zip Validation Not available");
           }
-          console.log(zipValidator);
+          // console.log(zipValidator);
 
           // }
           // console.log(values.country);

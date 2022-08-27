@@ -30,7 +30,7 @@ const acc_token = getAccessToken();
 const pricingData = async () => {
   const { data } = await client.get(endpoint.products2);
   return data;
-};  
+};
 
 const userProfile = async () => {
   try {
@@ -50,6 +50,7 @@ export const usePricingData = () => {
 };
 
 const Pricing = () => {
+  console.log(acc_token);
   const history = useHistory();
   const headings = ["PROJECTS", "API LIFECYCLE", "CONNECTORS", "VALIDITY"];
   const rowNames = [
@@ -77,7 +78,7 @@ const Pricing = () => {
     "heading": headings[0],
     "rowName": rowNames[0],
     "plan_data": [],
-    "Enterprise": ["Unlimited", "Unlimited", "Unlimited", "Unlimited"],
+    "Enterprise": ["Custom", "Custom", "Custom", "Custom"],
   };
   var apiLifecycleCardData = {
     "heading": headings[1],
@@ -105,8 +106,8 @@ const Pricing = () => {
   const [durationMY, setDurationMY] = React.useState("M");
   const [trialButton, setTrialButton] = React.useState("SUBSCRIBE");
   const [basicButton, setBasicButton] = React.useState("SUBSCRIBE");
-  const [proButton, setProButton] = React.useState("SUBSCRIBE");
   const [pocButton, setPOCButton] = React.useState("SUBSCRIBE");
+  const [proButton, setProButton] = React.useState("SUBSCRIBE");
   //const [user_id, setUserId] = useState();
 
   const planTypeCardData2 = [];
@@ -120,7 +121,7 @@ const Pricing = () => {
   const pricingData2 = async () => {
     const { data } = await client.get(endpoint.products2, {
       headers: {
-        user_id: user_id
+        user_id: user_id,
       },
     });
     return data;
@@ -163,12 +164,11 @@ const Pricing = () => {
     return dateObject;
   }
 
-/*   useEffect(() => {      
+  /*   useEffect(() => {      
 
   }, [user_id]) */
 
   useEffect(() => {
-
     if (!_.isEmpty(data)) {
       setEndSubDate(data?.["subscription_ends_at"]);
       setRenewSub(data?.["subscription_renews_at"]);
@@ -328,7 +328,7 @@ const Pricing = () => {
       validityCardData
     );
     cardHeaderData.map((item) => {
-      for (const key in item) {        
+      for (const key in item) {
         if (
           pricing_data?.products.length < 3 &&
           item?.["plan_data"]?.length == 0
@@ -345,7 +345,7 @@ const Pricing = () => {
             item?.["plan_data"].push(item["Trial"]);
             item?.["plan_data"].push(item["Basic"]);
             item?.["plan_data"].push(item["Enterprise"]);
-          } 
+          }
         }
         if (
           pricing_data?.products.length == 3 &&

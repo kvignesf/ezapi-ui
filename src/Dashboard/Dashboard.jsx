@@ -12,14 +12,15 @@ import client, { endpoint } from "../shared/network/client";
 import { getAccessToken } from "../shared/storage";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
-import DashboardSharpIcon from "@material-ui/icons/DashboardSharp";
+// import DashboardSharpIcon from "@material-ui/icons/DashboardSharp";
+import { ReactComponent as DashboardSharpIcon } from "../static/images/dashboard_logo.svg";
 import { List, ListItem } from "@material-ui/core";
 import AddIcon from "@material-ui/icons/Add";
 
 import imageLogo from "../static/images/logo/connectoLogo.svg";
 import { ReactComponent as OrderHistoryIcon } from "../static/images/order-history.svg";
 import { ReactComponent as PricingPageIcon } from "../static/images/pricing-page.svg";
-import { ReactComponent as ProductTourIcon } from "../static/images/product-tour.svg";
+import { ReactComponent as ProductTourIcon } from "../static/images/product_tour2.svg";
 import PricingPageLogo from "../icons/pricingPage_logo.png";
 import Colors from "../shared/colors";
 import routes, { generateRoute } from "../shared/routes";
@@ -65,6 +66,7 @@ const useStyles = makeStyles({
 });
 
 const Dashboard = ({ selectedIndex, children, pricingDefaultCheck }) => {
+  // console.log(acc_token);
   const styles = useStyles();
   const history = useHistory();
   const [dialog, setDialog] = useState({
@@ -98,8 +100,7 @@ const Dashboard = ({ selectedIndex, children, pricingDefaultCheck }) => {
         history.push(routes.orders);
       } else if (index === 3) {
         history.push(routes.pricing);
-      }
-      else if (index === 4) {
+      } else if (index === 4) {
         history.push(routes.productTour);
       }
     }
@@ -171,10 +172,10 @@ const Dashboard = ({ selectedIndex, children, pricingDefaultCheck }) => {
   //   }, []);
 
   return (
-    <div className="flex flex-col">
+    <div className='flex flex-col'>
       <Dialog
         onClose={handleCloseDialog}
-        aria-labelledby="dashboard-dialog"
+        aria-labelledby='dashboard-dialog'
         open={isLoggingOut || (dialog?.show ?? false)}
         fullWidth
         PaperProps={{
@@ -195,15 +196,15 @@ const Dashboard = ({ selectedIndex, children, pricingDefaultCheck }) => {
           />
         )}
 
-        {isLoggingOut && <div className="p-4">Logging you out ...</div>}
+        {isLoggingOut && <div className='p-4'>Logging you out ...</div>}
       </Dialog>
 
       <header
-        className="fixed w-full top-0 bg-brand-primary flex flex-row p-4 items-center"
+        className='fixed w-full top-0 bg-brand-primary flex flex-row p-4 items-center'
         style={{ height: "56px", zIndex: "99" }}
       >
         {/* EZAPI logo */}
-        <div className="w-full flex flex-row">
+        <div className='w-full flex flex-row'>
           {/* <EzapiLogo
             style={{
               marginRight: "0.5rem",
@@ -211,16 +212,12 @@ const Dashboard = ({ selectedIndex, children, pricingDefaultCheck }) => {
           /> */}
           <img
             src={imageLogo}
-            alt="conektto logo"
-            className="p-1"
-            style={{ maxWidth: "128px", maxHeight: "50px"}}
+            alt='conektto logo'
+            className='p-1'
+            style={{ maxWidth: "128px", maxHeight: "50px" }}
           />
 
-          <img
-            src={Logo}
-            alt="conektto logo"
-            style={{ maxWidth: "128px" }}
-          />
+          <img src={Logo} alt='conektto logo' style={{ maxWidth: "128px" }} />
 
           {/* <h6 className="text-white whitespace-nowrap ml-1 mt-1">
           CONEKTTO
@@ -237,7 +234,7 @@ const Dashboard = ({ selectedIndex, children, pricingDefaultCheck }) => {
         />
 
         {/* Name */}
-        <p className="text-overline2 text-white whitespace-nowrap mr-2">
+        <p className='text-overline2 text-white whitespace-nowrap mr-2'>
           {firstName} {lastName}
         </p>
 
@@ -245,8 +242,8 @@ const Dashboard = ({ selectedIndex, children, pricingDefaultCheck }) => {
         <ProfileMenuWithIcon logout={logout} />
       </header>
 
-      <section className="h-full flex flex-row my-14">
-        <div className="h-full w-52 fixed left-0 border-r-2 border-gray-100">
+      <section className='h-full flex flex-row my-14'>
+        <div className='h-full w-52 fixed left-0 border-r-2 border-gray-100'>
           <List>
             <ListItem
               button
@@ -301,10 +298,11 @@ const Dashboard = ({ selectedIndex, children, pricingDefaultCheck }) => {
             >
               <ListItemIcon style={{ minWidth: "0", marginRight: "1rem" }}>
                 <DashboardSharpIcon
-                  className={`${classNames({
-                    "text-brand-primary": selectedIndex === 1,
-                    "text-neutral-gray4": selectedIndex !== 1,
-                  })}`}
+                  fill={
+                    selectedIndex === 1
+                      ? Colors.brand.primary
+                      : Colors.neutral.gray4
+                  }
                 />
               </ListItemIcon>
               <p
@@ -395,10 +393,11 @@ const Dashboard = ({ selectedIndex, children, pricingDefaultCheck }) => {
             >
               <ListItemIcon style={{ minWidth: "0", marginRight: "1rem" }}>
                 <ProductTourIcon
-                  className={`${classNames({
-                    "text-brand-primary": selectedIndex === 4,
-                    "text-neutral-gray4": selectedIndex !== 4,
-                  })}`}
+                  fill={
+                    selectedIndex === 4
+                      ? Colors.brand.primary
+                      : Colors.neutral.gray4
+                  }
                 />
               </ListItemIcon>
               <p
@@ -410,12 +409,11 @@ const Dashboard = ({ selectedIndex, children, pricingDefaultCheck }) => {
                 Product Tour
               </p>
             </ListItem>
-
           </List>
         </div>
 
         <div
-          className="ml-52 w-full"
+          className='ml-52 w-full'
 
           // style={{ height: `calc(100vh - 180px)` }}
         >

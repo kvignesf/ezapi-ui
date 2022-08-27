@@ -19,14 +19,12 @@ import client, { endpoint } from "../shared/network/client";
 import Dashboard from "../Dashboard";
 import AppIcon from "../shared/components/AppIcon";
 import AddProject from "../AddProject";
-import InviteCollaborators from "../shared/components/InviteCollaborators";
 import ModifyCollaborators from "../ModifyCollaborators/ModifyCollaborators";
 import InitialsAvatar from "../shared/components/InitialsAvatar";
 import Colors from "../shared/colors";
 import RenameProject from "./RenameProject/RenameProject";
 import DeleteProject from "./DeleteProject/DeleteProject";
-import moment from 'moment';
-
+import moment from "moment";
 
 import {
   useDownloadArtifacts,
@@ -34,6 +32,7 @@ import {
   useDownloadSpecs,
   useGetProjects,
   useDownloadDatabase,
+  useDownloadApigee,
 } from "./projectQueries";
 import EmptyLogo from "../static/images/empty-state.svg";
 import { PrimaryButton } from "../shared/components/AppButton";
@@ -41,17 +40,16 @@ import LoaderWithMessage from "../shared/components/LoaderWithMessage";
 import { getUserId } from "../shared/storage";
 import routes, { generateRoute } from "../shared/routes";
 import Logo from "../static/images/logo/svg.svg";
+import ApigeeLogo from "../static/images/logo/CloudLogo.png";
 import DatabaseLogo from "../static/images/logo/database_download.svg";
 import { useCanEdit } from "../shared/utils";
 import { getAccessToken } from "../shared/storage";
 import { fetchEventSource } from "@microsoft/fetch-event-source";
-import { useRecoilState } from 'recoil';
-import projectAtom, { defaultState } from '../AddProject/projectAtom';
-import {downloadIconSts, downloadIconProj} from '../Dashboard/dwnDataGenAtom';
-
+import { useRecoilState } from "recoil";
+import projectAtom, { defaultState } from "../AddProject/projectAtom";
+import { downloadIconSts, downloadIconProj } from "../Dashboard/dwnDataGenAtom";
 
 //import { NativeEventSource, EventSourcePolyfill } from 'event-source-polyfill';
-
 
 const acc_token = getAccessToken();
 
@@ -67,7 +65,7 @@ const MembersImages = ({ project, ...rest }) => {
       {...rest}
     >
       {_.isEmpty(project?.members) && loggedInUserId === project?.author ? (
-        <p className="capitalize text-brand-secondary text-overline2">
+        <p className='capitalize text-brand-secondary text-overline2'>
           Invite Collaborators
         </p>
       ) : null}
@@ -107,7 +105,7 @@ const MembersImages = ({ project, ...rest }) => {
       })}
 
       {project?.members?.length > 3 ? (
-        <p className="text-overline2 self-center ml-2">
+        <p className='text-overline2 self-center ml-2'>
           + {project?.members?.length - 3} more
         </p>
       ) : null}
@@ -133,6 +131,8 @@ const ProjectRow = ({
     useDownloadSpecs();
   const { isLoading: isDownloadingDatabase, mutate: downloadDatabase } =
     useDownloadDatabase();
+  const { isLoading: isDownloadingApigee, mutate: downloadApigee } =
+    useDownloadApigee();
   const { isLoading: isDownloadingArtifacts, mutate: downloadArtifacts } =
     useDownloadArtifacts();
   const { isLoading: isDownloadingCodegen, mutate: downloadCodegen } =
@@ -150,6 +150,10 @@ const ProjectRow = ({
     downloadDatabase({ projectId: project?.projectId });
   };
 
+  const onDownloadApigee = () => {
+    downloadApigee({ projectId: project?.projectId });
+  };
+
   const onDownloadArtifact = () => {
     downloadArtifacts({ projectId: project?.projectId });
   };
@@ -159,21 +163,23 @@ const ProjectRow = ({
   };
 
   const [enableIcon, setEnableIcon] = useRecoilState(downloadIconSts);
-  const [projectIden, setProjectIden] = useRecoilState(downloadIconProj); 
-  
+  const [projectIden, setProjectIden] = useRecoilState(downloadIconProj);
+
   // console.log("enableIcon..", enableIcon);
-  // console.log("projectIden..", projectIden);  
+  // console.log("projectIden..", projectIden);
   useEffect(() => {
-    if(project?.lastDataGenerated){
-      const p = "Download Data ".concat(moment(parseInt(project?.lastDataGenerated)).format('llll'));
+    if (project?.lastDataGenerated) {
+      const p = "Download Data ".concat(
+        moment(parseInt(project?.lastDataGenerated)).format("llll")
+      );
       setLastDataGenerated(p);
     }
   }, [project?.lastDataGenerated]);
 
   return (
-    <tr className="text-overline2">
+    <tr className='text-overline2'>
       <td
-        className="p-3 text-brand-secondary cursor-pointer"
+        className='p-3 text-brand-secondary cursor-pointer'
         onClick={(event) => {
           event?.preventDefault();
           event?.stopPropagation();
@@ -196,12 +202,12 @@ const ProjectRow = ({
         <TimeAgo date={datetime} />
       </td>
       <td>
-        <p className="text-overline2">{project?.status}</p>
+        <p className='text-overline2'>{project?.status}</p>
       </td>
-      <td align="center">
-        <div className="flex flex-row items-center gap-2">
+      <td align='center'>
+        <div className='flex flex-row items-center gap-2'>
           {/* Codegen download */}
-          <div className="w-8">
+          <div className='w-8'>
             {project?.status?.toLowerCase() === "complete" &&
               project?.projectType?.toLowerCase() !== "schema" &&
               !isDownloadingCodegen && (
@@ -236,99 +242,137 @@ const ProjectRow = ({
               <CircularProgress style={{ width: "24px", height: "24px" }} />
             )}
           </div>
-
           {/* Spec download */}
-          {project?.status?.toLowerCase() === "complete" &&
-            project?.publishStatus?.SpecGeneration?.success &&
-            !isDownloadingSpecs && (
-              <Tooltip title="Download Specs">
-                <div
-                  style={{
-                    width: "32px",
-                    height: "32px",
-                  }}
-                >
-                  <img
-                    src={Logo}
-                    alt="conektto logo"
-                    className="cursor-pointer"
-                    onClick={(e) => {
-                      e?.preventDefault();
-                      e?.stopPropagation();
-
-                      onDownloadSpecs();
+          <div className='w-8'>
+            {" "}
+            {project?.status?.toLowerCase() === "complete" &&
+              project?.publishStatus?.SpecGeneration?.success &&
+              !isDownloadingSpecs && (
+                <Tooltip title='Download Specs'>
+                  <div
+                    style={{
+                      width: "32px",
+                      height: "32px",
                     }}
-                  />
-                </div>
-              </Tooltip>
-            )}
+                  >
+                    <img
+                      src={Logo}
+                      alt='conektto logo'
+                      className='cursor-pointer'
+                      onClick={(e) => {
+                        e?.preventDefault();
+                        e?.stopPropagation();
 
-          {isDownloadingSpecs && (
-            <CircularProgress style={{ width: "24px", height: "24px" }} />
-          )}
-
-          
-          {/* Artefact download */}
-          {project?.status?.toLowerCase() === "complete" &&
-            project?.publishStatus?.SankyGeneration?.success &&
-            project?.publishStatus?.ArtefactGeneration?.success &&
-            !isDownloadingArtifacts && (
-              <AppIcon
-                onClick={(e) => {
-                  e?.preventDefault();
-                  e?.stopPropagation();
-
-                  onDownloadArtifact();
-                }}
-              >
-                <Tooltip title="Download Artifacts">
-                  <SystemUpdateAltIcon
-                    style={{ color: Colors.brand.primary }}
-                  />
+                        onDownloadSpecs();
+                      }}
+                    />
+                  </div>
                 </Tooltip>
-              </AppIcon>
+              )}
+            {isDownloadingSpecs && (
+              <CircularProgress style={{ width: "24px", height: "24px" }} />
             )}
+          </div>
 
-          {isDownloadingArtifacts && (
-            <CircularProgress style={{ width: "24px", height: "24px" }} />
-          )}
+          {/* Artefact download */}
+          <div className='w-8'>
+            {" "}
+            {project?.status?.toLowerCase() === "complete" &&
+              project?.publishStatus?.SankyGeneration?.success &&
+              project?.publishStatus?.ArtefactGeneration?.success &&
+              !isDownloadingArtifacts && (
+                <AppIcon
+                  onClick={(e) => {
+                    e?.preventDefault();
+                    e?.stopPropagation();
 
-          {/* project?.isConnectDB && (project?.projectId == projectIden && enableIcon)) || ((project?.datagen_count > 0 || project?.datagen_perf_count > 0) && (projectIden == undefined || project?.projectId != projectIden) )) &&
-            !isDownloadingDatabase */}
-          {/* Data download */}
-          {project?.status?.toLowerCase() === "complete" &&
-            project?.isConnectDB && (project?.datagen_count > 0 || project?.datagen_perf_count > 0) && (project?.lastDataGenRequestOffline) &&
-            !isDownloadingDatabase && (
-              <Tooltip title={lastDataGenerated}>
-                <div
-                  style={{
-                    marginTop: "12px",
-                    width: "36px",
-                    height: "36px",
+                    onDownloadArtifact();
                   }}
                 >
-                  <img
-                    src={DatabaseLogo}
-                    alt="conektto logo"
-                    className="cursor-pointer"
-                    onClick={(e) => {
-                      e?.preventDefault();
-                      e?.stopPropagation();
-
-                      onDownloadDatabase();
-                    }}
-                  />
-                </div>
-              </Tooltip>
+                  <Tooltip title='Download Artifacts'>
+                    <SystemUpdateAltIcon
+                      style={{ color: Colors.brand.primary }}
+                    />
+                  </Tooltip>
+                </AppIcon>
+              )}
+            {isDownloadingArtifacts && (
+              <CircularProgress style={{ width: "24px", height: "24px" }} />
             )}
+          </div>
 
-          {isDownloadingDatabase && (
-            <CircularProgress style={{ width: "24px", height: "24px" }} />
-          )}
+          {/* Data download */}
+          <div className='w-8'>
+            {" "}
+            {project?.status?.toLowerCase() === "complete" &&
+              project?.isConnectDB &&
+              (project?.datagen_count > 0 || project?.datagen_perf_count > 0) &&
+              project?.lastDataGenRequestOffline &&
+              !isDownloadingDatabase && (
+                <Tooltip title={lastDataGenerated}>
+                  <div
+                    style={{
+                      marginTop: "12px",
+                      width: "36px",
+                      height: "36px",
+                    }}
+                  >
+                    <img
+                      src={DatabaseLogo}
+                      alt='conektto logo'
+                      className='cursor-pointer'
+                      onClick={(e) => {
+                        e?.preventDefault();
+                        e?.stopPropagation();
+
+                        onDownloadDatabase();
+                      }}
+                    />
+                  </div>
+                </Tooltip>
+              )}
+            {isDownloadingDatabase && (
+              <CircularProgress style={{ width: "24px", height: "24px" }} />
+            )}
+          </div>
+          {/* Apigee download */}
+          <div className='w-8'>
+            {" "}
+            {project?.status?.toLowerCase() === "complete" &&
+              project?.publishStatus?.SankyGeneration?.success &&
+              project?.publishStatus?.ArtefactGeneration?.success &&
+              !isDownloadingApigee && (
+                <Tooltip title='Download Apigee'>
+                  <div
+                    style={{
+                      marginTop: "12px",
+                      width: "36px",
+                      height: "36px",
+                    }}
+                    className=' -ml-1'
+                  >
+                    <img
+                      src={ApigeeLogo}
+                      alt='Apigee logo'
+                      className='cursor-pointer'
+                      onClick={(e) => {
+                        e?.preventDefault();
+                        e?.stopPropagation();
+
+                        onDownloadApigee();
+                      }}
+                    />
+                  </div>
+                </Tooltip>
+              )}
+            {isDownloadingApigee && (
+              <CircularProgress style={{ width: "24px", height: "24px" }} />
+            )}
+          </div>
         </div>
       </td>
 
-      <td align="center">
+      <td align='center'>
         <AppIcon onClick={handleOnOptionsClick}>
           <MoreVertIcon />
         </AppIcon>
@@ -461,12 +505,12 @@ const Content = ({ showCreateProjectDialog }) => {
   if (isFetchingProjects) {
     return <LoaderWithMessage message={"Fetching Projects"} />;
   }
-
+  // console.log(dialog?.data);
   return (
-    <div className="p-3 h-full">
+    <div className='p-3 h-full'>
       <Dialog
         onClose={handleCloseDialog}
-        aria-labelledby="projects-dialog"
+        aria-labelledby='projects-dialog'
         open={dialog?.show ?? false}
         fullWidth
         PaperProps={{
@@ -492,20 +536,20 @@ const Content = ({ showCreateProjectDialog }) => {
       </Dialog>
 
       {projects && !_.isEmpty(projects) && (
-        <table className="w-full">
-          <tr className="mr-16 bg-neutral-gray6 w-full text-left text-neutral-gray4 text-mediumLabel">
-            <th className="p-2 w-1/5 rounded-tl-md rounded-bl-md">
+        <table className='w-full'>
+          <tr className='mr-16 bg-neutral-gray6 w-full text-left text-neutral-gray4 text-mediumLabel'>
+            <th className='p-2 w-1/5 rounded-tl-md rounded-bl-md'>
               API PROJECT
             </th>
-            <th className="">COLLABORATORS</th>
-            <th className="">LAST ACTIVITY</th>
-            <th className="">STATUS</th>
-            <th className="">ARTIFACTS</th>
-            <th className="rounded-tr-md rounded-br-md text-center">
+            <th className=''>COLLABORATORS</th>
+            <th className=''>LAST ACTIVITY</th>
+            <th className=''>STATUS</th>
+            <th className=''>ARTIFACTS</th>
+            <th className='rounded-tr-md rounded-br-md text-center'>
               {isFetchingProjectsBg ? (
-                <CircularProgress size="20px" />
+                <CircularProgress size='20px' />
               ) : (
-                <Tooltip title="Refresh list">
+                <Tooltip title='Refresh list'>
                   <ReplayIcon
                     style={{
                       width: "20px",
@@ -542,16 +586,16 @@ const Content = ({ showCreateProjectDialog }) => {
       {/* Empty state */}
       {!projects ||
         (_.isEmpty(projects) && (
-          <div className="h-full flex flex-col items-center justify-center">
+          <div className='h-full flex flex-col items-center justify-center'>
             <img
               src={EmptyLogo}
-              className="mb-4"
+              className='mb-4'
               style={{ width: "100px", height: "100px" }}
             />
 
-            <h5 className="mb-3">No API project available</h5>
+            <h5 className='mb-3'>No API project available</h5>
 
-            <h6 className="mb-11 text-neutral-gray3">
+            <h6 className='mb-11 text-neutral-gray3'>
               Start creating a new API project
             </h6>
 
@@ -603,7 +647,6 @@ const Projects = () => {
   //console.log(stay);
 
   if (data?.["plan_name"] === null && !stay) {
-    console.log("in");
     history.push(routes.pricing);
     // setRenderNow(false);
   }

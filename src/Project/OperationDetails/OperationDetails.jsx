@@ -14,6 +14,7 @@ import Request from "./Request/Request";
 import Response from "./Response/Response";
 import operationAtom from "../operationAtom";
 import { useGetOperation } from "../../shared/query/operationDetailsQuery";
+import { getOperation } from "../../shared/query/operationDetailsQuery";
 import TabLabel from "../../shared/components/TabLabel";
 import Constants from "../../shared/constants";
 import LoaderWithMessage from "../../shared/components/LoaderWithMessage";
@@ -41,6 +42,7 @@ const OperationDetails = ({
   projectType,
   ...props
 }) => {
+  // console.log(props.canEdit);
   const { projectId } = useParams();
   const tabsClasses = tabsStyles();
   const tabClasses = tabStyles();
@@ -48,6 +50,7 @@ const OperationDetails = ({
   const [operationState, setOperationState] = useRecoilState(
     operationAtomWithMiddleware
   );
+
   const getOperationMutation = useGetOperation();
 
   useEffect(() => {
@@ -60,50 +63,6 @@ const OperationDetails = ({
       });
     }
   }, [operationState?.operationIndex]);
-
-  // useEffect(() => {
-  //   if (getOperationMutation?.data?.getResponseApiData) {
-  //     const operationData = getOperationMutation?.data?.getResponseApiData;
-
-  //     setOperationState((operationState) => {
-  //       const clonedOperationState = _.cloneDeep(operationState);
-  //       let parsedOperationResponse = parseGetOperationResponseResponse(
-  //         operationData?.responseBody
-  //       );
-
-  //       if (!parsedOperationResponse || _.isEmpty(parsedOperationResponse)) {
-  //         parsedOperationResponse = [
-  //           {
-  //             responseCode: Constants.mandatoryResponseCode,
-  //             headers: [],
-  //             body: [],
-  //           },
-  //         ];
-  //       }
-
-  //       clonedOperationState.operationResponse = parsedOperationResponse;
-
-  //       return clonedOperationState;
-  //     });
-  //   }
-  // }, [getOperationMutation?.data?.getResponseApiData]);
-
-  // useEffect(() => {
-  //   if (getOperationMutation?.data?.getRequestApiData) {
-  //     const operationData = getOperationMutation?.data?.getRequestApiData;
-
-  //     setOperationState((operationState) => {
-  //       const clonedOperationState = _.cloneDeep(operationState);
-  //       const parsedOperationRequest = parseGetOperationRequestResponse(
-  //         operationData?.requestBody
-  //       );
-
-  //       clonedOperationState.operationRequest = parsedOperationRequest;
-
-  //       return clonedOperationState;
-  //     });
-  //   }
-  // }, [getOperationMutation?.data?.getRequestApiData]);
 
   if (getOperationMutation?.isLoading) {
     return (
@@ -166,6 +125,7 @@ const OperationDetails = ({
             {currentTab === 0 ? (
               <div className='h-full'>
                 <Request
+                  canEdit={props.canEdit}
                   getDetailsMutation={getOperationMutation}
                   projectType={projectType}
                 />

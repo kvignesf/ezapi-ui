@@ -72,6 +72,7 @@ const AddOrEditParameter = ({ parameter, onClose }) => {
     return null;
   }
 
+  // console.log(addParamError?.response);
   return (
     <div className='flex flex-col'>
       <div className='p-4 flex flex-row justify-between border-b-1'>
@@ -164,7 +165,11 @@ const AddOrEditParameter = ({ parameter, onClose }) => {
                             {...value}
                           >
                             {Constants.parameterDataTypes.map((type) => {
-                              return <MenuItem value={type}>{type}</MenuItem>;
+                              var upCaseType =
+                                type.charAt(0).toUpperCase() + type.slice(1);
+                              return (
+                                <MenuItem value={type}>{upCaseType}</MenuItem>
+                              );
                             })}
                           </Select>
                           {value?.error && (
@@ -235,7 +240,7 @@ const AddOrEditParameter = ({ parameter, onClose }) => {
                   />
                 </div>
 
-                <div className='mb-4'>
+                {/* <div className='mb-4'>
                   <label className='flex flex-row items-center h-5 w-min'>
                     <p className='text-overline2 mr-2'>Required</p>
                     <Field
@@ -257,7 +262,7 @@ const AddOrEditParameter = ({ parameter, onClose }) => {
                       }}
                     />
                   </label>
-                </div>
+                </div> */}
               </Form>
             )}
           </Formik>
@@ -265,7 +270,7 @@ const AddOrEditParameter = ({ parameter, onClose }) => {
 
         {addParamError && (
           <p className='text-accent-red text-overline2'>
-            {addParamError?.message}
+            {addParamError?.response?.data?.error}
           </p>
         )}
 
@@ -277,6 +282,11 @@ const AddOrEditParameter = ({ parameter, onClose }) => {
       </div>
 
       <div className='border-t-1 p-4 flex flex-row justify-end items-center'>
+        {/* {inviteCollaboratorsError && (
+          <p className='mb-3 text-overline2 text-accent-red'>
+            {inviteCollaboratorsError?.message}
+          </p>
+        )} */}
         {!isAddingParameter && !isEditingParameter ? (
           <>
             <TextButton
