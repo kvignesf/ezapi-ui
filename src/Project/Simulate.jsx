@@ -96,10 +96,10 @@ const Simulate = ({ simulateData }, props) => {
             placeholder='Endpoint'
             className={styles("").root}
             key={simulateData}
-            fullWidth
+            //fullWidth
             variant='outlined'
             /* styles the wrapper */
-            style={{ height }}
+            style={{ height, width : 1200 }}
             /* styles the label component */
             InputLabelProps={{
               style: {
@@ -173,10 +173,11 @@ const Simulate = ({ simulateData }, props) => {
           <TextField
             inputProps={{ readOnly: true }}
             key={simulateData}
-            fullWidth
+            //fullWidth
+            style={{ width : 1375 }}
             // id='responseBodyTextField'
             multiline
-            rows={6}
+            rows={11}
             value={textBoxValue}
           />
         </div>
@@ -207,10 +208,11 @@ const Simulate = ({ simulateData }, props) => {
           <TextField
             inputProps={{ readOnly: true }}
             key={simulateData}
-            fullWidth
+            //fullWidth
+            style={{ width : 1375, height: 400 }}
             id='responseBodyTextField'
             multiline
-            rows={6}
+            rows={11}
             value={responseData}
           />
         </div>
