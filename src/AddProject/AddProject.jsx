@@ -10,6 +10,7 @@ import {
 import { ReactComponent as Logo } from "../static/images/logo/connectoLogo.svg";
 import Button from "@mui/material/Button";
 import CloseIcon from "@material-ui/icons/Close";
+//import InfoIcon from '@mui/icons-material/Info';
 import { useRecoilState } from "recoil";
 import _ from "lodash";
 import { useHistory } from "react-router-dom";
@@ -62,7 +63,7 @@ const AddProject = ({ onClose, onSuccess }) => {
   const onAddProjectSuccess = (projectId) => {
     onSuccess(projectId);
   };
-
+  const deployenv = process.env.REACT_APP_DEPLOY_ENV;
   const {
     addProjectMutation,
     uploadSpecsMutation,
@@ -243,6 +244,11 @@ const AddProject = ({ onClose, onSuccess }) => {
       return updatedProjectDetails;
     });
   };
+
+  const openInNewTab = (url) => {
+  const newWindow = window.open(url, '_blank', 'noopener,noreferrer')
+  if (newWindow) newWindow.opener = null
+}
 
   const {
     mutate: testDatabase,
@@ -718,10 +724,14 @@ const AddProject = ({ onClose, onSuccess }) => {
               }}
               onClick={() => {
                 setIsDesign(null);
+                if (deployenv == "production") {
+                  //window.location.href='https://www.conektto.io/beta-signup'
+                  openInNewTab('https://www.conektto.io/beta-signup')
+                }                
               }}
               classes='flex-1 -ml-4 text-brand-secondary'
             >
-              Test Studio (coming soon...)
+              Test Studio (Click to sign-up for beta...)
             </PrimaryButton>
           </div>
         </div>
