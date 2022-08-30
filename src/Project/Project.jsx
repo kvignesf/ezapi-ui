@@ -70,6 +70,7 @@ import EzapiLogo from "../shared/components/EzapiLogo";
 import EzapiFooter from "../shared/components/EzapiFooter";
 import { getAccessToken, setUserId } from "../shared/storage";
 import Scrollbar from "react-smooth-scrollbar";
+// import schemaAtom from "../shared/atom/schemaAtom";
 
 const Project = () => {
   const acc_token = getAccessToken();
@@ -178,6 +179,9 @@ const Project = () => {
           console.error("There was an error!", error);
           // throw getApiError(error);
         });
+    }
+    if (currentTab == 0) {
+      resetSchemaState();
     }
   }, [currentTab]);
 
