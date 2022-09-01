@@ -8,8 +8,8 @@ import * as Yup from "yup";
 import "./Login.css";
 import { Select, MenuItem, OutlinedInput, Grid } from "@material-ui/core";
 import { LinkedIn } from "react-linkedin-login-oauth2";
-import linkedin from "react-linkedin-login-oauth2/assets/linkedin.png";
-import sso from "../icons/ssoLogo3.svg";
+import linkedin from "./images/LinkdInLogo.svg";
+import sso from "./images/SSOLogo.svg";
 import EzapiLogo from "./images/EzapiLogo.svg";
 import EnterpriseAPI from "./images/EnterpriseAPI.svg";
 import APIDesignStudio from "./images/APIDesignStudio.svg";
@@ -42,6 +42,7 @@ import { CircularProgress } from "@material-ui/core";
 import _ from "lodash";
 import { isUserLoggedIn } from "../shared/utils";
 import { useQuery } from "react-query";
+import { border, maxHeight } from "@mui/system";
 
 const acc_token = getAccessToken();
 const Login = () => {
@@ -171,7 +172,7 @@ const Login = () => {
   };
 
   return (
-    <div class='grid h-screen grid-cols-6'>
+    <div class='login-page grid h-screen grid-cols-6'>
       <div class='col-span-4 flex flex-col items-center justify-center'>
         <div class='grid grid-rows-5 mt-10 w-full h-full'>
           <div class='flex justify-center align-middle row-start-1 row-span-2'>
@@ -183,41 +184,167 @@ const Login = () => {
               </p>
             </div>
           </div>
-          <div class='flex flex-col justify-start align-top row-start-3 row-span-2 gap-7'>
-            <div class='flex flex-col items-center justify-center gap-2 mb-6'>
-              <p className='mb-2'>Sign in to continue to Conektto</p>
-              <LinkedIn
-                className='mb-2'
-                clientId={Constants.linkedClientId}
-                onFailure={handleFailure}
-                onSuccess={handleSuccess}
-                redirectUri={encodeURIComponent(redirect_uri)}
-                redirectPath={"/signin"}
-                scope='r_liteprofile r_emailaddress'
-              >
-                <img
-                  src={linkedin}
-                  alt='Log in with Linked In'
-                  style={{ width: "236px", height: "44px" }}
-                  className='w-full'
-                />
-              </LinkedIn>
-              <div class='relative flex items-center justify-center align-middle'>
-                <div class='mt-1 flex w-14 border-t border-black'></div>
-                <span class='flex-shrink px-1'>or</span>
-                <div class='mt-1  flex w-14 border-t border-black'></div>
-              </div>
 
-              <img
-                src={sso}
-                onClick={() => {
-                  setDialog(true);
-                }}
-                alt='Log in with SSO'
-                style={{ width: "260px", height: "44px" }}
-                className='w-full cursor-pointer ... '
-              />
-            </div>
+          <div class='flex flex-col justify-start justify-items-center items-center align-top row-start-3 row-span-2 gap-7'>
+            <Card
+              className='flex w-3/4 max-w-sm p-3 place-items-center justify-center items-center align-middle justify-items-center'
+              style={{ minHeight: "150px", maxHeight: "230px" }}
+            >
+              {" "}
+              {/* selection card */}
+              {!isLoading && !dialog && (
+                <>
+                  {!isLoggingIn && (
+                    <div class='flex flex-col items-center justify-center gap-2 mb-6'>
+                      <p className='mb-2'>Sign in to continue to Conektto</p>
+                      <LinkedIn
+                        className='mb-2'
+                        clientId={Constants.linkedClientId}
+                        onFailure={handleFailure}
+                        onSuccess={handleSuccess}
+                        redirectUri={encodeURIComponent(redirect_uri)}
+                        redirectPath={"/signin"}
+                        scope='r_liteprofile r_emailaddress'
+                      >
+                        <img
+                          src={linkedin}
+                          alt='Log in with Linked In'
+                          style={{ width: "260px", height: "44px" }}
+                          className='w-full'
+                        />
+                      </LinkedIn>
+                      <div class='relative flex items-center justify-center align-middle'>
+                        <div class='mt-1 flex w-14 border-t border-black'></div>
+                        <span class='flex-shrink px-1'>or</span>
+                        <div class='mt-1  flex w-14 border-t border-black'></div>
+                      </div>
+
+                      <img
+                        src={sso}
+                        onClick={() => {
+                          setDialog(true);
+                        }}
+                        alt='Log in with SSO'
+                        style={{ width: "260px", height: "44px" }}
+                        className='w-full mt-2 cursor-pointer ... '
+                      />
+                    </div>
+                  )}
+                  {isLoggingIn && (
+                    <div class='flex justify-center align-middle items-center'>
+                      <CircularProgress size={20} />
+                    </div>
+                  )}
+                  {loginError && (
+                    <p className='text-overline2 text-accent-red'>
+                      {loginError?.message}
+                    </p>
+                  )}
+                </>
+              )}
+              {isLoading && <LoaderWithMessage message='Loading data' />}
+              {/* SSO Card */}
+              {!isLoading && dialog && (
+                <>
+                  <div className=' flex flex-col'>
+                    {" "}
+                    <Formik
+                      initialValues={{ email: "" }}
+                      validate={(values) => {
+                        const errors = {};
+                        if (!values.email) {
+                          errors.email = "Required";
+                        } else if (
+                          !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(
+                            values.email
+                          )
+                        ) {
+                          errors.email = "Invalid email address";
+                        }
+                        return errors;
+                      }}
+                      onSubmit={(values, errors) => {
+                        SSOLogin(values);
+                      }}
+                      // validateOnChange={false}
+                      // validateOnBlur={false}
+                    >
+                      {(props) => {
+                        const {
+                          values,
+                          touched,
+                          errors,
+
+                          dirty,
+                          isSubmitting,
+                          handleChange,
+                          handleBlur,
+                          handleSubmit,
+                          handleReset,
+                        } = props;
+                        return (
+                          <Form
+                            onSubmit={handleSubmit}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                handleSubmit();
+                              }
+                            }}
+                          >
+                            <label htmlFor='email' style={{ display: "block" }}>
+                              Email
+                            </label>
+                            <input
+                              id='email'
+                              placeholder='Enter your email'
+                              type='text'
+                              value={values.email}
+                              onChange={handleChange}
+                              onBlur={handleBlur}
+                              // style={{ border: "1px solid red" }}
+                              className={
+                                errors.email && touched.email
+                                  ? "text-input error"
+                                  : "text-input"
+                              }
+                            />
+                            {errors.email && touched.email && (
+                              <div className='input-feedback'>
+                                {errors.email}
+                              </div>
+                            )}
+                            {ssoError && (
+                              <p className=' mt-5 text-overline2 text-accent-red ml-5 my-2'>
+                                {ssoError}
+                              </p>
+                            )}
+                            <div className='flex flex-row place-content-end gap-2'>
+                              {" "}
+                              <button
+                                id='button1'
+                                type='button'
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  setDialog(false);
+                                  setSsoError("");
+                                }}
+                                // disabled={isSubmitting}
+                              >
+                                Back
+                              </button>
+                              <button type='submit' id='button2'>
+                                Next
+                              </button>
+                            </div>
+                          </Form>
+                        );
+                      }}
+                    </Formik>
+                  </div>
+                </>
+              )}
+            </Card>
+
             <p className=' flex items-center justify-center text-overline3'>
               © 2022 Conektto INC. All Rights Reserved.
             </p>
