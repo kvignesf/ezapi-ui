@@ -442,6 +442,7 @@ const Project = () => {
   };
 
   const simulateAPI = (operation) => {
+    console.log(operation);
     fetch(process.env.REACT_APP_API_URL + "/simulate", {
       headers: {
         Authorization: `Bearer ${acc_token}`,
@@ -451,7 +452,7 @@ const Project = () => {
 
       body: JSON.stringify({
         projectId: projectId,
-        //projectId: "00d479e3-bb64-48ce-84e7-c28a4d8988c3",
+        operation_id: operation.operation_id,
         httpMethod: operation.httpMethod,
         endpoint: operation.endpoint,
       }),
