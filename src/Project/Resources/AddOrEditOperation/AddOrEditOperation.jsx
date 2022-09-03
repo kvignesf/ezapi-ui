@@ -6,21 +6,37 @@ import {
   Select,
   TextField,
 } from "@material-ui/core";
+import client from "../../../shared/network/client";
+import {
+  useGetRecoilValueInfo_UNSTABLE,
+  useRecoilState,
+  useSetRecoilState,
+  useRecoilValue,
+  getRecoilValueInfo,
+} from "recoil";
+import {
+  generateSyncOperationRequestRequest,
+  generateSyncOperationResponseRequest,
+  operationAtomWithMiddleware,
+  canEdit,
+} from "../../../shared/utils";
+// import { operationAtomWithMiddleware } from "../../../shared/utils";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import { ErrorMessage, Field, Form, Formik } from "formik";
 import _ from "lodash";
 import { useParams } from "react-router-dom";
 import * as Yup from "yup";
-
+import { useSyncOperation } from "../../../shared/query/operationDetailsQuery";
 import AppIcon from "../../../shared/components/AppIcon";
 import {
   PrimaryButton,
   TextButton,
 } from "../../../shared/components/AppButton";
+
 import operationSchema from "./operationSchema";
 import { useAddOperation, useEditOperation } from "./operationQuery";
 import EnterKeyCaptureInput from "../../../shared/components/EnterKeyCaptureInput";
-
+import { saveProject_ex } from "../../Project.jsx";
 const OperationType = [
   {
     id: "get",
@@ -87,6 +103,10 @@ const AddOrEditOperation = ({
   },
   onClose,
 }) => {
+  const getRecoilValueInfo = useGetRecoilValueInfo_UNSTABLE();
+  let [operationData, setOperationDetails] = useRecoilState(
+    operationAtomWithMiddleware
+  );
   const {
     isLoading: isAddingOperation,
     isSuccess: isAddingOperationSuccess,
@@ -94,6 +114,13 @@ const AddOrEditOperation = ({
     mutate: addOperation,
     reset: resetAddOperation,
   } = useAddOperation();
+  const {
+    isLoading: isSyncingOperation,
+    isSuccess: isSyncOperationSuccess,
+    error: syncOperationError,
+    mutate: syncOperation,
+    reset: resetSyncOperationMutation,
+  } = useSyncOperation();
   const {
     isLoading: isEditingOperation,
     isSuccess: isEditingOperationSuccess,
@@ -120,7 +147,7 @@ const AddOrEditOperation = ({
     }
   };
 
-  const handleSubmit = ({ name, type, desc }) => {
+  const handleSubmit = async ({ name, type, desc }) => {
     if (operationId && !_.isEmpty(operationId)) {
       if (
         name !== operationName ||
@@ -137,6 +164,12 @@ const AddOrEditOperation = ({
           desc,
         });
       }
+      const { data: saveSimulateArtefactsData } = await client.post(
+        `simulation_artefacts`,
+        {
+          projectid: projectId,
+        }
+      );
       return;
     }
 

@@ -70,6 +70,7 @@ import EzapiLogo from "../shared/components/EzapiLogo";
 import EzapiFooter from "../shared/components/EzapiFooter";
 import { getAccessToken, setUserId } from "../shared/storage";
 import Scrollbar from "react-smooth-scrollbar";
+// import schemaAtom from "../shared/atom/schemaAtom";
 
 const Project = () => {
   const acc_token = getAccessToken();
@@ -178,6 +179,9 @@ const Project = () => {
           console.error("There was an error!", error);
           // throw getApiError(error);
         });
+    }
+    if (currentTab == 0) {
+      resetSchemaState();
     }
   }, [currentTab]);
 
@@ -438,6 +442,7 @@ const Project = () => {
   };
 
   const simulateAPI = (operation) => {
+    console.log(operation);
     fetch(process.env.REACT_APP_API_URL + "/simulate", {
       headers: {
         Authorization: `Bearer ${acc_token}`,
@@ -447,7 +452,7 @@ const Project = () => {
 
       body: JSON.stringify({
         projectId: projectId,
-        //projectId: "00d479e3-bb64-48ce-84e7-c28a4d8988c3",
+        operation_id: operation.operation_id,
         httpMethod: operation.httpMethod,
         endpoint: operation.endpoint,
       }),
