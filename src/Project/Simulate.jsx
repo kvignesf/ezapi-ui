@@ -71,7 +71,7 @@ const Simulate = ({ simulateData }, props) => {
     <div className='flex-1 relative w-full p-2'>
       <div className='h-1/2 mb-3'>
         {" "}
-        <div className=' flex flex-row gap-2'>
+        <div className=' flex flex-row gap-2 mr-52'>
           <Button
             disableElevation
             disableRipple
@@ -96,10 +96,10 @@ const Simulate = ({ simulateData }, props) => {
             placeholder='Endpoint'
             className={styles("").root}
             key={simulateData}
-            //fullWidth
+            fullWidth
             variant='outlined'
             /* styles the wrapper */
-            style={{ height, width : 1200 }}
+            style={{ height }}
             /* styles the label component */
             InputLabelProps={{
               style: {
@@ -173,8 +173,8 @@ const Simulate = ({ simulateData }, props) => {
           <TextField
             inputProps={{ readOnly: true }}
             key={simulateData}
-            //fullWidth
-            style={{ width : 1375 }}
+            fullWidth
+            // style={{ width: 1375 }}
             // id='responseBodyTextField'
             multiline
             rows={11}
@@ -208,8 +208,8 @@ const Simulate = ({ simulateData }, props) => {
           <TextField
             inputProps={{ readOnly: true }}
             key={simulateData}
-            //fullWidth
-            style={{ width : 1375, height: 400 }}
+            fullWidth
+            // style={{ width: 1375, height: 400 }}
             id='responseBodyTextField'
             multiline
             rows={11}
