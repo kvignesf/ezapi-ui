@@ -1,3 +1,45 @@
+.login-page {
+  overflow: hidden;
+}
+
+.imgDes {
+  font-family: "Montserrat", sans-serif;
+  font-style: normal;
+  font-weight: 150;
+  font-size: 17px;
+  line-height: 28px;
+  color: #ffffff;
+  letter-spacing: 2px;
+}
+.imgDesCS {
+  font-family: "Montserrat", sans-serif;
+  font-style: normal;
+  font-weight: 150;
+  font-size: 20px;
+  line-height: 28px;
+  color: #ffffff;
+  letter-spacing: 2px;
+  font-size: 14px;
+  line-height: 20px;
+  color: rgba(255, 255, 255, 0.8);
+}
+#conekttoLogo {
+  width: 140;
+  height: 140;
+  left: 378px;
+  top: 92px;
+  border: 2px;
+}
+#prodDes {
+  font-family: "Montserrat", sans-serif;
+  font-style: normal;
+  font-weight: 100;
+  font-size: 26px;
+  line-height: 28px;
+  letter-spacing: 2px;
+  color: #1c2c40;
+}
+
 .login-page .app {
   margin: 2rem;
 }
