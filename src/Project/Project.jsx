@@ -793,7 +793,7 @@ const Project = () => {
             </section>
             <section
               className='w-full flex flex-col'
-              style={{ height: `calc(100vh - 112px)` }}
+              style={{ height: `calc(100vh - 100px)` }}
             >
               {currentTab === 0 && (
                 <>
