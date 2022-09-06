@@ -160,52 +160,39 @@ const Dashboard = ({ selectedIndex, children, pricingDefaultCheck }) => {
         {isLoggingOut && <div className='p-4'>Logging you out ...</div>}
       </Dialog>
 
-      <div
-        className='flex fixed w-screen place-items-center  bg-brand-primary'
-        style={{ height: "8vh", zIndex: "99" }}
+      <header
+        className='fixed w-full top-0 bg-brand-primary flex flex-row p-4 items-center'
+        style={{ height: "56px", zIndex: "99" }}
       >
-        <header className='fixed w-full align-middle self-center flex flex-row items-center'>
-          {/* EZAPI logo */}
-          <div className='w-full flex flex-row'>
-            {/* <EzapiLogo
-            style={{
-              marginRight: "0.5rem",
-            }}
-          /> */}
-            <img
-              src={imageLogo}
-              alt='conektto logo'
-              className='p-1'
-              style={{ maxWidth: "128px", maxHeight: "50px" }}
-            />
-
-            {/*<img src={Logo} alt='conektto logo' style={{ maxWidth: "128px" }} />*/}
-
-            {/* <h6 className="text-white whitespace-nowrap ml-1 mt-1">
-          CONEKTTO
-          </h6> */}
-          </div>
-
-          {/* Initials logo */}
-          <InitialsAvatar
-            firstName={firstName}
-            lastName={lastName}
-            style={{
-              marginRight: "0.5rem",
-            }}
+        {/* EZAPI logo */}
+        <div className='w-full flex flex-row'>
+          <img
+            src={imageLogo}
+            alt='conektto logo'
+            className='p-1'
+            style={{ maxWidth: "128px", maxHeight: "50px" }}
           />
+        </div>
 
-          {/* Name */}
-          <p className='text-overline2 text-white whitespace-nowrap mr-2'>
-            {firstName} {lastName}
-          </p>
+        {/* Initials logo */}
+        <InitialsAvatar
+          firstName={firstName}
+          lastName={lastName}
+          style={{
+            marginRight: "0.5rem",
+          }}
+        />
 
-          {/* Options */}
-          <ProfileMenuWithIcon logout={logout} />
-        </header>
-      </div>
+        {/* Name */}
+        <p className='text-overline2 text-white whitespace-nowrap mr-2'>
+          {firstName} {lastName}
+        </p>
 
-      <div className='flex flex-row my-14' style={{ height: "70vh" }}>
+        {/* Options */}
+        <ProfileMenuWithIcon logout={logout} />
+      </header>
+
+      <section className='flex flex-row my-14' style={{ height: "70vh" }}>
         <div className='h-full w-52 fixed left-0 border-r-2 border-gray-100'>
           <List>
             <ListItem
@@ -384,7 +371,7 @@ const Dashboard = ({ selectedIndex, children, pricingDefaultCheck }) => {
             showCreateProjectDialog: showAddProjectDialog,
           })}
         </div>
-      </div>
+      </section>
 
       <EzapiFooter />
     </div>
