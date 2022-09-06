@@ -488,6 +488,15 @@ const Project = () => {
             isProjectHavingErrors() ||
             dialog?.show
           }
+          closeAfterTransition={
+            isPublishingProject ||
+            isVerifyingProject ||
+            publishProjectData ||
+            publishProjectError ||
+            verifyProjectError ||
+            isProjectHavingErrors() ||
+            dialog?.show
+          }
           fullWidth
           PaperProps={{
             style: { borderRadius: 8 },
@@ -503,6 +512,8 @@ const Project = () => {
                     : isLoggingOut
                     ? "Logging out"
                     : isVerifyingProject
+                    ? "Logging in"
+                    : isVerifyProjectSuccess
                     ? "Verifying Project"
                     : null}
                 </p>
@@ -752,44 +763,44 @@ const Project = () => {
                 height: `calc(100vh - 100px)`,
               }}
             >
-              <Scrollbar style={{ height: `calc(100vh - 100px)` }}>
-                <Resources
-                  className='h-full flex flex-col'
-                  projectId={projectId}
-                  onOperationSelect={(index, resource, path, operation) => {
-                    if (
-                      index === null &&
-                      resource === null &&
-                      path === null &&
-                      operation === null
-                    ) {
-                      if (showUnsavedPopup && operationState?.isModified) {
-                        showSaveOperationWarning("reset_operation_state");
-                      } else {
-                        resetOperationState();
-                      }
-                    } else if (index !== operationState.operationIndex) {
-                      if (showUnsavedPopup && operationState?.isModified) {
-                        showSaveOperationWarning("reset_operation_state");
-                      } else {
-                        // console.log(operationState);
-                        const cloned = _.cloneDeep(operationState);
-                        cloned.operation = operation;
-                        cloned.resource = resource;
-                        cloned.path = path;
-                        cloned.operationIndex = index;
-
-                        // console.log(cloned);
-
-                        setOperationState(cloned);
-                      }
+              {/* <Scrollbar style={{ height: `calc(100vh - 100px)` }}> */}
+              <Resources
+                className='h-full flex flex-col'
+                projectId={projectId}
+                onOperationSelect={(index, resource, path, operation) => {
+                  if (
+                    index === null &&
+                    resource === null &&
+                    path === null &&
+                    operation === null
+                  ) {
+                    if (showUnsavedPopup && operationState?.isModified) {
+                      showSaveOperationWarning("reset_operation_state");
+                    } else {
+                      resetOperationState();
                     }
-                  }}
-                  onSimulateSelect={(operation) => simulateAPI(operation)}
-                  currentTab={currentTab}
-                  simulateData={simulateVirtualData}
-                />
-              </Scrollbar>
+                  } else if (index !== operationState.operationIndex) {
+                    if (showUnsavedPopup && operationState?.isModified) {
+                      showSaveOperationWarning("reset_operation_state");
+                    } else {
+                      // console.log(operationState);
+                      const cloned = _.cloneDeep(operationState);
+                      cloned.operation = operation;
+                      cloned.resource = resource;
+                      cloned.path = path;
+                      cloned.operationIndex = index;
+
+                      // console.log(cloned);
+
+                      setOperationState(cloned);
+                    }
+                  }
+                }}
+                onSimulateSelect={(operation) => simulateAPI(operation)}
+                currentTab={currentTab}
+                simulateData={simulateVirtualData}
+              />
+              {/* </Scrollbar> */}
             </section>
             <section
               className='w-full flex flex-col'

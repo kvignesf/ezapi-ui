@@ -132,47 +132,8 @@ const Dashboard = ({ selectedIndex, children, pricingDefaultCheck }) => {
   const [enableIcon, setEnableIcon] = useRecoilState(downloadIconSts);
   const [projectIden, setProjectIden] = useRecoilState(downloadIconProj);
 
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     await fetchEventSource(`${baseUrl}/sse`, {
-  //       method: "GET",
-  //       headers: {
-  //         Accept: "text/event-stream",
-  //         Authorization: `Bearer ${acc_token}`,
-  //       },
-  //       onopen(res) {
-  //         if (res.ok && res.status === 200) {
-  //           console.log("Connection made ", res);
-  //         } else if (
-  //           res.status >= 400 &&
-  //           res.status < 500 &&
-  //           res.status !== 429
-  //         ) {
-  //           console.log("Client side error ", res);
-  //         }
-  //       },
-  //       onmessage(event) {
-  //         console.log("Manoj..dashboard",event.event);
-  //         console.log("eventdata ..dashboard :",event.data);
-  //         const parsedData = JSON.parse(event.data);
-  //         console.log("...parsedData..", parsedData[0].enableIcon)
-  //         setProjectIden(parsedData[0].projectId)
-  //         setEnableIcon(parsedData[0].enableIcon);
-  //       },
-
-  //       onclose() {
-  //         console.log("Connection closed by the server");
-  //       },
-  //       onerror(err) {
-  //         console.log("There was an error from server", err);
-  //       },
-  //     });
-  //   };
-  //   fetchData();
-  //   }, []);
-
   return (
-    <div className='flex flex-col'>
+    <div className='flex flex-col h-screen'>
       <Dialog
         onClose={handleCloseDialog}
         aria-labelledby='dashboard-dialog'
@@ -199,50 +160,52 @@ const Dashboard = ({ selectedIndex, children, pricingDefaultCheck }) => {
         {isLoggingOut && <div className='p-4'>Logging you out ...</div>}
       </Dialog>
 
-      <header
-        className='fixed w-full top-0 bg-brand-primary flex flex-row p-4 items-center'
-        style={{ height: "56px", zIndex: "99" }}
+      <div
+        className='flex fixed w-screen place-items-center  bg-brand-primary'
+        style={{ height: "8vh", zIndex: "99" }}
       >
-        {/* EZAPI logo */}
-        <div className='w-full flex flex-row'>
-          {/* <EzapiLogo
+        <header className='fixed w-full align-middle self-center flex flex-row items-center'>
+          {/* EZAPI logo */}
+          <div className='w-full flex flex-row'>
+            {/* <EzapiLogo
             style={{
               marginRight: "0.5rem",
             }}
           /> */}
-          <img
-            src={imageLogo}
-            alt='conektto logo'
-            className='p-1'
-            style={{ maxWidth: "128px", maxHeight: "50px" }}
-          />
+            <img
+              src={imageLogo}
+              alt='conektto logo'
+              className='p-1'
+              style={{ maxWidth: "128px", maxHeight: "50px" }}
+            />
 
-          {/*<img src={Logo} alt='conektto logo' style={{ maxWidth: "128px" }} />*/}
+            {/*<img src={Logo} alt='conektto logo' style={{ maxWidth: "128px" }} />*/}
 
-          {/* <h6 className="text-white whitespace-nowrap ml-1 mt-1">
+            {/* <h6 className="text-white whitespace-nowrap ml-1 mt-1">
           CONEKTTO
           </h6> */}
-        </div>
+          </div>
 
-        {/* Initials logo */}
-        <InitialsAvatar
-          firstName={firstName}
-          lastName={lastName}
-          style={{
-            marginRight: "0.5rem",
-          }}
-        />
+          {/* Initials logo */}
+          <InitialsAvatar
+            firstName={firstName}
+            lastName={lastName}
+            style={{
+              marginRight: "0.5rem",
+            }}
+          />
 
-        {/* Name */}
-        <p className='text-overline2 text-white whitespace-nowrap mr-2'>
-          {firstName} {lastName}
-        </p>
+          {/* Name */}
+          <p className='text-overline2 text-white whitespace-nowrap mr-2'>
+            {firstName} {lastName}
+          </p>
 
-        {/* Options */}
-        <ProfileMenuWithIcon logout={logout} />
-      </header>
+          {/* Options */}
+          <ProfileMenuWithIcon logout={logout} />
+        </header>
+      </div>
 
-      <section className='h-full flex flex-row my-14'>
+      <div className='flex flex-row my-14' style={{ height: "70vh" }}>
         <div className='h-full w-52 fixed left-0 border-r-2 border-gray-100'>
           <List>
             <ListItem
@@ -421,7 +384,7 @@ const Dashboard = ({ selectedIndex, children, pricingDefaultCheck }) => {
             showCreateProjectDialog: showAddProjectDialog,
           })}
         </div>
-      </section>
+      </div>
 
       <EzapiFooter />
     </div>
