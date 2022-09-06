@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import MoreVertIcon from "@material-ui/icons/MoreVert";
 import GetAppIcon from "@material-ui/icons/GetApp";
 import SystemUpdateAltIcon from "@material-ui/icons/SystemUpdateAlt";
@@ -11,6 +11,7 @@ import MenuItem from "@material-ui/core/MenuItem";
 import Fade from "@material-ui/core/Fade";
 import { CircularProgress, Dialog, Tooltip } from "@material-ui/core";
 // import { useHistory } from 'react-router';
+import ReactPaginate from "react-paginate";
 import { useHistory, useLocation } from "react-router-dom";
 import CodeIcon from "@material-ui/icons/Code";
 import { useQuery } from "react-query";
@@ -25,7 +26,8 @@ import Colors from "../shared/colors";
 import RenameProject from "./RenameProject/RenameProject";
 import DeleteProject from "./DeleteProject/DeleteProject";
 import moment from "moment";
-
+import SearchBar from "material-ui-search-bar";
+import "./pagination.css";
 import {
   useDownloadArtifacts,
   useDownloadCodegen,
@@ -434,7 +436,6 @@ const ProjectRow = ({
 };
 
 const Content = ({ showCreateProjectDialog }) => {
-  const history = useHistory();
   const {
     data: projects,
     isLoading: isFetchingProjects,
@@ -447,6 +448,58 @@ const Content = ({ showCreateProjectDialog }) => {
     type: null,
     data: null,
   });
+  const itemsPerPage = 8;
+  // We start with an empty list of items.
+  const [itemOffset, setItemOffset] = useState(0);
+  const [currentItems, setCurrentItems] = useState(
+    projects?.slice(itemOffset, itemOffset + itemsPerPage)
+  );
+  const [filteredRow, setFilteredRow] = useState(currentItems);
+  const [pageCount, setPageCount] = useState(0);
+  const [searched, setSearched] = useState("");
+  // Here we use item offsets; we could also use page offsets
+  // following the API or data you're working with.
+
+  const history = useHistory();
+  const pagination = useRef();
+
+  useEffect(() => {
+    // Fetch items from another resources.
+    const endOffset = itemOffset + itemsPerPage;
+    console.log(`Loading items from ${itemOffset} to ${endOffset}`);
+    setCurrentItems(projects?.slice(itemOffset, endOffset));
+    setPageCount(Math.ceil(projects?.length / itemsPerPage));
+  }, [itemOffset, itemsPerPage, projects]);
+
+  const handlePageClick = (event) => {
+    const newOffset = (event.selected * itemsPerPage) % projects.length;
+    console.log(
+      `User requested page number ${event.selected}, which is offset ${newOffset}`
+    );
+    setItemOffset(newOffset);
+  };
+
+  const requestSearch = (searchedVal) => {
+    console.log(searchedVal);
+    if (searchedVal) {
+      document.querySelector('[aria-label="Page 1"]')?.click();
+      const filteredRows = projects.filter((row) => {
+        return row.projectName
+          .toLowerCase()
+          .includes(searchedVal.toLowerCase());
+      });
+      setCurrentItems(
+        filteredRows?.slice(itemOffset, itemOffset + itemsPerPage)
+      );
+    } else {
+      setCurrentItems(projects?.slice(itemOffset, itemOffset + itemsPerPage));
+    }
+  };
+
+  const cancelSearch = (searched) => {
+    setCurrentItems(projects?.slice(itemOffset, itemOffset + itemsPerPage));
+    document.querySelector('[aria-label="Page 1"]')?.click();
+  };
 
   const showMembersDialog = (project) => {
     setDialog({
@@ -506,6 +559,8 @@ const Content = ({ showCreateProjectDialog }) => {
     return <LoaderWithMessage message={"Fetching Projects"} />;
   }
   // console.log(dialog?.data);
+
+  // console.log(projects);
   return (
     <div className='p-3 h-full'>
       <Dialog
@@ -536,51 +591,85 @@ const Content = ({ showCreateProjectDialog }) => {
       </Dialog>
 
       {projects && !_.isEmpty(projects) && (
-        <table className='w-full'>
-          <tr className='mr-16 bg-neutral-gray6 w-full text-left text-neutral-gray4 text-mediumLabel'>
-            <th className='p-2 w-1/5 rounded-tl-md rounded-bl-md'>
-              API PROJECT
-            </th>
-            <th className=''>COLLABORATORS</th>
-            <th className=''>LAST ACTIVITY</th>
-            <th className=''>STATUS</th>
-            <th className=''>ARTIFACTS</th>
-            <th className='rounded-tr-md rounded-br-md text-center'>
-              {isFetchingProjectsBg ? (
-                <CircularProgress size='20px' />
-              ) : (
-                <Tooltip title='Refresh list'>
-                  <ReplayIcon
-                    style={{
-                      width: "20px",
-                      height: "20px",
-                      color: Colors.brand.primary,
-                      cursor: "pointer",
-                    }}
-                    onClick={(e) => {
-                      e?.preventDefault();
-                      e?.stopPropagation();
-                      refetchProjects();
-                    }}
-                  />
-                </Tooltip>
-              )}
-            </th>
-          </tr>
-
-          {projects.map((project) => {
-            return (
-              <ProjectRow
-                project={project}
-                showMembersDialog={showMembersDialog}
-                handleOnRename={handleOnRename}
-                handleOnInvite={handleOnInvite}
-                handleOnView={handleOnView}
-                handleOnDeleteApi={handleOnDeleteApi}
+        <div className='flex flex-col'>
+          {" "}
+          <div className='flex flex-col h-full'>
+            <div className=' flex justify-end pb-1 mb-1'>
+              <SearchBar
+                style={{ height: 35, width: 500 }}
+                value={searched}
+                onChange={(searchVal) => requestSearch(searchVal)}
+                onCancelSearch={(searchVal) => cancelSearch(searchVal)}
               />
-            );
-          })}
-        </table>
+            </div>
+
+            <div className='h-full'>
+              <table className='w-full'>
+                <tr className='mr-16 bg-neutral-gray6 w-full text-left text-neutral-gray4 text-mediumLabel'>
+                  <th className='p-2 w-1/5 rounded-tl-md rounded-bl-md'>
+                    API PROJECT
+                  </th>
+                  <th className=''>COLLABORATORS</th>
+                  <th className=''>LAST ACTIVITY</th>
+                  <th className=''>STATUS</th>
+                  <th className=''>ARTIFACTS</th>
+                  <th className='rounded-tr-md rounded-br-md text-center'>
+                    {isFetchingProjectsBg ? (
+                      <CircularProgress size='20px' />
+                    ) : (
+                      <Tooltip title='Refresh list'>
+                        <ReplayIcon
+                          style={{
+                            width: "20px",
+                            height: "20px",
+                            color: Colors.brand.primary,
+                            cursor: "pointer",
+                          }}
+                          onClick={(e) => {
+                            e?.preventDefault();
+                            e?.stopPropagation();
+                            refetchProjects();
+                          }}
+                        />
+                      </Tooltip>
+                    )}
+                  </th>
+                </tr>
+
+                {currentItems?.map((project) => {
+                  return (
+                    <ProjectRow
+                      project={project}
+                      showMembersDialog={showMembersDialog}
+                      handleOnRename={handleOnRename}
+                      handleOnInvite={handleOnInvite}
+                      handleOnView={handleOnView}
+                      handleOnDeleteApi={handleOnDeleteApi}
+                    />
+                  );
+                })}
+              </table>
+            </div>
+          </div>
+          <div className='flex h mb-64 justify-center  align-bottom items-end'>
+            {" "}
+            {/* hii */}
+            <ReactPaginate
+              // class='pagination'
+              // className='flex'
+              page
+              ref={pagination}
+              pageCount={projects.length / itemsPerPage}
+              pageRangeDisplayed={5}
+              marginPagesDisplayed={1}
+              onPageChange={handlePageClick}
+              containerClassName='pagination'
+              activeClassName='active'
+              previousLabel={<>&laquo;</>}
+              nextLabel={<>&raquo;</>}
+            />
+          </div>
+        </div>
       )}
 
       {/* Empty state */}
@@ -616,6 +705,7 @@ const Projects = () => {
   const [stay, setStay] = React.useState(true);
   const [renderNow, setRenderNow] = React.useState(false);
   const location = useLocation();
+
   useEffect(
     () => {
       // console.log(locatison.state?.['allow']);
