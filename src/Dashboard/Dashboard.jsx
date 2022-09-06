@@ -133,7 +133,7 @@ const Dashboard = ({ selectedIndex, children, pricingDefaultCheck }) => {
   const [projectIden, setProjectIden] = useRecoilState(downloadIconProj);
 
   return (
-    <div className='flex flex-col h-screen overflow-hidden'>
+    <div className='flex flex-col h-screen'>
       <Dialog
         onClose={handleCloseDialog}
         aria-labelledby='dashboard-dialog'
@@ -161,7 +161,7 @@ const Dashboard = ({ selectedIndex, children, pricingDefaultCheck }) => {
       </Dialog>
 
       <div
-        className='flex fixed w-screen place-items-center bg-brand-primary'
+        className='flex fixed w-screen place-items-center  bg-brand-primary'
         style={{ height: "8vh", zIndex: "99" }}
       >
         <header className='fixed w-full align-middle self-center flex flex-row items-center'>
@@ -205,7 +205,7 @@ const Dashboard = ({ selectedIndex, children, pricingDefaultCheck }) => {
         </header>
       </div>
 
-      <section className='flex flex-row my-14' style={{ height: "70vh" }}>
+      <div className='flex flex-row my-14' style={{ height: "70vh" }}>
         <div className='h-full w-52 fixed left-0 border-r-2 border-gray-100'>
           <List>
             <ListItem
@@ -384,7 +384,7 @@ const Dashboard = ({ selectedIndex, children, pricingDefaultCheck }) => {
             showCreateProjectDialog: showAddProjectDialog,
           })}
         </div>
-      </section>
+      </div>
 
       <EzapiFooter />
     </div>

@@ -484,9 +484,20 @@ const Content = ({ showCreateProjectDialog }) => {
     if (searchedVal) {
       document.querySelector('[aria-label="Page 1"]')?.click();
       const filteredRows = projects.filter((row) => {
-        return row.projectName
-          .toLowerCase()
-          .includes(searchedVal.toLowerCase());
+        let membersExists = false;
+        row.members.map((member) => {
+          // console.log(member);
+          if (member.email.toLowerCase().includes(searchedVal.toLowerCase())) {
+            membersExists = true;
+            return;
+          }
+        });
+
+        return (
+          row.projectName.toLowerCase().includes(searchedVal.toLowerCase()) ||
+          row.status.toLowerCase().includes(searchedVal.toLowerCase()) ||
+          membersExists
+        );
       });
       setCurrentItems(
         filteredRows?.slice(itemOffset, itemOffset + itemsPerPage)
@@ -559,145 +570,148 @@ const Content = ({ showCreateProjectDialog }) => {
     return <LoaderWithMessage message={"Fetching Projects"} />;
   }
   // console.log(dialog?.data);
+  console.log(projects);
 
   // console.log(projects);
   return (
-    <div className='p-3 h-full'>
-      <Dialog
-        onClose={handleCloseDialog}
-        aria-labelledby='projects-dialog'
-        open={dialog?.show ?? false}
-        fullWidth
-        PaperProps={{
-          style: { borderRadius: 8 },
-        }}
-        disableBackdropClick
-      >
-        {dialog?.type === "members" && (
-          <ModifyCollaborators
-            projectId={dialog?.data?.projectId}
-            onClose={handleCloseDialog}
-            invitedCollaborators={dialog?.data?.members}
-          />
-        )}
+    <>
+      {" "}
+      <div className='p-3 h-full'>
+        <Dialog
+          onClose={handleCloseDialog}
+          aria-labelledby='projects-dialog'
+          open={dialog?.show ?? false}
+          fullWidth
+          PaperProps={{
+            style: { borderRadius: 8 },
+          }}
+          disableBackdropClick
+        >
+          {dialog?.type === "members" && (
+            <ModifyCollaborators
+              projectId={dialog?.data?.projectId}
+              onClose={handleCloseDialog}
+              invitedCollaborators={dialog?.data?.members}
+            />
+          )}
 
-        {dialog?.type === "rename-project" && (
-          <RenameProject onClose={handleCloseDialog} project={dialog?.data} />
-        )}
+          {dialog?.type === "rename-project" && (
+            <RenameProject onClose={handleCloseDialog} project={dialog?.data} />
+          )}
 
-        {dialog?.type === "del-project" && (
-          <DeleteProject onClose={handleCloseDialog} project={dialog?.data} />
-        )}
-      </Dialog>
+          {dialog?.type === "del-project" && (
+            <DeleteProject onClose={handleCloseDialog} project={dialog?.data} />
+          )}
+        </Dialog>
 
-      {projects && !_.isEmpty(projects) && (
-        <div className='flex flex-col'>
-          {" "}
-          <div className='flex flex-col h-full'>
-            <div className=' flex justify-end pb-1 mb-1'>
-              <SearchBar
-                style={{ height: 35, width: 500 }}
-                value={searched}
-                onChange={(searchVal) => requestSearch(searchVal)}
-                onCancelSearch={(searchVal) => cancelSearch(searchVal)}
-              />
-            </div>
-
-            <div className='h-full'>
-              <table className='w-full'>
-                <tr className='mr-16 bg-neutral-gray6 w-full text-left text-neutral-gray4 text-mediumLabel'>
-                  <th className='p-2 w-1/5 rounded-tl-md rounded-bl-md'>
-                    API PROJECT
-                  </th>
-                  <th className=''>COLLABORATORS</th>
-                  <th className=''>LAST ACTIVITY</th>
-                  <th className=''>STATUS</th>
-                  <th className=''>ARTIFACTS</th>
-                  <th className='rounded-tr-md rounded-br-md text-center'>
-                    {isFetchingProjectsBg ? (
-                      <CircularProgress size='20px' />
-                    ) : (
-                      <Tooltip title='Refresh list'>
-                        <ReplayIcon
-                          style={{
-                            width: "20px",
-                            height: "20px",
-                            color: Colors.brand.primary,
-                            cursor: "pointer",
-                          }}
-                          onClick={(e) => {
-                            e?.preventDefault();
-                            e?.stopPropagation();
-                            refetchProjects();
-                          }}
-                        />
-                      </Tooltip>
-                    )}
-                  </th>
-                </tr>
-
-                {currentItems?.map((project) => {
-                  return (
-                    <ProjectRow
-                      project={project}
-                      showMembersDialog={showMembersDialog}
-                      handleOnRename={handleOnRename}
-                      handleOnInvite={handleOnInvite}
-                      handleOnView={handleOnView}
-                      handleOnDeleteApi={handleOnDeleteApi}
-                    />
-                  );
-                })}
-              </table>
-            </div>
-          </div>
-          <div className='flex h mb-64 justify-center  align-bottom items-end'>
+        {projects && !_.isEmpty(projects) && (
+          <div className='flex flex-col'>
             {" "}
-            {/* hii */}
-            <ReactPaginate
-              // class='pagination'
-              // className='flex'
-              page
-              ref={pagination}
-              pageCount={projects.length / itemsPerPage}
-              pageRangeDisplayed={5}
-              marginPagesDisplayed={1}
-              onPageChange={handlePageClick}
-              containerClassName='pagination'
-              activeClassName='active'
-              previousLabel={<>&laquo;</>}
-              nextLabel={<>&raquo;</>}
-            />
+            <div className='flex flex-col h-full'>
+              <div className=' flex justify-end pb-1 mb-1'>
+                <SearchBar
+                  style={{ height: 35, width: 500 }}
+                  value={searched}
+                  onChange={(searchVal) => requestSearch(searchVal)}
+                  onCancelSearch={(searchVal) => cancelSearch(searchVal)}
+                />
+              </div>
+
+              <div className='h-full'>
+                <table className='w-full'>
+                  <tr className='mr-16 bg-neutral-gray6 w-full text-left text-neutral-gray4 text-mediumLabel'>
+                    <th className='p-2 w-1/5 rounded-tl-md rounded-bl-md'>
+                      API PROJECT
+                    </th>
+                    <th className=''>COLLABORATORS</th>
+                    <th className=''>LAST ACTIVITY</th>
+                    <th className=''>STATUS</th>
+                    <th className=''>ARTIFACTS</th>
+                    <th className='rounded-tr-md rounded-br-md text-center'>
+                      {isFetchingProjectsBg ? (
+                        <CircularProgress size='20px' />
+                      ) : (
+                        <Tooltip title='Refresh list'>
+                          <ReplayIcon
+                            style={{
+                              width: "20px",
+                              height: "20px",
+                              color: Colors.brand.primary,
+                              cursor: "pointer",
+                            }}
+                            onClick={(e) => {
+                              e?.preventDefault();
+                              e?.stopPropagation();
+                              refetchProjects();
+                            }}
+                          />
+                        </Tooltip>
+                      )}
+                    </th>
+                  </tr>
+
+                  {currentItems?.map((project) => {
+                    return (
+                      <ProjectRow
+                        project={project}
+                        showMembersDialog={showMembersDialog}
+                        handleOnRename={handleOnRename}
+                        handleOnInvite={handleOnInvite}
+                        handleOnView={handleOnView}
+                        handleOnDeleteApi={handleOnDeleteApi}
+                      />
+                    );
+                  })}
+                </table>
+              </div>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Empty state */}
-      {!projects ||
-        (_.isEmpty(projects) && (
-          <div className='h-full flex flex-col items-center justify-center'>
-            <img
-              src={EmptyLogo}
-              className='mb-4'
-              style={{ width: "100px", height: "100px" }}
-            />
+        {/* Empty state */}
+        {!projects ||
+          (_.isEmpty(projects) && (
+            <div className='h-full flex flex-col items-center justify-center'>
+              <img
+                src={EmptyLogo}
+                className='mb-4'
+                style={{ width: "100px", height: "100px" }}
+              />
 
-            <h5 className='mb-3'>No API project available</h5>
+              <h5 className='mb-3'>No API project available</h5>
 
-            <h6 className='mb-11 text-neutral-gray3'>
-              Start creating a new API project
-            </h6>
+              <h6 className='mb-11 text-neutral-gray3'>
+                Start creating a new API project
+              </h6>
 
-            <PrimaryButton
-              onClick={() => {
-                showCreateProjectDialog();
-              }}
-            >
-              Create new API Project
-            </PrimaryButton>
-          </div>
-        ))}
-    </div>
+              <PrimaryButton
+                onClick={() => {
+                  showCreateProjectDialog();
+                }}
+              >
+                Create new API Project
+              </PrimaryButton>
+            </div>
+          ))}
+      </div>
+      <div className='flex h mb-64 justify-center mt-5 align-bottom items-end'>
+        {" "}
+        <ReactPaginate
+          // class='pagination'
+          // className='flex'
+          page
+          ref={pagination}
+          pageCount={projects.length / itemsPerPage}
+          pageRangeDisplayed={5}
+          marginPagesDisplayed={1}
+          onPageChange={handlePageClick}
+          containerClassName='pagination'
+          activeClassName='active'
+          previousLabel={<>&laquo;</>}
+          nextLabel={<>&raquo;</>}
+        />
+      </div>
+    </>
   );
 };
 
