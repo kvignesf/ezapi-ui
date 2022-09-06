@@ -6,8 +6,8 @@ import {
   Tabs,
   MuiThemeProvider,
 } from "@material-ui/core";
-// import EzapiLogo from "../shared/components/EzapiLogo";
-import { ReactComponent as Logo } from "../static/images/logo/connectoLogo.svg";
+//import { ReactComponent as Logo } from "../static/images/logo/connectoLogo.svg";
+import { ReactComponent as Logo } from "../static/images/logo/newconnectoLogo.svg";
 import Button from "@mui/material/Button";
 import CloseIcon from "@material-ui/icons/Close";
 //import InfoIcon from '@mui/icons-material/Info';

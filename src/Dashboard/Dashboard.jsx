@@ -17,7 +17,7 @@ import { ReactComponent as DashboardSharpIcon } from "../static/images/dashboard
 import { List, ListItem } from "@material-ui/core";
 import AddIcon from "@material-ui/icons/Add";
 
-import imageLogo from "../static/images/logo/connectoLogo.svg";
+import imageLogo from "../static/images/logo/newconnectLogoOnlyWhite.svg";
 import { ReactComponent as OrderHistoryIcon } from "../static/images/order-history.svg";
 import { ReactComponent as PricingPageIcon } from "../static/images/pricing-page.svg";
 import { ReactComponent as ProductTourIcon } from "../static/images/product_tour2.svg";
@@ -179,7 +179,7 @@ const Dashboard = ({ selectedIndex, children, pricingDefaultCheck }) => {
               style={{ maxWidth: "128px", maxHeight: "50px" }}
             />
 
-            <img src={Logo} alt='conektto logo' style={{ maxWidth: "128px" }} />
+            {/*<img src={Logo} alt='conektto logo' style={{ maxWidth: "128px" }} />*/}
 
             {/* <h6 className="text-white whitespace-nowrap ml-1 mt-1">
           CONEKTTO
