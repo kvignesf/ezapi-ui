@@ -70,7 +70,7 @@ import EzapiLogo from "../shared/components/EzapiLogo";
 import EzapiFooter from "../shared/components/EzapiFooter";
 import { getAccessToken, setUserId } from "../shared/storage";
 import Scrollbar from "react-smooth-scrollbar";
-// import schemaAtom from "../shared/atom/schemaAtom";
+import CredentialsBeforePublish from "./CredentialsBeforePublish";
 
 const Project = () => {
   const acc_token = getAccessToken();
@@ -107,6 +107,7 @@ const Project = () => {
     mutate: syncOperation,
     reset: resetSyncOperationMutation,
   } = useSyncOperation();
+  const [newProjectDetails, setNewProjectDetails] = useState(null);
   const {
     verifyProjectMutation: {
       isLoading: isVerifyingProject,
@@ -124,7 +125,7 @@ const Project = () => {
       mutate: publish,
       reset: resetPublishMutation,
     },
-  } = useSubmitProject(projectId);
+  } = useSubmitProject(projectId, newProjectDetails);
   const resetSchemaState = useResetRecoilState(schemaAtom);
   const resetTableState = useResetRecoilState(tableAtom);
   const resetOperationState = useResetRecoilState(operationAtomWithMiddleware);
@@ -138,6 +139,7 @@ const Project = () => {
   const getRecoilValueInfo = useGetRecoilValueInfo_UNSTABLE();
   const [userRole, setRole] = useState(null);
 
+  const [passwordBeforePublish, setPasswordBeforePublish] = useState(null);
   const [simulateVirtualData, setSimulateVirtualData] = useState(null);
   const [simulateData, setSimulateData] = useState(null);
   const [autoSyncIntervalId, setAutoSync] = useState(0);
@@ -297,6 +299,7 @@ const Project = () => {
   };
 
   const submitProject = () => {
+    // console.log(newProjectDetails);
     if (canEdit(userRole)) {
       const { loadable: operationAtomLoadable } = getRecoilValueInfo(
         operationAtomWithMiddleware
@@ -307,7 +310,7 @@ const Project = () => {
         showSaveOperationWarning();
       } else {
         resetPublishMutation();
-        verify({ projectId });
+        verify({ projectId, newProjectDetails });
       }
     }
   };
@@ -486,6 +489,7 @@ const Project = () => {
             publishProjectError ||
             verifyProjectError ||
             isProjectHavingErrors() ||
+            passwordBeforePublish ||
             dialog?.show
           }
           closeAfterTransition={
@@ -604,6 +608,19 @@ const Project = () => {
               onClose={handleCloseDialog}
             />
           )}
+          {passwordBeforePublish && (
+            <CredentialsBeforePublish
+              onClose={() => {
+                setPasswordBeforePublish(false);
+              }}
+              newProjectDetails={projectDetails.dbDetails}
+              onPublish={(newProjectDetails) => {
+                setPasswordBeforePublish(false);
+                setNewProjectDetails(newProjectDetails);
+                submitProject();
+              }}
+            />
+          )}
         </Dialog>
 
         <DndProvider backend={HTML5Backend}>
@@ -705,8 +722,12 @@ const Project = () => {
                   onClick={(e) => {
                     e?.preventDefault();
                     e?.stopPropagation();
-
-                    submitProject();
+                    // console.log(projectDetails?.isConnectDB);
+                    if (projectDetails.isConnectDB) {
+                      setPasswordBeforePublish(true);
+                    } else {
+                      submitProject();
+                    }
                   }}
                 >
                   {getPublishButtonText()}
