@@ -723,7 +723,10 @@ const Project = () => {
                     e?.preventDefault();
                     e?.stopPropagation();
                     // console.log(projectDetails?.isConnectDB);
-                    if (projectDetails.isConnectDB) {
+                    if (
+                      projectDetails?.isConnectDB &&
+                      projectDetails?.dbDetails
+                    ) {
                       setPasswordBeforePublish(true);
                     } else {
                       submitProject();
