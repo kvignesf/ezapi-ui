@@ -31,6 +31,7 @@ import "./pagination.css";
 import {
   useDownloadArtifacts,
   useDownloadCodegen,
+  useDownloadDotnetCodegen,
   useDownloadSpecs,
   useGetProjects,
   useDownloadDatabase,
@@ -41,6 +42,8 @@ import { PrimaryButton } from "../shared/components/AppButton";
 import LoaderWithMessage from "../shared/components/LoaderWithMessage";
 import { getUserId } from "../shared/storage";
 import routes, { generateRoute } from "../shared/routes";
+import dotnetLogo from "../static/images/logo/dotnetlogo.svg";
+import javaLogo from "../static/images/logo/java-vertical.svg";
 import Logo from "../static/images/logo/svg.svg";
 import ApigeeLogo from "../static/images/logo/CloudLogo.png";
 import DatabaseLogo from "../static/images/logo/database_download.svg";
@@ -139,6 +142,8 @@ const ProjectRow = ({
     useDownloadArtifacts();
   const { isLoading: isDownloadingCodegen, mutate: downloadCodegen } =
     useDownloadCodegen();
+  const { isLoading: isDownloadingDotnetCodegen, mutate: downloadDotnetCodegen} =
+    useDownloadDotnetCodegen();
 
   const handleOnOptionsClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -162,6 +167,10 @@ const ProjectRow = ({
 
   const onDownloadCodegen = () => {
     downloadCodegen({ projectId: project?.projectId });
+  };
+
+  const onDownloadDotnetCodegen = () => {
+    downloadDotnetCodegen({ projectId: project?.projectId });
   };
 
   const [enableIcon, setEnableIcon] = useRecoilState(downloadIconSts);
@@ -241,6 +250,46 @@ const ProjectRow = ({
               )}
 
             {isDownloadingCodegen && (
+              <CircularProgress style={{ width: "24px", height: "24px" }} />
+            )}
+          </div>
+          {/* dotnetCodegen download */}
+          <div className='w-8'>
+            {project?.status?.toLowerCase() === "complete" &&
+              project?.projectType?.toLowerCase() !== "schema" &&
+              !isDownloadingDotnetCodegen && (
+                <Tooltip title={
+                  project?.dotnetcodegen
+                    ? "Download dotnet Codegen"
+                    : "Preparing dotnet Codegen"
+                }>
+                  <div
+                    style={{
+                      marginTop: "-3px",
+                      width: "24px",
+                      height: "24px",
+                    }}
+                  >
+                    <img
+                      src={dotnetLogo}
+                      alt='conektto logo'
+                      className={classNames({
+                        "opacity-50 cursor-default": !project?.dotnetcodegen,
+                        "cursor-pointer text-brand-primary": project?.dotnetcodegen,
+                      })}
+                      onClick={(e) => {
+                        e?.preventDefault();
+                        e?.stopPropagation();
+
+                        if (project?.dotnetcodegen) {
+                          onDownloadDotnetCodegen();
+                        }
+                      }}
+                    />
+                  </div>
+                </Tooltip>                
+              )}
+            {isDownloadingDotnetCodegen && (
               <CircularProgress style={{ width: "24px", height: "24px" }} />
             )}
           </div>
