@@ -70,7 +70,7 @@ import EzapiLogo from "../shared/components/EzapiLogo";
 import EzapiFooter from "../shared/components/EzapiFooter";
 import { getAccessToken, setUserId } from "../shared/storage";
 import Scrollbar from "react-smooth-scrollbar";
-// import schemaAtom from "../shared/atom/schemaAtom";
+import CredentialsBeforePublish from "./CredentialsBeforePublish";
 
 const Project = () => {
   const acc_token = getAccessToken();
@@ -107,6 +107,7 @@ const Project = () => {
     mutate: syncOperation,
     reset: resetSyncOperationMutation,
   } = useSyncOperation();
+  const [newProjectDetails, setNewProjectDetails] = useState(null);
   const {
     verifyProjectMutation: {
       isLoading: isVerifyingProject,
@@ -124,7 +125,7 @@ const Project = () => {
       mutate: publish,
       reset: resetPublishMutation,
     },
-  } = useSubmitProject(projectId);
+  } = useSubmitProject(projectId, newProjectDetails);
   const resetSchemaState = useResetRecoilState(schemaAtom);
   const resetTableState = useResetRecoilState(tableAtom);
   const resetOperationState = useResetRecoilState(operationAtomWithMiddleware);
@@ -138,6 +139,7 @@ const Project = () => {
   const getRecoilValueInfo = useGetRecoilValueInfo_UNSTABLE();
   const [userRole, setRole] = useState(null);
 
+  const [passwordBeforePublish, setPasswordBeforePublish] = useState(null);
   const [simulateVirtualData, setSimulateVirtualData] = useState(null);
   const [simulateData, setSimulateData] = useState(null);
   const [autoSyncIntervalId, setAutoSync] = useState(0);
@@ -297,6 +299,7 @@ const Project = () => {
   };
 
   const submitProject = () => {
+    // console.log(newProjectDetails);
     if (canEdit(userRole)) {
       const { loadable: operationAtomLoadable } = getRecoilValueInfo(
         operationAtomWithMiddleware
@@ -307,7 +310,7 @@ const Project = () => {
         showSaveOperationWarning();
       } else {
         resetPublishMutation();
-        verify({ projectId });
+        verify({ projectId, newProjectDetails });
       }
     }
   };
@@ -486,6 +489,16 @@ const Project = () => {
             publishProjectError ||
             verifyProjectError ||
             isProjectHavingErrors() ||
+            passwordBeforePublish ||
+            dialog?.show
+          }
+          closeAfterTransition={
+            isPublishingProject ||
+            isVerifyingProject ||
+            publishProjectData ||
+            publishProjectError ||
+            verifyProjectError ||
+            isProjectHavingErrors() ||
             dialog?.show
           }
           fullWidth
@@ -503,6 +516,8 @@ const Project = () => {
                     : isLoggingOut
                     ? "Logging out"
                     : isVerifyingProject
+                    ? "Logging in"
+                    : isVerifyProjectSuccess
                     ? "Verifying Project"
                     : null}
                 </p>
@@ -591,6 +606,19 @@ const Project = () => {
             <RepublishInfo
               project={projectDetails}
               onClose={handleCloseDialog}
+            />
+          )}
+          {passwordBeforePublish && (
+            <CredentialsBeforePublish
+              onClose={() => {
+                setPasswordBeforePublish(false);
+              }}
+              newProjectDetails={projectDetails.dbDetails}
+              onPublish={(newProjectDetails) => {
+                setPasswordBeforePublish(false);
+                setNewProjectDetails(newProjectDetails);
+                submitProject();
+              }}
             />
           )}
         </Dialog>
@@ -694,8 +722,15 @@ const Project = () => {
                   onClick={(e) => {
                     e?.preventDefault();
                     e?.stopPropagation();
-
-                    submitProject();
+                    // console.log(projectDetails?.isConnectDB);
+                    if (
+                      projectDetails?.isConnectDB &&
+                      projectDetails?.dbDetails
+                    ) {
+                      setPasswordBeforePublish(true);
+                    } else {
+                      submitProject();
+                    }
                   }}
                 >
                   {getPublishButtonText()}
@@ -752,44 +787,44 @@ const Project = () => {
                 height: `calc(100vh - 100px)`,
               }}
             >
-              <Scrollbar style={{ height: `calc(100vh - 100px)` }}>
-                <Resources
-                  className='h-full flex flex-col'
-                  projectId={projectId}
-                  onOperationSelect={(index, resource, path, operation) => {
-                    if (
-                      index === null &&
-                      resource === null &&
-                      path === null &&
-                      operation === null
-                    ) {
-                      if (showUnsavedPopup && operationState?.isModified) {
-                        showSaveOperationWarning("reset_operation_state");
-                      } else {
-                        resetOperationState();
-                      }
-                    } else if (index !== operationState.operationIndex) {
-                      if (showUnsavedPopup && operationState?.isModified) {
-                        showSaveOperationWarning("reset_operation_state");
-                      } else {
-                        // console.log(operationState);
-                        const cloned = _.cloneDeep(operationState);
-                        cloned.operation = operation;
-                        cloned.resource = resource;
-                        cloned.path = path;
-                        cloned.operationIndex = index;
-
-                        // console.log(cloned);
-
-                        setOperationState(cloned);
-                      }
+              {/* <Scrollbar style={{ height: `calc(100vh - 100px)` }}> */}
+              <Resources
+                className='h-full flex flex-col'
+                projectId={projectId}
+                onOperationSelect={(index, resource, path, operation) => {
+                  if (
+                    index === null &&
+                    resource === null &&
+                    path === null &&
+                    operation === null
+                  ) {
+                    if (showUnsavedPopup && operationState?.isModified) {
+                      showSaveOperationWarning("reset_operation_state");
+                    } else {
+                      resetOperationState();
                     }
-                  }}
-                  onSimulateSelect={(operation) => simulateAPI(operation)}
-                  currentTab={currentTab}
-                  simulateData={simulateVirtualData}
-                />
-              </Scrollbar>
+                  } else if (index !== operationState.operationIndex) {
+                    if (showUnsavedPopup && operationState?.isModified) {
+                      showSaveOperationWarning("reset_operation_state");
+                    } else {
+                      // console.log(operationState);
+                      const cloned = _.cloneDeep(operationState);
+                      cloned.operation = operation;
+                      cloned.resource = resource;
+                      cloned.path = path;
+                      cloned.operationIndex = index;
+
+                      // console.log(cloned);
+
+                      setOperationState(cloned);
+                    }
+                  }
+                }}
+                onSimulateSelect={(operation) => simulateAPI(operation)}
+                currentTab={currentTab}
+                simulateData={simulateVirtualData}
+              />
+              {/* </Scrollbar> */}
             </section>
             <section
               className='w-full flex flex-col'

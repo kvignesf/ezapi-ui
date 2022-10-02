@@ -44,6 +44,7 @@ export const endpoint = Object.freeze({
   editCustomParameter: "/customParameters/edit",
   deleteCustomParameter: "/customParameters/delete",
   storedProcedures: "/storedProcedures",
+  downloadDotNetCodegen:"/download_dotnet_codegen",
 
   // Payment
   products2: "/products",

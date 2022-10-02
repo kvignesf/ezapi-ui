@@ -52,11 +52,16 @@ export const useVerifyProject = () => {
   return verifyProjectMutation;
 };
 
-const publishProject = async ({ projectId }) => {
+const publishProject = async ({ projectId, newProjectDetails }) => {
   try {
-    const { data } = await client.post(endpoint.publishProject, {
-      projectId,
-    },{timeout: 48000});
+    const { data } = await client.post(
+      endpoint.publishProject,
+      {
+        projectId,
+        password: newProjectDetails?.password,
+      },
+      { timeout: 48000 }
+    );
     return data;
   } catch (error) {
     throw getApiError(error);
@@ -71,13 +76,14 @@ export const usePublishProject = () => {
   return publishProjectMutation;
 };
 
-export const useSubmitProject = (projectId) => {
+export const useSubmitProject = (projectId, newProjectDetails) => {
+  console.log(newProjectDetails);
   const publishProjectMutation = useMutation(publishProject);
 
   const verifyProjectMutation = useMutation(verifyProject, {
     onSuccess: (data) => {
       if (!data?.response || _.isEmpty(data?.response)) {
-        publishProjectMutation.mutate({ projectId });
+        publishProjectMutation.mutate({ projectId, newProjectDetails });
       }
     },
   });
