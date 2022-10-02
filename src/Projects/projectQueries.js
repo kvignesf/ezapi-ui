@@ -254,6 +254,43 @@ const downloadCodegen = async ({ projectId }) => {
   }
 };
 
+const downloadDotnetCodegen = async ({ projectId }) => {
+  try {
+    const osName = getOs();
+
+    const { data } = await client.post(
+      endpoint.downloadDotNetCodegen,
+      {
+        projectId,
+      },
+      {
+        timeout: 480000,
+      }
+    );
+    return data;
+  } catch (error) {
+    throw getApiError(error);
+  }
+};
+
+export const useDownloadDotnetCodegen = () => {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation(downloadDotnetCodegen, {
+    onSuccess: (data) => {
+      if (data?.downloadUrl && !_.isEmpty(data?.downloadUrl)) {
+        const link = data?.downloadUrl;
+
+        // const filename = link.substring(link.lastIndexOf("/") + 1);
+        const filename = "project_codegen_dotnet";
+        saveAs(link, filename);
+      }
+    },
+  });
+
+  return mutation;
+};
+
 export const useDownloadCodegen = () => {
   const queryClient = useQueryClient();
 
