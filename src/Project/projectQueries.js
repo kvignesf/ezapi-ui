@@ -1,6 +1,6 @@
 import _ from "lodash";
 import { useMutation, useQuery } from "react-query";
-
+import aes from "crypto-js/aes";
 import client, { endpoint } from "../shared/network/client";
 import { queries } from "../shared/network/queryClient";
 import { getApiError } from "../shared/utils";
@@ -53,12 +53,19 @@ export const useVerifyProject = () => {
 };
 
 const publishProject = async ({ projectId, newProjectDetails }) => {
+  var ciphertext = aes
+    .encrypt(
+      newProjectDetails?.password,
+      process.env.REACT_APP_AES_ENCRYPTION_KEY
+    )
+    .toString();
   try {
     const { data } = await client.post(
       endpoint.publishProject,
       {
         projectId,
-        password: newProjectDetails?.password,
+        //password: newProjectDetails?.password,
+        password: ciphertext
       },
       { timeout: 48000 }
     );
@@ -77,7 +84,7 @@ export const usePublishProject = () => {
 };
 
 export const useSubmitProject = (projectId, newProjectDetails) => {
-  console.log(newProjectDetails);
+  //console.log(newProjectDetails);
   const publishProjectMutation = useMutation(publishProject);
 
   const verifyProjectMutation = useMutation(verifyProject, {

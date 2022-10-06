@@ -23,6 +23,7 @@ import ProjectDetails from "./ProjectDetails";
 import ConnectDatabase from "./ConnectDatabase";
 import InviteCollaborators from "../shared/components/InviteCollaborators";
 import projectAtom from "./projectAtom";
+import aes from "crypto-js/aes";
 import {
   useDatabaseConnection,
   useAddProject,
@@ -246,9 +247,9 @@ const AddProject = ({ onClose, onSuccess }) => {
   };
 
   const openInNewTab = (url) => {
-  const newWindow = window.open(url, '_blank', 'noopener,noreferrer')
-  if (newWindow) newWindow.opener = null
-}
+    const newWindow = window.open(url, '_blank', 'noopener,noreferrer')
+    if (newWindow) newWindow.opener = null
+  }
 
   const {
     mutate: testDatabase,
@@ -302,11 +303,17 @@ const AddProject = ({ onClose, onSuccess }) => {
         test: true,
       });
     } else {
+      var ciphertext = aes
+        .encrypt(
+          projectDetails.password,
+          process.env.REACT_APP_AES_ENCRYPTION_KEY
+        )
+        .toString();
       let payload = {
         host: projectDetails.host,
         port: projectDetails.port,
         username: projectDetails.username,
-        password: projectDetails.password,
+        password: ciphertext,
         database: projectDetails.database,
         type: projectDetails.type,
       };
@@ -727,7 +734,7 @@ const AddProject = ({ onClose, onSuccess }) => {
                 if (deployenv == "production") {
                   //window.location.href='https://www.conektto.io/beta-signup'
                   openInNewTab('https://www.conektto.io/beta-signup')
-                }                
+                }   
               }}
               classes='flex-1 -ml-4 text-brand-secondary'
             >

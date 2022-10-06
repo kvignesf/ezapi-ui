@@ -6,6 +6,7 @@ before_script:
   - 'echo \REACT_APP_DEPLOY_ENV\ = \"$TREACT_APP_DEPLOY_ENV\">> .env.test'
   - 'echo \REACT_APP_FEATURE_CUSTOM_PARAMETER\ = \"$TREACT_APP_FEATURE_CUSTOM_PARAMETER\">> .env.test'
   - 'echo \REACT_APP_FEATURE_STORED_PROCS\ = \"$TREACT_APP_FEATURE_STORED_PROCS\">> .env.test'
+  - 'echo \REACT_APP_AES_ENCRYPTION_KEY\ = \"$LOWER_AES_ENCRYPTION_KEY\">> .env.test'
   -  cat .env.test
   - 'echo \REACT_APP_API_URL\ = \"$SAPIURL\">> .env.stage'
   - 'echo \REACT_APP_LINKEDIN_CLIENT_ID\ = \"$SLINKEDINCLIENTID\">> .env.stage'
@@ -13,6 +14,7 @@ before_script:
   - 'echo \REACT_APP_DEPLOY_ENV\ = \"$SREACT_APP_DEPLOY_ENV\">> .env.stage'
   - 'echo \REACT_APP_FEATURE_CUSTOM_PARAMETER\ = \"$SREACT_APP_FEATURE_CUSTOM_PARAMETER\">> .env.stage'
   - 'echo \REACT_APP_FEATURE_STORED_PROCS\ = \"$SREACT_APP_FEATURE_STORED_PROCS\">> .env.stage'
+  - 'echo \REACT_APP_AES_ENCRYPTION_KEY\ = \"$LOWER_AES_ENCRYPTION_KEY\">> .env.stage'
   -  cat .env.stage  
   - 'echo \REACT_APP_API_URL\ = \"$PAPIURL\">> .env.prod'
   - 'echo \REACT_APP_LINKEDIN_CLIENT_ID\ = \"$PLINKEDINCLIENTID\">> .env.prod'
@@ -20,6 +22,7 @@ before_script:
   - 'echo \REACT_APP_DEPLOY_ENV\ = \"$PREACT_APP_DEPLOY_ENV\">> .env.prod'
   - 'echo \REACT_APP_FEATURE_CUSTOM_PARAMETER\ = \"$PREACT_APP_FEATURE_CUSTOM_PARAMETER\">> .env.prod'
   - 'echo \REACT_APP_FEATURE_STORED_PROCS\ = \"$PREACT_APP_FEATURE_STORED_PROCS\">> .env.prod'
+  - 'echo \REACT_APP_AES_ENCRYPTION_KEY\ = \"$PROD_AES_ENCRYPTION_KEY\">> .env.prod'
   -  cat .env.prod
 include:
   project: 'ezapi_poc/infra_poc'

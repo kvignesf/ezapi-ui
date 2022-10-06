@@ -21,6 +21,7 @@
     "axios": "^0.21.1",
     "chokidar": "^3.5.3",
     "classnames": "^2.3.1",
+    "crypto-js": "^4.1.1",
     "env-cmd": "^10.1.0",
     "file-saver": "^2.0.5",
     "focus-formik-error": "^1.1.0",

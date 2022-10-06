@@ -2,7 +2,7 @@ import _ from "lodash";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useHistory } from "react-router-dom";
 import { useRecoilValue } from "recoil";
-
+import aes from "crypto-js/aes";
 import client, { endpoint } from "../shared/network/client";
 import { clearQueryCache, queries } from "../shared/network/queryClient";
 import routes from "../shared/routes";
@@ -63,6 +63,9 @@ const exportDBSchema = async ({
   rootPath,
 }) => {
   try {
+    var ciphertext = aes
+      .encrypt(password, process.env.REACT_APP_AES_ENCRYPTION_KEY)
+      .toString();
     const { data } = await client.post(
       endpoint.exportDBSchema,
       {
@@ -71,7 +74,7 @@ const exportDBSchema = async ({
         server: server,
         portNo: port,
         username: username,
-        password: password,
+        password: ciphertext,
         database: database,
         dbtype: type,
         keyPath: keyPath,
