@@ -111,7 +111,13 @@ export const useExportDBSchema = (aiMutation, onSuccess) => {
   return mutation;
 };
 
-const addProject = async ({ name, invitees, isDesign }) => {
+const addProject = async ({
+  name,
+  invitees,
+  isDesign,
+  isDefaultClaimSpec,
+  isDefaultAdvSpec,
+}) => {
   try {
     const { data } = await client.post(
       endpoint.project,
@@ -119,6 +125,8 @@ const addProject = async ({ name, invitees, isDesign }) => {
         projectName: name,
         invites: invitees,
         isDesign: isDesign,
+        isDefaultClaimSpec: isDefaultClaimSpec,
+        isDefaultAdvSpec: isDefaultAdvSpec,
       },
       {
         timeout: 90000,
@@ -518,6 +526,8 @@ export const useUploadProjectSpecs = (
             });
           }
         } else {
+          if (_.isEmpty(projectDetails?.dbs)) {
+          }
           onSuccess(data?.projectId);
           queryClient.invalidateQueries(queries.projects);
         }

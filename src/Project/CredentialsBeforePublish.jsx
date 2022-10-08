@@ -16,6 +16,7 @@ const CredentialsBeforePublish = ({
   onClose,
   onPublish,
   newProjectDetails,
+  isDefaultproj
 }) => {
   const formRef = useRef();
 
@@ -43,6 +44,8 @@ const CredentialsBeforePublish = ({
                 port: newProjectDetails.port,
                 database: newProjectDetails.database,
                 username: newProjectDetails.username,
+                
+                                
               }}
               validationSchema={Yup.object().shape({
                 password: Yup.string().required("Password is required"),
@@ -126,7 +129,8 @@ const CredentialsBeforePublish = ({
                         as={TextField}
                       />
                     </Grid>
-                    <Grid item xs={12}>
+                    
+                    <Grid item xs={12}>                      
                       <p className='text-mediumLabel mb-2'>Password</p>
                       <Field
                         id='password'
@@ -135,8 +139,9 @@ const CredentialsBeforePublish = ({
                         type='password'
                         autocomplete='off'
                         fullWidth
+                        value={isDefaultproj ? "S0mbari@2022" : null}
                         color='primary'
-                        error={Boolean(errors.password)}
+                        error={(isDefaultproj) && Boolean(errors.password)}
                         helperText={errors.password}
                         // onKeyUp={(e) => {
                         //   const { value } = e.target;

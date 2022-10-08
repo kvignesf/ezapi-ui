@@ -299,7 +299,6 @@ const Project = () => {
   };
 
   const submitProject = () => {
-    // console.log(newProjectDetails);
     if (canEdit(userRole)) {
       const { loadable: operationAtomLoadable } = getRecoilValueInfo(
         operationAtomWithMiddleware
@@ -614,9 +613,10 @@ const Project = () => {
                 setPasswordBeforePublish(false);
               }}
               newProjectDetails={projectDetails.dbDetails}
-              onPublish={(newProjectDetails) => {
+              isDefaultproj={projectDetails.isDefaultSpecDb}
+              onPublish={(newProjectDetails, isDefaultproj) => {
                 setPasswordBeforePublish(false);
-                setNewProjectDetails(newProjectDetails);
+                setNewProjectDetails(newProjectDetails, isDefaultproj);
                 submitProject();
               }}
             />
