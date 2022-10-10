@@ -141,7 +141,7 @@ const CredentialsBeforePublish = ({
                         fullWidth
                         value={isDefaultproj ? "S0mbari@2022" : null}
                         color='primary'
-                        error={(isDefaultproj) && Boolean(errors.password)}
+                        error={(!isDefaultproj) && Boolean(errors.password)}
                         helperText={errors.password}
                         // onKeyUp={(e) => {
                         //   const { value } = e.target;
