@@ -139,6 +139,7 @@ const CredentialsBeforePublish = ({
                         type='password'
                         autocomplete='off'
                         fullWidth
+                        disabled={isDefaultproj}
                         value={isDefaultproj ? "S0mbari@2022" : null}
                         color='primary'
                         error={(!isDefaultproj) && Boolean(errors.password)}
@@ -188,7 +189,7 @@ const CredentialsBeforePublish = ({
           <PrimaryButton
             type='submit'
             onClick={() => {
-              formRef.current.handleSubmit();
+              if (!isDefaultproj) formRef.current.handleSubmit();
               setTimeout(function () {
                 if (formRef.current.isValid) {
                   newProjectDetails["password"] =
