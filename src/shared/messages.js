@@ -2,6 +2,7 @@ const Messages = {
   UNKNOWN: "Something went wrong, please try again.",
   DB_REQUIRED: "Atleast one spec or db file must be uploaded.",
   NAME_REQUIRED: "Name is required",
+  SPEC_REQUIRED: "Spec is required",
   TYPE_REQUIRED: "Type is required",
   DESC_REQUIRED: "Description is required",
   TABLE_REQUIRED: "Please select a table name",

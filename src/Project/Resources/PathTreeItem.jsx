@@ -3,6 +3,7 @@ import ReactHoverObserver from "react-hover-observer";
 import AddIcon from "@material-ui/icons/Add";
 import MoreVertIcon from "@material-ui/icons/MoreVert";
 import { Fade, Menu, MenuItem, Dialog, TextField } from "@material-ui/core";
+import ReactTooltip from "react-tooltip";
 import CloseIcon from "@material-ui/icons/Close";
 import { ErrorMessage, Field, Form, Formik } from "formik";
 
@@ -21,7 +22,7 @@ const PathTreeItem = ({
   nodeId,
   resourceId,
   path,
-
+  isDesign,
   children,
   resetSelectedOperation,
   ...rest
@@ -33,7 +34,7 @@ const PathTreeItem = ({
     type: null,
   });
   const canEdit = useCanEdit();
-
+  const [isEllipsisActive, setIsEllipsisActive] = useState(null);
   const handleMenuClick = (event) => {
     event?.preventDefault();
     event?.stopPropagation();
@@ -87,7 +88,7 @@ const PathTreeItem = ({
         open={dialog?.show ?? false}
         fullWidth
         PaperProps={{
-          style: { borderRadius: 8 },
+          style: { borderRadius: 8, zIndex: 1001 },
         }}
       >
         {dialog?.type === "add-operation" && canEdit() && (
@@ -124,14 +125,42 @@ const PathTreeItem = ({
             nodeId={nodeId}
             label={
               <div className='flex flex-row items-center py-1 pr-1 h-8'>
-                <div className='flex flex-row flex-1 items-center'>
+                <div
+                  // style={{ "z-index": "1000" }}
+                  className='flex flex-row flex-1 items-center'
+                  data-tip
+                  data-for='ellipsisDataPath'
+                >
                   <p className='rounded-sm border-2 border-neutral-gray1 px-1 mr-1 h-5 text-xs'>
                     /
                   </p>
-                  <p className='text-overline2 overflow-hidden whitespace-nowrap overflow-ellipsis w-30'>
+                  <p
+                    className='text-overline2 overflow-hidden whitespace-nowrap overflow-ellipsis w-32'
+                    onMouseEnter={(e) => {
+                      if (e.target.offsetWidth < e.target.scrollWidth) {
+                        setIsEllipsisActive(true);
+                      } else {
+                        setIsEllipsisActive(false);
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      setIsEllipsisActive(false);
+                      ReactTooltip.hide("ellipsisDataPath");
+                    }}
+                  >
                     {path.pathName ? path.pathName : path}
                   </p>
+                  <ReactTooltip
+                    id='ellipsisDataPath'
+                    backgroundColor='black'
+                    place='right'
+                    effect='solid'
+                    disable={!isEllipsisActive || menuAnchor}
+                  >
+                    {path.pathName ? path.pathName : path}
+                  </ReactTooltip>
                 </div>
+
 
                 {isHovering && currentTab == 0 && canEdit() && (
                   <div>
@@ -184,6 +213,7 @@ const PathTreeItem = ({
                         setMenuAnchor(null);
                         handleEditClick();
                       }}
+                      disabled={!isDesign}
                     >
                       Edit
                     </MenuItem>

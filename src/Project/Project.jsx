@@ -820,6 +820,7 @@ const Project = () => {
                     }
                   }
                 }}
+                isDesign={projectDetails?.isDesign}
                 onSimulateSelect={(operation) => simulateAPI(operation)}
                 currentTab={currentTab}
                 simulateData={simulateVirtualData}

@@ -72,11 +72,19 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
     operationAtomWithMiddleware
   );
   // operationData;
-
+  const {
+    isLoading: isLoadingSubSchema,
+    error: getSubSchemasError,
+    data: subSchemaData,
+    mutate: getSubSchema,
+    reset: resetSubSchemaData,
+    variables: subSchemaRequest,
+  } = useGetSubSchema();  
   const { height, width } = useWindowSize();
   const { getExandedIds, setExpandedIds } = useExpandedIds([]);
   const [primaryKeyRef, setPrimaryKeyRef] = useRecoilState(primaryAtom);
   const tablesData = useRecoilValue(tablesDataAtom);
+  const [disabledIcons, setDisabledIcons] = useState(false);
   const { fetch: fetchParentName } = useGetParentName();
   const { fetch: fetchFullPath } = useGetFullPath();
 
@@ -226,6 +234,10 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
     }
   };
 
+  useEffect(() => {
+    //
+  }, [isLoadingSubSchema]);
+
   const getResponseData = (operation) => {
     return operation?.operationResponse?.find(
       (item) => item.responseCode === responseCode
@@ -299,9 +311,9 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
               }}
             >
               <TreeView
-                defaultCollapseIcon={<ExpandMoreIcon />}
-                defaultExpandIcon={<ChevronRightIcon />}
-                expanded={getExandedIds() ?? []}
+                defaultCollapseIcon={!disabledIcons ? <ExpandMoreIcon /> : null}
+                defaultExpandIcon={!disabledIcons ? <ChevronRightIcon /> : null}
+                expanded={getExandedIds() ?? null}
                 onNodeToggle={(event, nodeIds) => {
                   setExpandedIds(nodeIds);
                 }}
@@ -329,6 +341,9 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
 
                   return clonedRef == "wrongData" ? null : (
                     <BodyItem
+                      disabledIcons={(value) => {
+                        setDisabledIcons(false);
+                      }}
                       projectType={projectType}
                       key={item?.name}
                       itemRef={clonedRef ?? item}
@@ -419,7 +434,13 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
 let treeIndex = 1;
 const truncateLength = 20; //max character length limit of names to enable truncate
 // This can either be a schema or table or stored procedure
-const BodyItem = ({ request = true, responseCode, itemRef, projectType }) => {
+const BodyItem = ({
+  request = true,
+  responseCode,
+  itemRef,
+  projectType,
+  disabledIcons,
+}) => {
   const [bodyItem, setItem] = useState(itemRef);
   const setOperationDetails = useSetRecoilState(operationAtomWithMiddleware);
   const { projectId } = useParams();
@@ -930,7 +951,7 @@ const BodyItem = ({ request = true, responseCode, itemRef, projectType }) => {
     if (!isLoadingSubSchema && _.isEmpty(schemaRef.data)) {
       getSubSchema({
         projectId,
-        name: schemaRef?.name,
+        name: schemaRef?.schemaName ?? schemaRef?.name,
         type: schemaRef?.type,
         ref: schemaRef?.ref,
       });
@@ -1211,7 +1232,7 @@ const BodySubTreeItems = ({ currentRef: some }) => {
 
             <div className='flex flex-row justify-between w-full items-center'>
               <p className='text-overline2 mr-4'>
-                {currentRef?.name}
+                {currentRef?.schemaName ?? currentRef?.name}
                 {isArray(currentRef) && " [ ]"}
               </p>
 
@@ -1320,29 +1341,24 @@ const SchemaLabel = ({
                     className='bg-white mr-4'
                     style={{ height: "24px", width: "24px" }}
                   />
-                  <p className='text-overline2'>{labelItem?.name}</p>
+                  <p className='text-overline2'>{labelItem?.schemaName ?? labelItem?.name}</p>
                 </div>
 
                 <div> {/* empty datattype */}</div>
                 <div className='flex  ml-1 justify-self-start'>
-                  {/* empty isArray */}
-                  {/* <Checkbox
-                    checked={isArray}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-
-                      isArrayChecked(labelItem, !isArray, request);
-                      setIsArray(!isArray);
-                    }}
-                    style={{
-                      color: Colors.brand.secondary,
-                      padding: "0",
-                    }}
-                  /> */}
+                  {labelItem.hasOwnProperty("isArray") && (
+                    <Checkbox
+                      checked={labelItem?.isArray}
+                      disabled={true}					  
+                      style={{
+                        color: Colors.brand.secondary,
+                        padding: "0",
+                      }}
+                    />
+                  )}
                 </div>
-                <div> {/* empty required */}</div>
-                {/* {isLoading && (
+                <div> </div>
+                {isLoading && (
                   <CircularProgress
                     style={{
                       marginLeft: "0.5rem",
@@ -1350,7 +1366,7 @@ const SchemaLabel = ({
                       height: "20px",
                     }}
                   />
-                )} */}
+                )}
               </div>
             </div>
             <div className='w-6'>

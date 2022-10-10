@@ -57,6 +57,8 @@ const AddProject = ({ onClose, onSuccess }) => {
   const [isDesign, setIsDesign] = useState(null);
   // const [isDesign, setIsDesign] = useState(true);
   const [errorDisplay, setErrorDisplay] = useState(false);
+  const [specErrorDisplay, setSpecErrorDisplay] = useState(false);
+
   const [inviteCollabsErrorMssg, setInviteCollabsErrorMssg] = useState(false);
   const [sampleProjCnt, setSampleProjCnt]  = useState(1);
   const loggedInUserId = getUserId();
@@ -154,6 +156,7 @@ const AddProject = ({ onClose, onSuccess }) => {
   };
 
   const handleSkipForNow = () => {
+    setErrorDisplay(false);
     setInviteCollabsErrorMssg(false);
     resetCreateProjectApi();
     resetUploadDbsApi();
@@ -180,7 +183,12 @@ const AddProject = ({ onClose, onSuccess }) => {
         _.isEmpty(projectDetails?.type))
     ) {
       setErrorDisplay(true);
+    } else if (_.isEmpty(projectDetails?.specs) && !isDesign) {
+      setTab(0);
+      setSpecErrorDisplay(true);
     } else {
+      setErrorDisplay(false);
+      setSpecErrorDisplay(false);
       uploadProjectData({
         name: projectDetails?.name,
         invitees: projectDetails?.collaborators?.map((collaborator) => {
@@ -197,7 +205,7 @@ const AddProject = ({ onClose, onSuccess }) => {
 
   const handleDone = () => {
     setErrorDisplay(false);
-
+    setSpecErrorDisplay(false);
     if (projectDetails.collaborators.length < 1) {
       setInviteCollabsErrorMssg(true);
     } else {
@@ -226,7 +234,11 @@ const AddProject = ({ onClose, onSuccess }) => {
           _.isEmpty(projectDetails?.type))
       ) {
         setErrorDisplay(true);
+      } else if (_.isEmpty(projectDetails?.specs) && !isDesign) {
+        setSpecErrorDisplay(true);
       } else {
+        setErrorDisplay(false);
+        setSpecErrorDisplay(false);
         uploadProjectData({
           name: projectDetails?.name,
           invitees: projectDetails?.collaborators?.map((collaborator) => {
@@ -538,6 +550,7 @@ const AddProject = ({ onClose, onSuccess }) => {
                     <div className='h-80'>
                       <ProjectDetails
                         formRef={formRef}
+                        isDesign={isDesign}
                         specsError={specsError}
                         dbsError={dbsError}
                         isProjectNameEmpty={isProjectNameEmpty}
@@ -615,6 +628,12 @@ const AddProject = ({ onClose, onSuccess }) => {
                   <p className='text-overline2 text-accent-red my-2'>
                     Please upload atleast one of the following - ddl file or
                     dbconnection
+                  </p>
+                )}
+
+                {specErrorDisplay && !isDesign && currentTab === 0 && (
+                  <p className='text-overline2 text-accent-red my-2'>
+                    Spec is required
                   </p>
                 )}
 
@@ -864,20 +883,21 @@ const AddProject = ({ onClose, onSuccess }) => {
           </div>
           <div className='flex justify-center p-2 px-36'>
             <PrimaryButton
-              style={{
-                color : "white",
-                background : "#9f9f9f"
-              }}
+              //style={{
+              //  color : "white",
+              //  background : "#9f9f9f"
+              //}}
               onClick={() => {
-                setIsDesign(null);
-                if (deployenv == "production") {
+                //setIsDesign(null);
+                //if (deployenv == "production") {
                   //window.location.href='https://www.conektto.io/beta-signup'
-                  openInNewTab('https://www.conektto.io/beta-signup')
-                }   
+                  //openInNewTab('https://www.conektto.io/beta-signup')
+                //}   
+                setIsDesign(false);
               }}
               classes='flex-1 -ml-4 text-brand-secondary'
             >
-              Test Studio (Click to sign-up for beta...)
+              Test Studio
             </PrimaryButton>
           </div>
         </div>

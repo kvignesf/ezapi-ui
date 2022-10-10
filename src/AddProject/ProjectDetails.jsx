@@ -18,6 +18,7 @@ import Messages from "../shared/messages";
 const ProjectDetails = ({
   formRef,
   specsError,
+  isDesign,
   dbsError,
   isProjectNameEmpty,
   addProjectMutation,

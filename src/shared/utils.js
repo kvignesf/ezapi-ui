@@ -65,7 +65,7 @@ export const getApiError = (error) => {
 };
 
 export const isArray = (object) => {
-  return object?.type === "array";
+  return object?.type === "array" && !object?.schemaName;
 };
 
 export const isAttribute = (object) => {
@@ -85,14 +85,16 @@ export const isArrayOrObjectAttribute = (object) => {
     _.includes(Constants.bodyAcceptedTypes, object?.type)
   );
 };
-
+/** if we are not utilizing ezapi_ref_array anymore that condition can be removed */
 export const isSchema = (object) => {
   return (
     object?.type === "ref" ||
     object?.type === "ezapi_ref" ||
+    object?.type === "ezapi_ref_array" ||
     (object?.data !== null &&
       object?.data !== undefined &&
-      !object?.contentType)
+      !object?.contentType) ||
+    (object?.schemaName && !isAttribute(object))
   );
 };
 
@@ -408,7 +410,8 @@ export const parseGetOperationRequestResponse = (requestAPIData) => {
         operationResponse?.body?.ezapi_ref ||
         isAttribute(operationResponse?.body) ||
         isColumn(operationResponse?.body) ||
-        isStoredProcedure(operationResponse?.body)
+        isStoredProcedure(operationResponse?.body) ||
+        operationResponse?.body?.schemaName
       ) {
         request.body = [_.cloneDeep(operationResponse?.body)];
       }

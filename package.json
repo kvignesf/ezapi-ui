@@ -52,6 +52,7 @@
     "react-simple-snackbar": "^1.1.11",
     "react-smooth-scrollbar": "^8.0.6",
     "react-timeago": "^5.3.0",
+    "react-tooltip": "^4.2.21",
     "recoil": "^0.2.0",
     "serve": "^11.3.2",
     "smooth-scrollbar": "^8.6.3",

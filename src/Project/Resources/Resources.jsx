@@ -35,6 +35,7 @@ const useStyles = makeStyles({
 
 const Resources = ({
   projectId,
+  isDesign,
   selectedIndex,
   onOperationSelect,
   onSimulateSelect,
@@ -204,6 +205,7 @@ const Resources = ({
                   currentTab={currentTab}
                   key={resourceNodeIndex}
                   nodeId={resourceNodeIndex}
+                  isDesign={isDesign}
                   resource={resource}
                   resetSelectedOperation={() => {
                     resetSelectedOperation();
@@ -231,6 +233,7 @@ const Resources = ({
                               e.stopPropagation();
                               resetSelectedOperation();
                             }}
+                            isDesign={isDesign}
                           >
                             {path?.operations && !_.isEmpty(path?.operations)
                               ? path?.operations?.map(
@@ -239,6 +242,7 @@ const Resources = ({
 
                                     return (
                                       <OperationTreeItem
+                                        isDesign={isDesign}
                                         currentTab={currentTab}
                                         key={operationNodeId}
                                         nodeId={operationNodeId}

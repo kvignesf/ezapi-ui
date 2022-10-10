@@ -12,6 +12,7 @@ export const Method = {
 };
 
 const ApiMethod = ({ type, ...rest }) => {
+  type = type.toUpperCase();
   return (
     <div
       className={classNames(
