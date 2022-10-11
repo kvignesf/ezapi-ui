@@ -622,7 +622,7 @@ const ConnectDatabase = ({
                           fullWidth
                           color="primary"
                           placeholder="127.0.0.1"
-                          value={isClaimSpec || isAdvSpec ? "3*.*.*.*" : null}
+                          value={isClaimSpec || isAdvSpec ? "3*.*.*.*" : values.host}
                           error={
                             (!isClaimSpec || !isAdvSpec) &&
                             touched.host &&
@@ -652,7 +652,7 @@ const ConnectDatabase = ({
                           fullWidth
                           color="primary"
                           placeholder="7744"
-                          value={isAdvSpec || isClaimSpec ? "1433" : null}
+                          value={isAdvSpec || isClaimSpec ? "1433" : values.port}
                           error={
                             (!isClaimSpec || !isAdvSpec) &&
                             touched.port &&
@@ -681,7 +681,7 @@ const ConnectDatabase = ({
                           name="username"
                           fullWidth
                           color="primary"
-                          value={isClaimSpec || isAdvSpec ? "Sa" : null}
+                          value={isClaimSpec || isAdvSpec ? "sa" : values.username}
                           error={
                             (!isClaimSpec || !isAdvSpec) &&
                             touched.username &&
@@ -713,7 +713,7 @@ const ConnectDatabase = ({
                           fullWidth
                           color="primary"
                           value={
-                            isClaimSpec || isAdvSpec ? "S0mbari@2022" : null
+                            isClaimSpec || isAdvSpec ? "S0mbari@2022" : values.password
                           }
                           error={
                             (!isClaimSpec || !isAdvSpec) &&
@@ -748,7 +748,7 @@ const ConnectDatabase = ({
                               ? "db_claimsstaging"
                               : isAdvSpec
                               ? "bikestoredb"
-                              : null
+                              : values.database
                           }
                           error={
                             (!isClaimSpec || !isAdvSpec) &&

@@ -215,10 +215,54 @@ const ProjectRow = ({
       <td>
         <p className='text-overline2'>{project?.status}</p>
       </td>
+      
+      <td align='left' >
+        <div className='text-overline2'>{project?.isDesign ? "DESIGN" : "TEST"}
+        </div>
+      </td>
       <td align='center'>
         <div className='flex flex-row items-center gap-2'>
           {/* Codegen download */}
           <div className='w-8'>
+            {project?.status?.toLowerCase() === "complete" &&
+              project?.projectType?.toLowerCase() !== "schema" &&
+              !isDownloadingCodegen && project?.isDesign &&(
+                <Tooltip title={
+                  project?.codegen
+                    ? "Download java Codegen"
+                    : "Preparing java Codegen"
+                }>
+                  <div
+                    style={{
+                      marginTop: "-15px",
+                      width: "18px",
+                      height: "18px",
+                    }}
+                  >
+                    <img
+                      src={javaLogo}
+                      alt='conektto logo'
+                      className={classNames({
+                        "opacity-50 cursor-default": project?.codegen,
+                        "cursor-pointer text-brand-primary": !project?.codegen,
+                      })}
+                      onClick={(e) => {
+                        e?.preventDefault();
+                        e?.stopPropagation();
+
+                        if (project?.codegen) {
+                          onDownloadCodegen();
+                        }
+                      }}
+                    />
+                  </div>
+                </Tooltip>                
+              )}
+            {isDownloadingDotnetCodegen && (
+              <CircularProgress style={{ width: "24px", height: "24px" }} />
+            )}
+          </div>
+          {/* <div className='w-8'>
             {project?.status?.toLowerCase() === "complete" &&
               project?.projectType?.toLowerCase() !== "schema" &&
               !isDownloadingCodegen && (
@@ -252,12 +296,12 @@ const ProjectRow = ({
             {isDownloadingCodegen && (
               <CircularProgress style={{ width: "24px", height: "24px" }} />
             )}
-          </div>
+          </div> */}
           {/* dotnetCodegen download */}
           <div className='w-8'>
             {project?.status?.toLowerCase() === "complete" &&
               project?.projectType?.toLowerCase() !== "schema" &&
-              !isDownloadingDotnetCodegen && (
+              !isDownloadingDotnetCodegen && project?.isDesign &&(
                 <Tooltip title={
                   project?.dotnetcodegen
                     ? "Download dotnet Codegen"
@@ -266,8 +310,8 @@ const ProjectRow = ({
                   <div
                     style={{
                       marginTop: "-3px",
-                      width: "24px",
-                      height: "24px",
+                      width: "20px",
+                      height: "20px",
                     }}
                   >
                     <img
@@ -675,7 +719,8 @@ const Content = ({ showCreateProjectDialog }) => {
                     <th className=''>COLLABORATORS</th>
                     <th className=''>LAST ACTIVITY</th>
                     <th className=''>STATUS</th>
-                    <th className=''>ARTIFACTS</th>
+                    <th className=''>DESIGN / TEST</th>
+                    <th className=''>ARTIFACTS</th>                    
                     <th className='rounded-tr-md rounded-br-md text-center'>
                       {isFetchingProjectsBg ? (
                         <CircularProgress size='20px' />
