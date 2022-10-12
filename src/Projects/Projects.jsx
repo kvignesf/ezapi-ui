@@ -229,8 +229,8 @@ const ProjectRow = ({
               !isDownloadingCodegen && project?.isDesign &&(
                 <Tooltip title={
                   project?.codegen
-                    ? "Download java Codegen"
-                    : "Preparing java Codegen"
+                    ? "Java"
+                    : "Java Code getting ready"
                 }>
                   <div
                     style={{
@@ -304,8 +304,8 @@ const ProjectRow = ({
               !isDownloadingDotnetCodegen && project?.isDesign &&(
                 <Tooltip title={
                   project?.dotnetcodegen
-                    ? "Download dotnet Codegen"
-                    : "Preparing dotnet Codegen"
+                    ? "dotnet"
+                    : "dotnet code getting ready"
                 }>
                   <div
                     style={{
@@ -343,7 +343,7 @@ const ProjectRow = ({
             {project?.status?.toLowerCase() === "complete" &&
               project?.publishStatus?.SpecGeneration?.success &&
               !isDownloadingSpecs && (
-                <Tooltip title='Download Specs'>
+                <Tooltip title='Open API Spec'>
                   <div
                     style={{
                       width: "32px",
@@ -384,7 +384,7 @@ const ProjectRow = ({
                     onDownloadArtifact();
                   }}
                 >
-                  <Tooltip title='Download Artifacts'>
+                  <Tooltip title='API Workspace'>
                     <SystemUpdateAltIcon
                       style={{ color: Colors.brand.primary }}
                     />
@@ -437,7 +437,7 @@ const ProjectRow = ({
               project?.publishStatus?.SankyGeneration?.success &&
               project?.publishStatus?.ArtefactGeneration?.success &&
               !isDownloadingApigee && (
-                <Tooltip title='Download Apigee'>
+                <Tooltip title='Apigee Bundle'>
                   <div
                     style={{
                       marginTop: "12px",
@@ -720,7 +720,7 @@ const Content = ({ showCreateProjectDialog }) => {
                     <th className=''>LAST ACTIVITY</th>
                     <th className=''>STATUS</th>
                     <th className=''>DESIGN / TEST</th>
-                    <th className=''>ARTIFACTS</th>                    
+                    <th className='pl-8'>DOWNLOAD</th>                    
                     <th className='rounded-tr-md rounded-br-md text-center'>
                       {isFetchingProjectsBg ? (
                         <CircularProgress size='20px' />
