@@ -243,8 +243,8 @@ const ProjectRow = ({
                       src={javaLogo}
                       alt='conektto logo'
                       className={classNames({
-                        "opacity-50 cursor-default": project?.codegen,
-                        "cursor-pointer text-brand-primary": !project?.codegen,
+                        "opacity-50 cursor-default": !project?.codegen,
+                        "cursor-pointer text-brand-primary": project?.codegen,
                       })}
                       onClick={(e) => {
                         e?.preventDefault();
@@ -258,7 +258,7 @@ const ProjectRow = ({
                   </div>
                 </Tooltip>                
               )}
-            {isDownloadingDotnetCodegen && (
+            {isDownloadingCodegen && (
               <CircularProgress style={{ width: "24px", height: "24px" }} />
             )}
           </div>
