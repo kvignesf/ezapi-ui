@@ -6,7 +6,7 @@ import FolderOpenIcon from "@material-ui/icons/FolderOpen";
 import { Dialog, Fade, Menu, MenuItem, TextField } from "@material-ui/core";
 import CloseIcon from "@material-ui/icons/Close";
 import { ErrorMessage, Field, Form, Formik } from "formik";
-
+import ReactTooltip from "react-tooltip";
 import ApiMethod, { Method } from "../../shared/components/ApiMethod";
 import AppIcon from "../../shared/components/AppIcon";
 import StyledTreeItem from "./StyledTreeItem";
@@ -15,16 +15,19 @@ import AddOrEditPath from "./AddOrEditPath";
 import AddOrEditResource from "./AddOrEditResource";
 import DeleteResource from "./DeleteResource";
 import { useCanEdit } from "../../shared/utils";
+import { useEffect } from "react";
 
 const ResourceTreeItem = ({
   currentTab,
   nodeId,
   resource,
   children,
+  isDesign,
   resetSelectedOperation,
   ...rest
 }) => {
   const [menuAnchor, setMenuAnchor] = useState(null);
+  const [isEllipsisActive, setIsEllipsisActive] = useState(null);
   const [dialog, setDialog] = useState({
     show: false,
     data: null,
@@ -37,7 +40,7 @@ const ResourceTreeItem = ({
     event?.stopPropagation();
     setMenuAnchor(event?.currentTarget);
   };
-
+  useEffect(() => {});
   const handleAddPathClick = (event) => {
     event?.preventDefault();
     event?.stopPropagation();
@@ -87,7 +90,7 @@ const ResourceTreeItem = ({
         open={dialog?.show ?? false}
         fullWidth
         PaperProps={{
-          style: { borderRadius: 8 },
+          style: { borderRadius: 8, zIndex: 1001 },
         }}
       >
         {dialog?.type === "add-path" && canEdit() && (
@@ -124,9 +127,38 @@ const ResourceTreeItem = ({
                       style={{ fontSize: "18px", color: Colors.neutral.gray1 }}
                     />
                   </AppIcon>
-                  <p className='text-overline2 overflow-hidden whitespace-nowrap overflow-ellipsis w-30'>
-                    {resource?.resourceName}
-                  </p>
+                  <div
+                    // style={{ "z-index": "1000" }}
+                    data-tip
+                    data-for='ellipsisData'
+                  >
+                    <p
+                      className='text-overline2 overflow-hidden whitespace-nowrap overflow-ellipsis w-36'
+                      onMouseEnter={(e) => {
+                        if (e.target.offsetWidth < e.target.scrollWidth) {
+                          setIsEllipsisActive(true);
+                        } else {
+                          setIsEllipsisActive(false);
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        setIsEllipsisActive(false);
+                        ReactTooltip.hide("ellipsisData");
+                      }}
+                    >
+                      {resource?.resourceName}
+                    </p>
+
+                    <ReactTooltip
+                      id='ellipsisData'
+                      backgroundColor='black'
+                      place='right'
+                      effect='solid'
+                      disable={!isEllipsisActive || menuAnchor}
+                    >
+                      {resource?.resourceName}
+                    </ReactTooltip>
+                  </div>
                 </div>
 
                 {isHovering && currentTab == 0 && canEdit() && (
@@ -180,6 +212,7 @@ const ResourceTreeItem = ({
                         setMenuAnchor(null);
                         handleEditClick();
                       }}
+                      disabled={!isDesign}
                     >
                       Edit
                     </MenuItem>

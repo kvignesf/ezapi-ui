@@ -62,10 +62,10 @@ const OperationType = [
   //   id: "trace",
   //   name: "TRACE",
   // },
-  {
-    id: "head",
-    name: "HEAD",
-  },
+  //{
+  //  id: "head",
+  //  name: "HEAD",
+  //},
 ];
 
 const CustomTextField = (props) => (

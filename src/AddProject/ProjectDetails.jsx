@@ -18,12 +18,15 @@ import Messages from "../shared/messages";
 const ProjectDetails = ({
   formRef,
   specsError,
+  isDesign,
   dbsError,
   isProjectNameEmpty,
   addProjectMutation,
   uploadSpecsMutation,
   uploadDbMutation,
   aiMatcherMutation,
+  isClaimSpec,
+  isAdvSpec,
 }) => {
   const [projectDetails, setProjectDetails] = useRecoilState(projectAtom);
 
@@ -162,22 +165,37 @@ const ProjectDetails = ({
             setErrors,
           }) => (
             <Form>
-              <Field
-                id="name"
-                name="name"
-                fullWidth
-                color="primary"
-                error={touched.name && Boolean(errors.name)}
-                helperText={<ErrorMessage name="name" />}
-                onKeyUp={(e) => {
-                  const { value } = e.target;
-                  debouncedSetName(value);
-                }}
-                variant="outlined"
-                inputProps={{ maxLength: 24 }}
-                // disabled={addProjectMutation?.isSuccess}
-                as={TextField}
-              />
+              {isClaimSpec || isAdvSpec ? (
+                <Field
+                  id="name"
+                  name="name"
+                  fullWidth
+                  color="primary"
+                  value={isAdvSpec ? "BikeStore" : "Claims"}
+                  disabled={true}
+                  variant="outlined"
+                  inputProps={{ maxLength: 24 }}
+                  // disabled={addProjectMutation?.isSuccess}
+                  as={TextField}
+                />
+              ) : (
+                <Field
+                  id="name"
+                  name="name"
+                  fullWidth
+                  color="primary"
+                  error={touched.name && Boolean(errors.name)}
+                  helperText={<ErrorMessage name="name" />}
+                  onKeyUp={(e) => {
+                    const { value } = e.target;
+                    debouncedSetName(value);
+                  }}
+                  variant="outlined"
+                  inputProps={{ maxLength: 24 }}
+                  // disabled={addProjectMutation?.isSuccess}
+                  as={TextField}
+                />
+              )}
             </Form>
           )}
         </Formik>
@@ -194,11 +212,14 @@ const ProjectDetails = ({
             handleOnSpecsPick(Array.from(e.target.files));
             e.target.value = "";
           }}
+          disabled={isClaimSpec || isAdvSpec}
         />
 
         <label
           for="specs"
-          className="bg-brand-secondary rounded-md px-4 py-2 text-white text-mediumLabel hover:opacity-90"
+          className={`bg-brand-secondary  ${
+            isClaimSpec || isAdvSpec ? "opacity-40" : "hover:opacity-90"
+          }  rounded-md px-4 py-2 text-white text-mediumLabel`}
         >
           Upload
         </label>
@@ -215,15 +236,17 @@ const ProjectDetails = ({
                         <p className="text-overline2">
                           {file.name} {Math.round(file.size / 1024)} KB
                         </p>
-                        <AppIcon
-                          aria-label="remove"
-                          onClick={() => {
-                            removeSelectedSpec(file.name);
-                          }}
-                          style={{ width: "18px", height: "18px" }}
-                        >
-                          <CloseIcon />
-                        </AppIcon>
+                        {isClaimSpec || isAdvSpec ? null : (
+                          <AppIcon
+                            aria-label="remove"
+                            onClick={() => {
+                              removeSelectedSpec(file.name);
+                            }}
+                            style={{ width: "18px", height: "18px" }}
+                          >
+                            <CloseIcon />
+                          </AppIcon>
+                        )}
                       </div>
                     </li>
                   );
