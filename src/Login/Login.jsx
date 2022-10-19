@@ -43,6 +43,8 @@ import _ from "lodash";
 import { isUserLoggedIn } from "../shared/utils";
 import { useQuery } from "react-query";
 import { border, maxHeight } from "@mui/system";
+//import GoogleLogin from "react-google-login";
+//import { Google } from "@mui/icons-material";
 
 const acc_token = getAccessToken();
 const Login = () => {
@@ -196,7 +198,7 @@ const Login = () => {
                 <>
                   {!isLoggingIn && (
                     <div class='flex flex-col items-center justify-center gap-2 mb-6'>
-                      <p className='mb-2'>Sign in to continue to Conektto</p>
+                      <p className='mb-2'>Login / Sign Up to continue to Conektto</p>
                       <LinkedIn
                         className='mb-2'
                         clientId={Constants.linkedClientId}
