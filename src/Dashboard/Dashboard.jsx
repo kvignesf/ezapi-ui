@@ -12,6 +12,7 @@ import client, { endpoint } from "../shared/network/client";
 import { getAccessToken } from "../shared/storage";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
+import Confetti from "react-confetti";									  
 // import DashboardSharpIcon from "@material-ui/icons/DashboardSharp";
 import { ReactComponent as DashboardSharpIcon } from "../static/images/dashboard_logo.svg";
 import { List, ListItem } from "@material-ui/core";
@@ -79,6 +80,7 @@ const Dashboard = ({ selectedIndex, children, pricingDefaultCheck }) => {
   });
   const [profileMenuAnchorEl, setProfilemenuAnchorEl] = useState(false);
   const [projectState, setProjectState] = useRecoilState(projectAtom);
+  const [showFirework, setShowFirework] = useState(false);
 
   const { isLoading: isLoggingOut, mutate: logout } = useLogout();
   const firstName = getFirstName();
@@ -105,7 +107,10 @@ const Dashboard = ({ selectedIndex, children, pricingDefaultCheck }) => {
       }
     }
   };
-
+  
+  const BackgroundParticles = () => {
+    return <Confetti />;
+  };			   
   const showAddProjectDialog = () => {
     setDialog({
       show: true,
@@ -115,6 +120,7 @@ const Dashboard = ({ selectedIndex, children, pricingDefaultCheck }) => {
 
   const handleCloseDialog = () => {
     setProjectState(defaultState);
+	setShowFirework(false);
 
     setDialog({
       show: false,
@@ -134,6 +140,7 @@ const Dashboard = ({ selectedIndex, children, pricingDefaultCheck }) => {
 
   return (
     <div className='flex flex-col h-screen'>
+	  {showFirework && BackgroundParticles()}											 
       <Dialog
         onClose={handleCloseDialog}
         aria-labelledby='dashboard-dialog'
@@ -200,6 +207,7 @@ const Dashboard = ({ selectedIndex, children, pricingDefaultCheck }) => {
               selected={selectedIndex === 0}
               onClick={() => {
                 handleSideMenuItemClick(0);
+				setShowFirework(true);					   
               }}
               style={{
                 padding: "1rem",

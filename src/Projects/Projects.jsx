@@ -213,7 +213,25 @@ const ProjectRow = ({
         }}
       >
         {project?.projectName}
-        
+        <CustomTooltip
+          maxWidth={"10px"}
+          arrow
+          placement="right"
+          title={
+            project?.projectType === "both" ? (
+            <span>
+              Spec Name: {project?.apiSpec[0]?.name ?? ""} 
+              <br /> db Name: {project?.dbDetails?.database ?? ""}
+            </span>
+            ) :
+            ( <span>
+              db Name: {project?.dbDetails?.database ?? ""}
+            </span>
+            )
+          }
+        >
+          <InfoIcon fontSize="small" sx={{ ml: "3px", mb: "2px" }} />
+        </CustomTooltip>
       </td>
       <td>
         <MembersImages

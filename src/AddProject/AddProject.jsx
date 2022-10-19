@@ -6,6 +6,7 @@ import {
   Tabs,
   MuiThemeProvider,
 } from "@material-ui/core";
+import { useReward } from "react-rewards";										  
 //import { ReactComponent as Logo } from "../static/images/logo/connectoLogo.svg";
 import { ReactComponent as Logo } from "../static/images/logo/newconnectoLogo.svg";
 import Button from "@mui/material/Button";
@@ -63,7 +64,7 @@ const AddProject = ({ onClose, onSuccess }) => {
   const [inviteCollabsErrorMssg, setInviteCollabsErrorMssg] = useState(false);
   const [sampleProjCnt, setSampleProjCnt]  = useState(1);
   const loggedInUserId = getUserId();
-
+  const { reward, isAnimating } = useReward("rewardId", "confetti");
   const [specsError, setSpecsError] = useState(null);
   const [dbsError, setDbsError] = useState(null);
   const [isProjectNameEmpty, setIsProjectNameEmpty] = useState(false);
@@ -72,6 +73,10 @@ const AddProject = ({ onClose, onSuccess }) => {
   const [defaultAdvSpec, setDefaultAdvSpec] = useState(false);
   const hideClaims = false;
 
+  useEffect(() => {
+    reward();
+  }, []);
+  
   const onAddProjectSuccess = (projectId) => {
     onSuccess(projectId);
   };
@@ -878,11 +883,13 @@ const AddProject = ({ onClose, onSuccess }) => {
           </div>
           <div className='flex justify-center p-2 px-36'>
             <PrimaryButton
+			  //disabled={isAnimating}						
               onClick={() => {
                 setIsDesign(true);
               }}
               classes='flex-1 -ml-4 text-brand-secondary'
             >
+			  <span id="rewardId" />						
               Design Studio
             </PrimaryButton>
           </div>
@@ -892,6 +899,7 @@ const AddProject = ({ onClose, onSuccess }) => {
               //  color : "white",
               //  background : "#9f9f9f"
               //}}
+			  //disabled={isAnimating}						
               onClick={() => {
                 //setIsDesign(null);
                 //if (deployenv == "production") {
