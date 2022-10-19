@@ -498,7 +498,7 @@ const AddProject = ({ onClose, onSuccess }) => {
             ) : (
               <h5>Test API Project</h5>
             )}
-            <div>new image</div>
+            
             {!isUploadingProjectDetails &&
               !isUploadingDbs &&
               !isUploadingSpecs &&
