@@ -470,7 +470,7 @@ const ProjectRow = ({
             {project?.status?.toLowerCase() === "complete" &&
               project?.publishStatus?.SankyGeneration?.success &&
               project?.publishStatus?.ArtefactGeneration?.success &&
-              !isDownloadingApigee && (
+              !isDownloadingApigee && project?.isDesign && (
                 <Tooltip title='Apigee Bundle'>
                   <div
                     style={{
