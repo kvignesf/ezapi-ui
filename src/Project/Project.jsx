@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useHistory, useParams } from "react-router";
+import MappingDrawer from "./MappingDrawer";
 import { useGetResources } from "./Resources/resourcesQuery";
+import { Drawer } from "@material-ui/core";
 import ArrowBackIcon from "@material-ui/icons/ArrowBack";
+//import { useGetTables } from "./AttributeDetails/recommendationQueries";
+import { useGetTables } from "../Project/SchemaDetails/schemaRecommendationQuery";
+
 import {
   CircularProgress,
   Dialog,
@@ -43,7 +48,7 @@ import Match from "./Match";
 import Simulate from "./Simulate.jsx";
 import OperationDetails from "./OperationDetails";
 import { useSyncOperation } from "../shared/query/operationDetailsQuery";
-import { useSubmitProject } from "./projectQueries";
+import { useSubmitProject, useGetMandMappingTableData } from "./projectQueries";
 import TabLabel from "../shared/components/TabLabel";
 import {
   generateSyncOperationRequestRequest,
@@ -79,6 +84,7 @@ const Project = () => {
   const firstName = getFirstName();
   const lastName = getLastName();
   const [dataFetched, setDataFetched] = useState(false);
+  const [mandMappingErr, setMandMappinErr] = useState(false);
   const [memberList, setMemberList] = useState();
   const {
     isLoading: isFetchingProjectDetails,
@@ -126,6 +132,18 @@ const Project = () => {
       reset: resetPublishMutation,
     },
   } = useSubmitProject(projectId, newProjectDetails);
+  const {
+    isLoading: isMMFetchingTables,
+    error: fetchMMTablesError,
+    data: mmtablesData,
+    mutate: fetchMMTablesData,
+  } = useGetMandMappingTableData(projectId);
+  const {
+    isLoading: isFetchingTables,
+    data: tablesData,
+    error: fetchTablesError,
+    mutate: fetchTables,
+  } = useGetTables();
   const resetSchemaState = useResetRecoilState(schemaAtom);
   const resetTableState = useResetRecoilState(tableAtom);
   const resetOperationState = useResetRecoilState(operationAtomWithMiddleware);
@@ -243,6 +261,14 @@ const Project = () => {
       // }
     }
   }, [isSyncOperationSuccess]);
+
+  useEffect(() => {
+    if (publishProjectData?.message == "Mandatory mapping is required") {
+      setMandMappinErr(true);
+    } else {
+      setMandMappinErr(false);
+    }
+  }, [publishProjectData, publishProjectError]);
 
   const startAutoSync = () => {
     stopAutoSync();
@@ -547,12 +573,22 @@ const Project = () => {
               publishProjectData={publishProjectData}
               publishProjectError={publishProjectError}
               project={projectDetails}
+              mandMappingErr={mandMappingErr}
               onButtonClick={() => {
                 if (publishProjectData?.success) {
                   closePublishProjectSuccess();
                 } else {
                   resetSubmitProjectMutation();
-
+                  if (mandMappingErr) {
+                    setDialog({
+                      show: true,
+                      type: "mandatory_mapping",
+                      data: null,
+                    });
+                  }
+                  setMandMappinErr(false);
+                  fetchMMTablesData({ projectId });
+                  fetchTables({ projectId });
                   if (isFreePublishesExhausted()) {
                     history.push(generateRoute(routes.payment, projectId));
                   } else if (isPublishLimitReached()) {
@@ -622,7 +658,24 @@ const Project = () => {
             />
           )}
         </Dialog>
-
+        <Drawer
+          anchor={"right"}
+          open={dialog?.show && dialog?.type == "mandatory_mapping"}
+          onClose={handleCloseDialog}
+        >
+          <MappingDrawer
+            newProjectDetails={newProjectDetails}
+            onClose={(data) => {
+              if (data == "publish") {
+                resetPublishMutation();
+                verify({ projectId, newProjectDetails });
+              }
+              handleCloseDialog();
+            }}
+            mmtableData={mmtablesData}
+            tablesData={tablesData}
+          />
+        </Drawer>
         <DndProvider backend={HTML5Backend}>
           <header className='fixed top-0 w-full px-2 border-b-2 flex flex-row items-center bg-white z-50'>
             <div className='flex flex-row py-2 items-center'>

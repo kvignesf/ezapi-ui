@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import CloseIcon from "@material-ui/icons/Close";
 import _ from "lodash";
 import { Link } from "react-router-dom";
-
+import { ReactComponent as FailureLogo } from "../static/images/failure-icon.svg";
 import AppIcon from "../shared/components/AppIcon";
 import { PrimaryButton, TextButton } from "../shared/components/AppButton";
 import { useGetBasicProduct } from "../ProjectPayment/paymentQueries";
@@ -16,6 +16,7 @@ const PublishProjectMessage = ({
   publishProjectError,
   publishProjectData,
   project,
+  mandMappingErr,
   onButtonClick,
   onClose,
 }) => {
@@ -78,6 +79,8 @@ const PublishProjectMessage = ({
             ? "Republish Limit Exceeded"
             : isAllowedProjectsLimitReached()
             ? "Allowed Project Limit Exceeded"
+            : mandMappingErr
+            ? "Alert"
             : "Publish Failure"}
         </p>
         <AppIcon
@@ -94,6 +97,11 @@ const PublishProjectMessage = ({
       <div className='p-4 py-6'>
         {publishProjectData?.success ? (
           <p className='text-overline2'>{`Project ${project?.projectName} successfully published. You can now download the specs and artifacts.`}</p>
+          ) : mandMappingErr ? (
+            <div className='flex flex-col items-center align-middle self-center justify-center p-4 py-6'>
+              <FailureLogo width={60} height={60} className=' mb-5' />
+              <p className='text-overline2 '>Mandatory Mapping is required</p>
+            </div>
         ) : (
           <p className='text-overline2'>{publishProjectData?.message}</p>
         )}
@@ -204,7 +212,7 @@ const PublishProjectMessage = ({
                 onButtonClick();
               }}
             >
-              {isFreePublishesExhausted() ? "Purchase" : "OK"}
+              {isFreePublishesExhausted() ? "Purchase" : mandMappingErr ? "Proceed" : "OK"}
             </PrimaryButton>
           )}
         </div>

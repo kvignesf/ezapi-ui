@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
+import { styled, Tooltip, tooltipClasses } from "@mui/material";
 import MoreVertIcon from "@material-ui/icons/MoreVert";
 import GetAppIcon from "@material-ui/icons/GetApp";
 import SystemUpdateAltIcon from "@material-ui/icons/SystemUpdateAlt";
@@ -9,7 +10,7 @@ import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
 // import client, { endpoint } from './shared/network/client';
 import Fade from "@material-ui/core/Fade";
-import { CircularProgress, Dialog, Tooltip } from "@material-ui/core";
+import { CircularProgress, Dialog } from "@material-ui/core";
 // import { useHistory } from 'react-router';
 import ReactPaginate from "react-paginate";
 import { useHistory, useLocation } from "react-router-dom";
@@ -53,6 +54,7 @@ import { fetchEventSource } from "@microsoft/fetch-event-source";
 import { useRecoilState } from "recoil";
 import projectAtom, { defaultState } from "../AddProject/projectAtom";
 import { downloadIconSts, downloadIconProj } from "../Dashboard/dwnDataGenAtom";
+import InfoIcon from "@mui/icons-material/Info";
 
 //import { NativeEventSource, EventSourcePolyfill } from 'event-source-polyfill';
 
@@ -128,6 +130,19 @@ const ProjectRow = ({
   handleOnInvite,
   handleOnRename,
 }) => {
+  const CustomTooltip = styled(({ className, ...props }) => (
+    // eslint-disable-next-line react/jsx-props-no-spreading
+    <Tooltip {...props} classes={{ popper: className }} />
+  ))(({ theme }) => ({
+    [`& .${tooltipClasses.arrow}`]: {
+      color: Colors.brand.primarySubtle,
+    },
+    [`& .${tooltipClasses.tooltip}`]: {
+      backgroundColor: Colors.brand.primarySubtle,
+      color: Colors.brand.primary,
+    },
+  }));
+
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [lastDataGenerated, setLastDataGenerated] = useState("Download Data");
   const datetime = new Date(project?.updatedAt);
@@ -198,6 +213,7 @@ const ProjectRow = ({
         }}
       >
         {project?.projectName}
+        
       </td>
       <td>
         <MembersImages

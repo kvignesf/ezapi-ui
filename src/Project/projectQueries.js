@@ -65,7 +65,12 @@ const publishProject = async ({ projectId, newProjectDetails }) => {
       {
         projectId,
         //password: newProjectDetails?.password,
-        password: ciphertext
+        password: ciphertext,
+      },
+      {
+        validateStatus: function (status) {
+          return status == 200 || status == 400;
+        },        
       },
       { timeout: 48000 }
     );
@@ -97,3 +102,20 @@ export const useSubmitProject = (projectId, newProjectDetails) => {
 
   return { verifyProjectMutation, publishProjectMutation };
 };
+const getMandMappingTableData = async ({ projectId }) => {
+  try {
+    const { data } = await client.post(endpoint.mandMappingTableData, {
+      projectId,
+    });
+    return data;
+  } catch (error) {
+    throw getApiError(error);
+  }
+};
+
+export const useGetMandMappingTableData = () => {
+  const mutation = useMutation(getMandMappingTableData, {});
+
+  return mutation;
+};
+

@@ -24,6 +24,7 @@ import ConnectDatabase from "./ConnectDatabase";
 import InviteCollaborators from "../shared/components/InviteCollaborators";
 import projectAtom from "./projectAtom";
 import aes from "crypto-js/aes";
+import ProductHunt from "../static/images/ProductHunt.jpg";
 import {
   useDatabaseConnection,
   useAddProject,
@@ -387,14 +388,11 @@ const AddProject = ({ onClose, onSuccess }) => {
 
   
   const { data: userProfile_data } = useUserProfile();
-  //console.log("userdata", userProfile_data)
-
-  //setSampleProjCnt(userProfile_data["sampleProjCount"]);
   
   useEffect(() => {
     //console.log("userdata", userProfile_data)
     setSampleProjCnt(userProfile_data?.["sampleProjCount"]);
-  }, [userProfile_data])
+  }, [userProfile_data]);
 
   useEffect(() => {
     prevFormRef.current = projectDetails.collaborators;
@@ -495,7 +493,7 @@ const AddProject = ({ onClose, onSuccess }) => {
             ) : (
               <h5>Test API Project</h5>
             )}
-
+            <div>new image</div>
             {!isUploadingProjectDetails &&
               !isUploadingDbs &&
               !isUploadingSpecs &&
@@ -863,7 +861,14 @@ const AddProject = ({ onClose, onSuccess }) => {
         <div className='p-4'>
           <div className='flex flex-row items-center justify-between mb-3'>
             {<h5>Create API Project</h5>}
-
+            <div>
+              {" "}
+              <img
+                style={{ width: "150px" }}
+                src={ProductHunt}
+                alt="producthunt"
+              />
+            </div>
             <AppIcon aria-label='close' onClick={onClose}>
               <CloseIcon />
             </AppIcon>

@@ -2,7 +2,7 @@ import _ from "lodash";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { useHistory } from "react-router-dom";
 import { useRecoilValue } from "recoil";
-
+import aes from "crypto-js/aes";
 import client, { endpoint } from "../../shared/network/client";
 import { getApiError } from "../../shared/utils";
 
@@ -45,30 +45,41 @@ const saveSchemaRecommendation = async ({
   projectId,
   schema,
   attributesWithOverrides,
+  data,
+  newProjectDetails,
 }) => {
-  const incompleteOverridenAttribute = attributesWithOverrides.find(
-    (overridenAttribute) =>
-      !overridenAttribute?.overridenMatch ||
-      _.isEmpty(overridenAttribute?.overridenMatch) ||
-      _.isEmpty(overridenAttribute?.overridenMatch?.tableName) ||
-      _.isEmpty(overridenAttribute?.overridenMatch?.tableAttribute)
-  );
-
-  if (incompleteOverridenAttribute) {
-    throw new Error(
-      `Please fill all the details of ${incompleteOverridenAttribute?.name} attribute`
+  var ciphertext = aes
+    .encrypt(
+      newProjectDetails?.password,
+      process.env.REACT_APP_AES_ENCRYPTION_KEY
+    )
+    .toString();
+  if (schema != undefined) {
+    const incompleteOverridenAttribute = attributesWithOverrides.find(
+      (overridenAttribute) =>
+        !overridenAttribute?.overridenMatch ||
+        _.isEmpty(overridenAttribute?.overridenMatch) ||
+        _.isEmpty(overridenAttribute?.overridenMatch?.tableName) ||
+        _.isEmpty(overridenAttribute?.overridenMatch?.tableAttribute)
     );
-  }
+
+    if (incompleteOverridenAttribute) {
+      throw new Error(
+        `Please fill all the details of ${incompleteOverridenAttribute?.name} attribute`
+      );
+    }
+}
 
   try {
-    const { data } = await client.post(endpoint.saveSchemaMatch, {
+    const { dataResponse } = await client.post(endpoint.saveSchemaMatch, {
       projectId,
       schema,
-      data: attributesWithOverrides ?? [],
+      data: attributesWithOverrides ?? data ?? [],
+      //password: ciphertext,
     });
-    return data;
+    return dataResponse;
   } catch (error) {
-    throw getApiError(error);
+    throw error?.response?.data;
   }
 };
 
