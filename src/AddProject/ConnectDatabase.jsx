@@ -54,6 +54,8 @@ const ConnectDatabase = ({
   aiMatcherMutation,
   activeTab,
   handleTabChange,
+  isClaimSpec,
+  isAdvSpec,
 }) => {
   const [projectDetails, setProjectDetails] = useRecoilState(projectAtom);
   const [open, setOpen] = useState(false);
@@ -488,7 +490,10 @@ const ConnectDatabase = ({
         setConnectors(filtered_plan["connectors"]);
       }
     }
-  }, [pricing_data, userProfile_data]);
+    if (isClaimSpec || isAdvSpec) {
+      debouncedSetDbType("mssql");
+    }
+  }, [pricing_data, userProfile_data, isClaimSpec, isAdvSpec]);
   return (
     <div className="p-4" style={{ height: "300px", overflowY: "scroll" }}>
       {/* <Scrollbar className="max-h-60" alwaysShowTracks={true}> */}
@@ -555,14 +560,19 @@ const ConnectDatabase = ({
                         <Field
                           id="type"
                           name="type"
-                          value={values.type}
+                          value={isClaimSpec || isAdvSpec ? "mssql" : values.type}
                           // color = "primary"
                           onChange={handleChange}
                           onBlur={(e) => {
                             debouncedSetType(values.type);
                           }}
-                          error={touched.type && Boolean(errors.type)}
-                          helperText={<ErrorMessage name="type" />}
+                          disabled={isClaimSpec || isAdvSpec}
+                          error={(!isClaimSpec || !isAdvSpec) && touched.type && Boolean(errors.type)}
+                          helperText={
+                            (!isClaimSpec || !isAdvSpec) && (
+                              <ErrorMessage name="type" />
+                            )
+                          }
                           variant="outlined"
                           style={{
                             border: "1px solid #d2d2d2",
@@ -612,14 +622,24 @@ const ConnectDatabase = ({
                           fullWidth
                           color="primary"
                           placeholder="127.0.0.1"
-                          error={touched.host && Boolean(errors.host)}
-                          helperText={<ErrorMessage name="host" />}
+                          value={isClaimSpec || isAdvSpec ? "3*.*.*.*" : values.host}
+                          error={
+                            (!isClaimSpec || !isAdvSpec) &&
+                            touched.host &&
+                            Boolean(errors.host)
+                          }
+                          helperText={
+                            (!isClaimSpec || !isAdvSpec) && (
+                              <ErrorMessage name="host" />
+                            )
+                          }
                           onKeyUp={(e) => {
                             const { value } = e.target;
                             debouncedSetHost(value);
                           }}
                           variant="outlined"
                           inputProps={{ maxLength: 55 }}
+                          disabled={isClaimSpec || isAdvSpec}
                           // disabled={addProjectMutation?.isSuccess}
                           as={TextField}
                         />
@@ -632,14 +652,24 @@ const ConnectDatabase = ({
                           fullWidth
                           color="primary"
                           placeholder="7744"
-                          error={touched.port && Boolean(errors.port)}
-                          helperText={<ErrorMessage name="port" />}
+                          value={isAdvSpec || isClaimSpec ? "1433" : values.port}
+                          error={
+                            (!isClaimSpec || !isAdvSpec) &&
+                            touched.port &&
+                            Boolean(errors.port)
+                          }
+                          helperText={
+                            (!isClaimSpec || !isAdvSpec) && (
+                              <ErrorMessage name="port" />
+                            )
+                          }
                           onKeyUp={(e) => {
                             const { value } = e.target;
                             debouncedSetPort(value);
                           }}
                           variant="outlined"
                           inputProps={{ maxLength: 24 }}
+                          disabled={isClaimSpec || isAdvSpec}
                           // disabled={addProjectMutation?.isSuccess}
                           as={TextField}
                         />
@@ -651,14 +681,24 @@ const ConnectDatabase = ({
                           name="username"
                           fullWidth
                           color="primary"
-                          error={touched.username && Boolean(errors.username)}
-                          helperText={<ErrorMessage name="username" />}
+                          value={isClaimSpec || isAdvSpec ? "sa" : values.username}
+                          error={
+                            (!isClaimSpec || !isAdvSpec) &&
+                            touched.username &&
+                            Boolean(errors.username)
+                          }
+                          helperText={
+                            (!isClaimSpec || !isAdvSpec) && (
+                              <ErrorMessage name="username" />
+                            )
+                          }
                           onKeyUp={(e) => {
                             const { value } = e.target;
                             debouncedSetUsername(value);
                           }}
                           variant="outlined"
                           inputProps={{ maxLength: 24 }}
+                          disabled={isClaimSpec || isAdvSpec}
                           // disabled={addProjectMutation?.isSuccess}
                           as={TextField}
                         />
@@ -672,14 +712,26 @@ const ConnectDatabase = ({
                           autocomplete="off"
                           fullWidth
                           color="primary"
-                          error={touched.password && Boolean(errors.password)}
-                          helperText={<ErrorMessage name="password" />}
+                          value={
+                            isClaimSpec || isAdvSpec ? "S0mbari@2022" : values.password
+                          }
+                          error={
+                            (!isClaimSpec || !isAdvSpec) &&
+                            touched.password &&
+                            Boolean(errors.password)
+                          }
+                          helperText={
+                            (!isClaimSpec || !isAdvSpec) && (
+                              <ErrorMessage name="password" />
+                            )
+                          }
                           onKeyUp={(e) => {
                             const { value } = e.target;
                             debouncedSetPassword(value);
                           }}
                           variant="outlined"
                           inputProps={{ maxLength: 24 }}
+                          disabled={isClaimSpec || isAdvSpec}
                           // disabled={addProjectMutation?.isSuccess}
                           as={TextField}
                         />
@@ -691,21 +743,41 @@ const ConnectDatabase = ({
                           name="database"
                           fullWidth
                           color="primary"
-                          error={touched.database && Boolean(errors.database)}
-                          helperText={<ErrorMessage name="database" />}
+                          value={
+                            isClaimSpec
+                              ? "db_claimsstaging"
+                              : isAdvSpec
+                              ? "bikestoredb"
+                              : values.database
+                          }
+                          error={
+                            (!isClaimSpec || !isAdvSpec) &&
+                            touched.database &&
+                            Boolean(errors.database)
+                          }
+                          helperText={
+                            (!isClaimSpec || !isAdvSpec) && (
+                              <ErrorMessage name="database" />
+                            )
+                          }
                           onKeyUp={(e) => {
                             const { value } = e.target;
                             debouncedSetDatabase(value);
                           }}
                           variant="outlined"
                           inputProps={{ maxLength: 55 }}
+                          disabled={isClaimSpec || isAdvSpec}
                           // disabled={addProjectMutation?.isSuccess}
                           as={TextField}
                         />
                       </Grid>
                       <Grid item xs={12}>
                         <label>
-                          <Field type="checkbox" name="toggle" />
+                        <Field
+                            type="checkbox"
+                            name="toggle"
+                            disabled={isClaimSpec || isAdvSpec}
+                          />
                           {" Over SSL"}
                         </label>
                         {values.toggle ? (
@@ -720,6 +792,7 @@ const ConnectDatabase = ({
                                 accept=".key,.pem"
                                 multiple
                                 hidden
+                                disabled={isClaimSpec || isAdvSpec}
                                 onChange={(e) => {
                                   handleOnKeysPick(Array.from(e.target.files));
                                   e.target.value = "";
@@ -1049,6 +1122,7 @@ const ConnectDatabase = ({
                                 touched.dbType && errors.dbType && "red",
                             }}
                             as="select"
+                            disabled={isClaimSpec || isAdvSpec}
                           >
                             <option value="" label="Select db type" />
 
@@ -1098,7 +1172,7 @@ const ConnectDatabase = ({
                   // multiple
                   hidden
                   disabled={
-                    projectDetails?.dbs !== null
+                    isAdvSpec || isClaimSpec || projectDetails?.dbs !== null
                       ? projectDetails?.dbs?.length === 0
                         ? false
                         : true
@@ -1119,8 +1193,9 @@ const ConnectDatabase = ({
                       handleClick();
                     }
                   }}
-                  className="bg-brand-secondary rounded-md px-4 py-2
-            text-white text-mediumLabel hover:opacity-90"
+                  className={`bg-brand-secondary  ${
+                    isClaimSpec || isAdvSpec ? "opacity-40" : "hover:opacity-90"
+                  }  rounded-md px-4 py-2 text-white text-mediumLabel`}
                 >
                   Upload DDL
                 </label>

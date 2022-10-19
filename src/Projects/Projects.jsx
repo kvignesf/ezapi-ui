@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
+import { styled, Tooltip, tooltipClasses } from "@mui/material";
 import MoreVertIcon from "@material-ui/icons/MoreVert";
 import GetAppIcon from "@material-ui/icons/GetApp";
 import SystemUpdateAltIcon from "@material-ui/icons/SystemUpdateAlt";
@@ -9,7 +10,7 @@ import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
 // import client, { endpoint } from './shared/network/client';
 import Fade from "@material-ui/core/Fade";
-import { CircularProgress, Dialog, Tooltip } from "@material-ui/core";
+import { CircularProgress, Dialog } from "@material-ui/core";
 // import { useHistory } from 'react-router';
 import ReactPaginate from "react-paginate";
 import { useHistory, useLocation } from "react-router-dom";
@@ -53,6 +54,7 @@ import { fetchEventSource } from "@microsoft/fetch-event-source";
 import { useRecoilState } from "recoil";
 import projectAtom, { defaultState } from "../AddProject/projectAtom";
 import { downloadIconSts, downloadIconProj } from "../Dashboard/dwnDataGenAtom";
+import InfoIcon from "@mui/icons-material/Info";
 
 //import { NativeEventSource, EventSourcePolyfill } from 'event-source-polyfill';
 
@@ -128,6 +130,19 @@ const ProjectRow = ({
   handleOnInvite,
   handleOnRename,
 }) => {
+  const CustomTooltip = styled(({ className, ...props }) => (
+    // eslint-disable-next-line react/jsx-props-no-spreading
+    <Tooltip {...props} classes={{ popper: className }} />
+  ))(({ theme }) => ({
+    [`& .${tooltipClasses.arrow}`]: {
+      color: Colors.brand.primarySubtle,
+    },
+    [`& .${tooltipClasses.tooltip}`]: {
+      backgroundColor: Colors.brand.primarySubtle,
+      color: Colors.brand.primary,
+    },
+  }));
+
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [lastDataGenerated, setLastDataGenerated] = useState("Download Data");
   const datetime = new Date(project?.updatedAt);
@@ -198,6 +213,25 @@ const ProjectRow = ({
         }}
       >
         {project?.projectName}
+        <CustomTooltip
+          maxWidth={"10px"}
+          arrow
+          placement="right"
+          title={
+            project?.projectType === "both" ? (
+            <span>
+              Spec Name: {project?.apiSpec[0]?.name ?? ""} 
+              <br /> db Name: {project?.dbDetails?.database ?? ""}
+            </span>
+            ) :
+            ( <span>
+              db Name: {project?.dbDetails?.database ?? ""}
+            </span>
+            )
+          }
+        >
+          <InfoIcon fontSize="small" sx={{ ml: "3px", mb: "2px" }} />
+        </CustomTooltip>
       </td>
       <td>
         <MembersImages
@@ -215,10 +249,54 @@ const ProjectRow = ({
       <td>
         <p className='text-overline2'>{project?.status}</p>
       </td>
+      
+      <td align='left' >
+        <div className='text-overline2'>{project?.isDesign ? "DESIGN" : "TEST"}
+        </div>
+      </td>
       <td align='center'>
         <div className='flex flex-row items-center gap-2'>
           {/* Codegen download */}
           <div className='w-8'>
+            {project?.status?.toLowerCase() === "complete" &&
+              project?.projectType?.toLowerCase() !== "schema" &&
+              !isDownloadingCodegen && project?.isDesign &&(
+                <Tooltip title={
+                  project?.codegen
+                    ? "Java"
+                    : "Java Code getting ready"
+                }>
+                  <div
+                    style={{
+                      marginTop: "-15px",
+                      width: "18px",
+                      height: "18px",
+                    }}
+                  >
+                    <img
+                      src={javaLogo}
+                      alt='conektto logo'
+                      className={classNames({
+                        "opacity-50 cursor-default": !project?.codegen,
+                        "cursor-pointer text-brand-primary": project?.codegen,
+                      })}
+                      onClick={(e) => {
+                        e?.preventDefault();
+                        e?.stopPropagation();
+
+                        if (project?.codegen) {
+                          onDownloadCodegen();
+                        }
+                      }}
+                    />
+                  </div>
+                </Tooltip>                
+              )}
+            {isDownloadingCodegen && (
+              <CircularProgress style={{ width: "24px", height: "24px" }} />
+            )}
+          </div>
+          {/* <div className='w-8'>
             {project?.status?.toLowerCase() === "complete" &&
               project?.projectType?.toLowerCase() !== "schema" &&
               !isDownloadingCodegen && (
@@ -252,22 +330,22 @@ const ProjectRow = ({
             {isDownloadingCodegen && (
               <CircularProgress style={{ width: "24px", height: "24px" }} />
             )}
-          </div>
+          </div> */}
           {/* dotnetCodegen download */}
           <div className='w-8'>
             {project?.status?.toLowerCase() === "complete" &&
               project?.projectType?.toLowerCase() !== "schema" &&
-              !isDownloadingDotnetCodegen && (
+              !isDownloadingDotnetCodegen && project?.isDesign &&(
                 <Tooltip title={
                   project?.dotnetcodegen
-                    ? "Download dotnet Codegen"
-                    : "Preparing dotnet Codegen"
+                    ? "dotnet"
+                    : "dotnet code getting ready"
                 }>
                   <div
                     style={{
                       marginTop: "-3px",
-                      width: "24px",
-                      height: "24px",
+                      width: "20px",
+                      height: "20px",
                     }}
                   >
                     <img
@@ -299,7 +377,7 @@ const ProjectRow = ({
             {project?.status?.toLowerCase() === "complete" &&
               project?.publishStatus?.SpecGeneration?.success &&
               !isDownloadingSpecs && (
-                <Tooltip title='Download Specs'>
+                <Tooltip title='Open API Spec'>
                   <div
                     style={{
                       width: "32px",
@@ -340,7 +418,7 @@ const ProjectRow = ({
                     onDownloadArtifact();
                   }}
                 >
-                  <Tooltip title='Download Artifacts'>
+                  <Tooltip title='API Workspace'>
                     <SystemUpdateAltIcon
                       style={{ color: Colors.brand.primary }}
                     />
@@ -392,8 +470,8 @@ const ProjectRow = ({
             {project?.status?.toLowerCase() === "complete" &&
               project?.publishStatus?.SankyGeneration?.success &&
               project?.publishStatus?.ArtefactGeneration?.success &&
-              !isDownloadingApigee && (
-                <Tooltip title='Download Apigee'>
+              !isDownloadingApigee && project?.isDesign && (
+                <Tooltip title='Apigee Bundle'>
                   <div
                     style={{
                       marginTop: "12px",
@@ -675,7 +753,8 @@ const Content = ({ showCreateProjectDialog }) => {
                     <th className=''>COLLABORATORS</th>
                     <th className=''>LAST ACTIVITY</th>
                     <th className=''>STATUS</th>
-                    <th className=''>ARTIFACTS</th>
+                    <th className=''>DESIGN / TEST</th>
+                    <th className='pl-8'>DOWNLOAD</th>                    
                     <th className='rounded-tr-md rounded-br-md text-center'>
                       {isFetchingProjectsBg ? (
                         <CircularProgress size='20px' />

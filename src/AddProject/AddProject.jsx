@@ -6,6 +6,7 @@ import {
   Tabs,
   MuiThemeProvider,
 } from "@material-ui/core";
+import { useReward } from "react-rewards";										  
 //import { ReactComponent as Logo } from "../static/images/logo/connectoLogo.svg";
 import { ReactComponent as Logo } from "../static/images/logo/newconnectoLogo.svg";
 import Button from "@mui/material/Button";
@@ -23,9 +24,12 @@ import ProjectDetails from "./ProjectDetails";
 import ConnectDatabase from "./ConnectDatabase";
 import InviteCollaborators from "../shared/components/InviteCollaborators";
 import projectAtom from "./projectAtom";
+import aes from "crypto-js/aes";
+import ProductHunt from "../static/images/ProductHunt.jpg";
 import {
   useDatabaseConnection,
   useAddProject,
+  useUserProfile,
   useUploadProjectDbs,
   useUploadProjectFile,
   useUploadProjectSpecs,
@@ -42,6 +46,10 @@ import client, { endpoint } from "../shared/network/client";
 import Snackbar from "@material-ui/core/Snackbar";
 import MuiAlert from "@material-ui/lab/Alert";
 import { getUserId } from "../shared/storage";
+import FormGroup from "@material-ui/core/FormGroup";
+import FormControlLabel from "@material-ui/core/FormControlLabel";
+import Checkbox from "@material-ui/core/Checkbox";
+import Box from "@material-ui/core/Box";
 
 const AddProject = ({ onClose, onSuccess }) => {
   const [currentTab, setTab] = useState(0);
@@ -51,15 +59,24 @@ const AddProject = ({ onClose, onSuccess }) => {
   const [isDesign, setIsDesign] = useState(null);
   // const [isDesign, setIsDesign] = useState(true);
   const [errorDisplay, setErrorDisplay] = useState(false);
+  const [specErrorDisplay, setSpecErrorDisplay] = useState(false);
+
   const [inviteCollabsErrorMssg, setInviteCollabsErrorMssg] = useState(false);
-
+  const [sampleProjCnt, setSampleProjCnt]  = useState(1);
   const loggedInUserId = getUserId();
-
+  const { reward, isAnimating } = useReward("rewardId", "confetti");
   const [specsError, setSpecsError] = useState(null);
   const [dbsError, setDbsError] = useState(null);
   const [isProjectNameEmpty, setIsProjectNameEmpty] = useState(false);
   const [projectDetails, setProjectDetails] = useRecoilState(projectAtom);
+  const [defaultClaimSpec, setDefaultClaimSpec] = useState(false);
+  const [defaultAdvSpec, setDefaultAdvSpec] = useState(false);
+  const hideClaims = false;
 
+  useEffect(() => {
+    reward();
+  }, []);
+  
   const onAddProjectSuccess = (projectId) => {
     onSuccess(projectId);
   };
@@ -116,7 +133,7 @@ const AddProject = ({ onClose, onSuccess }) => {
   const handleNext = () => {
     if (formRef.current) {
       formRef.current.handleSubmit();
-      if (formRef.current.isValid) {
+      if (formRef.current.isValid || isAdvChecked) {
         if (
           (currentTab === 0 && !_.isEmpty(projectDetails?.name)) ||
           (currentTab === 1 && connectDatabaseTab === 0) ||
@@ -145,6 +162,7 @@ const AddProject = ({ onClose, onSuccess }) => {
   };
 
   const handleSkipForNow = () => {
+    setErrorDisplay(false);
     setInviteCollabsErrorMssg(false);
     resetCreateProjectApi();
     resetUploadDbsApi();
@@ -161,6 +179,7 @@ const AddProject = ({ onClose, onSuccess }) => {
 
       return;
     } else if (
+      (!defaultClaimSpec || !defaultAdvSpec) &&
       _.isEmpty(projectDetails?.dbs) &&
       (_.isEmpty(projectDetails?.host) ||
         _.isEmpty(projectDetails?.port) ||
@@ -170,7 +189,12 @@ const AddProject = ({ onClose, onSuccess }) => {
         _.isEmpty(projectDetails?.type))
     ) {
       setErrorDisplay(true);
+    } else if (_.isEmpty(projectDetails?.specs) && !isDesign) {
+      setTab(0);
+      setSpecErrorDisplay(true);
     } else {
+      setErrorDisplay(false);
+      setSpecErrorDisplay(false);
       uploadProjectData({
         name: projectDetails?.name,
         invitees: projectDetails?.collaborators?.map((collaborator) => {
@@ -179,13 +203,15 @@ const AddProject = ({ onClose, onSuccess }) => {
           };
         }),
         isDesign: isDesign,
+        isDefaultClaimSpec: defaultClaimSpec,
+        isDefaultAdvSpec: defaultAdvSpec,
       });
     }
   };
 
   const handleDone = () => {
     setErrorDisplay(false);
-
+    setSpecErrorDisplay(false);
     if (projectDetails.collaborators.length < 1) {
       setInviteCollabsErrorMssg(true);
     } else {
@@ -214,7 +240,11 @@ const AddProject = ({ onClose, onSuccess }) => {
           _.isEmpty(projectDetails?.type))
       ) {
         setErrorDisplay(true);
+      } else if (_.isEmpty(projectDetails?.specs) && !isDesign) {
+        setSpecErrorDisplay(true);
       } else {
+        setErrorDisplay(false);
+        setSpecErrorDisplay(false);
         uploadProjectData({
           name: projectDetails?.name,
           invitees: projectDetails?.collaborators?.map((collaborator) => {
@@ -223,6 +253,8 @@ const AddProject = ({ onClose, onSuccess }) => {
             };
           }),
           isDesign: isDesign,
+          isDefaultClaimSpec: defaultClaimSpec,
+          isDefaultAdvSpec: defaultAdvSpec,
         });
       }
     }
@@ -246,9 +278,9 @@ const AddProject = ({ onClose, onSuccess }) => {
   };
 
   const openInNewTab = (url) => {
-  const newWindow = window.open(url, '_blank', 'noopener,noreferrer')
-  if (newWindow) newWindow.opener = null
-}
+    const newWindow = window.open(url, '_blank', 'noopener,noreferrer')
+    if (newWindow) newWindow.opener = null
+  }
 
   const {
     mutate: testDatabase,
@@ -302,11 +334,17 @@ const AddProject = ({ onClose, onSuccess }) => {
         test: true,
       });
     } else {
+      var ciphertext = aes
+        .encrypt(
+          projectDetails.password,
+          process.env.REACT_APP_AES_ENCRYPTION_KEY
+        )
+        .toString();
       let payload = {
         host: projectDetails.host,
         port: projectDetails.port,
         username: projectDetails.username,
-        password: projectDetails.password,
+        password: ciphertext,
         database: projectDetails.database,
         type: projectDetails.type,
       };
@@ -346,6 +384,21 @@ const AddProject = ({ onClose, onSuccess }) => {
     return <MuiAlert elevation={6} ref={ref} variant='filled' {...props} />;
   });
 
+  const handleClaimCheck = (e) => {
+    setDefaultClaimSpec(e.target.checked);
+  };
+  const handleAdvCheck = (e) => {
+    setDefaultAdvSpec(e.target.checked);
+  };
+
+  
+  const { data: userProfile_data } = useUserProfile();
+  
+  useEffect(() => {
+    //console.log("userdata", userProfile_data)
+    setSampleProjCnt(userProfile_data?.["sampleProjCount"]);
+  }, [userProfile_data]);
+
   useEffect(() => {
     prevFormRef.current = projectDetails.collaborators;
   }, [projectDetails.collaborators]);
@@ -360,6 +413,81 @@ const AddProject = ({ onClose, onSuccess }) => {
     // setShowCollabsErrorMssg(false);
   }
 
+  useEffect(() => {
+    const setDefault = async () => {
+      if (defaultClaimSpec) {
+        const claims = await fetch("/static/docs/claim-spec.json");
+        // const claimsDb = await fetch("/static/docs/claims_script.sql");
+
+        const specBlob = new Blob([await claims.text()]);
+        const claimsSpec = new File([specBlob], "claim-spec.json");
+
+        // const dbBlob = new Blob([await claimsDb.text()]);
+        // const defaultDb = new File([dbBlob], "claims_script.sql");
+
+        setProjectDetails((currProjectDetails) => {
+          return {
+            ...currProjectDetails,
+            name: "Claims",
+            specs: [claimsSpec],
+            database: "db_claimsstaging",
+            host: "34.82.24.189",
+            port: "1433",
+            username: "sa",
+            password: "S0mbari@2022",
+            type: "mssql",
+            dbType: "db",
+          };
+        });
+      } else if (defaultAdvSpec) {
+        const advWorks = await fetch(
+          "/static/docs/bikestore-basic.json"
+        );
+        // const claimsDb = await fetch("/static/docs/claims_script.sql");
+
+        const specBlob = new Blob([await advWorks.text()]);
+        const defaultAdvSpec = new File([specBlob], "bikestore.json");
+        // const defAdvWorks = new File()
+
+        // const dbBlob = new Blob([await claimsDb.text()]);
+        // const defaultDb = new File([dbBlob], "claims_script.sql");
+
+        setProjectDetails((currProjectDetails) => {
+          return {
+            ...currProjectDetails,
+            name: "BikeStore",
+            specs: [defaultAdvSpec],
+            database: "bikestoredb",
+            host: "34.82.24.189",
+            port: "1433",
+            username: "sa",
+            password: "S0mbari@2022",
+            dbType: "db",
+            type: "mssql",
+          };
+        });
+      } else {
+        setProjectDetails((currProjectDetails) => {
+          return {
+            ...currProjectDetails,
+            name: "",
+            specs: null,
+            dbs: null,
+          };
+        });
+      }
+    };
+    setDefault();
+  }, [defaultClaimSpec, defaultAdvSpec, setProjectDetails]);
+
+  const isClaimChecked = () => {
+    setDefaultAdvSpec(false);
+  };
+  const isAdvChecked = () => {
+    setDefaultClaimSpec(false);
+  };
+  
+
   return (
     <>
       {isDesign != null && (
@@ -370,7 +498,7 @@ const AddProject = ({ onClose, onSuccess }) => {
             ) : (
               <h5>Test API Project</h5>
             )}
-
+            
             {!isUploadingProjectDetails &&
               !isUploadingDbs &&
               !isUploadingSpecs &&
@@ -425,6 +553,7 @@ const AddProject = ({ onClose, onSuccess }) => {
                     <div className='h-80'>
                       <ProjectDetails
                         formRef={formRef}
+                        isDesign={isDesign}
                         specsError={specsError}
                         dbsError={dbsError}
                         isProjectNameEmpty={isProjectNameEmpty}
@@ -432,6 +561,8 @@ const AddProject = ({ onClose, onSuccess }) => {
                         uploadSpecsMutation={uploadSpecsMutation}
                         uploadDbMutation={uploadDbMutation}
                         aiMatcherMutation={aiMatcherMutation}
+                        isClaimSpec={defaultClaimSpec}
+                        isAdvSpec={defaultAdvSpec}
                       />
                     </div>
                   ) : currentTab === 1 ? (
@@ -446,6 +577,8 @@ const AddProject = ({ onClose, onSuccess }) => {
                         aiMatcherMutation={aiMatcherMutation}
                         activeTab={connectDatabaseTab}
                         handleTabChange={setConnectDatabaseTab}
+                        isClaimSpec={defaultClaimSpec}
+                        isAdvSpec={defaultAdvSpec}
                       />
                     </div>
                   ) : (
@@ -457,6 +590,35 @@ const AddProject = ({ onClose, onSuccess }) => {
                       />
                     </div>
                   )}
+                  {hideClaims && (<FormGroup>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          size="small"
+                          onChange={(e) => handleClaimCheck(e)}
+                          checked={defaultClaimSpec}
+                          onClick={() => isClaimChecked()}
+                        />
+                      }
+                      label={<Box fontSize={14}>Use Default Claim Spec</Box>}
+                    />
+                  </FormGroup> ) }
+                  <FormGroup>
+                    <FormControlLabel
+                      control={
+                        
+                        ( <Checkbox
+                          size="small"
+                          disabled={(sampleProjCnt >= 3 || (currentTab==1 || currentTab ==2 ))}  
+                          onChange={(e) => handleAdvCheck(e)}
+                          checked={defaultAdvSpec}
+                          onClick={() => isAdvChecked()}
+                        />
+                        )
+                      }
+                      label={(sampleProjCnt < 3) ? (<Box fontSize={14}>Use Default BikeStore Spec</Box>) : (<Box fontSize={14}>Sample Projects limit of 3 Utilized</Box>) }
+                    />
+                  </FormGroup>
                 </div>
 
                 {showCollabsError && projectDetailsError && (
@@ -469,6 +631,12 @@ const AddProject = ({ onClose, onSuccess }) => {
                   <p className='text-overline2 text-accent-red my-2'>
                     Please upload atleast one of the following - ddl file or
                     dbconnection
+                  </p>
+                )}
+
+                {specErrorDisplay && !isDesign && currentTab === 0 && (
+                  <p className='text-overline2 text-accent-red my-2'>
+                    Spec is required
                   </p>
                 )}
 
@@ -698,7 +866,14 @@ const AddProject = ({ onClose, onSuccess }) => {
         <div className='p-4'>
           <div className='flex flex-row items-center justify-between mb-3'>
             {<h5>Create API Project</h5>}
-
+            <div>
+              {" "}
+              <img
+                style={{ width: "150px" }}
+                src={ProductHunt}
+                alt="producthunt"
+              />
+            </div>
             <AppIcon aria-label='close' onClick={onClose}>
               <CloseIcon />
             </AppIcon>
@@ -708,30 +883,34 @@ const AddProject = ({ onClose, onSuccess }) => {
           </div>
           <div className='flex justify-center p-2 px-36'>
             <PrimaryButton
+			  //disabled={isAnimating}						
               onClick={() => {
                 setIsDesign(true);
               }}
               classes='flex-1 -ml-4 text-brand-secondary'
             >
+			  <span id="rewardId" />						
               Design Studio
             </PrimaryButton>
           </div>
           <div className='flex justify-center p-2 px-36'>
             <PrimaryButton
-              style={{
-                color : "white",
-                background : "#9f9f9f"
-              }}
+              //style={{
+              //  color : "white",
+              //  background : "#9f9f9f"
+              //}}
+			  //disabled={isAnimating}						
               onClick={() => {
-                setIsDesign(null);
-                if (deployenv == "production") {
+                //setIsDesign(null);
+                //if (deployenv == "production") {
                   //window.location.href='https://www.conektto.io/beta-signup'
-                  openInNewTab('https://www.conektto.io/beta-signup')
-                }                
+                  //openInNewTab('https://www.conektto.io/beta-signup')
+                //}   
+                setIsDesign(false);
               }}
               classes='flex-1 -ml-4 text-brand-secondary'
             >
-              Test Studio (Click to sign-up for beta...)
+              Test Studio
             </PrimaryButton>
           </div>
         </div>
