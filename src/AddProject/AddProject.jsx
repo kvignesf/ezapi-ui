@@ -466,7 +466,23 @@ const AddProject = ({ onClose, onSuccess }) => {
             type: "mssql",
           };
         });
-      } else {
+      } else if (!defaultAdvSpec) {
+        setProjectDetails((currProjectDetails) => {
+          return {
+            ...currProjectDetails,
+            name: "",
+            specs: [],
+            database: "",
+            host: "",
+            port: "",
+            username: "",
+            password: "",
+            dbType: "",
+            type: "",
+          };
+        });
+      }
+      else {
         setProjectDetails((currProjectDetails) => {
           return {
             ...currProjectDetails,
