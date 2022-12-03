@@ -95,7 +95,7 @@ const CredentialsBeforePublish = ({
                         name='port'
                         fullWidth
                         color='primary'
-                        value={newProjectDetails.port}
+                        value={newProjectDetails.portNo}
                         placeholder='7744'
                         // error={touched.port && Boolean(errors.port)}
                         helperText={<ErrorMessage name='port' />}

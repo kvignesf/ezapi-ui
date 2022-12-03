@@ -98,6 +98,10 @@ export const isSchema = (object) => {
   );
 };
 
+export const isArrayOfObject = (object) => {
+  return object?.type === "arrayOfObjects";
+};
+
 export const isDatabase = (object) => {
   return object?.type === "ezapi_table";
 };
@@ -261,22 +265,30 @@ export const generateSyncOperationRequestRequest = (operationRequest) => {
 
   if (operationRequest?.body && !_.isEmpty(operationRequest?.body)) {
     request.body = operationRequest?.body?.map((item) => {
-      if (isSchema(item) || isDatabase(item)) {
-        const clonedItem = _.cloneDeep(item);
+      const clonedItem = _.cloneDeep(item);
 
-        // // newItem.required =
-        // //   item?.required === true || item?.required === "true" ? true : false;
-
-        // newItem.name = item?.name;
-        // newItem.type = item?.type;
-        // newItem.ref = item?.ref;
-        // newItem.customName = item?.customName;
-        // return newItem;
-
+      if (isArrayOfObject(item)) {
         if (clonedItem?.hasOwnProperty("data")) {
           delete clonedItem?.data;
         }
+        if (clonedItem?.hasOwnProperty("possibleValues")) {
+          delete clonedItem?.possibleValues;
+        }
+        if (clonedItem?.hasOwnProperty("schemaName")) {
+          delete clonedItem?.schemaName;
+        }
+        if (clonedItem?.hasOwnProperty("schemaRef")) {
+          delete clonedItem?.schemaRef;
+        }
+        if (clonedItem?.hasOwnProperty("parentName")) {
+          delete clonedItem?.parentName;
+        }
+        if (clonedItem?.hasOwnProperty("commonName")) {
+          delete clonedItem?.commonName;
+        }
 
+        return clonedItem;
+      } else if (isSchema(item) || isDatabase(item)) {
         return clonedItem;
       } else if (
         isAttribute(item) ||
@@ -284,7 +296,7 @@ export const generateSyncOperationRequestRequest = (operationRequest) => {
         isStoredProcedure(item) ||
         isArrayOrObjectAttribute(item)
       ) {
-        return item;
+        return clonedItem;
       }
     });
   }
@@ -479,7 +491,29 @@ export const generateSyncOperationResponseRequest = (operationResponse) => {
 
     if (reponseData?.body && !_.isEmpty(reponseData?.body)) {
       responseObject.content = reponseData?.body?.map((item) => {
-        if (isSchema(item)) {
+        if (isArrayOfObject(item)) {
+          const clonedItem = _.cloneDeep(item);
+
+          if (clonedItem?.hasOwnProperty("data")) {
+            delete clonedItem?.data;
+          }
+          if (clonedItem?.hasOwnProperty("possibleValues")) {
+            delete clonedItem?.possibleValues;
+          }
+          if (clonedItem?.hasOwnProperty("schemaName")) {
+            delete clonedItem?.schemaName;
+          }
+          if (clonedItem?.hasOwnProperty("schemaRef")) {
+            delete clonedItem?.schemaRef;
+          }
+          if (clonedItem?.hasOwnProperty("parentName")) {
+            delete clonedItem?.parentName;
+          }
+          if (clonedItem?.hasOwnProperty("commonName")) {
+            delete clonedItem?.commonName;
+          }
+          return clonedItem;
+        } else if (isSchema(item)) {
           const clonedItem = _.cloneDeep(item);
 
           if (clonedItem?.hasOwnProperty("data")) {
@@ -491,7 +525,7 @@ export const generateSyncOperationResponseRequest = (operationResponse) => {
           isAttribute(item) ||
           isColumn(item) ||
           isDatabase(item) ||
-          isArrayOrObjectAttribute(item) ||
+										   
           isStoredProcedure(item)
         ) {
           return item;

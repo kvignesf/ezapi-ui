@@ -44,12 +44,36 @@ const verifyProject = async ({ projectId }) => {
   }
 };
 
-export const useVerifyProject = () => {
-  const verifyProjectMutation = useMutation(verifyProject, {
-    onSuccess: (data) => {},
-  });
 
-  return verifyProjectMutation;
+export const getTablesRelations = async (projectId) => {
+  try {
+    console.log(projectId);
+    const { data } = await client.post(endpoint.tableRelations, { projectId });
+
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const tableMappings = async (
+  projectId,
+  filters,
+  relations,
+  password
+) => {
+  try {
+    const { data } = await client.post(endpoint.tableMappings, {
+      projectId: projectId,
+      relations: relations,
+      filters: filters,
+      password: password,
+    });
+
+    return data;
+  } catch (error) {
+    throw getApiError(error);
+  }
 };
 
 const publishProject = async ({ projectId, newProjectDetails }) => {
@@ -70,7 +94,7 @@ const publishProject = async ({ projectId, newProjectDetails }) => {
       {
         validateStatus: function (status) {
           return status == 200 || status == 400;
-        },        
+        },
       },
       { timeout: 48000 }
     );
@@ -102,6 +126,14 @@ export const useSubmitProject = (projectId, newProjectDetails) => {
 
   return { verifyProjectMutation, publishProjectMutation };
 };
+
+export const useVerifyProject = ({ projectId, newProjectDetails })  => {
+  const verifyProjectMutation = useMutation(verifyProject, {
+    onSuccess: (data) => {},
+  });
+
+  return verifyProjectMutation;
+};
 const getMandMappingTableData = async ({ projectId }) => {
   try {
     const { data } = await client.post(endpoint.mandMappingTableData, {
@@ -118,4 +150,10 @@ export const useGetMandMappingTableData = () => {
 
   return mutation;
 };
+
+/* export const useGetEntityMapping = () => {
+  const mutation = useMutation(tableMappings, {});
+
+  return mutation;
+}; */
 
