@@ -6,6 +6,8 @@ import {
   Button,
   Typography,
 } from "@material-ui/core";
+import { PrimaryButton, TextButton } from "./AppButton";
+
 
 const ConfirmDialog = ({ title, description, onCancel, onConfirm }) => {
   return (
@@ -14,25 +16,27 @@ const ConfirmDialog = ({ title, description, onCancel, onConfirm }) => {
       <DialogContent>
         <Typography>{description}</Typography>
       </DialogContent>
-      <DialogActions>
-        <Button
-          variant="contained"
+      <div className="border-t-2 border-neutral-gray7 flex flex-row items-center justify-end p-4 mt-3">
+        <TextButton
+							 
           onClick={() => {
             onCancel();
           }}
+          classes="mr-3"
         >
           Cancel
-        </Button>
-        <Button
-          color="secondary"
-          variant="contained"
+        </TextButton>
+
+        <PrimaryButton
+          type="submit"
+          classes="bg-accent-red"
           onClick={() => {
             onConfirm();
           }}
         >
-          Confirm
-        </Button>
-      </DialogActions>
+          Delete
+        </PrimaryButton>
+      </div>
     </Dialog>
   );
 };

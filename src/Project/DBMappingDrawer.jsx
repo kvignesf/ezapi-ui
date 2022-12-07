@@ -14,6 +14,7 @@ import {
   Typography,
   TextField,
   makeStyles,
+  CircularProgress,
 } from "@material-ui/core";
 import AppIcon from "../shared/components/AppIcon";
 import {
@@ -21,11 +22,13 @@ import {
   TextButton,
   OutlineButton,
 } from "../shared/components/AppButton";
-import { getTablesRelations } from "./projectQueries";
+import { getTablesRelations, tableMappings } from "./projectQueries";
 import { Add, Delete } from "@material-ui/icons";
 import { Stack } from "@mui/material";
 import TabLabel from "../shared/components/TabLabel";
 import ConfirmDialog from "../shared/components/ConfirmDialog";
+import LoaderWithMessage from "../shared/components/LoaderWithMessage";
+
 
 const RelationTableRow = ({ data, tables, onUpdate, schema, onDelete }) => {
   const [mainTable, setMainTable] = useState(data?.mainTable ?? "");
@@ -37,6 +40,8 @@ const RelationTableRow = ({ data, tables, onUpdate, schema, onDelete }) => {
   const [availableTable, setAvailableTable] = useState([]);
   const [availableTableColumn, setAvailableTableColumn] = useState([]);
   const [availableColumn, setAvailableColumn] = useState([]);
+  const [availableMainTable, setAvailableMainTable] = useState([]);
+  const [availableDependentTable, setAvailableDependentTable] = useState([]);
   /*const [availableSchemas, setavailableSchemas] = useState([]);
   useEffect(() => {
     let list = tables.map((a) => {
@@ -52,8 +57,8 @@ const RelationTableRow = ({ data, tables, onUpdate, schema, onDelete }) => {
       setDependentTable("");
       setDependentTableColumn("");
       setMainTableColumn("");
-      setAvailableTable([]);
-      setAvailableTableColumn([]);
+      //setAvailableTable([]);
+      //setAvailableTableColumn([]);
       setAvailableColumn([]);
     } else {
       let tableData = [];
@@ -64,11 +69,29 @@ const RelationTableRow = ({ data, tables, onUpdate, schema, onDelete }) => {
           setAvailableColumn(item.data);
         }
       });
-      setAvailableTable(tableData);
+      //setAvailableTable(tableData);
     }
-  }, [mainTable, tables]);
 
-  useEffect(() => {
+    if (dependentTable === "") {
+      setDependentTableColumn("");
+      setAvailableTableColumn([]);
+    } else {
+      tables.map((item) => {
+        if (item.name === dependentTable) {
+          if (dependentTable === mainTable) {
+            const newData = item.data.filter(
+              (value) => value.name !== mainTableColumn
+            );
+            setAvailableTableColumn(newData);
+          } else {
+            setAvailableTableColumn(item.data);
+          }
+        }
+      });
+    }
+  }, [mainTable, dependentTable, tables]);
+
+  /* useEffect(() => {
     if (dependentTable !== "") {
       tables.map((item) => {
         if (item.name === dependentTable) {
@@ -76,7 +99,41 @@ const RelationTableRow = ({ data, tables, onUpdate, schema, onDelete }) => {
         }
       });
     }
-  }, [dependentTable, tables]);
+  }, [dependentTable, tables]); */
+
+  useEffect(() => {
+    if (mainTableSchema === "") {
+      setAvailableMainTable([]);
+    }
+
+    if (tables) {
+      let mainTableData = [];
+      tables.map((item) => {
+        if (item.schema === mainTableSchema) {
+          mainTableData.push(item.name);
+        }
+      });
+
+      setAvailableMainTable(mainTableData);
+    }
+  }, [mainTableSchema, tables]);
+
+  useEffect(() => {
+    if (dependentTableSchema === "") {
+      setAvailableDependentTable([]);
+    } else {
+      if (tables) {
+        let dependentTableData = [];
+        tables.map((item) => {
+          if (item.schema === dependentTableSchema) {
+            dependentTableData.push(item.name);
+          }
+        });
+        setAvailableDependentTable(dependentTableData);
+      }
+    }
+  }, [dependentTableSchema, tables]);
+
 
   useEffect(() => {
     const newdata = {
@@ -102,11 +159,15 @@ const RelationTableRow = ({ data, tables, onUpdate, schema, onDelete }) => {
         }}
       >
         <Select
+          disabled={data.origin === "derived"}
           required
           variant="outlined"
           value={mainTableSchema}
           onChange={({ target: { value } }) => {
             setMainTableSchema(value);
+            setDependentTableSchema("");
+            setMainTable("");
+            setMainTableColumn("");
           }}
           style={{
             width: "100%",
@@ -129,21 +190,23 @@ const RelationTableRow = ({ data, tables, onUpdate, schema, onDelete }) => {
         }}
       >
         <Select
+          disabled={data.origin === "derived"}
           required
           variant="outlined"
           value={mainTable}
           onChange={({ target: { value } }) => {
             setMainTable(value);
+            setMainTableColumn("");
           }}
           style={{
             width: "100%",
             height: "40px",
           }}
         >
-          {tables.map((value) => {
+          {availableMainTable.map((value) => {
             return (
-              <MenuItem value={value?.name}>
-                <p className="text-overline2">{value?.name}</p>
+              <MenuItem value={value}>
+                <p className="text-overline2">{value}</p>
               </MenuItem>
             );
           })}
@@ -156,6 +219,7 @@ const RelationTableRow = ({ data, tables, onUpdate, schema, onDelete }) => {
         }}
       >
         <Select
+          disabled={data.origin === "derived"}
           required
           variant="outlined"
           value={mainTableColumn}
@@ -183,11 +247,14 @@ const RelationTableRow = ({ data, tables, onUpdate, schema, onDelete }) => {
         }}
       >
         <Select
+          disabled={data.origin === "derived"}
           required
           variant="outlined"
           value={dependentTableSchema}
           onChange={({ target: { value } }) => {
             setDependentTableSchema(value);
+            setDependentTable("");
+            setDependentTableColumn("");
           }}
           style={{
             width: "100%",
@@ -210,11 +277,13 @@ const RelationTableRow = ({ data, tables, onUpdate, schema, onDelete }) => {
         }}
       >
         <Select
+          disabled={data.origin === "derived"}
           required
           variant="outlined"
           value={dependentTable}
           onChange={({ target: { value } }) => {
             setDependentTable(value);
+            setDependentTableColumn("");
           }}
           style={{
             width: "100%",
@@ -226,10 +295,10 @@ const RelationTableRow = ({ data, tables, onUpdate, schema, onDelete }) => {
             },
           }}
         >
-          {availableTable.map((tableData) => {
+          {availableDependentTable.map((value) => {
             return (
-              <MenuItem value={tableData} key={tableData}>
-                <p className="text-overline2">{tableData}</p>
+              <MenuItem value={value}>
+                <p className="text-overline2">{value}</p>
               </MenuItem>
             );
           })}
@@ -242,6 +311,7 @@ const RelationTableRow = ({ data, tables, onUpdate, schema, onDelete }) => {
         }}
       >
         <Select
+          disabled={data.origin === "derived"}
           required
           variant="outlined"
           value={dependentTableColumn}
@@ -295,6 +365,7 @@ const FilterTableRow = ({ data, tables, schema, onUpdate, onDelete }) => {
   const [tableName, setTableName] = useState(data?.tableName ?? "");
   const [columnName, setColumnName] = useState(data?.columnName ?? "");  
   const [availableColumn, setAvailableColumn] = useState([]);
+  const [availableTables, setAvailableTables] = useState([]);
   const [filterCondition, setFilterCondition] = useState(data?.filterCondition ?? "");
   const [value, setValue] = useState(data?.value ?? "");
 
@@ -319,6 +390,22 @@ const FilterTableRow = ({ data, tables, schema, onUpdate, onDelete }) => {
       });
     }
   }, [tableName, tables]);
+
+  useEffect(() => {
+    if (schemaName === "") {
+      setAvailableTables([]);
+    } else {
+      if (tables) {
+        let tableData = [];
+        tables.map((item) => {
+          if (item.schema === schemaName) {
+            tableData.push(item.name);
+          }
+        });
+        setAvailableTables(tableData);
+      }
+    }
+  }, [schemaName, tables]);
 
   useEffect(() => {
     const newdata = {
@@ -346,6 +433,7 @@ const FilterTableRow = ({ data, tables, schema, onUpdate, onDelete }) => {
           value={schemaName}
           onChange={({ target: { value } }) => {
             setSchemaName(value);
+            setTableName("");
           }}
           style={{
             width: "100%",
@@ -373,16 +461,17 @@ const FilterTableRow = ({ data, tables, schema, onUpdate, onDelete }) => {
           value={tableName}
           onChange={({ target: { value } }) => {
             setTableName(value);
+            setColumnName("");
           }}
           style={{
             width: "100%",
             height: "40px",
           }}
         >
-          {tables.map((value) => {
+          {availableTables.map((value) => {
             return (
-              <MenuItem value={value?.name}>
-                <p className="text-overline2">{value?.name}</p>
+              <MenuItem value={value}>
+                <p className="text-overline2">{value}</p>
               </MenuItem>
             );
           })}
@@ -510,27 +599,46 @@ const DBMappingDrawer = ({ projectId, onClose, onSubmit, tablesData }) => {
   const [operationDataTables, setOperationDataTables] = useState([]);
   const [disableButton, setDisableButton] = useState(false);
   const [triggerUpdate, setTriggerUpdate] = useState(true);
-  const [emptyError, setEmptyError] = useState(false);
-  const [duplicateError, setDuplicateError] = useState(false);
+  const [filterEmptyError, setFilterEmptyError] = useState(false);
+  const [filterDuplicateError, setFilterDuplicateError] = useState(false);
+  const [relationEmptyError, setRelationEmptyError] = useState(false);
+  const [relationDuplicateError, setRelationDuplicateError] = useState(false);
+  const [mappingError, setMappingError] = useState(false);
   const [displayPopUp, setDisplayPopUp] = useState(false);
   const [schemaValues, setSchemaValues] = useState([]);
+  const [isMappingLoading, setIsMappingLoading] = useState(false);
+  const [isTablesLoading, setisTablesLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
 
   useEffect(() => {
     let filterCheck = false;
     let relationCheck = false;
+
+    if (tablesRelation.length === 0) {
+      setRelationEmptyError(false);
+      setRelationDuplicateError(false);
+    }
+
+    if (tablesFilter.length === 0) {
+      setFilterEmptyError(false);
+      setFilterDuplicateError(false);
+    }
+
     tablesRelation.map((relation) => {
       let count = 0;
       if (
+        relation.mainTableSchema === "" ||
+        relation.dependentTableSchema === "" ||
         relation.mainTable === "" ||
         relation.mainTableColumn === "" ||
         relation.dependentTable === "" ||
         relation.dependentTableColumn === ""
       ) {
-        setEmptyError(true);
+        setRelationEmptyError(true);
         relationCheck = true;
       } else {
-        setEmptyError(false);
+        setRelationEmptyError(false);
       }
 
       tablesRelation.map((item) => {
@@ -556,9 +664,9 @@ const DBMappingDrawer = ({ projectId, onClose, onSubmit, tablesData }) => {
 
       if (count > 1) {
         relationCheck = true;
-        setDuplicateError(true);
+        setRelationDuplicateError(true);
       } else {
-        setDuplicateError(false);
+        setRelationDuplicateError(false);
       }
     });
 
@@ -566,15 +674,16 @@ const DBMappingDrawer = ({ projectId, onClose, onSubmit, tablesData }) => {
       let count = 0;
 
       if (
+        filter.schemaName === "" ||
         filter.tableName === "" ||
         filter.columnName === "" ||
         filter.value === "" ||
         filter.filterCondition === ""
       ) {
         filterCheck = true;
-        setEmptyError(true);
+        setFilterEmptyError(true);
       } else {
-        setEmptyError(false);
+        setFilterEmptyError(false);
       }
 
       tablesFilter.map((item) => {
@@ -588,9 +697,9 @@ const DBMappingDrawer = ({ projectId, onClose, onSubmit, tablesData }) => {
 
       if (count > 1) {
         filterCheck = true;
-        setDuplicateError(true);
+        setFilterDuplicateError(true);
       } else {
-        setDuplicateError(false);
+        setFilterDuplicateError(false);
       }
     });
 
@@ -605,6 +714,7 @@ const DBMappingDrawer = ({ projectId, onClose, onSubmit, tablesData }) => {
         const arr = temp.split(".");
         if (arr[1]) {
           item.name = arr[1];
+          item.schema = arr[0];
           schemaArray.push(arr[0]);
         }
         return item;
@@ -613,10 +723,12 @@ const DBMappingDrawer = ({ projectId, onClose, onSubmit, tablesData }) => {
       setSchemaValues(schemaArray);
 
       setOperationDataTables(newData);
+      setisTablesLoading(false);
     }
   }, [tablesData]);
 
   const prepareData = async () => {
+    setIsMappingLoading(true);
     const data = await getTablesRelations(projectId);
 
     if (data) {
@@ -627,6 +739,7 @@ const DBMappingDrawer = ({ projectId, onClose, onSubmit, tablesData }) => {
     if (tablesData) {
       setOperationDataTables(tablesData);
     }
+    setIsMappingLoading(false);
   };
 
   const handleChange = (event, newValue) => {
@@ -639,13 +752,22 @@ const DBMappingDrawer = ({ projectId, onClose, onSubmit, tablesData }) => {
     }
   }, [projectId]);
 
+  function scrollToBottom() {
+    const element = document.getElementById("content");
+    if (element) {
+      {
+        element.scrollIntoView(false);
+      }
+    }
+  }
+
   return (
     <>
       {displayPopUp && (
         <ConfirmDialog
           title={"Delete Mapping"}
           description={
-            "Are you sure you want to delete this row? Once Deleted you cant get it back."
+            "Are you sure you want to delete this row? Once deleted you cant get it back."
           }
           onCancel={() => {
             setDisplayPopUp(false);
@@ -674,18 +796,26 @@ const DBMappingDrawer = ({ projectId, onClose, onSubmit, tablesData }) => {
 
         <div className="w-full flex-1">
           <div className="p-4">
-            <TableContainer
-              style={{ maxHeight: `calc(100vh - 160px)` }}
-              className="border-2 rounded-md"
-            >
+            {isMappingLoading || isTablesLoading ? (
+              <div style={{ marginTop: "20%" }}>
+                <LoaderWithMessage
+                  message="Loading relations and filters data"
+                  className="h-full"
+                  contained
+                />
+              </div>
+            ) : (
+              <>
               <Stack
-                direction={"row"}
-                justifyContent="space-between"
-                sx={{
-                  bgcolor: "#F9FAFC",
-                }}
-                alignItems="center"
-              >
+                  className="border-2 rounded-t-md border-b-0"
+                  sx={{
+                    bgcolor: "#F9FAFC",
+                    borderBottom: "none",
+                  }}
+                  direction={"row"}
+                  justifyContent="space-between"
+                  alignItems="center"
+                >
                 <Tabs
                   classes={{
                     indicator: tabsClasses.indicator,
@@ -741,6 +871,9 @@ const DBMappingDrawer = ({ projectId, onClose, onSubmit, tablesData }) => {
                       };
                       setTablesRelation([...tablesRelation, data]);
                     }
+                    setTimeout(() => {
+                      scrollToBottom();
+                    }, 500);
                   }}
                 >
                   <Stack direction="row" alignItems="center" spacing={1}>
@@ -751,7 +884,13 @@ const DBMappingDrawer = ({ projectId, onClose, onSubmit, tablesData }) => {
                   </Stack>
                 </OutlineButton>
               </Stack>
-              <Table stickyHeader aria-label="simple table">
+              <TableContainer
+                  style={{
+                    maxHeight: `calc(100vh - 270px)`,
+                  }}
+                  className="border-2 rounded-b-md border-t-0"
+              >
+              <Table stickyHeader aria-label="simple table"  id="content">
                 {!isFilter ? (
                   <TableHead className="w-full">
                     <TableRow>
@@ -831,7 +970,7 @@ const DBMappingDrawer = ({ projectId, onClose, onSubmit, tablesData }) => {
                 {!isFilter
                   ? tablesRelation?.map((data, index) => (
                       <RelationTableRow
-                        key={data?.mainTable + data?.dependentTable + index}
+                        key={data?.mainTable + data?.dependentTable + index + schemaValues}
                         data={data}
                         tables={operationDataTables}
                         schema={schemaValues}
@@ -857,7 +996,7 @@ const DBMappingDrawer = ({ projectId, onClose, onSubmit, tablesData }) => {
                     ))
                   : tablesFilter?.map((data, index) => (
                       <FilterTableRow
-                        key={data?.tableName + data?.columnName + index}
+                        key={data?.tableName + data?.columnName + index + schemaValues}
                         data={data}
                         tables={operationDataTables}
                         schema={schemaValues}
@@ -883,18 +1022,37 @@ const DBMappingDrawer = ({ projectId, onClose, onSubmit, tablesData }) => {
                     ))}
               </Table>
             </TableContainer>
+            </>
+            )}
           </div>
           {/* )} */}
         </div>
-        <div className="pl-6 pb-5">
-          {emptyError && (
-            <p className="text-overline2 text-accent-red my-2">
-            Fill all fields
-          </p>
+        <div className="pl-6">
+          {relationEmptyError && (
+            <p className="text-overline2 text-accent-red my-1">
+              Fill all fields in relations
+            </p>
           )}
-          {duplicateError && (
-            <p className="text-overline2 text-accent-red my-2">
-              Remove duplicate values
+
+          {filterEmptyError && (
+            <p className="text-overline2 text-accent-red my-1">
+              Fill all fields in filters
+            </p>
+          )}
+          {relationDuplicateError && (
+            <p className="text-overline2 text-accent-red my-1">
+              Remove duplicate values in relations
+            </p>
+          )}
+
+          {filterDuplicateError && (
+            <p className="text-overline2 text-accent-red my-1">
+              Remove duplicate values in filters
+            </p>
+          )}
+          {mappingError && (
+            <p className="text-overline2 text-accent-red my-1">
+              Failed to save changes, try again
             </p>
           )}
         </div>
@@ -913,21 +1071,32 @@ const DBMappingDrawer = ({ projectId, onClose, onSubmit, tablesData }) => {
 
           <PrimaryButton
             disabled={disableButton}
-            onClick={(e) => {
+            onClick={async (e) => {
               e.preventDefault();
               e.stopPropagation();
               if (!disableButton) {
-                const mappedData = {
-                  projectId: projectId,
-                  filters: tablesFilter,
-                  relations: tablesRelation,
-                };
-                onSubmit(mappedData);
-                onClose();
+                setIsLoading(true);
+                await tableMappings(projectId, tablesFilter, tablesRelation)
+                  .then((data) => {
+                    setMappingError(false);
+                    onSubmit();
+                    onClose();
+                  })
+                  .catch((err) => {
+                    setMappingError(true);
+                    setTimeout(() => {
+                      setMappingError(false);
+                    }, 15000);
+                  });
+                setIsLoading(false);
               }
             }}
           >
-            Save and Publish
+            {isLoading ? (
+              <CircularProgress color={"#FFF"} size={16} />
+            ) : (
+              "Save and Publish"
+            )}
           </PrimaryButton>
         </div>
       </div>

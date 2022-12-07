@@ -29,6 +29,7 @@ import _ from "lodash";
 
 import AppIcon from "../shared/components/AppIcon";
 import {
+  publishProject,
   tableMappings,
   useFetchProjectDetails,
   useVerifyProject,
@@ -271,11 +272,12 @@ const Project = () => {
 
   useEffect(() => {
     if (verifyData && verifyData.response.length === 0) {
-      let data = null;
+      /* let data = null;
       if (newProjectDetails) {
         data = newProjectDetails["password"] ?? null;
       }
-      updateMappingData(mappedEntityData, data);
+      updateMappingData(mappedEntityData, data); */
+      updateMappingData();
       resetVerify();
     }
   }, [verifyData]);
@@ -491,23 +493,19 @@ const Project = () => {
     );
   };
 
-  const updateMappingData = async (mappingData, credentials) => {
-    const password = credentials ?? null;
+  const updateMappingData = async () => {										 
 
     setInProgress(true);
-    await tableMappings(
-      projectId,
-      mappingData.filters,
-      mappingData.relations,
-      password
-    )
+    const data = projectDetails.dbDetails;
+    await publishProject({ projectId, data })
       .then((data) => {
+        console.log("publish");
         setEntityMappingData(data);
       })
       .catch((err) => {
+        console.log("not publish");
         setEntityMappingError(err);
       });
-
     setInProgress(false);
   };
 
@@ -831,6 +829,7 @@ const Project = () => {
           />
         </Drawer>
         <Drawer
+          sx={{ overflowY: "clip" }}
           anchor={"right"}
           open={displayEntityMapping}
           onClose={handleCloseDialog}

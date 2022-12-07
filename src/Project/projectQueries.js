@@ -47,8 +47,17 @@ const verifyProject = async ({ projectId }) => {
 
 export const getTablesRelations = async (projectId) => {
   try {
-    console.log(projectId);
-    const { data } = await client.post(endpoint.tableRelations, { projectId });
+						   
+    const { data } = await client.post(
+      endpoint.tableRelations,
+      { projectId },
+      {
+        validateStatus: function (status) {
+          return status == 200 || status == 400;
+        },
+        timeout: 300000,
+      }
+    );
 
     return data;
   } catch (error) {
@@ -62,13 +71,26 @@ export const tableMappings = async (
   relations,
   password
 ) => {
+  var ciphertext = aes
+    .encrypt(password ?? "", process.env.REACT_APP_AES_ENCRYPTION_KEY)
+    .toString();
+
   try {
-    const { data } = await client.post(endpoint.tableMappings, {
-      projectId: projectId,
-      relations: relations,
-      filters: filters,
-      password: password,
-    });
+    const { data } = await client.post(
+      endpoint.tableMappings,
+      {
+        projectId: projectId,
+        relations: relations,
+        filters: filters,
+        password: ciphertext,
+      },
+      {
+        validateStatus: function (status) {
+          return status == 200 || status == 400;
+        },
+        timeout: 120000,
+      }
+    );
 
     return data;
   } catch (error) {
@@ -76,7 +98,7 @@ export const tableMappings = async (
   }
 };
 
-const publishProject = async ({ projectId, newProjectDetails }) => {
+export const publishProject = async ({ projectId, newProjectDetails }) => {
   var ciphertext = aes
     .encrypt(
       newProjectDetails?.password,
@@ -88,15 +110,16 @@ const publishProject = async ({ projectId, newProjectDetails }) => {
       endpoint.publishProject,
       {
         projectId,
-        //password: newProjectDetails?.password,
+												
         password: ciphertext,
       },
       {
         validateStatus: function (status) {
           return status == 200 || status == 400;
         },
-      },
-      { timeout: 48000 }
+		
+        timeout: 120000,
+      }
     );
     return data;
   } catch (error) {

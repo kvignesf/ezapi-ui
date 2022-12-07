@@ -8,9 +8,18 @@ import { getApiError } from "../../shared/utils";
 
 const getTables = async ({ projectId }) => {
   try {
-    const { data } = await client.post(endpoint.tablesLookup, {
-      projectId,
-    });
+    const { data } = await client.post(
+      endpoint.tablesLookup,
+      {
+        projectId,
+      },
+      {
+        validateStatus: function (status) {
+          return status == 200 || status == 400;
+        },
+        timeout: 120000,
+      }
+    );
     return data;
   } catch (error) {
     throw getApiError(error);
