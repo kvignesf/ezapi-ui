@@ -109,7 +109,7 @@ const Dashboard = ({ selectedIndex, children, pricingDefaultCheck }) => {
   };
   
   const BackgroundParticles = () => {
-    return <Confetti />;
+    return <Confetti recycle={false} tweenDuration={10000} numberOfPieces={400} />;
   };			   
   const showAddProjectDialog = () => {
     setDialog({
@@ -207,7 +207,7 @@ const Dashboard = ({ selectedIndex, children, pricingDefaultCheck }) => {
               selected={selectedIndex === 0}
               onClick={() => {
                 handleSideMenuItemClick(0);
-				setShowFirework(true);					   
+				        setShowFirework(true);					   
               }}
               style={{
                 padding: "1rem",

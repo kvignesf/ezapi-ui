@@ -10,6 +10,7 @@ import { CircularProgress } from "@material-ui/core";
 import _ from "lodash";
 import debounce from "lodash.debounce";
 import DeleteIcon from "@material-ui/icons/Delete";
+import classNames from "classnames";
 import TreeView from "@material-ui/lab/TreeView";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import ChevronRightIcon from "@material-ui/icons/ChevronRight";
@@ -32,6 +33,7 @@ import useDoubleClick from "use-double-click";
 import { Checkbox } from "@material-ui/core";
 
 import DropArea from "../DropArea";
+import DraggableBodyItem from "./DraggableBodyItem";
 import operationAtom from "../../operationAtom";
 import {
   isAttribute,
@@ -51,10 +53,13 @@ import {
   isStoredProcedure,
   isInput,
   isOutput,
+  isArrayOfObject,
 } from "../../../shared/utils";
 import AppIcon from "../../../shared/components/AppIcon";
+import DragIndicatorIcon from "@material-ui/icons/DragIndicator";
 import AttributeIcon from "../../../static/images/attribute.svg";
 import SchemaIcon from "../../../static/images/schema-icon.svg";
+import ArrayIcon from "../../../static/images/array-icon.svg";
 import ColumnIcon from "../../../static/images/column-icon.svg";
 import TableIcon from "../../../static/images/table-icon.svg";
 import { useGetSubSchema, useGetTableData } from "./requestBodyQueries";
@@ -66,11 +71,22 @@ import Colors from "../../../shared/colors";
 import primaryAtom from "../../../shared/atom/primaryAtom";
 import tablesDataAtom from "../../../shared/atom/tablesDataAtom";
 import { SignalCellularNullSharp } from "@mui/icons-material";
+import { ChildFriendly } from "@material-ui/icons";
+import ChangeNameInsideArray from "./ChangeNameInsideArray";
 
 const Body = ({ request = true, responseCode, projectType = "schema" }) => {
   let [operationData, setOperationDetails] = useRecoilState(
     operationAtomWithMiddleware
   );
+  const [refresh, setRefresh] = React.useState(0);
+  // operationData;
+
+  const toggleRefresh = () => {
+    setRefresh((old) => {
+      const newState = old + 1;
+      return newState;
+    });
+  };
   // operationData;
   const {
     isLoading: isLoadingSubSchema,
@@ -99,7 +115,8 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
       isArrayOrObjectAttribute(item) ||
       isStoredProcedure(item) ||
       isInput(item) ||
-      isOutput(item)
+      isOutput(item) ||
+      isArrayOfObject(item)
     ) {
       setOperationDetails((operationDetails) => {
         const path = fetchFullPath(item);
@@ -115,7 +132,7 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
             const clonedItem = _.cloneDeep(item);
             if (isArrayOrObjectAttribute(item)) {
               clonedItem.required = true;
-              clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
+              //clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
               clonedItem.parentName = path ?? "/";
             }
             if (isAttribute(item)) {
@@ -189,7 +206,7 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
             const clonedItem = _.cloneDeep(item);
             if (isArrayOrObjectAttribute(item)) {
               clonedItem.required = true;
-              clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
+              //clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
               clonedItem.parentName = path ?? "/";
             }
             if (isAttribute(item)) {
@@ -234,6 +251,72 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
     }
   };
 
+  const nestedItemDropped = (item, children) => {
+    const data = children.props.children.props.itemRef;
+    let valueDropped;
+    let itemDroppedFromTop;
+
+    if (item.props) {
+      valueDropped = item.props.itemRef;
+      itemDroppedFromTop = false;
+    } else {
+      if (item[1]) {
+        valueDropped = item[1].props.columnLabelItem;
+        itemDroppedFromTop = false;
+      } else {
+        valueDropped = item;
+        itemDroppedFromTop = true;
+      }
+    }
+
+    // if (itemDroppedFromTop) {
+    //   deleteItem(valueDropped)
+    // }
+
+    if (
+      (isColumn(valueDropped) || isDatabase(valueDropped)) &&
+      isArrayOfObject(data)
+    ) {
+      setOperationDetails((operationDetails) => {
+        const newOperationDetails = _.cloneDeep(operationDetails);
+        const clonedItem = _.cloneDeep(valueDropped);
+        let requestOrResponseData = request
+          ? newOperationDetails.operationRequest
+          : newOperationDetails.operationResponse[0];
+
+        requestOrResponseData?.body.map((bodyItem) => {
+          if (bodyItem.name === data.name) {
+            if (bodyItem.items) {
+              if (bodyItem.items.properties) {
+                bodyItem.items.properties[clonedItem.name] = clonedItem;
+              } else {
+                bodyItem.items.type = "object";
+                bodyItem.items.properties = {};
+                bodyItem.items.properties[clonedItem.name] = clonedItem;
+              }
+            } else {
+              bodyItem.items = {};
+              bodyItem.items.properties = {};
+              bodyItem.items.type = "object";
+              bodyItem.items.properties[clonedItem.name] = clonedItem;
+            }
+          }
+        });
+
+        if (!itemDroppedFromTop) {
+          requestOrResponseData.body.map((item, index) => {
+            if (item.payloadId === clonedItem.payloadId) {
+              requestOrResponseData.body.splice(index, 1);
+            }
+          });
+        }
+
+        return newOperationDetails;
+      });
+    }
+    toggleRefresh();
+  };
+
   useEffect(() => {
     //
   }, [isLoadingSubSchema]);
@@ -243,6 +326,9 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
       (item) => item.responseCode === responseCode
     );
   };
+
+  useEffect(() => {}, [refresh]);
+
 
   const getResponseIndex = (operation) => {
     return operation?.operationResponse?.findIndex(
@@ -264,12 +350,15 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
                 : "-"}
             </p> */}
             {projectType === "db" && (
-              <div className='flex justify-self-start '>
+              <>
                 {" "}
-                <p className='text-overline2 uppercase text-neutral-gray4 font-bold'>
-                  Table/Column
-                </p>
-              </div>
+                <div className='flex justify-self-start '>
+                  {" "}
+                  <p className='text-overline2 uppercase text-neutral-gray4 font-bold'>
+                    Table/Column
+                  </p>
+                </div>
+              </>
             )}
             <div className='flex justify-self-start '>
               <p className='text-overline2 uppercase text-neutral-gray4 font-bold'>
@@ -318,7 +407,7 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
                   setExpandedIds(nodeIds);
                 }}
               >
-                {operationData?.operationRequest?.body.map((item) => {
+                {operationData?.operationRequest?.body.map((item, index) => {
                   let clonedRef;
 
                   if (isSchema(item)) {
@@ -335,21 +424,35 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
                     }
                   } else if (isStoredProcedure(item)) {
                     clonedRef = _.cloneDeep(item);
-                  } else if (isArray(item) || isObject(item)) {
+                  } else if (
+                    isArray(item) || 
+                    isArrayOfObject(item) ||
+                    isObject(item)) {
                     clonedRef = _.cloneDeep(item);
                   }
 
                   return clonedRef == "wrongData" ? null : (
-                    <BodyItem
-                      disabledIcons={(value) => {
-                        setDisabledIcons(false);
-                      }}
-                      projectType={projectType}
-                      key={item?.name}
-                      itemRef={clonedRef ?? item}
-                      request={request}
-                      responseCode={responseCode}
-                    />
+                    <DropArea onItemDropped={nestedItemDropped} state={refresh}>
+                      <DraggableBodyItem state={refresh}>
+                        <BodyItem
+                          disabledIcons={(value) => {
+                            setDisabledIcons(false);
+                          }}
+                          projectType={projectType}
+                          key={
+                            index +
+                            operationData?.operationRequest?.body.length +
+                            refresh
+                          }
+                          itemRef={clonedRef ?? item}
+                          request={request}
+                          responseCode={responseCode}
+                          refresh={() => {
+                            toggleRefresh();
+                          }}
+                        />
+                      </DraggableBodyItem>
+                    </DropArea>
                   );
                 })}
               </TreeView>
@@ -380,7 +483,7 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
                   setExpandedIds(nodeIds);
                 }}
               >
-                {getResponseData(operationData)?.body.map((item) => {
+                {getResponseData(operationData)?.body.map((item, index) => {
                   let clonedRef;
 
                   if (isSchema(item)) {
@@ -400,14 +503,27 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
                   } else {
                   }
 
+                  
+
                   return clonedRef == "wrongData" ? null : (
-                    <BodyItem
-                      projectType={projectType}
-                      key={item.name}
-                      itemRef={clonedRef ?? item}
-                      request={request}
-                      responseCode={responseCode}
-                    />
+                    <DropArea onItemDropped={nestedItemDropped} state={refresh}>
+                      <DraggableBodyItem state={refresh}>
+                        <BodyItem
+                          projectType={projectType}
+                          key={
+                            index +
+                            getResponseData(operationData)?.body.length +
+                            refresh
+                          }
+                          itemRef={clonedRef ?? item}
+                          request={request}
+                          responseCode={responseCode}
+                          refresh={() => {
+                            toggleRefresh();
+                          }}
+                        />
+                      </DraggableBodyItem>
+                    </DropArea>
                   );
                 })}
               </TreeView>
@@ -440,8 +556,10 @@ const BodyItem = ({
   itemRef,
   projectType,
   disabledIcons,
+  refresh = () => {},
 }) => {
   const [bodyItem, setItem] = useState(itemRef);
+  const [arrayData, setArrayData] = useState([]);
   const setOperationDetails = useSetRecoilState(operationAtomWithMiddleware);
   const { projectId } = useParams();
   const {
@@ -460,7 +578,7 @@ const BodyItem = ({
   const canEdit = useCanEdit();
   const getRecoilValueInfo = useGetRecoilValueInfo_UNSTABLE();
 
-  useEffect(() => {
+  /*useEffect(() => {
     if (subSchemaData) {
       let itemsToConsider = [];
 
@@ -484,7 +602,7 @@ const BodyItem = ({
       }
     }
   }, [subSchemaData]);
-
+*/
   useEffect(() => {
     if (tableData) {
       setItem(tableData);
@@ -492,8 +610,28 @@ const BodyItem = ({
   }, [tableData]);
 
   useEffect(() => {
+    onItemClick();
     setItem(itemRef);
   }, [itemRef]);
+
+  const deleteItemFromArray = (item, array) => {
+    if (isDatabase(item) || isColumn(item)) {
+      setOperationDetails((operationDetails) => {
+        const newOperationDetails = _.cloneDeep(operationDetails);
+        let data = request
+          ? newOperationDetails.operationRequest
+          : newOperationDetails.operationResponse[0];
+
+        const index = data.body.findIndex((x) => x?.name === array?.name);
+
+        if (index !== -1) {
+          delete data.body[index].items?.properties[item.name];
+
+          return newOperationDetails;
+        }
+      });
+    }
+  };
 
   const deleteItem = (item) => {
     if (
@@ -502,6 +640,7 @@ const BodyItem = ({
       isAttribute(item) ||
       isDatabase(item) ||
       isStoredProcedure(item) ||
+      isArrayOfObject(item) ||
       (isArrayOrObjectAttribute(item) && canEdit())
     ) {
       setOperationDetails((operationDetails) => {
@@ -600,76 +739,108 @@ const BodyItem = ({
     });
   };
 
-  const deleteColumnOfTable = (column, table) => {
-    if (isColumn(column) && isDatabase(table) && canEdit()) {
-      setOperationDetails((operationDetails) => {
-        if (request) {
+  const deleteColumnOfTable = (column, table, isObjectArray = false, ref) => {
+    if (isObjectArray) {
+      let array = _.cloneDeep(table);
+      table = array.items.properties[ref.name];
+      if (isColumn(column) && isDatabase(table)) {
+        setOperationDetails((operationDetails) => {
           const newOperationDetails = _.cloneDeep(operationDetails);
+          const data = request
+            ? newOperationDetails.operationRequest
+            : newOperationDetails.operationResponse[0];
+          const arrayIndex = data.body.findIndex(
+            (x) => isArrayOfObject(x) && x.name === array.name
+          );
+          const columnIndex =
+            data.body[arrayIndex].items.properties[
+              ref.name
+            ].selectedColumns.findIndex(
+              (x) => isColumn(x) && x?.sourceName === column?.sourceName
+            ) ?? -1;
 
-          const tableIndex =
-            newOperationDetails.operationRequest.body.findIndex(
-              (x) => isDatabase(x) && x?.sourceName === table?.sourceName
-            );
-
-          if (tableIndex !== -1) {
-            const clonedTable = _.cloneDeep(
-              newOperationDetails.operationRequest.body[tableIndex]
-            );
-
-            const columnIndex =
-              clonedTable?.selectedColumns?.findIndex(
-                (x) => isColumn(x) && x?.sourceName === column?.sourceName
-              ) ?? -1;
-
-            if (columnIndex !== -1) {
-              clonedTable.selectedColumns.splice(columnIndex, 1);
-            }
-
-            newOperationDetails.operationRequest.body[tableIndex] = clonedTable;
-
-            return newOperationDetails;
+          if (columnIndex !== -1) {
+            data.body[arrayIndex].items.properties[
+              ref.name
+            ].selectedColumns.splice(columnIndex, 1);
           }
-        } else {
-          const responseData = operationDetails?.operationResponse?.find(
-            (item) => item.responseCode === responseCode
-          );
-          const responseIndex = operationDetails?.operationResponse?.findIndex(
-            (item) => item.responseCode === responseCode
-          );
+          return newOperationDetails;
+        });
+      }
+    } else {
+      if (isColumn(column) && isDatabase(table) && canEdit()) {
+        setOperationDetails((operationDetails) => {
+          if (request) {
+            const newOperationDetails = _.cloneDeep(operationDetails);
 
-          const tableIndex = responseData?.body?.findIndex(
-            (body) => body?.sourceName === table?.sourceName
-          );
+            const tableIndex =
+              newOperationDetails.operationRequest.body.findIndex(
+                (x) => isDatabase(x) && x?.sourceName === table?.sourceName
+              );
 
-          if (tableIndex >= 0 && responseData && responseIndex >= 0) {
-            const clonedOperationDetails = _.cloneDeep(operationDetails);
-            const clonedResponseData = _.cloneDeep(responseData);
-            const clonedTable = _.cloneDeep(
-              clonedResponseData.body[tableIndex]
+            if (tableIndex !== -1) {
+              const clonedTable = _.cloneDeep(
+                newOperationDetails.operationRequest.body[tableIndex]
+              );
+
+              const columnIndex =
+                clonedTable?.selectedColumns?.findIndex(
+                  (x) => isColumn(x) && x?.sourceName === column?.sourceName
+                ) ?? -1;
+
+              if (columnIndex !== -1) {
+                clonedTable.selectedColumns.splice(columnIndex, 1);
+              }
+
+              newOperationDetails.operationRequest.body[tableIndex] =
+                clonedTable;
+
+              return newOperationDetails;
+            }
+          } else {
+            const responseData = operationDetails?.operationResponse?.find(
+              (item) => item.responseCode === responseCode
+            );
+            const responseIndex =
+              operationDetails?.operationResponse?.findIndex(
+                (item) => item.responseCode === responseCode
+              );
+
+            const tableIndex = responseData?.body?.findIndex(
+              (body) => body?.sourceName === table?.sourceName
             );
 
-            const columnIndex =
-              clonedTable?.selectedColumns?.findIndex(
-                (x) => isColumn(x) && x?.sourceName === column?.sourceName
-              ) ?? -1;
+            if (tableIndex >= 0 && responseData && responseIndex >= 0) {
+              const clonedOperationDetails = _.cloneDeep(operationDetails);
+              const clonedResponseData = _.cloneDeep(responseData);
+              const clonedTable = _.cloneDeep(
+                clonedResponseData.body[tableIndex]
+              );
 
-            if (columnIndex !== -1) {
-              clonedTable.selectedColumns.splice(columnIndex, 1);
+              const columnIndex =
+                clonedTable?.selectedColumns?.findIndex(
+                  (x) => isColumn(x) && x?.sourceName === column?.sourceName
+                ) ?? -1;
+
+              if (columnIndex !== -1) {
+                clonedTable.selectedColumns.splice(columnIndex, 1);
+              }
+
+              clonedResponseData.body[tableIndex] = clonedTable;
+
+              clonedOperationDetails.operationResponse[responseIndex] =
+                clonedResponseData;
+
+              return clonedOperationDetails;
             }
-
-            clonedResponseData.body[tableIndex] = clonedTable;
-
-            clonedOperationDetails.operationResponse[responseIndex] =
-              clonedResponseData;
-
-            return clonedOperationDetails;
           }
-        }
 
-        return operationDetails;
-      });
+          return operationDetails;
+        });
+      }
     }
   };
+
 
   const renameColumn = (column, name) => {
     if (canEdit()) {
@@ -736,6 +907,7 @@ const BodyItem = ({
 
         return operationDetails;
       });
+      refresh();
     }
   };
 
@@ -785,164 +957,238 @@ const BodyItem = ({
     return false;
   };
 
-  const renameColumnOfTable = (column, table, name) => {
-    if (canEdit()) {
-      setOperationDetails((operationDetails) => {
-        if (request) {
-          const newOperationDetails = _.cloneDeep(operationDetails);
-
-          // Get parent table index
-          const parentTableIndex =
-            newOperationDetails.operationRequest.body.findIndex(
-              (bodyItem) =>
-                isDatabase(bodyItem) &&
-                table?.sourceName === bodyItem?.sourceName
+  const renameColumnOfTable = (
+    column,
+    table,
+    name,
+    isObjectArray = false,
+    ref) => {
+      if (isObjectArray) {
+        let array = _.cloneDeep(table);
+        table = array.items.properties[ref.name];
+        if (isColumn(column) && isDatabase(table) && isArrayOfObject(array)) {
+          setOperationDetails((operationDetails) => {
+            const newOperationDetails = _.cloneDeep(operationDetails);
+            const data = request
+              ? newOperationDetails.operationRequest
+              : newOperationDetails.operationResponse[0];
+            const arrayIndex = data.body.findIndex(
+              (x) => isArrayOfObject(x) && x.name === array.name
             );
 
-          if (parentTableIndex !== -1) {
-            // Clone parent table
-            const clonedParentTable = _.cloneDeep(
-              newOperationDetails.operationRequest.body[parentTableIndex]
-            );
-
-            // Get column
-            const columnIndex = clonedParentTable?.selectedColumns?.findIndex(
-              (columnItem) => column?.sourceName === columnItem?.sourceName
-            );
-
-            if (columnIndex !== -1) {
-              // Clone column
-              const clonedColumn = _.cloneDeep(
-                clonedParentTable.selectedColumns[columnIndex]
-              );
-
-              // Set updated name to column
-              clonedColumn.name = name;
-
-              // Set cloned column to table
-              clonedParentTable.selectedColumns[columnIndex] = clonedColumn;
-
-              // Set table to operations body
-              newOperationDetails.operationRequest.body[parentTableIndex] =
-                clonedParentTable;
-            }
-
-            return newOperationDetails;
+            const columnIndex = data.body[arrayIndex].items.properties[ref.name].selectedColumns.findIndex(
+              (x) => isColumn(x) && x?.sourceName === column.sourceName) ?? -1;
+            
+              if (columnIndex !== -1) {
+                data.body[arrayIndex].items.properties[ref.name].selectedColumns[
+                  columnIndex
+                ].name = name;
+              }
+              return newOperationDetails;
+            });
           }
         } else {
-          const responseIndex = operationDetails?.operationResponse?.findIndex(
-            (item) => item.responseCode === responseCode
-          );
-          if (responseIndex !== -1) {
-            const responseData =
-              operationDetails?.operationResponse[responseIndex];
-            const clonedOperationDetails = _.cloneDeep(operationDetails);
-            const clonedResponseData = _.cloneDeep(responseData);
+          if (canEdit()) {
+            setOperationDetails((operationDetails) => {
+              if (request) {
+                const newOperationDetails = _.cloneDeep(operationDetails);
 
-            const tableIndex = responseData?.body?.findIndex(
-              (body) => body?.sourceName === table?.sourceName
-            );
+                // Get parent table index
+                const parentTableIndex =
+                  newOperationDetails.operationRequest.body.findIndex(
+                    (bodyItem) =>
+                      isDatabase(bodyItem) &&
+                      table?.sourceName === bodyItem?.sourceName
+                  );
 
-            if (tableIndex !== -1) {
-              const clonedTableData = _.cloneDeep(
-                clonedResponseData.body[tableIndex]
-              );
+                if (parentTableIndex !== -1) {
+                  // Clone parent table
+                  const clonedParentTable = _.cloneDeep(
+                    newOperationDetails.operationRequest.body[parentTableIndex]
+                  );
 
-              // Get column
-              const columnIndex = clonedTableData?.selectedColumns?.findIndex(
-                (columnItem) => column?.sourceName === columnItem?.sourceName
-              );
+                  // Get column
+                  const columnIndex = clonedParentTable?.selectedColumns?.findIndex(
+                    (columnItem) => column?.sourceName === columnItem?.sourceName
+                  );
 
-              if (columnIndex !== -1) {
-                // Clone column
-                const clonedColumn = _.cloneDeep(
-                  clonedTableData.selectedColumns[columnIndex]
+                  if (columnIndex !== -1) {
+                    // Clone column
+                    const clonedColumn = _.cloneDeep(
+                      clonedParentTable.selectedColumns[columnIndex]
+                    );
+
+                    // Set updated name to column
+                    clonedColumn.name = name;
+
+                    // Set cloned column to table
+                    clonedParentTable.selectedColumns[columnIndex] = clonedColumn;
+
+                    // Set table to operations body
+                    newOperationDetails.operationRequest.body[parentTableIndex] =
+                      clonedParentTable;
+                  }
+
+                  return newOperationDetails;
+                }
+              } else {
+                const responseIndex = operationDetails?.operationResponse?.findIndex(
+                  (item) => item.responseCode === responseCode
                 );
+                if (responseIndex !== -1) {
+                  const responseData =
+                    operationDetails?.operationResponse[responseIndex];
+                  const clonedOperationDetails = _.cloneDeep(operationDetails);
+                  const clonedResponseData = _.cloneDeep(responseData);
 
-                // Set updated name to column
-                clonedColumn.name = name;
+                  const tableIndex = responseData?.body?.findIndex(
+                    (body) => body?.sourceName === table?.sourceName
+                  );
 
-                // Set cloned column to table
-                clonedTableData.selectedColumns[columnIndex] = clonedColumn;
+                  if (tableIndex !== -1) {
+                    const clonedTableData = _.cloneDeep(
+                      clonedResponseData.body[tableIndex]
+                    );
 
-                // Set table to response data body
-                clonedResponseData.body[tableIndex] = clonedTableData;
+                    // Get column
+                    const columnIndex = clonedTableData?.selectedColumns?.findIndex(
+                      (columnItem) => column?.sourceName === columnItem?.sourceName
+                    );
+
+                    if (columnIndex !== -1) {
+                      // Clone column
+                      const clonedColumn = _.cloneDeep(
+                        clonedTableData.selectedColumns[columnIndex]
+                      );
+
+                      // Set updated name to column
+                      clonedColumn.name = name;
+
+                      // Set cloned column to table
+                      clonedTableData.selectedColumns[columnIndex] = clonedColumn;
+
+                      // Set table to response data body
+                      clonedResponseData.body[tableIndex] = clonedTableData;
+                    }
+
+                    clonedOperationDetails.operationResponse[responseIndex] =
+                      clonedResponseData;
+                    return clonedOperationDetails;
+                  }
+                }
               }
-
-              clonedOperationDetails.operationResponse[responseIndex] =
-                clonedResponseData;
-              return clonedOperationDetails;
-            }
-          }
-        }
 
         return operationDetails;
       });
     }
+  }
+    refresh();
   };
 
-  const isColumnNameTakenOfTable = (column, table, name) => {
-    if (canEdit()) {
-      const { loadable: operationAtom } = getRecoilValueInfo(
-        operationAtomWithMiddleware
-      );
-      const operationDetails = operationAtom?.contents;
-
-      if (request) {
-        const newOperationDetails = _.cloneDeep(operationDetails);
-
-        // Get parent table index
-        const parentTableIndex =
-          newOperationDetails.operationRequest.body.findIndex(
-            (bodyItem) =>
-              isDatabase(bodyItem) && table?.sourceName === bodyItem?.sourceName
+  const isColumnNameTakenOfTable = (
+    column, 
+    table, 
+    name,
+    isObjectArray = false,
+    ref) => {
+      if (isObjectArray) {
+        const { loadable: operationAtom } = getRecoilValueInfo(
+          operationAtomWithMiddleware
+        );
+        const operationDetails = operationAtom?.contents;
+  
+        let array = _.cloneDeep(table);
+        table = array.items.properties[ref.name];
+        if (isColumn(column) && isDatabase(table) && isArrayOfObject(array)) {
+          const newOperationDetails = _.cloneDeep(operationDetails);
+          const data = request
+            ? newOperationDetails.operationRequest
+            : newOperationDetails.operationResponse[0];
+          const arrayIndex = data.body.findIndex(
+            (x) => isArrayOfObject(x) && x.name === array.name
+                                          
           );
-
-        if (parentTableIndex !== -1) {
-          // Get column
-          const columnIndex = newOperationDetails.operationRequest.body[
-            parentTableIndex
-          ]?.selectedColumns?.findIndex((columnItem) => {
-            return (
-              columnItem?.name === name &&
-              columnItem?.sourceName !== column?.sourceName
-            );
-          });
-
+  
+                      
+               
+          const columnIndex =
+            data.body[arrayIndex].items.properties[
+              ref.name
+            ].selectedColumns.findIndex(
+              (x) => isColumn(x) && x?.sourceName === name
+            ) ?? -1;
+                                 
+          
+         
+  
           if (columnIndex !== -1) {
             return true;
+         
           }
         }
       } else {
-        const responseIndex = operationDetails?.operationResponse?.findIndex(
-          (item) => item.responseCode === responseCode
-        );
-
-        if (responseIndex !== -1) {
-          const responseData =
-            operationDetails?.operationResponse[responseIndex];
-
-          const tableIndex = responseData?.body?.findIndex(
-            (body) => body?.sourceName === table?.sourceName
+        if (canEdit()) {
+          const { loadable: operationAtom } = getRecoilValueInfo(
+            operationAtomWithMiddleware
           );
+          const operationDetails = operationAtom?.contents;
 
-          if (tableIndex !== -1) {
-            // Get column
-            const columnIndex = responseData.body[
-              tableIndex
-            ]?.selectedColumns?.findIndex(
-              (columnItem) =>
-                columnItem?.name === name &&
-                columnItem?.sourceName !== column?.sourceName
+          if (request) {
+            const newOperationDetails = _.cloneDeep(operationDetails);
+
+            // Get parent table index
+            const parentTableIndex =
+              newOperationDetails.operationRequest.body.findIndex(
+                (bodyItem) =>
+                  isDatabase(bodyItem) && table?.sourceName === bodyItem?.sourceName
+              );
+
+            if (parentTableIndex !== -1) {
+              // Get column
+              const columnIndex = newOperationDetails.operationRequest.body[
+                parentTableIndex
+              ]?.selectedColumns?.findIndex((columnItem) => {
+                return (
+                  columnItem?.name === name &&
+                  columnItem?.sourceName !== column?.sourceName
+                );
+              });
+
+              if (columnIndex !== -1) {
+                return true;
+              }
+            }
+          } else {
+            const responseIndex = operationDetails?.operationResponse?.findIndex(
+              (item) => item.responseCode === responseCode
             );
 
-            if (columnIndex !== -1) {
-              return true;
+            if (responseIndex !== -1) {
+              const responseData =
+                operationDetails?.operationResponse[responseIndex];
+
+              const tableIndex = responseData?.body?.findIndex(
+                (body) => body?.sourceName === table?.sourceName
+              );
+
+              if (tableIndex !== -1) {
+                // Get column
+                const columnIndex = responseData.body[
+                  tableIndex
+                ]?.selectedColumns?.findIndex(
+                  (columnItem) =>
+                    columnItem?.name === name &&
+                    columnItem?.sourceName !== column?.sourceName
+                );
+
+                if (columnIndex !== -1) {
+                  return true;
+                }
+              }
             }
           }
         }
       }
-    }
 
     return false;
   };
@@ -967,11 +1213,21 @@ const BodyItem = ({
     }
   };
 
+  const getArrayData = () => {
+    if (bodyItem.items?.properties) {
+      const arr = Object.keys(bodyItem.items.properties);
+      setArrayData(arr);
+    }
+  };
+
+
   const onItemClick = () => {
     if (isDatabase(bodyItem)) {
       if (!bodyItem?.selectedColumns || _.isEmpty(bodyItem?.selectedColumns)) {
         getTableData(bodyItem);
       }
+    } else if (isArrayOfObject(bodyItem)) {
+      getArrayData();
     } else if (isSchema(bodyItem)) {
       getSchemaData(bodyItem);
     }
@@ -991,6 +1247,8 @@ const BodyItem = ({
 
   if (isColumn(bodyItem)) {
     return (
+      <DraggableBodyItem>
+      {" "}
       <ColumnLabel
         columnLabelItem={bodyItem}
         deleteColumn={deleteItem}
@@ -999,6 +1257,7 @@ const BodyItem = ({
         request={request}
         responseCode={responseCode}
       />
+    </DraggableBodyItem>
     );
   }
 
@@ -1014,6 +1273,9 @@ const BodyItem = ({
             isArrayChecked={isArrayChecked}
             request={request}
             responseCode={responseCode}
+            refresh={() => {
+              refresh();
+            }}
           />
         ) : bodyItem != "wrongData" && isStoredProcedure(bodyItem) ? (
           <StoredProcedureLabel
@@ -1022,6 +1284,14 @@ const BodyItem = ({
             isArrayChecked={isArrayChecked}
             request={request}
             responseCode={responseCode}
+          />
+        ) : isArray(bodyItem) || isArrayOfObject(bodyItem) ? (
+          <ArrayLabel
+            labelItem={bodyItem}
+            deleteItem={deleteItem}
+            request={request}
+            responseCode={responseCode}
+            projectType={projectType}
           />
         ) : isSchema(bodyItem) ? (
           <SchemaLabel
@@ -1044,114 +1314,212 @@ const BodyItem = ({
         onItemClick();
       }}
     >
-      {isSchema(bodyItem) &&
-        bodyItem?.data?.map((ref) => {
-          // Sub schema/array/object
-          if (isSchema(ref) || isArray(ref) || isObject(ref)) {
-            const clonedRef = _.cloneDeep(ref);
+      <div className="">
+        {isSchema(bodyItem) &&
+          bodyItem?.data?.map((ref) => {
+            // Sub schema/array/object
+            if (isSchema(ref) || isArray(ref) || isObject(ref)) {
+              const clonedRef = _.cloneDeep(ref);
 
-            if (!clonedRef.hasOwnProperty("data")) {
-              clonedRef["data"] = [];
+              if (!clonedRef.hasOwnProperty("data")) {
+                clonedRef["data"] = [];
+              }
+
+              if (!clonedRef.hasOwnProperty("isLoaded")) {
+                clonedRef["isLoaded"] = false;
+              }
+
+              return <BodySubTreeItems currentRef={clonedRef} />;
             }
+            //attributes within a schema
+            else if (isAttribute(ref)) {
+              return (
+                <TreeItem
+                  key={ref?.payloadId ?? ref?.name ?? treeIndex++}
+                  nodeId={ref?.payloadId ?? ref?.name ?? treeIndex++}
+                  label={
+                    <div className="flex flex-row p-1 justify-between items-center border-b-2 h-8">
+                      <div className="flex flex-row items-center justify-start w-full">
+                        <div className="w-full grid grid-cols-5 gap-2 items-center ">
+                          <div className="flex justify-self-start items-center">
+                            {" "}
+                            <img
+                              src={AttributeIcon}
+                              alt="conektto logo"
+                              className="bg-white mr-2"
+                              style={{
+                                height: "24px",
+                                width: "24px",
+                              }}
+                            />
+                            <p className="text-overline2">{ref?.name}</p>
+                          </div>
 
-            if (!clonedRef.hasOwnProperty("isLoaded")) {
-              clonedRef["isLoaded"] = false;
-            }
-
-            return <BodySubTreeItems currentRef={clonedRef} />;
-          }
-          //attributes within a schema
-          else if (isAttribute(ref)) {
-            return (
-              <TreeItem
-                key={ref?.payloadId ?? ref?.name ?? treeIndex++}
-                nodeId={ref?.payloadId ?? ref?.name ?? treeIndex++}
-                label={
-                  <div className='flex flex-row p-1 justify-between items-center border-b-2 h-8'>
-                    <div className='flex flex-row items-center justify-start w-full'>
-                      <div className='w-full grid grid-cols-5 gap-2 items-center '>
-                        <div className='flex justify-self-start items-center'>
-                          {" "}
-                          <img
-                            src={AttributeIcon}
-                            alt='conektto logo'
-                            className='bg-white mr-2'
-                            style={{
-                              height: "24px",
-                              width: "24px",
-                            }}
-                          />
-                          <p className='text-overline2'>{ref?.name}</p>
+                          <div className="flex-1">
+                            <p>{ref?.type}</p>
+                          </div>
+                          <div> {/* empty isarray */}</div>
+                          <div className="flex-1">{/* empty isRequired */}</div>
                         </div>
-
-                        <div className='flex-1'>
-                          <p>{ref?.type}</p>
-                        </div>
-                        <div> {/* empty isarray */}</div>
-                        <div className='flex-1'>{/* empty isRequired */}</div>
+														 
+																			  
                       </div>
                     </div>
+                  }
+                />
+              );
+            }
+          })}
+
+        {isArrayOfObject(bodyItem) &&
+          arrayData.map((arrayItem) => {
+            let arrayItemRef = bodyItem.items.properties[arrayItem];
+
+            if (isDatabase(arrayItemRef)) {
+              return (
+                <TreeItem
+                  key={
+                    arrayItemRef?.payloadId ?? arrayItemRef?.name ?? treeIndex++
+                  }
+                  nodeId={
+                    arrayItemRef?.payloadId ?? arrayItemRef?.name ?? treeIndex++
+                  }
+                  label={
+                    isDatabase(arrayItemRef) ? (
+                      <DatabaseLabel
+                        tableLabelItem={arrayItemRef}
+                        deleteItem={() =>
+                          deleteItemFromArray(arrayItemRef, bodyItem)
+                        }
+                        array={bodyItem}
+                        isArrayChecked={isArrayChecked}
+                        request={request}
+                        responseCode={responseCode}
+                        isArrayOfObject
+                      />
+                    ) : null
+                  }
+                  onLabelClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    onItemClick();
+                  }}
+                  onIconClick={(e) => {
+                    onItemClick();
+                  }}
+                >
+                  <div className="">
+                    {isDatabase(arrayItemRef) &&
+                      arrayItemRef?.selectedColumns?.map((ref) => {
+                        return (
+                          <ColumnLabel
+                            columnLabelItem={ref}
+                            request={request}
+                            renameColumn={(column, name) =>
+                              renameColumnOfTable(
+                                column,
+                                bodyItem,
+                                name,
+                                true,
+                                arrayItemRef
+                              )
+                            }
+                            isNameTaken={(column, value) => {
+                              return isColumnNameTakenOfTable(
+                                column,
+                                bodyItem,
+                                value,
+                                true,
+                                arrayItemRef
+                              );
+                            }}
+                            responseCode={responseCode}
+                            deleteColumn={(column) =>
+                              deleteColumnOfTable(
+                                column,
+                                bodyItem,
+                                true,
+                                arrayItemRef
+                              )
+                            }
+                          />
+                        );
+                      })}
                   </div>
+                </TreeItem>
+              );
+            } else if (isColumn(arrayItemRef)) {
+              return (
+                <ColumnLabel
+                  columnLabelItem={arrayItemRef}
+                  deleteColumn={() =>
+                    deleteItemFromArray(arrayItemRef, bodyItem)
+                  }
+                  array={bodyItem}
+                  request={request}
+                  responseCode={responseCode}
+                  isArrayOfObject
+                />
+              );
+            }
+          })}
+
+        {isDatabase(bodyItem) &&
+          bodyItem?.selectedColumns?.map((ref) => {
+            return (
+              <ColumnLabel
+                columnLabelItem={ref}
+                deleteColumn={(column) => deleteColumnOfTable(column, bodyItem)}
+                renameColumn={(column, name) =>
+                  renameColumnOfTable(column, bodyItem, name)
                 }
+                request={request}
+                isNameTaken={(column, value) => {
+                  return isColumnNameTakenOfTable(column, bodyItem, value);
+                }}
+                responseCode={responseCode}
+              />
+            );			
+          })}
+
+        {bodyItem.inputAttributes &&
+          isStoredProcedure(bodyItem) &&
+          bodyItem?.inputAttributes?.map((ref) => {
+            return (
+              <InputOrOutputLabel
+                inputOrOutputLabelItem={ref}
+                // deleteColumn={(column) => deleteColumnOfTable(column, bodyItem)}
+                renameColumn={(column, name) =>
+                  renameColumnOfTable(column, bodyItem, name)
+                }
+                request={request}
+                isNameTaken={(column, value) => {
+                  return isColumnNameTakenOfTable(column, bodyItem, value);
+                }}
+                responseCode={responseCode}
               />
             );
-          }
-        })}
-
-      {isDatabase(bodyItem) &&
-        bodyItem?.selectedColumns?.map((ref) => {
-          return (
-            <ColumnLabel
-              columnLabelItem={ref}
-              deleteColumn={(column) => deleteColumnOfTable(column, bodyItem)}
-              renameColumn={(column, name) =>
-                renameColumnOfTable(column, bodyItem, name)
-              }
-              request={request}
-              isNameTaken={(column, value) => {
-                return isColumnNameTakenOfTable(column, bodyItem, value);
-              }}
-              responseCode={responseCode}
-            />
-          );
-        })}
-
-      {bodyItem.inputAttributes &&
-        isStoredProcedure(bodyItem) &&
-        bodyItem?.inputAttributes?.map((ref) => {
-          return (
-            <InputOrOutputLabel
-              inputOrOutputLabelItem={ref}
-              // deleteColumn={(column) => deleteColumnOfTable(column, bodyItem)}
-              renameColumn={(column, name) =>
-                renameColumnOfTable(column, bodyItem, name)
-              }
-              request={request}
-              isNameTaken={(column, value) => {
-                return isColumnNameTakenOfTable(column, bodyItem, value);
-              }}
-              responseCode={responseCode}
-            />
-          );
-        })}
-      {bodyItem.outputAttributes &&
-        isStoredProcedure(bodyItem) &&
-        bodyItem?.outputAttributes?.map((ref) => {
-          return (
-            <InputOrOutputLabel
-              inputOrOutputLabelItem={ref}
-              // deleteColumn={(column) => deleteColumnOfTable(column, bodyItem)}
-              renameColumn={(column, name) =>
-                renameColumnOfTable(column, bodyItem, name)
-              }
-              request={request}
-              isNameTaken={(column, value) => {
-                return isColumnNameTakenOfTable(column, bodyItem, value);
-              }}
-              responseCode={responseCode}
-            />
-          );
-        })}
+          })}
+        {bodyItem.outputAttributes &&
+          isStoredProcedure(bodyItem) &&
+          bodyItem?.outputAttributes?.map((ref) => {
+            return (
+              <InputOrOutputLabel
+                inputOrOutputLabelItem={ref}
+                // deleteColumn={(column) => deleteColumnOfTable(column, bodyItem)}
+                renameColumn={(column, name) =>
+                  renameColumnOfTable(column, bodyItem, name)
+                }
+                request={request}
+                isNameTaken={(column, value) => {
+                  return isColumnNameTakenOfTable(column, bodyItem, value);
+                }}
+                responseCode={responseCode}
+              />
+            );
+          })}
+      </div>
     </TreeItem>
   );
 };
@@ -1183,7 +1551,7 @@ const BodySubTreeItems = ({ currentRef: some }) => {
         itemsToConsider = subSchemaData?.data;
       }
 
-      if (isSchema(currentRef) || isArray(currentRef) || isObject(currentRef)) {
+      if (isSchema(currentRef) || isArray(currentRef) || isArrayOfObject(currentRef) || isObject(currentRef)) {
         currentRef.isLoaded = true;
 
         for (let index = 0; index < itemsToConsider.length; index++) {
@@ -1315,6 +1683,68 @@ const BodySubTreeItems = ({ currentRef: some }) => {
     </TreeItem>
   );
 };
+
+const ArrayLabel = ({
+  labelItem,
+  request,
+  isLoading,
+  deleteItem,
+  isArrayChecked,
+}) => {
+  const canEdit = useCanEdit();
+
+  return (
+    <ReactHoverObserver>
+      {({ isHovering }) => {
+        return (
+          <div className="flex flex-row p-1 justify-between items-center border-b-2 h-8">
+            <div className="flex flex-row items-center justify-start w-full">
+              <div className="w-full grid grid-cols-5 gap-2 items-center">
+                <div className="flex justify-self-start items-center">
+                  {" "}
+                  <img
+                    src={ArrayIcon}
+                    alt="conektto logo"
+                    className="bg-white mr-4"
+                    style={{ height: "24px", width: "24px" }}
+                  />
+                  <p className="text-overline2">{labelItem?.name}</p>
+                </div>
+
+                <div> </div>
+                {isLoading && (
+                  <CircularProgress
+                    style={{
+                      marginLeft: "0.5rem",
+                      width: "20px",
+                      height: "20px",
+                    }}
+                  />
+                )}
+              </div>
+            </div>
+            <div className="w-6">
+              {" "}
+              {isHovering && canEdit() && (
+                <AppIcon
+                  onClick={(ev) => {
+                    ev?.preventDefault();
+                    ev?.stopPropagation();
+
+                    deleteItem(labelItem);
+                  }}
+                >
+                  <DeleteIcon />
+                </AppIcon>
+              )}
+            </div>
+          </div>
+        );
+      }}
+    </ReactHoverObserver>
+  );
+};
+
 
 const SchemaLabel = ({
   labelItem,
@@ -1550,6 +1980,9 @@ const DatabaseLabel = ({
   responseCode,
   deleteItem,
   isArrayChecked,
+  isArrayOfObject = false,
+  array,
+  refresh,
 }) => {
   const [optionsMenuAnchorEl, setOptionsMenuAnchorEl] = useState(false);
   const [isArray, setIsArray] = useState(tableLabelItem.isArray);
@@ -1566,7 +1999,7 @@ const DatabaseLabel = ({
   const nameRef = useRef();
   const canEdit = useCanEdit();
 
-  const setOperationDetails = useSetRecoilState(operationAtomWithMiddleware);
+  //const setOperationDetails = useSetRecoilState(operationAtomWithMiddleware);
 
   useDoubleClick({
     onSingleClick: (e) => {},
@@ -1630,14 +2063,30 @@ const DatabaseLabel = ({
               }}
               disableBackdropClick
             >
-              {dialog?.type === "rename-table" && canEdit() && (
+              {dialog?.type === "rename-table" && 
+              canEdit() && 
+              !isArrayOfObject && (
                 <ChangeTableName
                   labelItem={tableLabelItem}
                   request={request}
                   responseCode={responseCode}
                   onClose={handleCloseDialog}
+                  refresh={() => {
+                    refresh();
+                  }}
                 />
               )}
+              {dialog?.type === "rename-table" &&
+                canEdit() &&
+                isArrayOfObject && (
+                  <ChangeNameInsideArray
+                    labelItem={tableLabelItem}
+                    request={request}
+                    responseCode={responseCode}
+                    onClose={handleCloseDialog}
+                    array={array}
+                  />
+                )}
             </Dialog>
 
             <div className='flex flex-row p-1 justify-between items-center border-b-2 h-8'>
@@ -1774,6 +2223,9 @@ const ColumnLabel = ({
   deleteColumn,
   renameColumn,
   isNameTaken,
+  isDeletable = true,
+  isArrayOfObject = false,
+  array,
 }) => {
   let [operationData, setOperationDetails] = useRecoilState(
     operationAtomWithMiddleware
@@ -1862,7 +2314,9 @@ const ColumnLabel = ({
               }}
               disableBackdropClick
             >
-              {dialog?.type === "rename-column" && canEdit() && (
+              {dialog?.type === "rename-column" && 
+              canEdit() && 
+              !isArrayOfObject && (
                 <ChangeColumnName
                   labelItem={columnLabelItem}
                   request={request}
@@ -1876,13 +2330,33 @@ const ColumnLabel = ({
                   onClose={handleCloseDialog}
                 />
               )}
-            </Dialog>
+            {dialog?.type === "rename-column" &&
+                canEdit() &&
+                isArrayOfObject && (
+                  <ChangeNameInsideArray
+                    labelItem={columnLabelItem}
+                    request={request}
+                    responseCode={responseCode}
+                    onClose={handleCloseDialog}
+                    array={array}
+                    isColumn
+                  />
+                )}
+            </Dialog>{" "}
 
             <div className=' flex flex-row p-1 h-8 justify-between items-center border-b-2 ml-6 hover:bg-neutral-gray8'>
               <div className='flex flex-row items-center justify-start flex-1'>
                 <div className=' w-full grid grid-cols-5 gap-2 items-center '>
                   {" "}
                   <div className='flex justify-self-start items-center '>
+                    <AppIcon className="mr-1 opacity-50">
+                      <DragIndicatorIcon
+                        className={classNames({
+                          "cursor-move": canEdit(),
+                        })}
+                        style={{ height: "24px", width: "24px" }}
+                      />
+                    </AppIcon>
                     <img
                       src={ColumnIcon}
                       alt='conektto logo'
@@ -1936,7 +2410,7 @@ const ColumnLabel = ({
               </div>
 
               <div className='w-6'>
-                {isHovering && canEdit() && (
+                {isHovering && canEdit() && isDeletable && (
                   <>
                     <AppIcon
                       onClick={(ev) => {
@@ -1971,6 +2445,7 @@ const ColumnLabel = ({
                       >
                         <p className='text-overline2'>Rename</p>
                       </MenuItem>
+                      {isDeletable && (
                       <MenuItem
                         onClick={(e) => {
                           e.preventDefault();
@@ -1982,6 +2457,7 @@ const ColumnLabel = ({
                       >
                         <p className='text-overline2 text-accent-red'>Delete</p>
                       </MenuItem>
+                      )}
                     </Menu>
                   </>
                 )}
@@ -2209,16 +2685,16 @@ const InputOrOutputLabel = ({
   renameColumn,
   isNameTaken,
 }) => {
-  let [operationData, setOperationDetails] = useRecoilState(
+  /*let [operationData, setOperationDetails] = useRecoilState(
     operationAtomWithMiddleware
-  );
+  );*/
   const [openTooltip, setOpenTooltip] = useState(false);
   const [isHover, setIsHover] = React.useState([
     false,
     inputOrOutputLabelItem?.sourceNames,
   ]);
 
-  const [optionsMenuAnchorEl, setOptionsMenuAnchorEl] = useState(false);
+  //const [optionsMenuAnchorEl, setOptionsMenuAnchorEl] = useState(false);
   const [dialog, setDialog] = useState({
     show: false,
     type: null,
@@ -2250,7 +2726,7 @@ const InputOrOutputLabel = ({
     }
   };
 
-  const handleOptionsClick = (event) => {
+  /*const handleOptionsClick = (event) => {
     setOptionsMenuAnchorEl(event?.currentTarget);
   };
 
@@ -2259,7 +2735,7 @@ const InputOrOutputLabel = ({
       show: false,
       data: null,
     });
-  };
+  };*/
   function truncate(str, n) {
     return str.length > n ? str.substr(0, n - 1) + "..." : str;
   }
