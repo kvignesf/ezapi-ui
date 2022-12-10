@@ -6,7 +6,6 @@ import { TextField } from "@material-ui/core";
 import CloseIcon from "@material-ui/icons/Close";
 import * as Yup from "yup";
 
-import operationAtom from "../../operationAtom";
 import AppIcon from "../../../shared/components/AppIcon";
 import {
   TextButton,
@@ -17,7 +16,14 @@ import apiNameSchema from "../../../shared/schemas/apiNameSchema";
 import EnterKeyCaptureInput from "../../../shared/components/EnterKeyCaptureInput";
 import Messages from "../../../shared/messages";
 
-const ChangeTableName = ({ labelItem, request, responseCode, onClose, refresh}) => {
+const ChangeNameInsideArray = ({
+  labelItem,
+  request,
+  responseCode,
+  onClose,
+  array,
+  isColumn = false,
+}) => {
   const formRef = useRef(null);
   const setOperationDetails = useSetRecoilState(operationAtomWithMiddleware);
   const getRecoilValueInfo = useGetRecoilValueInfo_UNSTABLE();
@@ -27,32 +33,36 @@ const ChangeTableName = ({ labelItem, request, responseCode, onClose, refresh}) 
     const { loadable: operationAtom } = getRecoilValueInfo(
       operationAtomWithMiddleware
     );
+
     const operationDetails = operationAtom?.contents;
-
     let nameExists = false;
+    const newOperationDetails = _.cloneDeep(operationDetails);
+    let data = request
+      ? newOperationDetails.operationRequest
+      : newOperationDetails.operationResponse;
 
+    let responseData;
     if (request) {
-      const index = operationDetails.operationRequest.body.findIndex(
-        (x) => x?.name === name && x?.sourceName !== labelItem?.sourceName
-      );
-      if (index !== -1) {
-        nameExists = true;
-      }
+      responseData = data;
     } else {
-      const responseIndex = operationDetails?.operationResponse?.findIndex(
+      const responseIndex = data?.findIndex(
         (item) => item.responseCode === responseCode
       );
-      const responseData = operationDetails?.operationResponse[responseIndex];
+      responseData = data[responseIndex];
+    }
 
-      const existingBodyIndex = responseData?.body?.findIndex(
-        (body) => body.name === name
-      );
+    const arrayIndex = responseData?.body?.findIndex(
+      (body) => body.name === array.name
+    );
 
-      if (existingBodyIndex >= 0 && responseData && responseIndex >= 0) {
+    const obj = responseData.body[arrayIndex].items?.properties;
+    let size = Object.keys(obj).length;
+
+    for (let i = 0; i < size; i++) {
+      if (Object.keys(obj)[i] === name) {
         nameExists = true;
       }
     }
-
     return nameExists;
   };
 
@@ -64,62 +74,49 @@ const ChangeTableName = ({ labelItem, request, responseCode, onClose, refresh}) 
     }
 
     setOperationDetails((operationDetails) => {
+      const newOperationDetails = _.cloneDeep(operationDetails);
+      let data = request
+        ? newOperationDetails.operationRequest
+        : newOperationDetails.operationResponse;
+
+      let responseData;
       if (request) {
-        const index = operationDetails.operationRequest.body.findIndex(
-          (x) => x.name === labelItem?.name
-        );
-        if (index !== -1) {
-          const newOperationDetails = _.cloneDeep(operationDetails);
-          const clonedTableData = _.cloneDeep(labelItem);
-
-          clonedTableData.name = name;
-          newOperationDetails.operationRequest.body[index] = clonedTableData;
-
-          return newOperationDetails;
-        }
+        responseData = data;
       } else {
-        const responseData = operationDetails?.operationResponse?.find(
+        const responseIndex = data?.findIndex(
           (item) => item.responseCode === responseCode
         );
-        const responseIndex = operationDetails?.operationResponse?.findIndex(
-          (item) => item.responseCode === responseCode
-        );
-
-        const existingBodyIndex = responseData?.body?.findIndex(
-          (body) => body.name === labelItem.name
-        );
-
-        if (existingBodyIndex >= 0 && responseData && responseIndex >= 0) {
-          const clonedOperationDetails = _.cloneDeep(operationDetails);
-          const clonedResponseData = _.cloneDeep(responseData);
-          const clonedTableData = _.cloneDeep(labelItem);
-
-          clonedTableData.name = name;
-          clonedResponseData.body[existingBodyIndex] = clonedTableData;
-
-          clonedOperationDetails.operationResponse[responseIndex] =
-            clonedResponseData;
-
-          return clonedOperationDetails;
-        }
+        responseData = data[responseIndex];
       }
 
-      return operationDetails;
+      const arrayIndex = responseData?.body?.findIndex(
+        (body) => body.name === array.name
+      );
+
+      const clonedTableData = _.cloneDeep(labelItem);
+      clonedTableData.name = name;
+
+      responseData.body[arrayIndex].items.properties[name] = clonedTableData;
+      delete responseData.body[arrayIndex].items.properties[labelItem.name];
+      return newOperationDetails;
     });
-    refresh();
     onClose();
   };
 
   return (
     <div
-      className='flex flex-col'
+      className="flex flex-col"
       onClick={(e) => {
         e?.preventDefault();
         e?.stopPropagation();
       }}
     >
-      <div className='flex flex-row p-4 justify-between border-b-1'>
-        <p className='text-subtitle2'>Edit Table Name</p>
+      <div className="flex flex-row p-4 justify-between border-b-1">
+        {isColumn ? (
+          <p className="text-subtitle2">Edit Column Name</p>
+        ) : (
+          <p className="text-subtitle2">Edit Table Name</p>
+        )}
         <AppIcon
           onClick={(e) => {
             e?.preventDefault();
@@ -132,7 +129,7 @@ const ChangeTableName = ({ labelItem, request, responseCode, onClose, refresh}) 
         </AppIcon>
       </div>
 
-      <div className='p-4'>
+      <div className="p-4">
         <Formik
           initialValues={{
             name: labelItem?.name ?? "",
@@ -142,7 +139,6 @@ const ChangeTableName = ({ labelItem, request, responseCode, onClose, refresh}) 
           })}
           innerRef={formRef}
           onSubmit={onTableNameUpdate}
-          onClose={onClose}
         >
           {({
             errors,
@@ -172,13 +168,13 @@ const ChangeTableName = ({ labelItem, request, responseCode, onClose, refresh}) 
               <EnterKeyCaptureInput />
 
               <Field
-                id='name'
-                name='name'
+                id="name"
+                name="name"
                 fullWidth
-                color='primary'
-                variant='outlined'
+                color="primary"
+                variant="outlined"
                 error={touched.name && Boolean(errors.name)}
-                helperText={<ErrorMessage name='name' />}
+                helperText={<ErrorMessage name="name" />}
                 onKeyUp={(event) => {
                   if (error) {
                     setError(null);
@@ -197,10 +193,10 @@ const ChangeTableName = ({ labelItem, request, responseCode, onClose, refresh}) 
       </div>
 
       {error && (
-        <p className='text-overline2 text-accent-red m-4 mt-0'>{error}</p>
+        <p className="text-overline2 text-accent-red m-4 mt-0">{error}</p>
       )}
 
-      <div className='border-t-1 p-4 flex flex-row justify-end'>
+      <div className="border-t-1 p-4 flex flex-row justify-end">
         <TextButton
           onClick={(e) => {
             e?.preventDefault();
@@ -223,4 +219,4 @@ const ChangeTableName = ({ labelItem, request, responseCode, onClose, refresh}) 
   );
 };
 
-export default ChangeTableName;
+export default ChangeNameInsideArray;

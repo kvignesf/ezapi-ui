@@ -20,29 +20,23 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 import {
   useResetRecoilState,
   useRecoilState,
-  useSetRecoilState,
   useGetRecoilValueInfo_UNSTABLE,
 } from "recoil";
-import { getApiError } from "../shared/utils";
 
 import CloudUploadIcon from "@material-ui/icons/CloudUpload";
-import { ClassNames } from "@emotion/react";
 import classNames from "classnames";
 import _ from "lodash";
-import CloseIcon from "@material-ui/icons/Close";
-import { Fade, Menu, MenuItem } from "@material-ui/core/index";
 
 import AppIcon from "../shared/components/AppIcon";
-import { useFetchProjectDetails } from "./projectQueries";
+import {
+  publishProject,
+  tableMappings,
+  useFetchProjectDetails,
+  useVerifyProject,
+} from "./projectQueries";
 import { OutlineButton, PrimaryButton } from "../shared/components/AppButton";
 import InitialsAvatar from "../shared/components/InitialsAvatar";
-import {
-  getFirstName,
-  getLastName,
-  getUserId,
-  getEmailId,
-} from "../shared/storage";
-import AddOrEditResource from "./Resources/AddOrEditResource";
+import { getFirstName, getLastName, getEmailId } from "../shared/storage";
 import Resources from "./Resources/Resources";
 import Match from "./Match";
 import Simulate from "./Simulate.jsx";
@@ -58,12 +52,9 @@ import {
 } from "../shared/utils";
 import tableAtom from "../shared/atom/tableAtom";
 import schemaAtom from "../shared/atom/schemaAtom";
-import operationAtom from "./operationAtom";
-import Colors from "../shared/colors";
 import routes, { generateRoute } from "../shared/routes";
 import { useLogout } from "../shared/query/authQueries";
 import SaveOperationWarning from "./SaveOperationWarning";
-import OperationErrorsDialog from "./OperationErrorsDialog";
 import UserRoleProvider from "./UserRoleContext";
 import PublishProjectMessage from "./PublishProjectMessage";
 import VerifyProjectError from "./VerifyProjectError";
@@ -73,9 +64,9 @@ import RepublishInfo from "./RepublishInfo";
 import ProfileMenu from "../shared/components/ProfileMenu";
 import EzapiLogo from "../shared/components/EzapiLogo";
 import EzapiFooter from "../shared/components/EzapiFooter";
-import { getAccessToken, setUserId } from "../shared/storage";
-import Scrollbar from "react-smooth-scrollbar";
+import { getAccessToken } from "../shared/storage";
 import CredentialsBeforePublish from "./CredentialsBeforePublish";
+import DBMappingDrawer from "./DBMappingDrawer";
 
 const Project = () => {
   const acc_token = getAccessToken();
@@ -83,9 +74,16 @@ const Project = () => {
   const history = useHistory();
   const firstName = getFirstName();
   const lastName = getLastName();
+  const [displayEntityMapping, setDisplayEntityMapping] = useState(false);
+  const [mappedEntityData, setMappedEntityData] = useState();
   const [dataFetched, setDataFetched] = useState(false);
   const [mandMappingErr, setMandMappinErr] = useState(false);
   const [memberList, setMemberList] = useState();
+  const [inProgress, setInProgress] = useState(false);
+  const [entityMappingData, setEntityMappingData] = useState();
+  const [entityMappingError, setEntityMappingError] = useState();
+  
+  
   const {
     isLoading: isFetchingProjectDetails,
     isSuccess: isProjectDetailsFetched,
@@ -132,12 +130,36 @@ const Project = () => {
       reset: resetPublishMutation,
     },
   } = useSubmitProject(projectId, newProjectDetails);
+
+  const {
+    isLoading: isVerifying,
+    isSuccess: verificationSuccess,
+    data: verifyData,
+    error: verifyError,
+    mutate: verifyProject,
+    reset: resetVerify,
+  } = useVerifyProject({ projectId, newProjectDetails });
+
   const {
     isLoading: isMMFetchingTables,
     error: fetchMMTablesError,
     data: mmtablesData,
     mutate: fetchMMTablesData,
   } = useGetMandMappingTableData(projectId);
+  
+  /*const {
+    isLoading: inProgress,
+    error: entityMappingError,
+    data: entityMappingData,
+    mutate: pushMapppingData,
+    reset: resetEntityMapping,
+  } = useGetEntityMapping(
+    projectId,
+    mappedEntityData?.filters,
+    mappedEntityData?.relations,
+    newProjectDetails?.password
+  );*/
+
   const {
     isLoading: isFetchingTables,
     data: tablesData,
@@ -162,6 +184,7 @@ const Project = () => {
   const [simulateData, setSimulateData] = useState(null);
   const [autoSyncIntervalId, setAutoSync] = useState(0);
   const [showUnsavedPopup, setUnsavedPopup] = useState(true);
+  
 
   useEffect(() => {
     if (canEdit(userRole)) {
@@ -246,6 +269,18 @@ const Project = () => {
       navigateBack();
     }
   }, [projectDetailsError]);
+
+  useEffect(() => {
+    if (verifyData && verifyData.response.length === 0) {
+      /* let data = null;
+      if (newProjectDetails) {
+        data = newProjectDetails["password"] ?? null;
+      }
+      updateMappingData(mappedEntityData, data); */
+      updateMappingData();
+      resetVerify();
+    }
+  }, [verifyData]);
 
   useEffect(() => {
     if (
@@ -341,6 +376,9 @@ const Project = () => {
   };
 
   const closePublishProjectSuccess = () => {
+    //resetEntityMapping();
+    setEntityMappingData(undefined);
+    setEntityMappingError(undefined);
     resetPublishMutation();
     resetVerifyMutation();
     history.push({
@@ -374,6 +412,8 @@ const Project = () => {
       data: null,
     });
     setDataFetched(false);
+    setDisplayEntityMapping(false);
+
   };
 
   const navigateBack = () => {
@@ -391,12 +431,18 @@ const Project = () => {
   const resetSubmitProjectMutation = () => {
     resetPublishMutation();
     resetVerifyMutation();
+    resetVerify();
   };
 
   const isProjectHavingErrors = () =>
     isVerifyProjectSuccess &&
     verifyProjectData?.response &&
     !_.isEmpty(verifyProjectData?.response);
+
+  const didVerifyFailed = () =>
+    verificationSuccess &&
+    verifyData?.response &&
+    !_.isEmpty(verifyData?.response);
 
   const handleInviteClick = () => {
     async function projectdetails() {
@@ -447,6 +493,42 @@ const Project = () => {
     );
   };
 
+  const updateMappingData = async () => {										 
+
+    setInProgress(true);
+    const data = projectDetails.dbDetails;
+    await publishProject({ projectId, data })
+      .then((data) => {
+        console.log("publish");
+        setEntityMappingData(data);
+      })
+      .catch((err) => {
+        console.log("not publish");
+        setEntityMappingError(err);
+      });
+    setInProgress(false);
+  };
+
+  /*const updateMappingData = async (mappingData, credentials) => {
+    const password = credentials ?? null;
+    const data = await tableMappings(
+      projectId,
+      mappingData.filters,
+      mappingData.relations,
+      password
+    ).then(closePublishProjectSuccess);
+  };*/
+  /* const updateMappingData = (mappingData, credentials) => {
+    const password = credentials ?? null;
+
+    pushMapppingData(
+      projectId,
+      mappingData.filters,
+      mappingData.relations,
+      password
+    );
+  }; */
+ 
   const getPublishButtonText = () => {
     if (projectDetails?.publishCount === 0) {
       return "Publish";
@@ -510,20 +592,32 @@ const Project = () => {
           open={
             isPublishingProject ||
             isVerifyingProject ||
+            isVerifying ||
+            inProgress ||
             publishProjectData ||
             publishProjectError ||
+            entityMappingData ||
+            entityMappingError ||
             verifyProjectError ||
+            verifyError ||
             isProjectHavingErrors() ||
+            didVerifyFailed() ||
             passwordBeforePublish ||
             dialog?.show
           }
           closeAfterTransition={
             isPublishingProject ||
+            inProgress ||
             isVerifyingProject ||
+            isVerifying ||
+            entityMappingError ||
+            verifyProjectError ||
             publishProjectData ||
             publishProjectError ||
             verifyProjectError ||
+            verifyError ||
             isProjectHavingErrors() ||
+            didVerifyFailed() ||
             dialog?.show
           }
           fullWidth
@@ -532,17 +626,21 @@ const Project = () => {
           }}
           disableBackdropClick
         >
-          {(isPublishingProject || isVerifyingProject || isLoggingOut) && (
+          {(isPublishingProject ||
+            inProgress ||
+            isVerifying ||
+            isVerifyingProject ||
+            isLoggingOut) && (
             <div className='p-6'>
               <div className='w-full flex flex-row items-center'>
                 <p className='text-overline mr-3'>
-                  {isPublishingProject
+                  {isPublishingProject || inProgress
                     ? "Publishing project"
                     : isLoggingOut
                     ? "Logging out"
-                    : isVerifyingProject
+                    : isVerifying || isVerifyingProject
                     ? "Logging in"
-                    : isVerifyProjectSuccess
+                    : isVerifyProjectSuccess || verificationSuccess
                     ? "Verifying Project"
                     : null}
                 </p>
@@ -561,9 +659,26 @@ const Project = () => {
             />
           )}
 
+          {verifyError && (
+            <VerifyProjectError
+              error={verifyError}
+              onClose={resetSubmitProjectMutation}
+              onRetry={() => {
+                verifyProject({ projectId });
+              }}
+            />
+          )}
+
           {isProjectHavingErrors() && (
             <ProjectVerificationErrors
               response={verifyProjectData?.response}
+              onClose={resetSubmitProjectMutation}
+            />
+          )}
+
+          {didVerifyFailed() && (
+            <ProjectVerificationErrors
+              response={verifyData?.response}
               onClose={resetSubmitProjectMutation}
             />
           )}
@@ -601,6 +716,37 @@ const Project = () => {
                   closePublishProjectSuccess();
                 } else {
                   resetSubmitProjectMutation();
+                }
+              }}
+            />
+          )}
+
+          {(entityMappingData || entityMappingError) && (
+            <PublishProjectMessage
+              publishProjectData={entityMappingData}
+              publishProjectError={entityMappingError}
+              project={projectDetails}
+              onButtonClick={() => {
+                if (entityMappingData?.success) {
+                  closePublishProjectSuccess();
+                } else {
+                  //resetEntityMapping();
+                  setEntityMappingData(undefined);
+                  setEntityMappingError(undefined);
+                  if (isFreePublishesExhausted()) {
+                    history.push(generateRoute(routes.payment, projectId));
+                  } else if (isPublishLimitReached()) {
+                    history.push(routes.contact);
+                  }
+                }
+              }}
+              onClose={() => {
+                if (entityMappingData?.success) {
+                  closePublishProjectSuccess();
+                } else {
+                  //resetEntityMapping();
+                  setEntityMappingData(undefined);
+                  setEntityMappingError(undefined);
                 }
               }}
             />
@@ -653,7 +799,13 @@ const Project = () => {
               onPublish={(newProjectDetails, isDefaultproj) => {
                 setPasswordBeforePublish(false);
                 setNewProjectDetails(newProjectDetails, isDefaultproj);
-                submitProject();
+                if (projectDetails?.projectType === "db") {
+                  //updateMappingData(mappedEntityData, newProjectDetails["password"]);
+                  verifyProject({ projectId, newProjectDetails });
+                } else {
+                  //setNewProjectDetails(newProjectDetails, isDefaultproj);
+                  submitProject();
+                }
               }}
             />
           )}
@@ -673,6 +825,27 @@ const Project = () => {
               handleCloseDialog();
             }}
             mmtableData={mmtablesData}
+            tablesData={tablesData}
+          />
+        </Drawer>
+        <Drawer
+          sx={{ overflowY: "clip" }}
+          anchor={"right"}
+          open={displayEntityMapping}
+          onClose={handleCloseDialog}
+        >
+          <DBMappingDrawer
+            projectId={projectId}
+            onClose={handleCloseDialog}
+            onSubmit={(mappedData) => {
+              setMappedEntityData(mappedData);
+              if (projectDetails?.isConnectDB && projectDetails?.dbDetails) {
+                setPasswordBeforePublish(true);
+              } else {
+                //updateMappingData(mappedData);
+                verifyProject({ projectId, newProjectDetails });
+              }
+            }}
             tablesData={tablesData}
           />
         </Drawer>
@@ -776,13 +949,21 @@ const Project = () => {
                     e?.preventDefault();
                     e?.stopPropagation();
                     // console.log(projectDetails?.isConnectDB);
-                    if (
-                      projectDetails?.isConnectDB &&
-                      projectDetails?.dbDetails
-                    ) {
-                      setPasswordBeforePublish(true);
+                    if (projectDetails?.projectType === "db") {
+                      fetchTables({ projectId });
+                      setDisplayEntityMapping(true);
+													 
                     } else {
-                      submitProject();
+                      if (
+                        projectDetails?.isConnectDB &&
+                        projectDetails?.dbDetails
+                      ) {
+                        console.log("if password");
+                        setPasswordBeforePublish(true);
+                      } else {
+                        console.log("without password");
+                        submitProject();
+                      }
                     }
                   }}
                 >

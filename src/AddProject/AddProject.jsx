@@ -81,6 +81,7 @@ const AddProject = ({ onClose, onSuccess }) => {
     onSuccess(projectId);
   };
   const deployenv = process.env.REACT_APP_DEPLOY_ENV;
+  
   const {
     addProjectMutation,
     uploadSpecsMutation,
@@ -899,7 +900,7 @@ const AddProject = ({ onClose, onSuccess }) => {
           </div>
           <div className='flex justify-center p-2 px-36'>
             <PrimaryButton
-			  //disabled={isAnimating}						
+			  //disabled={isTestTeam}						
               onClick={() => {
                 setIsDesign(true);
               }}

@@ -1,7 +1,6 @@
 import React, { useEffect } from "react";
 import CloseIcon from "@material-ui/icons/Close";
 import _ from "lodash";
-import { Link } from "react-router-dom";
 import { ReactComponent as FailureLogo } from "../static/images/failure-icon.svg";
 import AppIcon from "../shared/components/AppIcon";
 import { PrimaryButton, TextButton } from "../shared/components/AppButton";

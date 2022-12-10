@@ -4,9 +4,15 @@ import { getApiError } from "../utils";
 
 const getTablesLookup = async ({ projectId }) => {
   try {
-    const { data } = await client.post(endpoint.tablesLookup, {
-      projectId,
-    });
+    const { data } = await client.post(
+      endpoint.tablesLookup,
+      {
+        projectId,
+      },
+      {
+        timeout: 120000,
+      }
+    );
     return data;
   } catch (error) {
     throw getApiError(error);
@@ -21,9 +27,15 @@ export const useGetTablesLookup = () => {
 
 const getTablesData = async ({ projectId }) => {
   try {
-    const { data } = await client.post(endpoint.tablesData, {
-      projectId,
-    });
+    const { data } = await client.post(
+      endpoint.tablesData,
+      {
+        projectId,
+      },
+      {
+        timeout: 120000,
+      }
+    );
     return data;
   } catch (error) {
     throw getApiError(error);

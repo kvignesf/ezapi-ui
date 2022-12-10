@@ -19,7 +19,7 @@ const Constants = {
     "float",
     "double",
     "string",
-
+    "arrayOfObjects",
     "byte",
     "binary",
     "boolean",
