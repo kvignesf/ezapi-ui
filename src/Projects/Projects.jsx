@@ -599,6 +599,7 @@ const Content = ({ showCreateProjectDialog }) => {
   }, [itemOffset, itemsPerPage, projects]);
 
   const handlePageClick = (event) => {
+    sessionStorage.setItem("pageIndex", event.selected);
     const newOffset = (event.selected * itemsPerPage) % projects.length;
     console.log(
       `User requested page number ${event.selected}, which is offset ${newOffset}`
@@ -828,6 +829,7 @@ const Content = ({ showCreateProjectDialog }) => {
           // class='pagination'
           // className='flex'
           page
+          initialPage={sessionStorage.getItem("pageIndex") ?? 0}
           ref={pagination}
           pageCount={projects.length / itemsPerPage}
           pageRangeDisplayed={5}

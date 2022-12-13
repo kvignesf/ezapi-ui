@@ -467,6 +467,7 @@ const ConnectDatabase = ({
     { value: "mysql", label: "MySQL", check: "my_sql" },
     { value: "mssql", label: "SQL Server", check: "ms_sql" },
     { value: "postgres", label: "Postgres", check: "postgres" },
+    { value: "mongo", label: "MongoDb", check: "mongo" },
   ];
 
   const { data: pricing_data } = usePricingData();
@@ -481,7 +482,7 @@ const ConnectDatabase = ({
         userProfile_data["plan_name"] == "Basic"
       ) {
         debouncedSetNumberOfCollaborators(2);
-        setConnectors({ ms_sql: true, my_sql: false, postgres: false });
+        setConnectors({ ms_sql: true, my_sql: false, postgres: false, mongodb: true });
       } else {
         const filtered_plan = pricing_data["products"].filter(
           (item) => item["plan_name"] == userProfile_data["plan_name"]

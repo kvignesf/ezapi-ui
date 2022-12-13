@@ -105,6 +105,11 @@ export const isArrayOfObject = (object) => {
 export const isDatabase = (object) => {
   return object?.type === "ezapi_table";
 };
+
+export const isMongoDb = (object) => {
+  return object?.type === "ezapi_collection";
+};
+
 export const isStoredProcedure = (object) => {
   return object?.type === "storedProcedure";
 };
@@ -134,6 +139,10 @@ export const isPartialMatch = (object) => {
 export const isCustomParam = (object) => {
   return object?.paramType === "customParam";
 };
+
+export const isDocumentField = (object) => {
+  return object?.paramType === "documentField";
+}
 
 export const isNoMatch = (object) => {
   return (

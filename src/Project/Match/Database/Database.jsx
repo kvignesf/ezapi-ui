@@ -3,13 +3,17 @@ import { useParams } from "react-router-dom";
 import { useRecoilState } from "recoil";
 import _ from "lodash";
 
-import { useGetTablesData } from "../../../shared/query/tablesQueries";
+import { useGetSubTables, useGetTablesData } from "../../../shared/query/tablesQueries";
 import LoaderWithMessage from "../../../shared/components/LoaderWithMessage";
 import DatabaseSection from "./DatabaseSection";
 import tableAtom from "../../../shared/atom/tableAtom";
 import tablesDataAtom from "../../../shared/atom/tablesDataAtom";
-import { isDatabase } from "../../../shared/utils";
-
+import {
+  isArray,
+  isDatabase,
+  isMongoDb,
+  isObject,
+} from "../../../shared/utils";
 const Database = () => {
   const { projectId } = useParams();
   const {
@@ -18,13 +22,72 @@ const Database = () => {
     data: tablesData,
     mutate: fetchTablesData,
   } = useGetTablesData();
+  const {
+    isLoading: isLoadingSubTable,
+    error: getSubTablesError,
+    data: subTableData,
+    mutate: getSubTable,
+    reset: resetSubTableData,
+    isIdle: isGetSubTableIdle,
+  } = useGetSubTables();
   const [content, setContent] = useState(null);
   const [tableState, setTableState] = useRecoilState(tableAtom);
   const [tablesDataState, setTablesDataState] = useRecoilState(tablesDataAtom);
+  const [selectedItem, setSelectedItem] = useState();
 
   useEffect(() => {
     fetchTablesData({ projectId });
   }, []);
+
+  const handleItemClick = (item) => {
+    setSelectedItem(item);
+    if (isDatabase(item) || isMongoDb(item)) {
+      setTableState((tableState) => {
+        const clonedTableState = _.cloneDeep(tableState);
+
+        clonedTableState.selected = item;
+
+        return clonedTableState;
+      });
+    } else if (isObject(item) && !item.isChild) {
+      const newRef = `${item.tableName}.attributes.${item.name}.ezapi_object`;
+      getSubTable({
+        projectId,
+        name: item?.name,
+        type: item?.type,
+        ref: newRef,
+      });
+    } else if (isArray(item) && !item.isChild) {
+      console.log(item);
+      const newRef = `${item.tableName}.attributes.${item.name}.ezapi_array.ezapi_object`;
+      getSubTable({
+        projectId,
+        name: item?.name,
+        type: item?.type,
+        ref: newRef,
+      });
+
+      // setTableState((tableState) => {
+      //   const clonedTableState = _.cloneDeep(tableState);
+
+      //   clonedTableState.selected = item;
+
+      //   return clonedTableState;
+      // });
+    }
+  };
+
+  useEffect(() => {
+    if (subTableData) {
+      setTableState((tableState) => {
+        const clonedTableState = _.cloneDeep(tableState);
+        selectedItem.selectedColumns = subTableData.data;
+        clonedTableState.selected = selectedItem;
+
+        return clonedTableState;
+      });
+    }
+  }, [subTableData]);
 
   useEffect(() => {
     if (tableState?.selected) {
@@ -84,15 +147,7 @@ const Database = () => {
             section={"1"}
             items={content[0]}
             onItemClick={(item) => {
-              if (isDatabase(item)) {
-                setTableState((tableState) => {
-                  const clonedTableState = _.cloneDeep(tableState);
-
-                  clonedTableState.selected = item;
-
-                  return clonedTableState;
-                });
-              }
+              handleItemClick(item);
             }}
           />
         </div>
@@ -102,15 +157,7 @@ const Database = () => {
             section={"2"}
             items={content[1]}
             onItemClick={(item) => {
-              if (isDatabase(item)) {
-                setTableState((tableState) => {
-                  const clonedTableState = _.cloneDeep(tableState);
-
-                  clonedTableState.selected = item;
-
-                  return clonedTableState;
-                });
-              }
+              handleItemClick(item);
             }}
           />
         </div>
@@ -120,15 +167,7 @@ const Database = () => {
             section={"3"}
             items={content[2]}
             onItemClick={(item) => {
-              if (isDatabase(item)) {
-                setTableState((tableState) => {
-                  const clonedTableState = _.cloneDeep(tableState);
-
-                  clonedTableState.selected = item;
-
-                  return clonedTableState;
-                });
-              }
+              handleItemClick(item);
             }}
           />
         </div>
