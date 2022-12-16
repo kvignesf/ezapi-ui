@@ -53,12 +53,18 @@ export const useGetTablesData = () => {
 
 const getSubTablesData = async ({ projectId, name, type, ref }) => {
   try {
-    const { data } = await client.post(`${endpoint.tableSubData}`, {
-      projectId,
-      type,
-      ref,
-      name,
-    });
+    const { data } = await client.post(
+      `${endpoint.tableSubData}`,
+      {
+        projectId,
+        type,
+        ref,
+        name,
+      },
+      {
+        timeout: 120000,
+      }
+    );
     return data;
   } catch (error) {
     throw getApiError(error);
@@ -70,12 +76,12 @@ export const useGetSubTables = () => {
 
   const query = useMutation(getSubTablesData, {
     onSuccess: (data) => {
-      console.log(data);
+      
       if (data) {
         let updatedTableState = _.cloneDeep(tablesDataState);
-        console.log(updatedTableState);
+
         updatedTableState?.selected?.pop();
-        console.log(updatedTableState);
+
         setTablesDataState(updatedTableState);
       }
     },

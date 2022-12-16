@@ -3,7 +3,10 @@ import { useParams } from "react-router-dom";
 import { useRecoilState } from "recoil";
 import _ from "lodash";
 
-import { useGetSubTables, useGetTablesData } from "../../../shared/query/tablesQueries";
+import {
+  useGetSubTables,
+  useGetTablesData,
+} from "../../../shared/query/tablesQueries";
 import LoaderWithMessage from "../../../shared/components/LoaderWithMessage";
 import DatabaseSection from "./DatabaseSection";
 import tableAtom from "../../../shared/atom/tableAtom";
@@ -45,12 +48,23 @@ const Database = () => {
       setTableState((tableState) => {
         const clonedTableState = _.cloneDeep(tableState);
 
-        clonedTableState.selected = item;
+        clonedTableState.selected.push(item);
 
         return clonedTableState;
       });
     } else if (isObject(item) && !item.isChild) {
-      const newRef = `${item.tableName}.attributes.${item.name}.ezapi_object`;
+      console.log("object", item);
+      let newRef;
+      if (tableState.ref === "") {
+        newRef = `${item.tableName}.attributes.${item.name}.ezapi_object`;
+      } else {
+        newRef = `${tableState.ref}.${item.name}.ezapi_object`;
+      }
+      setTableState((tableState) => {
+        const clonedTableState = _.cloneDeep(tableState);
+        clonedTableState.ref = newRef;
+        return clonedTableState;
+      });
       getSubTable({
         projectId,
         name: item?.name,
@@ -58,8 +72,18 @@ const Database = () => {
         ref: newRef,
       });
     } else if (isArray(item) && !item.isChild) {
-      console.log(item);
-      const newRef = `${item.tableName}.attributes.${item.name}.ezapi_array.ezapi_object`;
+      console.log("array", item);
+      let newRef;
+      if (tableState.ref === "") {
+        newRef = `${item.tableName}.attributes.${item.name}.ezapi_array.ezapi_object`;
+      } else {
+        newRef = `${tableState.ref}.${item.name}.ezapi_array.ezapi_object`;
+      }
+      setTableState((tableState) => {
+        const clonedTableState = _.cloneDeep(tableState);
+        clonedTableState.ref = newRef;
+        return clonedTableState;
+      });
       getSubTable({
         projectId,
         name: item?.name,
@@ -82,17 +106,18 @@ const Database = () => {
       setTableState((tableState) => {
         const clonedTableState = _.cloneDeep(tableState);
         selectedItem.selectedColumns = subTableData.data;
-        clonedTableState.selected = selectedItem;
-
+        clonedTableState.selected.push(selectedItem);
         return clonedTableState;
       });
     }
   }, [subTableData]);
 
   useEffect(() => {
-    if (tableState?.selected) {
-      const columnsData = _.cloneDeep(tableState?.selected?.selectedColumns);
-
+    if (tableState?.selected.length > 0) {
+      const length = tableState.selected.length;
+      const columnsData = _.cloneDeep(
+        tableState?.selected[length - 1]?.selectedColumns
+      );
       const threePartIndex = Math.ceil(columnsData?.length / 3);
 
       const thirdPart = columnsData.splice(-threePartIndex);
@@ -119,12 +144,12 @@ const Database = () => {
       const firstPart = clonedTablesData;
       setContent([firstPart, secondPart, thirdPart]);
     }
-  }, [tablesData, tableState?.selected]);
+  }, [tablesData, tableState?.selected.length]);
 
-  if (isFetchingTables) {
+  if (isLoadingSubTable || isFetchingTables) {
     return (
       <LoaderWithMessage
-        message='Loading tables data'
+        message='Loading data'
         className='h-full'
         contained
       />

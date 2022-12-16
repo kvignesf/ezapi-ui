@@ -13,6 +13,7 @@ import TableIcon from "../../../static/images/table-icon.svg";
 import ColumnIcon from "../../../static/images/column-icon.svg";
 import ObjectIcon from "../../../static/images/object-icon.svg";
 import ArrayIcon from "../../../static/images/array.svg";
+import ArrayIcon2 from "../../../static/images/array2.svg";
 import ArrayOfObjectsIcon from "../../../static/images/array-icon.svg";
 import autoGenrateIcon from "../../../static/images/auto-generate.svg";
 import collectionIcon from "../../../static/images/collection-icon.svg";
@@ -102,8 +103,10 @@ const DraggableDatabaseItem = ({
               ? ArrayOfObjectsIcon
               : isObject(item)
               ? ObjectIcon
-              : isArray(item)
+              : isArray(item) && !item.isChild
               ? ArrayIcon
+              : isArray(item) && item.isChild
+              ? ArrayIcon2
               : AttributeIcon
           }
           style={{ width: "24px", height: "24px" }}
