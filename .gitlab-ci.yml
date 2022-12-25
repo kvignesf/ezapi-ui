@@ -8,6 +8,7 @@ before_script:
   - 'echo \REACT_APP_FEATURE_STORED_PROCS\ = \"$TREACT_APP_FEATURE_STORED_PROCS\">> .env.test'
   - 'echo \REACT_APP_AES_ENCRYPTION_KEY\ = \"$LOWER_AES_ENCRYPTION_KEY\">> .env.test'
   - 'echo \REACT_APP_GOOGLE_CLIENT_ID\ = \"$LOWER_GOOGLE_CLIENT_ID\">> .env.test'
+  - 'echo \REACT_APP_GITHUB_CLIENT_ID\ = \"$TEST_GITHUB_CLIENT_ID\">> .env.test'
   -  cat .env.test
   - 'echo \REACT_APP_API_URL\ = \"$SAPIURL\">> .env.stage'
   - 'echo \REACT_APP_LINKEDIN_CLIENT_ID\ = \"$SLINKEDINCLIENTID\">> .env.stage'
