@@ -232,7 +232,7 @@ const Match = ({ projectType, ...props }) => {
                 })}
               </div>
             </div>
-          ) : tableState?.selected ? (
+          ) : tableState?.selected && tableState?.selected.length > 0 ? (
             <div className='flex flex-row items-center ml-3 py-3'>
               <AppIcon
                 style={{ marginRight: "0.5rem" }}
@@ -418,7 +418,8 @@ const Match = ({ projectType, ...props }) => {
                   value={"customParam"}
                 />
               )}
-              {projectType === "db" && storedProcENV === "true" &&
+              {projectType === "db" &&
+                storedProcENV === "true" &&
                 operationData?.operation?.operationType?.toLowerCase() ==
                   "post" && (
                   <Tab

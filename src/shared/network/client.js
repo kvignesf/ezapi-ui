@@ -8,6 +8,7 @@ const baseUrl = process.env.REACT_APP_API_URL;
 
 export const endpoint = Object.freeze({
   login: "/auth",
+  github_auth: "/github_auth",
   sso: "/sso_url",
   auth_workos: "/auth_workos",
   logout: "/logout",
@@ -50,6 +51,7 @@ export const endpoint = Object.freeze({
   storedProcedures: "/storedProcedures",
   downloadDotNetCodegen:"/download_dotnet_codegen",
   mandMappingTableData: "/listAllAttributes",
+  googleLogin: "/google-signin",
 
 
   // Payment

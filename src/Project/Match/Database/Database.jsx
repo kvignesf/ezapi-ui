@@ -84,6 +84,7 @@ const Database = () => {
         clonedTableState.ref = newRef;
         return clonedTableState;
       });
+      item["ref"] = newRef;
       getSubTable({
         projectId,
         name: item?.name,
@@ -107,6 +108,12 @@ const Database = () => {
         const clonedTableState = _.cloneDeep(tableState);
         selectedItem.selectedColumns = subTableData.data;
         clonedTableState.selected.push(selectedItem);
+        clonedTableState.selected[
+          clonedTableState.selected.length - 1
+        ].selectedColumns.map((item) => {
+          item.ref = clonedTableState.ref;
+        });
+
         return clonedTableState;
       });
     }

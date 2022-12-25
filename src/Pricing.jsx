@@ -70,7 +70,7 @@ const Pricing = () => {
       "Security Test",
     ],
 
-    ["MS SQL Server", "Postgres", "MYSQL"],
+    ["MS SQL Server", "Postgres", "MongoDB", "MYSQL"],
     ["Validity"],
   ];
 
@@ -90,7 +90,7 @@ const Pricing = () => {
     "heading": headings[2],
     "rowName": rowNames[2],
     "plan_data": [],
-    "Enterprise": [true, true, true],
+    "Enterprise": [true, true, true, true],
   };
   var validityCardData = {
     "heading": headings[3],
@@ -315,6 +315,7 @@ const Pricing = () => {
       connectorsCardData[item["plan_name"]].push(
         item["connectors"]["ms_sql"],
         item["connectors"]["postgres"],
+        item["connectors"]["mongo"],
         item["connectors"]["my_sql"]
       );
       validityCardData[item["plan_name"]].push(item["validity"]);
@@ -381,7 +382,7 @@ const Pricing = () => {
     <Dashboard selectedIndex={3}>
       <div className='flex flex-col items-center justify-center w-full  '>
         {" "}
-        <div className='flex flex-col  items-center justify-center w-full px-3 h-full'>
+        <div className='flex flex-col  items-center justify-center w-full px-3 h-full mb-12'>
           <div id='heading' className='container mx-auto pt-4'>
             {" "}
             <h1 className=' text-customGray text-4xl font-sans font-medium tracking-wide text-center'>

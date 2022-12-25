@@ -65,15 +65,19 @@ export const getApiError = (error) => {
 };
 
 export const isArray = (object) => {
-  return object?.type === "array" && !object?.schemaName;
+  //return object?.type === "array" && !object?.schemaName;
+  return object?.type === "array"
 };
 
 export const isAttribute = (object) => {
   return (
-    object?.type &&
-    !_.isEmpty(object?.type) &&
-    object?.paramType !== "column" &&
-    (_.includes(Constants.acceptedTypes, object?.type) || isCustomParam(object))
+    object?.type === "string" ||
+    object?.type === "date" ||
+    (object?.type &&
+      !_.isEmpty(object?.type) &&
+      object?.paramType !== "column" &&
+      (_.includes(Constants.acceptedTypes, object?.type) ||
+        isCustomParam(object)))
   );
 };
 
@@ -276,7 +280,7 @@ export const generateSyncOperationRequestRequest = (operationRequest) => {
     request.body = operationRequest?.body?.map((item) => {
       const clonedItem = _.cloneDeep(item);
 
-      if (isArrayOfObject(item)) {
+      if (isArrayOfObject(item) || isArray(item || isObject(item))) {
         if (clonedItem?.hasOwnProperty("data")) {
           delete clonedItem?.data;
         }
@@ -500,7 +504,7 @@ export const generateSyncOperationResponseRequest = (operationResponse) => {
 
     if (reponseData?.body && !_.isEmpty(reponseData?.body)) {
       responseObject.content = reponseData?.body?.map((item) => {
-        if (isArrayOfObject(item)) {
+        if (isArrayOfObject(item) || isArray(item) || isObject(item)) {
           const clonedItem = _.cloneDeep(item);
 
           if (clonedItem?.hasOwnProperty("data")) {
