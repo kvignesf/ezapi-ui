@@ -278,7 +278,19 @@ const Login = () => {
 
                       
                       <div class='relative flex items-center justify-center align-middle'>                        
-                      </div>                    
+                      </div>        
+
+                       {/* 
+                      below is linkedin custom button using npm lib 
+                      <div class='mt-1 flex w-4'></div>
+                      <button className="linkedIn-login-button" onClick={() => handleSuccess()}>
+                        <div class='mt-1 flex w-2'></div>                        
+                        <div class="linkedIn-ico-wrapper"><img src={linkedinsvgIcon} 
+                        style={{ height: "44px", width: "48px" }}/> </div>                                             
+                        <div class='mt-2 flex w-12'></div>
+                        <div class='pr-12'>Continue with LinkedIn</div>                      
+                      </button> */} 
+                                
 
                       <GitHubLogin 
                       clientId={process.env.REACT_APP_GITHUB_CLIENT_ID}
