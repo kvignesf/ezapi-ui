@@ -156,7 +156,7 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
               clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
               clonedItem.parentName = path ?? "/";
             } else if (isColumn(item)) {
-              clonedItem.tableName = fetchParentName(clonedItem) ?? "global";
+              //clonedItem.tableName = fetchParentName(clonedItem) ?? "global";
             }
             if (isColumn(item)) {
               if (item?.foreign) {
@@ -242,7 +242,7 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
               clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
               clonedItem.parentName = path ?? "/";
             } else if (isColumn(item)) {
-              clonedItem.tableName = fetchParentName(clonedItem) ?? "global";
+              //clonedItem.tableName = fetchParentName(clonedItem) ?? "global";
             }
 
             if (isStoredProcedure(item)) {
@@ -285,18 +285,17 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
     let itemDroppedFromTop;
 
     if (item.props) {
-      valueDropped = item.props.itemRef;
-      itemDroppedFromTop = false;
-    } else {
-      if (item[1]) {
-        valueDropped = item[1].props.columnLabelItem;
+      if (item.props.columnLabelItem) {				
+        valueDropped = item.props.columnLabelItem;
         itemDroppedFromTop = false;
       } else {
-        valueDropped = item;
-        itemDroppedFromTop = true;
+        valueDropped = item.props.itemRef;
+        itemDroppedFromTop = false;
       }
+    } else {
+      valueDropped = item;
+      itemDroppedFromTop = true;
     }
-
     // if (itemDroppedFromTop) {
     //   deleteItem(valueDropped)
     // }
@@ -355,7 +354,7 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
     );
   };
 
-  useEffect(() => {}, [refresh]);
+  //useEffect(() => {}, [refresh]);
 
 
   const getResponseIndex = (operation) => {
@@ -641,6 +640,9 @@ const BodyItem = ({
   useEffect(() => {
     //onItemClick();
     setItem(itemRef);
+    if (itemRef.items && itemRef.items.properties) {
+      getArrayData();
+    }
   }, [itemRef]);
 
   const deleteItemFromArray = (item, array) => {

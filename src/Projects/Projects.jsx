@@ -828,8 +828,7 @@ const Content = ({ showCreateProjectDialog }) => {
         <ReactPaginate
           // class='pagination'
           // className='flex'
-          page
-          initialPage={sessionStorage.getItem("pageIndex") ?? 0}
+          initialPage={Number(sessionStorage.getItem("pageIndex"))}
           ref={pagination}
           pageCount={projects.length / itemsPerPage}
           pageRangeDisplayed={5}

@@ -73,6 +73,7 @@ export const isAttribute = (object) => {
   return (
     object?.type === "string" ||
     object?.type === "date" ||
+    object?.type === "float" ||
     (object?.type &&
       !_.isEmpty(object?.type) &&
       object?.paramType !== "column" &&
@@ -672,13 +673,13 @@ export const useGetParentName = () => {
     } else if (isColumn(object)) {
       const { loadable: tableAtomLoadable } = getRecoilValueInfo(tableAtom);
       const tableDetails = tableAtomLoadable?.contents;
-
+      console.log("tableDetails..",tableDetails)
       if (
         tableDetails &&
         tableDetails?.selected &&
         !_.isEmpty(tableDetails?.selected)
       ) {
-        return tableDetails?.selected?.name;
+        return tableDetails?.selected[tableDetails.selected.length - 1]?.name;
       }
       return null;
     }
