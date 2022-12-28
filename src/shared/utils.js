@@ -74,6 +74,7 @@ export const isAttribute = (object) => {
     object?.type === "string" ||
     object?.type === "date" ||
     object?.type === "float" ||
+    object?.type === "objectId" || object?.type === "oid" ||
     (object?.type &&
       !_.isEmpty(object?.type) &&
       object?.paramType !== "column" &&

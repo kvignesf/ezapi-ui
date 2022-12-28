@@ -45,8 +45,9 @@ import _ from "lodash";
 import { isUserLoggedIn } from "../shared/utils";
 import { useQuery } from "react-query";
 import { border, maxHeight } from "@mui/system";
-import GitHubLogin from 'react-github-login';
 import GitHubIcon from '@mui/icons-material/GitHub';
+import LoginGithub from 'react-login-github';
+
 
 const acc_token = getAccessToken();
 const path = "/";
@@ -292,7 +293,7 @@ const Login = () => {
                       </button> */} 
                                 
 
-                      <GitHubLogin 
+                      <LoginGithub 
                       clientId={process.env.REACT_APP_GITHUB_CLIENT_ID}
                       redirectUri={process.env.REACT_APP_REDIRECT_URI}
                       onSuccess={onGitHubSuccess}
@@ -302,7 +303,7 @@ const Login = () => {
                       <GitHubIcon  style={{ height: "24px", width: "24px" }} />
                       <div class='mt-2 flex w-12'></div>
                       <div class='pr-12'>Continue with Github</div>
-                      </GitHubLogin>
+                      </LoginGithub>
                       
                       
                       <div class='relative flex items-center justify-center align-middle'>                        
