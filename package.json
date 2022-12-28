@@ -42,7 +42,7 @@
     "react-dom": "^17.0.2",
     "react-drag-and-drop": "^3.0.0",
     "react-file-picker": "0.0.6",
-    "react-github-login": "^1.0.3",
+    "react-login-github": "^1.0.8",
     "react-google-button": "^0.7.2",
     "react-hover-observer": "^2.1.1",
     "react-linkedin-login-oauth2": "^1.0.9",
@@ -96,10 +96,10 @@
     "@fortawesome/fontawesome-svg-core": "^6.2.1",
     "@workos-inc/node": "^2.16.0",
     "autoprefixer": "^9.8.6",
-    "postcss": "^7.0.36",    
-    "react-github-login-button": "^1.0.1",    
+    "postcss": "^7.0.36",
+    "react-github-login-button": "^1.0.1",
     "react-google-login": "^5.2.2",
-    "react-login-github": "^1.0.8",
+    
     "tailwindcss": "npm:@tailwindcss/postcss7-compat@^2.2.7"
   }
 }
