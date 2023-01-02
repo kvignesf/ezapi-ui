@@ -5,6 +5,7 @@ import GetAppIcon from "@material-ui/icons/GetApp";
 import SystemUpdateAltIcon from "@material-ui/icons/SystemUpdateAlt";
 import TimeAgo from "react-timeago";
 import _ from "lodash";
+import LoginGithub from 'react-login-github';
 import classNames from "classnames";
 import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
@@ -14,6 +15,7 @@ import { CircularProgress, Dialog } from "@material-ui/core";
 // import { useHistory } from 'react-router';
 import ReactPaginate from "react-paginate";
 import { useHistory, useLocation } from "react-router-dom";
+import GitHubIcon from '@mui/icons-material/GitHub';
 import CodeIcon from "@material-ui/icons/Code";
 import { useQuery } from "react-query";
 import ReplayIcon from "@material-ui/icons/Replay";
@@ -37,6 +39,7 @@ import {
   useGetProjects,
   useDownloadDatabase,
   useDownloadApigee,
+  usePushToGithub
 } from "./projectQueries";
 import EmptyLogo from "../static/images/empty-state.svg";
 import { PrimaryButton } from "../shared/components/AppButton";
@@ -45,6 +48,7 @@ import { getUserId } from "../shared/storage";
 import routes, { generateRoute } from "../shared/routes";
 import dotnetLogo from "../static/images/logo/dotnetlogo.svg";
 import javaLogo from "../static/images/logo/java-vertical.svg";
+import githubLogo from "../static/images/logo/github-icon.svg";
 import Logo from "../static/images/logo/svg.svg";
 import ApigeeLogo from "../static/images/logo/CloudLogo.png";
 import DatabaseLogo from "../static/images/logo/database_download.svg";
@@ -129,6 +133,7 @@ const ProjectRow = ({
   handleOnView,
   handleOnInvite,
   handleOnRename,
+  handlePushToGithub
 }) => {
   const CustomTooltip = styled(({ className, ...props }) => (
     // eslint-disable-next-line react/jsx-props-no-spreading
@@ -190,9 +195,31 @@ const ProjectRow = ({
 
   const [enableIcon, setEnableIcon] = useRecoilState(downloadIconSts);
   const [projectIden, setProjectIden] = useRecoilState(downloadIconProj);
+  const [githubIcon, setGithubIcon] = React.useState(true);
 
   // console.log("enableIcon..", enableIcon);
   // console.log("projectIden..", projectIden);
+  const {
+    error: githubLoginError,
+    isLoading: isgithubLoggingIn,
+    isSuccess: isgithubLoginSuccess,
+    mutate: pushToGithub,
+    reset: resetgithubLogin,
+  } = usePushToGithub();
+
+  const onGitHubLoginSuccess = async (response) => {    
+    const { code } = response;
+    if (code)	{
+      pushToGithub({ code: code, projectId: project?.projectId });
+    }
+  };
+  useEffect(()=>{
+    if(isgithubLoginSuccess){
+      console.log("entered into useeffectt");
+      setGithubIcon(false);
+    }
+  },[isgithubLoginSuccess])
+
   useEffect(() => {
     if (project?.lastDataGenerated) {
       const p = "Download Data ".concat(
@@ -256,6 +283,65 @@ const ProjectRow = ({
       </td>
       <td align='center'>
         <div className='flex flex-row items-center gap-2'>
+        {/* Github Upload */}
+        <div className='w-8'>
+            {project?.status?.toLowerCase() === "complete" &&
+              project?.projectType?.toLowerCase() !== "schema" && project?.isDesign &&(
+                <Tooltip title={
+                  (project?.githubCommit == "ReadyForPush")
+                    ? "Push to Github"
+                    : (project?.githubCommit == "ReadyForView") ? "View on Github" : "Commit In Progress"
+                }>
+                  <div
+                    style={{
+                      marginTop: "-5px",
+                      width: "18px",
+                      height: "18px",
+                    }}
+                  >
+                    {/* <GitHubIcon
+                    className='cursor-pointer'
+                    onClick={() => {
+                      // setAnchorEl(null);
+                      handlePushToGithub(project);
+                    }}
+                    /> */}
+                    {project?.githubCommit == "ReadyForPush" &&
+                    (<LoginGithub 
+                      clientId={process.env.REACT_APP_GITHUB_CLIENT_ID}
+                      redirectUri={process.env.REACT_APP_REDIRECT_URI}
+                      onSuccess={onGitHubLoginSuccess}
+                      scope='user project repo'
+                      // onFailure={onGitHubFailure}
+                      // className="github-push-button"
+                      > 
+                      {/* <GitHubIcon  style={{ color: "#000000", height: "18px", width: "18px" }} />     */}
+                      <div className="github-ico-wrapper mt-1">
+                        <img
+                         src = {githubLogo}
+                         alt='conektto logo'
+                         />
+                      </div>
+                    </LoginGithub>)
+                    }    
+                    {
+                      project?.githubCommit == "ReadyForView" &&(
+                        <div className="github-view-button mt-1">
+                          <div className="github-ico-wrapper">
+                            <img
+                            src = {githubLogo}
+                            alt='conektto logo'
+                            />
+                          </div>
+                        </div>)
+                    }               
+                  </div>
+                </Tooltip>                
+              )}
+            {(isgithubLoggingIn || project?.githubCommit == "CommitInProgress") && (
+              <CircularProgress style={{ width: "24px", height: "24px" }} />
+            )}
+          </div>
           {/* Codegen download */}
           <div className='w-8'>
             {project?.status?.toLowerCase() === "complete" &&
@@ -656,6 +742,14 @@ const Content = ({ showCreateProjectDialog }) => {
     });
   };
 
+  const showPushToGithubProjectDialog = (project) => {
+    setDialog({
+      show: true,
+      type: "push-to-github",
+      data: project,
+    });
+  };
+
   const showDeleteProjectDialog = (project) => {
     setDialog({
       show: true,
@@ -688,6 +782,10 @@ const Content = ({ showCreateProjectDialog }) => {
 
   const handleOnRename = (project) => {
     showRenameProjectDialog(project);
+  };
+
+  const handlePushToGithub = (project) => {
+    showPushToGithubProjectDialog(project);
   };
 
   const handleOnDeleteApi = (project) => {
@@ -788,6 +886,7 @@ const Content = ({ showCreateProjectDialog }) => {
                         handleOnInvite={handleOnInvite}
                         handleOnView={handleOnView}
                         handleOnDeleteApi={handleOnDeleteApi}
+                        handlePushToGithub = {handlePushToGithub}
                       />
                     );
                   })}

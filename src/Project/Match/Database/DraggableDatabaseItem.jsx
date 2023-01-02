@@ -103,9 +103,9 @@ const DraggableDatabaseItem = ({
               ? ArrayOfObjectsIcon
               : isObject(item)
               ? ObjectIcon
-              : isArray(item) && !item.isChild
+              : isArray(item) && !item.is_child
               ? ArrayIcon
-              : isArray(item) && item.isChild
+              : isArray(item) && item.is_child
               ? ArrayIcon2
               : AttributeIcon
           }

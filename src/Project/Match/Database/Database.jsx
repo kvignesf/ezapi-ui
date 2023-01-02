@@ -52,7 +52,7 @@ const Database = () => {
 
         return clonedTableState;
       });
-    } else if (isObject(item) && !item.isChild) {
+    } else if (isObject(item) && !item.is_child) {
       console.log("object", item);
       let newRef;
       if (tableState.ref === "") {
@@ -71,7 +71,7 @@ const Database = () => {
         type: item?.type,
         ref: newRef,
       });
-    } else if (isArray(item) && !item.isChild) {
+    } else if (isArray(item) && !item.is_child) {
       console.log("array", item);
       let newRef;
       if (tableState.ref === "") {

@@ -98,8 +98,7 @@
     "autoprefixer": "^9.8.6",
     "postcss": "^7.0.36",
     "react-github-login-button": "^1.0.1",
-    "react-google-login": "^5.2.2",
-    
+    "react-google-login": "^5.2.2",    
     "tailwindcss": "npm:@tailwindcss/postcss7-compat@^2.2.7"
   }
 }

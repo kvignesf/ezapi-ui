@@ -52,6 +52,7 @@ export const endpoint = Object.freeze({
   downloadDotNetCodegen:"/download_dotnet_codegen",
   mandMappingTableData: "/listAllAttributes",
   googleLogin: "/google-signin",
+  push_to_github: "/pushToGithub",
 
 
   // Payment

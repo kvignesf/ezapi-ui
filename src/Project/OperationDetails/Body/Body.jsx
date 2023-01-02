@@ -99,7 +99,7 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
     mutate: getSubSchema,
     reset: resetSubSchemaData,
     variables: subSchemaRequest,
-  } = useGetSubSchema();  
+  } = useGetSubSchema();
   const { height, width } = useWindowSize();
   const { getExandedIds, setExpandedIds } = useExpandedIds([]);
   const [primaryKeyRef, setPrimaryKeyRef] = useRecoilState(primaryAtom);
@@ -153,7 +153,7 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
             }
             if (isAttribute(item)) {
               clonedItem.required = true;
-              clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
+              //clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
               clonedItem.parentName = path ?? "/";
             } else if (isColumn(item)) {
               //clonedItem.tableName = fetchParentName(clonedItem) ?? "global";
@@ -239,7 +239,7 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
             }
             if (isAttribute(item)) {
               clonedItem.required = true;
-              clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
+              //clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
               clonedItem.parentName = path ?? "/";
             } else if (isColumn(item)) {
               //clonedItem.tableName = fetchParentName(clonedItem) ?? "global";
@@ -285,7 +285,7 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
     let itemDroppedFromTop;
 
     if (item.props) {
-      if (item.props.columnLabelItem) {				
+      if (item.props.columnLabelItem) {
         valueDropped = item.props.columnLabelItem;
         itemDroppedFromTop = false;
       } else {
@@ -356,7 +356,6 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
 
   //useEffect(() => {}, [refresh]);
 
-
   const getResponseIndex = (operation) => {
     return operation?.operationResponse?.findIndex(
       (item) => item.responseCode === responseCode
@@ -365,39 +364,38 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
 
   return (
     <DropArea onItemDropped={itemDropped}>
-      <div className=' h-full flex flex-col'>
-        <div className=' ml-3 p-2 border-t-2 border-b-2 bg-neutral-gray8 mb-1/2'>
-          <div className=' w-full grid grid-cols-5 gap-2 '>
-            
+      <div className=" h-full flex flex-col">
+        <div className=" ml-3 p-2 border-t-2 border-b-2 bg-neutral-gray8 mb-1/2">
+          <div className=" w-full grid grid-cols-5 gap-2 ">
             {projectType === "db" && (
               <>
                 {" "}
-                <div className='flex justify-self-start '>
+                <div className="flex justify-self-start ">
                   {" "}
-                  <p className='text-overline2 uppercase text-neutral-gray4 font-bold'>
+                  <p className="text-overline2 uppercase text-neutral-gray4 font-bold">
                     Table/Column
                   </p>
                 </div>
               </>
             )}
-            <div className='flex justify-self-start '>
-              <p className='text-overline2 uppercase text-neutral-gray4 font-bold'>
+            <div className="flex justify-self-start ">
+              <p className="text-overline2 uppercase text-neutral-gray4 font-bold">
                 Schema/Attribute
               </p>
             </div>
-            <div className='flex justify-self-start '>
-              <p className='text-overline2 uppercase text-neutral-gray4 font-bold'>
+            <div className="flex justify-self-start ">
+              <p className="text-overline2 uppercase text-neutral-gray4 font-bold">
                 Data Type
               </p>
             </div>
-            <div className='flex justify-self-start '>
+            <div className="flex justify-self-start ">
               {" "}
-              <p className='text-overline2 uppercase text-neutral-gray4 font-bold'>
+              <p className="text-overline2 uppercase text-neutral-gray4 font-bold">
                 is Array
               </p>
             </div>
-            <div className='flex justify-self-start '>
-              <p className='text-overline2 uppercase text-neutral-gray4 font-bold'>
+            <div className="flex justify-self-start ">
+              <p className="text-overline2 uppercase text-neutral-gray4 font-bold">
                 Required
               </p>
             </div>
@@ -405,7 +403,7 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
         </div>
 
         {request && !_.isEmpty(operationData?.operationRequest?.body) && (
-          <div className='h-full flex-1'>
+          <div className="h-full flex-1">
             <Scrollbar
               alwaysShowTracks={true}
               style={{
@@ -445,9 +443,10 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
                   } else if (isStoredProcedure(item)) {
                     clonedRef = _.cloneDeep(item);
                   } else if (
-                    isArray(item) || 
+                    isArray(item) ||
                     isArrayOfObject(item) ||
-                    isObject(item)) {
+                    isObject(item)
+                  ) {
                     clonedRef = _.cloneDeep(item);
                   }
 
@@ -461,7 +460,7 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
                           projectType={projectType}
                           key={
                             index +
-                            operationData?.operationRequest?.body.length +
+                            // operationData?.operationRequest?.body.length +
                             refresh
                           }
                           itemRef={clonedRef ?? item}
@@ -481,7 +480,7 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
         )}
 
         {!request && !_.isEmpty(getResponseData(operationData)?.body) && (
-          <div className='h-full flex-1'>
+          <div className="h-full flex-1">
             <Scrollbar
               alwaysShowTracks={true}
               style={{
@@ -523,8 +522,6 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
                   } else {
                   }
 
-                  
-
                   return clonedRef == "wrongData" ? null : (
                     <DropArea onItemDropped={nestedItemDropped} state={refresh}>
                       <DraggableBodyItem state={refresh}>
@@ -532,7 +529,7 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
                           projectType={projectType}
                           key={
                             index +
-                            getResponseData(operationData)?.body.length +
+                            // getResponseData(operationData)?.body.length +
                             refresh
                           }
                           itemRef={clonedRef ?? item}
@@ -552,13 +549,13 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
         )}
 
         {request && _.isEmpty(operationData?.operationRequest?.body) && (
-          <div className='border-dashed p-3 bg-neutral-gray7 rounded-md border-2 m-2 flex flex-row justify-center'>
+          <div className="border-dashed p-3 bg-neutral-gray7 rounded-md border-2 m-2 flex flex-row justify-center">
             <DragAndDropMessage isSchemaAllowed isAttributeAllowed />
           </div>
         )}
 
         {!request && _.isEmpty(getResponseData(operationData)?.body) && (
-          <div className='border-dashed p-3 bg-neutral-gray7 rounded-md border-2 m-2 flex flex-row justify-center'>
+          <div className="border-dashed p-3 bg-neutral-gray7 rounded-md border-2 m-2 flex flex-row justify-center">
             <DragAndDropMessage isTableAllowed isColumnAllowed />
           </div>
         )}
@@ -666,6 +663,7 @@ const BodyItem = ({
 
   const deleteItem = (item) => {
     if (
+      isArray(item) ||
       isSchema(item) ||
       isColumn(item) ||
       isAttribute(item) ||
@@ -875,7 +873,6 @@ const BodyItem = ({
     }
   };
 
-
   const renameColumn = (column, name) => {
     if (canEdit()) {
       setOperationDetails((operationDetails) => {
@@ -996,177 +993,39 @@ const BodyItem = ({
     table,
     name,
     isObjectArray = false,
-    ref) => {
-      if (isObjectArray) {
-        let array = _.cloneDeep(table);
-        table = array.items.properties[ref.name];
-        if (isColumn(column) && isDatabase(table) && isArrayOfObject(array)) {
-          setOperationDetails((operationDetails) => {
-            const newOperationDetails = _.cloneDeep(operationDetails);
-            const data = request
-              ? newOperationDetails.operationRequest
-              : newOperationDetails.operationResponse[0];
-            const arrayIndex = data.body.findIndex(
-              (x) => isArrayOfObject(x) && x.name === array.name
-            );
-
-            const columnIndex = data.body[arrayIndex].items.properties[ref.name].selectedColumns.findIndex(
-              (x) => isColumn(x) && x?.sourceName === column.sourceName) ?? -1;
-            
-              if (columnIndex !== -1) {
-                data.body[arrayIndex].items.properties[ref.name].selectedColumns[
-                  columnIndex
-                ].name = name;
-              }
-              return newOperationDetails;
-            });
-          }
-        } else {
-          if (canEdit()) {
-            setOperationDetails((operationDetails) => {
-              if (request) {
-                const newOperationDetails = _.cloneDeep(operationDetails);
-
-                // Get parent table index
-                const parentTableIndex =
-                  newOperationDetails.operationRequest.body.findIndex(
-                    (bodyItem) =>
-                      isDatabase(bodyItem) &&
-                      table?.sourceName === bodyItem?.sourceName
-                  );
-
-                if (parentTableIndex !== -1) {
-                  // Clone parent table
-                  const clonedParentTable = _.cloneDeep(
-                    newOperationDetails.operationRequest.body[parentTableIndex]
-                  );
-
-                  // Get column
-                  const columnIndex = clonedParentTable?.selectedColumns?.findIndex(
-                    (columnItem) => column?.sourceName === columnItem?.sourceName
-                  );
-
-                  if (columnIndex !== -1) {
-                    // Clone column
-                    const clonedColumn = _.cloneDeep(
-                      clonedParentTable.selectedColumns[columnIndex]
-                    );
-
-                    // Set updated name to column
-                    clonedColumn.name = name;
-
-                    // Set cloned column to table
-                    clonedParentTable.selectedColumns[columnIndex] = clonedColumn;
-
-                    // Set table to operations body
-                    newOperationDetails.operationRequest.body[parentTableIndex] =
-                      clonedParentTable;
-                  }
-
-                  return newOperationDetails;
-                }
-              } else {
-                const responseIndex = operationDetails?.operationResponse?.findIndex(
-                  (item) => item.responseCode === responseCode
-                );
-                if (responseIndex !== -1) {
-                  const responseData =
-                    operationDetails?.operationResponse[responseIndex];
-                  const clonedOperationDetails = _.cloneDeep(operationDetails);
-                  const clonedResponseData = _.cloneDeep(responseData);
-
-                  const tableIndex = responseData?.body?.findIndex(
-                    (body) => body?.sourceName === table?.sourceName
-                  );
-
-                  if (tableIndex !== -1) {
-                    const clonedTableData = _.cloneDeep(
-                      clonedResponseData.body[tableIndex]
-                    );
-
-                    // Get column
-                    const columnIndex = clonedTableData?.selectedColumns?.findIndex(
-                      (columnItem) => column?.sourceName === columnItem?.sourceName
-                    );
-
-                    if (columnIndex !== -1) {
-                      // Clone column
-                      const clonedColumn = _.cloneDeep(
-                        clonedTableData.selectedColumns[columnIndex]
-                      );
-
-                      // Set updated name to column
-                      clonedColumn.name = name;
-
-                      // Set cloned column to table
-                      clonedTableData.selectedColumns[columnIndex] = clonedColumn;
-
-                      // Set table to response data body
-                      clonedResponseData.body[tableIndex] = clonedTableData;
-                    }
-
-                    clonedOperationDetails.operationResponse[responseIndex] =
-                      clonedResponseData;
-                    return clonedOperationDetails;
-                  }
-                }
-              }
-
-        return operationDetails;
-      });
-    }
-  }
-    refresh();
-  };
-
-  const isColumnNameTakenOfTable = (
-    column, 
-    table, 
-    name,
-    isObjectArray = false,
-    ref) => {
-      if (isObjectArray) {
-        const { loadable: operationAtom } = getRecoilValueInfo(
-          operationAtomWithMiddleware
-        );
-        const operationDetails = operationAtom?.contents;
-  
-        let array = _.cloneDeep(table);
-        table = array.items.properties[ref.name];
-        if (isColumn(column) && isDatabase(table) && isArrayOfObject(array)) {
+    ref
+  ) => {
+    if (isObjectArray) {
+      let array = _.cloneDeep(table);
+      table = array.items.properties[ref.name];
+      if (isColumn(column) && isDatabase(table) && isArrayOfObject(array)) {
+        setOperationDetails((operationDetails) => {
           const newOperationDetails = _.cloneDeep(operationDetails);
           const data = request
             ? newOperationDetails.operationRequest
             : newOperationDetails.operationResponse[0];
           const arrayIndex = data.body.findIndex(
             (x) => isArrayOfObject(x) && x.name === array.name
-                                          
           );
-  
-                      
-               
+
           const columnIndex =
             data.body[arrayIndex].items.properties[
               ref.name
             ].selectedColumns.findIndex(
-              (x) => isColumn(x) && x?.sourceName === name
+              (x) => isColumn(x) && x?.sourceName === column.sourceName
             ) ?? -1;
-                                 
-          
-         
-  
-          if (columnIndex !== -1) {
-            return true;
-         
-          }
-        }
-      } else {
-        if (canEdit()) {
-          const { loadable: operationAtom } = getRecoilValueInfo(
-            operationAtomWithMiddleware
-          );
-          const operationDetails = operationAtom?.contents;
 
+          if (columnIndex !== -1) {
+            data.body[arrayIndex].items.properties[ref.name].selectedColumns[
+              columnIndex
+            ].name = name;
+          }
+          return newOperationDetails;
+        });
+      }
+    } else {
+      if (canEdit()) {
+        setOperationDetails((operationDetails) => {
           if (request) {
             const newOperationDetails = _.cloneDeep(operationDetails);
 
@@ -1174,55 +1033,194 @@ const BodyItem = ({
             const parentTableIndex =
               newOperationDetails.operationRequest.body.findIndex(
                 (bodyItem) =>
-                  isDatabase(bodyItem) && table?.sourceName === bodyItem?.sourceName
+                  isDatabase(bodyItem) &&
+                  table?.sourceName === bodyItem?.sourceName
               );
 
             if (parentTableIndex !== -1) {
+              // Clone parent table
+              const clonedParentTable = _.cloneDeep(
+                newOperationDetails.operationRequest.body[parentTableIndex]
+              );
+
               // Get column
-              const columnIndex = newOperationDetails.operationRequest.body[
-                parentTableIndex
-              ]?.selectedColumns?.findIndex((columnItem) => {
-                return (
-                  columnItem?.name === name &&
-                  columnItem?.sourceName !== column?.sourceName
-                );
-              });
+              const columnIndex = clonedParentTable?.selectedColumns?.findIndex(
+                (columnItem) => column?.sourceName === columnItem?.sourceName
+              );
 
               if (columnIndex !== -1) {
-                return true;
+                // Clone column
+                const clonedColumn = _.cloneDeep(
+                  clonedParentTable.selectedColumns[columnIndex]
+                );
+
+                // Set updated name to column
+                clonedColumn.name = name;
+
+                // Set cloned column to table
+                clonedParentTable.selectedColumns[columnIndex] = clonedColumn;
+
+                // Set table to operations body
+                newOperationDetails.operationRequest.body[parentTableIndex] =
+                  clonedParentTable;
               }
+
+              return newOperationDetails;
             }
           } else {
-            const responseIndex = operationDetails?.operationResponse?.findIndex(
-              (item) => item.responseCode === responseCode
-            );
-
+            const responseIndex =
+              operationDetails?.operationResponse?.findIndex(
+                (item) => item.responseCode === responseCode
+              );
             if (responseIndex !== -1) {
               const responseData =
                 operationDetails?.operationResponse[responseIndex];
+              const clonedOperationDetails = _.cloneDeep(operationDetails);
+              const clonedResponseData = _.cloneDeep(responseData);
 
               const tableIndex = responseData?.body?.findIndex(
                 (body) => body?.sourceName === table?.sourceName
               );
 
               if (tableIndex !== -1) {
+                const clonedTableData = _.cloneDeep(
+                  clonedResponseData.body[tableIndex]
+                );
+
                 // Get column
-                const columnIndex = responseData.body[
-                  tableIndex
-                ]?.selectedColumns?.findIndex(
-                  (columnItem) =>
-                    columnItem?.name === name &&
-                    columnItem?.sourceName !== column?.sourceName
+                const columnIndex = clonedTableData?.selectedColumns?.findIndex(
+                  (columnItem) => column?.sourceName === columnItem?.sourceName
                 );
 
                 if (columnIndex !== -1) {
-                  return true;
+                  // Clone column
+                  const clonedColumn = _.cloneDeep(
+                    clonedTableData.selectedColumns[columnIndex]
+                  );
+
+                  // Set updated name to column
+                  clonedColumn.name = name;
+
+                  // Set cloned column to table
+                  clonedTableData.selectedColumns[columnIndex] = clonedColumn;
+
+                  // Set table to response data body
+                  clonedResponseData.body[tableIndex] = clonedTableData;
                 }
+
+                clonedOperationDetails.operationResponse[responseIndex] =
+                  clonedResponseData;
+                return clonedOperationDetails;
+              }
+            }
+          }
+
+          return operationDetails;
+        });
+      }
+    }
+    refresh();
+  };
+
+  const isColumnNameTakenOfTable = (
+    column,
+    table,
+    name,
+    isObjectArray = false,
+    ref
+  ) => {
+    if (isObjectArray) {
+      const { loadable: operationAtom } = getRecoilValueInfo(
+        operationAtomWithMiddleware
+      );
+      const operationDetails = operationAtom?.contents;
+
+      let array = _.cloneDeep(table);
+      table = array.items.properties[ref.name];
+      if (isColumn(column) && isDatabase(table) && isArrayOfObject(array)) {
+        const newOperationDetails = _.cloneDeep(operationDetails);
+        const data = request
+          ? newOperationDetails.operationRequest
+          : newOperationDetails.operationResponse[0];
+        const arrayIndex = data.body.findIndex(
+          (x) => isArrayOfObject(x) && x.name === array.name
+        );
+
+        const columnIndex =
+          data.body[arrayIndex].items.properties[
+            ref.name
+          ].selectedColumns.findIndex(
+            (x) => isColumn(x) && x?.sourceName === name
+          ) ?? -1;
+
+        if (columnIndex !== -1) {
+          return true;
+        }
+      }
+    } else {
+      if (canEdit()) {
+        const { loadable: operationAtom } = getRecoilValueInfo(
+          operationAtomWithMiddleware
+        );
+        const operationDetails = operationAtom?.contents;
+
+        if (request) {
+          const newOperationDetails = _.cloneDeep(operationDetails);
+
+          // Get parent table index
+          const parentTableIndex =
+            newOperationDetails.operationRequest.body.findIndex(
+              (bodyItem) =>
+                isDatabase(bodyItem) &&
+                table?.sourceName === bodyItem?.sourceName
+            );
+
+          if (parentTableIndex !== -1) {
+            // Get column
+            const columnIndex = newOperationDetails.operationRequest.body[
+              parentTableIndex
+            ]?.selectedColumns?.findIndex((columnItem) => {
+              return (
+                columnItem?.name === name &&
+                columnItem?.sourceName !== column?.sourceName
+              );
+            });
+
+            if (columnIndex !== -1) {
+              return true;
+            }
+          }
+        } else {
+          const responseIndex = operationDetails?.operationResponse?.findIndex(
+            (item) => item.responseCode === responseCode
+          );
+
+          if (responseIndex !== -1) {
+            const responseData =
+              operationDetails?.operationResponse[responseIndex];
+
+            const tableIndex = responseData?.body?.findIndex(
+              (body) => body?.sourceName === table?.sourceName
+            );
+
+            if (tableIndex !== -1) {
+              // Get column
+              const columnIndex = responseData.body[
+                tableIndex
+              ]?.selectedColumns?.findIndex(
+                (columnItem) =>
+                  columnItem?.name === name &&
+                  columnItem?.sourceName !== column?.sourceName
+              );
+
+              if (columnIndex !== -1) {
+                return true;
               }
             }
           }
         }
       }
+    }
 
     return false;
   };
@@ -1246,10 +1244,13 @@ const BodyItem = ({
 
   useEffect(() => {
     if (subSchemaData) {
-      setArrayData(subSchemaData?.nSchemaArray[0]?.data ?? []);
+      if (subSchemaData.data) {
+        setArrayData(subSchemaData?.data ?? []);
+      } else {
+        setArrayData(subSchemaData?.nSchemaArray[0]?.data ?? []);
+      }
     }
   }, [subSchemaData]);
-
 
   const getTableData = (tableRef) => {
     if (!isLoadingTableData && _.isEmpty(tableRef.selectedColumns)) {
@@ -1292,9 +1293,8 @@ const BodyItem = ({
     });
   };
 
-
   const onItemClick = () => {
-    if (isDatabase(bodyItem)) {
+    if (isDatabase(bodyItem) && tableData === undefined) {
       if (!bodyItem?.selectedColumns || _.isEmpty(bodyItem?.selectedColumns)) {
         getTableData(bodyItem);
       }
@@ -1302,10 +1302,17 @@ const BodyItem = ({
       getArrayData();
     } else if (
       (isArray(bodyItem) || isObject(bodyItem)) &&
-      bodyItem.isChild === false
+      bodyItem.is_child === false &&
+      projectType === "db" &&
+      subTableData === undefined
     ) {
       getSubTableData(bodyItem);
-    } else if (isSchema(bodyItem)) {
+    } else if (
+      (isSchema(bodyItem) ||
+        (isArray(bodyItem) && bodyItem.is_child === false)) &&
+      projectType === "both" &&
+      subSchemaData === undefined
+    ) {
       getSchemaData(bodyItem);
     }
   };
@@ -1325,7 +1332,6 @@ const BodyItem = ({
   if (isColumn(bodyItem)) {
     return (
       <DraggableBodyItem>
-		   
         <ColumnLabel
           columnLabelItem={bodyItem}
           deleteColumn={deleteItem}
@@ -1338,7 +1344,7 @@ const BodyItem = ({
     );
   }
 
-  if (isArray(bodyItem) && bodyItem.isChild) {
+  if (isArray(bodyItem) && bodyItem.is_child) {
     return (
       <DraggableBodyItem className="ml-6">
         <ArrayOrObjectLabel
@@ -1377,7 +1383,7 @@ const BodyItem = ({
             request={request}
             responseCode={responseCode}
           />
-          ) : isArray(bodyItem) ||
+        ) : isArray(bodyItem) ||
           isArrayOfObject(bodyItem) ||
           isObject(bodyItem) ? (
           <ArrayOrObjectLabel
@@ -1409,7 +1415,7 @@ const BodyItem = ({
         onItemClick();
       }}
     >
-          {isSchema(bodyItem) &&
+      {isSchema(bodyItem) &&
         arrayData.map((ref) => {
           // Sub schema/array/object
           if (isSchema(ref) || isArray(ref) || isObject(ref)) {
@@ -1423,7 +1429,12 @@ const BodyItem = ({
               clonedRef["isLoaded"] = false;
             }
 
-            return <BodySubTreeItems currentRef={clonedRef} />;
+            return (
+              <BodySubTreeItems
+                currentRef={clonedRef}
+                projectType={projectType}
+              />
+            );
           }
           //attributes within a schema
           else if (isAttribute(ref)) {
@@ -1464,7 +1475,7 @@ const BodyItem = ({
         })}
 
       {(isArray(bodyItem) || isObject(bodyItem)) &&
-        bodyItem.isChild === false &&
+        bodyItem.is_child === false &&
         arrayData.map((item) => {
           const clonedRef = _.cloneDeep(item);
 
@@ -1476,7 +1487,7 @@ const BodyItem = ({
             clonedRef["isLoaded"] = false;
           }
 
-          if (bodyItem.isChild === false) {
+          if (bodyItem.is_child === false) {
             let newRef = "";
             if (isObject(bodyItem)) {
               newRef = `${bodyItem.tableName}.attributes.${bodyItem.name}.ezapi_object`;
@@ -1486,7 +1497,12 @@ const BodyItem = ({
             clonedRef["ref"] = newRef;
           }
 
-          return <BodySubTreeItems currentRef={clonedRef} />;
+          return (
+            <BodySubTreeItems
+              currentRef={clonedRef}
+              projectType={projectType}
+            />
+          );
         })}
 
       {isArrayOfObject(bodyItem) &&
@@ -1640,7 +1656,7 @@ const BodyItem = ({
 };
 
 // This is shown only for arrays, schemas, objects of a parent schema
-const BodySubTreeItems = ({ currentRef: some }) => {
+const BodySubTreeItems = ({ currentRef: some, projectType }) => {
   const [currentRef, setCurrentRef] = useState(some);
   const { projectId } = useParams();
   const {
@@ -1676,7 +1692,12 @@ const BodySubTreeItems = ({ currentRef: some }) => {
         itemsToConsider = subSchemaData?.data;
       }
 
-      if (isSchema(currentRef) || isArray(currentRef) || isArrayOfObject(currentRef) || isObject(currentRef)) {
+      if (
+        isSchema(currentRef) ||
+        isArray(currentRef) ||
+        isArrayOfObject(currentRef) ||
+        isObject(currentRef)
+      ) {
         currentRef.isLoaded = true;
 
         for (let index = 0; index < itemsToConsider.length; index++) {
@@ -1720,9 +1741,13 @@ const BodySubTreeItems = ({ currentRef: some }) => {
   }, [subTableData]);
 
   const getSubschemaData = (subSchemaRef) => {
-    if (subSchemaRef.isChild === false) {
+    if (
+      subSchemaRef.is_child === false &&
+      projectType === "db" &&
+      _.isEmpty(subSchemaRef.data)
+    ) {
       let newRef = "";
-							   
+
       if (isObject(subSchemaRef)) {
         newRef = `${subSchemaRef.ref}.${subSchemaRef.name}.ezapi_object`;
       } else if (isArray(subSchemaRef)) {
@@ -1741,7 +1766,8 @@ const BodySubTreeItems = ({ currentRef: some }) => {
       if (
         !isLoadingSubSchema &&
         !subSchemaRef.isLoaded &&
-        _.isEmpty(subSchemaRef.data)
+        _.isEmpty(subSchemaRef.data) &&
+        projectType === "both"
       ) {
         getSubSchema({
           projectId,
@@ -1758,42 +1784,43 @@ const BodySubTreeItems = ({ currentRef: some }) => {
       key={currentRef?.payloadId ?? currentRef?.name ?? treeIndex++}
       nodeId={currentRef?.payloadId ?? currentRef?.name ?? treeIndex++}
       label={
-        <div className='flex flex-row p-1 justify-between border-b-2'>
-          <div className='flex flex-row items-center justify-center '>
-          <img
+        <div className="flex flex-row p-1 justify-between border-b-2">
+          <div className="flex flex-row items-center justify-center ">
+            <img
               src={
                 isObject(currentRef)
                   ? ObjectIcon
-                  : isArray(currentRef) && currentRef.isChild
+                  : isArray(currentRef) && currentRef.is_child
                   ? ArrayIcon2
-                  : isArray(currentRef) && !currentRef.isChild
+                  : isArray(currentRef) && !currentRef.is_child
                   ? ArrayIcon
                   : isAttribute(currentRef)
                   ? AttributeIcon
                   : SchemaIcon
               }
-              alt='conektto logo'
-              className='bg-white mr-2'
+              alt="conektto logo"
+              className="bg-white mr-2"
               style={{
                 height: "24px",
                 width: "24px",
               }}
             />
 
-            <div className='flex flex-row justify-between w-full items-center'>
-              <p className='text-overline2 mr-4'>
+            <div className="flex flex-row justify-between w-full items-center">
+              <p className="text-overline2 mr-4">
                 {currentRef?.schemaName ?? currentRef?.name}
                 {isArray(currentRef) && " [ ]"}
               </p>
 
-              {isLoadingSubSchema && subSchemaRequest.ref === currentRef?.ref && (
-                <CircularProgress
-                  style={{
-                    width: "1.25rem",
-                    height: "1.25rem",
-                  }}
-                />
-              )}
+              {isLoadingSubSchema &&
+                subSchemaRequest.ref === currentRef?.ref && (
+                  <CircularProgress
+                    style={{
+                      width: "1.25rem",
+                      height: "1.25rem",
+                    }}
+                  />
+                )}
             </div>
           </div>
         </div>
@@ -1819,7 +1846,7 @@ const BodySubTreeItems = ({ currentRef: some }) => {
           if (!clonedRef.hasOwnProperty("isLoaded")) {
             clonedRef["isLoaded"] = false;
           }
-          if (currentRef.isChild === false) {
+          if (currentRef.is_child === false) {
             let newRef = "";
             if (isObject(currentRef)) {
               newRef = `${currentRef.ref}.${currentRef.name}.ezapi_object`;
@@ -1828,33 +1855,38 @@ const BodySubTreeItems = ({ currentRef: some }) => {
             }
             clonedRef["ref"] = newRef;
           }
-          return <BodySubTreeItems currentRef={clonedRef} />;
+          return (
+            <BodySubTreeItems
+              currentRef={clonedRef}
+              projectType={projectType}
+            />
+          );
         } else if (isAttribute(ref)) {
           return (
             <TreeItem
               key={ref?.payloadId ?? ref?.name ?? treeIndex++}
               nodeId={ref?.payloadId ?? ref?.name ?? treeIndex++}
               label={
-                <div className='flex flex-row justify-between items-center p-1 border-b-2'>
-                  <div className='flex flex-row items-center justify-start flex-1'>
+                <div className="flex flex-row justify-between items-center p-1 border-b-2">
+                  <div className="flex flex-row items-center justify-start flex-1">
                     <img
                       src={AttributeIcon}
-                      alt='conektto logo'
-                      className='bg-white mr-2'
+                      alt="conektto logo"
+                      className="bg-white mr-2"
                       style={{
                         height: "24px",
                         width: "24px",
                       }}
                     />
 
-                    <p className='text-overline2 '>{ref?.name} </p>
+                    <p className="text-overline2 ">{ref?.name} </p>
                   </div>
 
-                  <div className='flex-1'>
+                  <div className="flex-1">
                     <p>{ref?.type}</p>
                   </div>
 
-                  <div className='flex-1'>
+                  <div className="flex-1">
                     {/* <Checkbox
                       checked={ref?.required}
                       // checked={true}
@@ -1900,7 +1932,7 @@ const ArrayOrObjectLabel = ({
                         ? ObjectIcon
                         : isArrayOfObject(labelItem)
                         ? ArrayOfObjectsIcon
-                        : isArray(labelItem) && labelItem.isChild
+                        : isArray(labelItem) && labelItem.is_child
                         ? ArrayIcon2
                         : ArrayIcon
                     }
@@ -1919,7 +1951,7 @@ const ArrayOrObjectLabel = ({
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        if (!labelItem.isChild && request) {
+                        if (!labelItem.is_child && request) {
                           isArrayChecked(labelItem, !array, request);
                           setIsArray(!array);
                         }
@@ -2027,7 +2059,6 @@ const ArrayLabel = ({
   );
 };
 
-
 const SchemaLabel = ({
   labelItem,
   request,
@@ -2042,26 +2073,28 @@ const SchemaLabel = ({
     <ReactHoverObserver>
       {({ isHovering }) => {
         return (
-          <div className='flex flex-row p-1 justify-between items-center border-b-2 h-8'>
-            <div className='flex flex-row items-center justify-start w-full'>
-              <div className='w-full grid grid-cols-5 gap-2 items-center'>
-                <div className='flex justify-self-start items-center'>
+          <div className="flex flex-row p-1 justify-between items-center border-b-2 h-8">
+            <div className="flex flex-row items-center justify-start w-full">
+              <div className="w-full grid grid-cols-5 gap-2 items-center">
+                <div className="flex justify-self-start items-center">
                   {" "}
                   <img
                     src={SchemaIcon}
-                    alt='conektto logo'
-                    className='bg-white mr-4'
+                    alt="conektto logo"
+                    className="bg-white mr-4"
                     style={{ height: "24px", width: "24px" }}
                   />
-                  <p className='text-overline2'>{labelItem?.schemaName ?? labelItem?.name}</p>
+                  <p className="text-overline2">
+                    {labelItem?.schemaName ?? labelItem?.name}
+                  </p>
                 </div>
 
                 <div> {/* empty datattype */}</div>
-                <div className='flex  ml-1 justify-self-start'>
+                <div className="flex  ml-1 justify-self-start">
                   {labelItem.hasOwnProperty("isArray") && (
                     <Checkbox
                       checked={labelItem?.isArray}
-                      disabled={true}					  
+                      disabled={true}
                       style={{
                         color: Colors.brand.secondary,
                         padding: "0",
@@ -2081,7 +2114,7 @@ const SchemaLabel = ({
                 )}
               </div>
             </div>
-            <div className='w-6'>
+            <div className="w-6">
               {" "}
               {isHovering && canEdit() && (
                 <AppIcon
@@ -2125,16 +2158,16 @@ const AttributeLabel = ({ labelItem, deleteItem, projectType }) => {
     <ReactHoverObserver>
       {({ isHovering }) => {
         return (
-          <div className='flex flex-row p-1 h-8 justify-between items-center border-b-2 ml-6 hover:bg-neutral-gray8'>
-            <div className='flex flex-row items-center justify-start flex-1'>
+          <div className="flex flex-row p-1 h-8 justify-between items-center border-b-2 ml-6 hover:bg-neutral-gray8">
+            <div className="flex flex-row items-center justify-start flex-1">
               {projectType === "db" && (
-                <div className=' w-full grid grid-cols-5 gap-2 items-center '>
+                <div className=" w-full grid grid-cols-5 gap-2 items-center ">
                   {" "}
-                  <div className='flex justify-self-start items-center'>
+                  <div className="flex justify-self-start items-center">
                     <img
                       src={AttributeIcon}
-                      alt='conektto logo'
-                      className='bg-white mr-4'
+                      alt="conektto logo"
+                      className="bg-white mr-4"
                       style={{ height: "24px", width: "24px" }}
                     />
                     <Tooltip
@@ -2142,10 +2175,10 @@ const AttributeLabel = ({ labelItem, deleteItem, projectType }) => {
                       open={openTooltip}
                       onClose={handleToolTipOpen}
                       onOpen={handleToolTipOpen}
-                      placement='left-start'
+                      placement="left-start"
                     >
                       <p
-                        className='text-overline2'
+                        className="text-overline2"
                         onMouseEnter={() => {
                           setIsHover([true, labelItem?.name]);
                         }}
@@ -2158,17 +2191,17 @@ const AttributeLabel = ({ labelItem, deleteItem, projectType }) => {
                       </p>
                     </Tooltip>
                   </div>
-                  <div className='flex justify-self-start'>
+                  <div className="flex justify-self-start">
                     {/* empty: no scheme attribute */}
                   </div>
-                  <div className='ml-1 flex justify-self-start'>
-                    <p className='text-overline2'>{labelItem?.type}</p>
+                  <div className="ml-1 flex justify-self-start">
+                    <p className="text-overline2">{labelItem?.type}</p>
                   </div>
-                  <div className='flex justify-self-start'>
+                  <div className="flex justify-self-start">
                     {/* empty: no isarray Checkbox */}
                   </div>
-                  <div className='flex ml-3 justify-self-start'>
-                    <p className='text-overline2'>
+                  <div className="flex ml-3 justify-self-start">
+                    <p className="text-overline2">
                       <Checkbox
                         checked={labelItem?.required}
                         // checked={true}
@@ -2183,13 +2216,13 @@ const AttributeLabel = ({ labelItem, deleteItem, projectType }) => {
               )}
               {projectType === "schema" ||
                 (projectType === "both" && (
-                  <div className=' w-full grid grid-cols-5 gap-2 items-center'>
+                  <div className=" w-full grid grid-cols-5 gap-2 items-center">
                     {" "}
-                    <div className='flex justify-self-start items-center'>
+                    <div className="flex justify-self-start items-center">
                       <img
                         src={AttributeIcon}
-                        alt='conektto logo'
-                        className='bg-white mr-4'
+                        alt="conektto logo"
+                        className="bg-white mr-4"
                         style={{ height: "24px", width: "24px" }}
                       />
                       <Tooltip
@@ -2197,7 +2230,7 @@ const AttributeLabel = ({ labelItem, deleteItem, projectType }) => {
                         open={openTooltip}
                         onClose={handleToolTipOpen}
                         onOpen={handleToolTipOpen}
-                        placement='left-start'
+                        placement="left-start"
                       >
                         <p
                           onMouseEnter={() => {
@@ -2206,19 +2239,19 @@ const AttributeLabel = ({ labelItem, deleteItem, projectType }) => {
                           onMouseLeave={() => {
                             setIsHover([false, labelItem?.name]);
                           }}
-                          className='text-overline2'
+                          className="text-overline2"
                         >
                           {truncate(labelItem?.name, truncateLength)}
                         </p>
                       </Tooltip>{" "}
                     </div>
-                    <div className='ml-1 flex justify-self-start'>
-                      <p className='text-overline2'>{labelItem?.type}</p>
+                    <div className="ml-1 flex justify-self-start">
+                      <p className="text-overline2">{labelItem?.type}</p>
                     </div>
-                    <div className='flex justify-self-start'>
+                    <div className="flex justify-self-start">
                       {/* empty: no isarray Checkbox */}
                     </div>
-                    <div className='flex ml-3 justify-self-start'>
+                    <div className="flex ml-3 justify-self-start">
                       {/* <p className='text-overline2'>
                         <Checkbox
                           checked={labelItem?.required}
@@ -2235,7 +2268,7 @@ const AttributeLabel = ({ labelItem, deleteItem, projectType }) => {
                 ))}
             </div>
 
-            <div className='w-6'>
+            <div className="w-6">
               {isHovering && canEdit() && (
                 <AppIcon
                   onClick={(ev) => {
@@ -2337,7 +2370,7 @@ const DatabaseLabel = ({
           <>
             <Dialog
               onClose={handleCloseDialog}
-              aria-labelledby='dashboard-dialog'
+              aria-labelledby="dashboard-dialog"
               open={dialog?.show ?? false}
               fullWidth
               PaperProps={{
@@ -2345,19 +2378,19 @@ const DatabaseLabel = ({
               }}
               disableBackdropClick
             >
-              {dialog?.type === "rename-table" && 
-              canEdit() && 
-              !isArrayOfObject && (
-                <ChangeTableName
-                  labelItem={tableLabelItem}
-                  request={request}
-                  responseCode={responseCode}
-                  onClose={handleCloseDialog}
-                  refresh={() => {
-                    refresh();
-                  }}
-                />
-              )}
+              {dialog?.type === "rename-table" &&
+                canEdit() &&
+                !isArrayOfObject && (
+                  <ChangeTableName
+                    labelItem={tableLabelItem}
+                    request={request}
+                    responseCode={responseCode}
+                    onClose={handleCloseDialog}
+                    refresh={() => {
+                      refresh();
+                    }}
+                  />
+                )}
               {dialog?.type === "rename-table" &&
                 canEdit() &&
                 isArrayOfObject && (
@@ -2371,15 +2404,15 @@ const DatabaseLabel = ({
                 )}
             </Dialog>
 
-            <div className='flex flex-row p-1 justify-between items-center border-b-2 h-8'>
-              <div className='flex flex-row items-center justify-start w-full '>
-                <div className='w-full grid grid-cols-5 gap-2 items-center '>
+            <div className="flex flex-row p-1 justify-between items-center border-b-2 h-8">
+              <div className="flex flex-row items-center justify-start w-full ">
+                <div className="w-full grid grid-cols-5 gap-2 items-center ">
                   {" "}
-                  <div className='flex justify-self-start items-center'>
+                  <div className="flex justify-self-start items-center">
                     <img
                       src={TableIcon}
-                      alt='conektto logo'
-                      className='bg-white mr-4'
+                      alt="conektto logo"
+                      className="bg-white mr-4"
                       style={{ height: "24px", width: "24px" }}
                     />
                     {tableLabelItem?.sourceName &&
@@ -2389,29 +2422,29 @@ const DatabaseLabel = ({
                         open={openTooltip}
                         onClose={handleToolTipOpen}
                         onOpen={handleToolTipOpen}
-                        placement='left-start'
+                        placement="left-start"
                       >
                         <p
-                          id='tableNameTruncate'
+                          id="tableNameTruncate"
                           onMouseEnter={() => {
                             setIsHover([true, tableLabelItem?.sourceName]);
                           }}
                           onMouseLeave={() => {
                             setIsHover([false, tableLabelItem?.sourceName]);
                           }}
-                          className='text-overline2'
+                          className="text-overline2"
                         >
                           {truncate(tableLabelItem?.sourceName, truncateLength)}
                         </p>
                       </Tooltip>
                     ) : null}
                   </div>
-                  <div className='flex -ml-4 justify-self-start'>
+                  <div className="flex -ml-4 justify-self-start">
                     {" "}
                     {tableLabelItem?.name &&
                     !_.isEmpty(tableLabelItem?.name) ? (
                       <p
-                        className='text-overline2 ml-4 select-none'
+                        className="text-overline2 ml-4 select-none"
                         ref={nameRef}
                       >
                         {tableLabelItem?.name}
@@ -2419,7 +2452,7 @@ const DatabaseLabel = ({
                     ) : null}
                   </div>
                   <div> {/* empty datattype */}</div>
-                  <div className='flex  ml-1 justify-self-start'>
+                  <div className="flex  ml-1 justify-self-start">
                     <Checkbox
                       checked={isArray}
                       onClick={(e) => {
@@ -2439,7 +2472,7 @@ const DatabaseLabel = ({
                 </div>
               </div>
 
-              <div className='w-6'>
+              <div className="w-6">
                 {isHovering && canEdit() && (
                   <>
                     <AppIcon
@@ -2454,7 +2487,7 @@ const DatabaseLabel = ({
                     </AppIcon>
 
                     <Menu
-                      id='table-menu'
+                      id="table-menu"
                       anchorEl={optionsMenuAnchorEl}
                       keepMounted
                       open={Boolean(optionsMenuAnchorEl)}
@@ -2473,7 +2506,7 @@ const DatabaseLabel = ({
                           showTableNameChangeDialog();
                         }}
                       >
-                        <p className='text-overline2'>Rename</p>
+                        <p className="text-overline2">Rename</p>
                       </MenuItem>
                       <MenuItem
                         onClick={(e) => {
@@ -2484,7 +2517,7 @@ const DatabaseLabel = ({
                           deleteItem(tableLabelItem);
                         }}
                       >
-                        <p className='text-overline2 text-accent-red'>Delete</p>
+                        <p className="text-overline2 text-accent-red">Delete</p>
                       </MenuItem>
                     </Menu>
                   </>
@@ -2588,7 +2621,7 @@ const ColumnLabel = ({
           <>
             <Dialog
               onClose={handleCloseDialog}
-              aria-labelledby='column-dialog'
+              aria-labelledby="column-dialog"
               open={dialog?.show ?? false}
               fullWidth
               PaperProps={{
@@ -2596,23 +2629,23 @@ const ColumnLabel = ({
               }}
               disableBackdropClick
             >
-              {dialog?.type === "rename-column" && 
-              canEdit() && 
-              !isArrayOfObject && (
-                <ChangeColumnName
-                  labelItem={columnLabelItem}
-                  request={request}
-                  responseCode={responseCode}
-                  renameColumn={(column, value) => {
-                    renameColumn(column, value);
+              {dialog?.type === "rename-column" &&
+                canEdit() &&
+                !isArrayOfObject && (
+                  <ChangeColumnName
+                    labelItem={columnLabelItem}
+                    request={request}
+                    responseCode={responseCode}
+                    renameColumn={(column, value) => {
+                      renameColumn(column, value);
 
-                    handleCloseDialog();
-                  }}
-                  isNameTaken={isNameTaken}
-                  onClose={handleCloseDialog}
-                />
-              )}
-            {dialog?.type === "rename-column" &&
+                      handleCloseDialog();
+                    }}
+                    isNameTaken={isNameTaken}
+                    onClose={handleCloseDialog}
+                  />
+                )}
+              {dialog?.type === "rename-column" &&
                 canEdit() &&
                 isArrayOfObject && (
                   <ChangeNameInsideArray
@@ -2625,12 +2658,11 @@ const ColumnLabel = ({
                   />
                 )}
             </Dialog>{" "}
-
-            <div className=' flex flex-row p-1 h-8 justify-between items-center border-b-2 ml-6 hover:bg-neutral-gray8'>
-              <div className='flex flex-row items-center justify-start flex-1'>
-                <div className=' w-full grid grid-cols-5 gap-2 items-center '>
+            <div className=" flex flex-row p-1 h-8 justify-between items-center border-b-2 ml-6 hover:bg-neutral-gray8">
+              <div className="flex flex-row items-center justify-start flex-1">
+                <div className=" w-full grid grid-cols-5 gap-2 items-center ">
                   {" "}
-                  <div className='flex justify-self-start items-center '>
+                  <div className="flex justify-self-start items-center ">
                     <AppIcon className="mr-1 opacity-50">
                       <DragIndicatorIcon
                         className={classNames({
@@ -2641,8 +2673,8 @@ const ColumnLabel = ({
                     </AppIcon>
                     <img
                       src={ColumnIcon}
-                      alt='conektto logo'
-                      className='bg-white mr-4'
+                      alt="conektto logo"
+                      className="bg-white mr-4"
                       style={{ height: "24px", width: "24px" }}
                     />
                     <Tooltip
@@ -2650,10 +2682,10 @@ const ColumnLabel = ({
                       open={openTooltip}
                       onClose={handleToolTipOpen}
                       onOpen={handleToolTipOpen}
-                      placement='left-start'
+                      placement="left-start"
                     >
                       <p
-                        className='text-overline2'
+                        className="text-overline2"
                         onMouseEnter={() => {
                           setIsHover([true, columnLabelItem?.sourceName]);
                         }}
@@ -2666,19 +2698,19 @@ const ColumnLabel = ({
                     </Tooltip>
                   </div>
                   <div
-                    className='flex justify-self-start  cursor-pointer select-none'
+                    className="flex justify-self-start  cursor-pointer select-none"
                     ref={nameRef}
                   >
-                    <p className='text-overline2'>{columnLabelItem?.name}</p>
+                    <p className="text-overline2">{columnLabelItem?.name}</p>
                   </div>
-                  <div className='flex ml-1 justify-self-start'>
-                    <p className='text-overline2'>{columnLabelItem?.type}</p>
+                  <div className="flex ml-1 justify-self-start">
+                    <p className="text-overline2">{columnLabelItem?.type}</p>
                   </div>
-                  <div className='flex justify-self-start'>
+                  <div className="flex justify-self-start">
                     {/* empty: no isarray Checkbox */}
                   </div>
-                  <div className='flex ml-3 justify-self-start'>
-                    <p className='text-overline2'>
+                  <div className="flex ml-3 justify-self-start">
+                    <p className="text-overline2">
                       <Checkbox
                         checked={columnLabelItem?.required}
                         style={{
@@ -2691,7 +2723,7 @@ const ColumnLabel = ({
                 </div>
               </div>
 
-              <div className='w-6'>
+              <div className="w-6">
                 {isHovering && canEdit() && isDeletable && (
                   <>
                     <AppIcon
@@ -2706,7 +2738,7 @@ const ColumnLabel = ({
                     </AppIcon>
 
                     <Menu
-                      id='table-menu'
+                      id="table-menu"
                       anchorEl={optionsMenuAnchorEl}
                       keepMounted
                       open={Boolean(optionsMenuAnchorEl)}
@@ -2725,20 +2757,22 @@ const ColumnLabel = ({
                           showColumnNameChangeDialog();
                         }}
                       >
-                        <p className='text-overline2'>Rename</p>
+                        <p className="text-overline2">Rename</p>
                       </MenuItem>
                       {isDeletable && (
-                      <MenuItem
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          setOptionsMenuAnchorEl(null);
+                        <MenuItem
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setOptionsMenuAnchorEl(null);
 
-                          deleteColumn(columnLabelItem);
-                        }}
-                      >
-                        <p className='text-overline2 text-accent-red'>Delete</p>
-                      </MenuItem>
+                            deleteColumn(columnLabelItem);
+                          }}
+                        >
+                          <p className="text-overline2 text-accent-red">
+                            Delete
+                          </p>
+                        </MenuItem>
                       )}
                     </Menu>
                   </>
@@ -2831,7 +2865,7 @@ const StoredProcedureLabel = ({
           <>
             <Dialog
               onClose={handleCloseDialog}
-              aria-labelledby='dashboard-dialog'
+              aria-labelledby="dashboard-dialog"
               open={dialog?.show ?? false}
               fullWidth
               PaperProps={{
@@ -2849,15 +2883,15 @@ const StoredProcedureLabel = ({
               )}
             </Dialog>
 
-            <div className='flex flex-row p-1 justify-between items-center border-b-2 h-8'>
-              <div className='flex flex-row items-center justify-start w-full '>
-                <div className='w-full grid grid-cols-5 gap-2 items-center '>
+            <div className="flex flex-row p-1 justify-between items-center border-b-2 h-8">
+              <div className="flex flex-row items-center justify-start w-full ">
+                <div className="w-full grid grid-cols-5 gap-2 items-center ">
                   {" "}
-                  <div className='flex justify-self-start items-center'>
+                  <div className="flex justify-self-start items-center">
                     <img
                       src={StoredProcedureIcon}
-                      alt='conektto logo'
-                      className='bg-white mr-4'
+                      alt="conektto logo"
+                      className="bg-white mr-4"
                       style={{ height: "24px", width: "24px" }}
                     />
                     {storedProcedureLabelItem?.name &&
@@ -2867,10 +2901,10 @@ const StoredProcedureLabel = ({
                         open={openTooltip}
                         onClose={handleToolTipOpen}
                         onOpen={handleToolTipOpen}
-                        placement='left-start'
+                        placement="left-start"
                       >
                         <p
-                          id='tableNameTruncate'
+                          id="tableNameTruncate"
                           onMouseEnter={() => {
                             setIsHover([
                               true,
@@ -2883,7 +2917,7 @@ const StoredProcedureLabel = ({
                               storedProcedureLabelItem?.sourceName,
                             ]);
                           }}
-                          className='text-overline2'
+                          className="text-overline2"
                         >
                           {truncate(
                             storedProcedureLabelItem?.name,
@@ -2900,7 +2934,7 @@ const StoredProcedureLabel = ({
                 </div>
               </div>
 
-              <div className='w-6'>
+              <div className="w-6">
                 {isHovering && canEdit() && (
                   <>
                     <AppIcon
@@ -2915,7 +2949,7 @@ const StoredProcedureLabel = ({
                     </AppIcon>
 
                     <Menu
-                      id='table-menu'
+                      id="table-menu"
                       anchorEl={optionsMenuAnchorEl}
                       keepMounted
                       open={Boolean(optionsMenuAnchorEl)}
@@ -2934,7 +2968,7 @@ const StoredProcedureLabel = ({
                           showTableNameChangeDialog();
                         }}
                       >
-                        <p className='text-overline2'>Rename</p>
+                        <p className="text-overline2">Rename</p>
                       </MenuItem>
                       <MenuItem
                         onClick={(e) => {
@@ -2945,7 +2979,7 @@ const StoredProcedureLabel = ({
                           deleteItem(storedProcedureLabelItem);
                         }}
                       >
-                        <p className='text-overline2 text-accent-red'>Delete</p>
+                        <p className="text-overline2 text-accent-red">Delete</p>
                       </MenuItem>
                     </Menu>
                   </>
@@ -3063,11 +3097,11 @@ const InputOrOutputLabel = ({
               )}
             </Dialog> */}
 
-            <div className=' flex flex-row p-1 h-8 justify-between items-center border-b-2 ml-6 hover:bg-neutral-gray8'>
-              <div className='flex flex-row items-center justify-start flex-1'>
-                <div className=' w-full grid grid-cols-5 gap-2 items-center '>
+            <div className=" flex flex-row p-1 h-8 justify-between items-center border-b-2 ml-6 hover:bg-neutral-gray8">
+              <div className="flex flex-row items-center justify-start flex-1">
+                <div className=" w-full grid grid-cols-5 gap-2 items-center ">
                   {" "}
-                  <div className='flex justify-self-start items-center '>
+                  <div className="flex justify-self-start items-center ">
                     <img
                       src={
                         inputOrOutputLabelItem.type == "input"
@@ -3076,8 +3110,8 @@ const InputOrOutputLabel = ({
                           ? OutputIcon
                           : null
                       }
-                      alt='conektto logo'
-                      className='bg-white mr-4'
+                      alt="conektto logo"
+                      className="bg-white mr-4"
                       style={{ height: "24px", width: "24px" }}
                     />
                     <Tooltip
@@ -3085,10 +3119,10 @@ const InputOrOutputLabel = ({
                       open={openTooltip}
                       onClose={handleToolTipOpen}
                       onOpen={handleToolTipOpen}
-                      placement='left-start'
+                      placement="left-start"
                     >
                       <p
-                        className='text-overline2'
+                        className="text-overline2"
                         onMouseEnter={() => {
                           setIsHover([true, inputOrOutputLabelItem?.name]);
                         }}
@@ -3101,22 +3135,22 @@ const InputOrOutputLabel = ({
                     </Tooltip>
                   </div>
                   <div
-                    className='flex justify-self-start  cursor-pointer select-none'
+                    className="flex justify-self-start  cursor-pointer select-none"
                     ref={nameRef}
                   >
                     {/* <p className='text-overline2'>
                       {inputOrOutputLabelItem?.name}
                     </p> */}
                   </div>
-                  <div className='flex ml-1 justify-self-start'>
-                    <p className='text-overline2'>
+                  <div className="flex ml-1 justify-self-start">
+                    <p className="text-overline2">
                       {/* {inputOrOutputLabelItem?.type} */}
                     </p>
                   </div>
-                  <div className='flex justify-self-start'>
+                  <div className="flex justify-self-start">
                     {/* empty: no isarray Checkbox */}
                   </div>
-                  <div className='flex ml-3 justify-self-start'>
+                  <div className="flex ml-3 justify-self-start">
                     {/* empty: no isarray Checkbox */}
                   </div>
                 </div>

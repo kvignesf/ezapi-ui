@@ -52,6 +52,26 @@ const updateProject = async ({ id, projectName, removeInvites }) => {
   }
 };
 
+
+const push_to_github = async ({ code, projectId }) => {
+  try {
+    console.log("projectid::",projectId);
+    const { data } = await client.post(endpoint.push_to_github, {
+      code: code,
+      projectid: projectId,
+      isMaster: true
+    },{timeout: 600000});
+    return data;
+  } catch (error) {
+    throw getApiError(error);
+  }
+};
+
+export const usePushToGithub = () => {
+  const mutation = useMutation(push_to_github);							
+  return mutation;   
+};
+
 export const useUpdateProject = () => {
   const queryClient = useQueryClient();
 
