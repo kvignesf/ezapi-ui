@@ -39,7 +39,8 @@ import {
   useGetProjects,
   useDownloadDatabase,
   useDownloadApigee,
-  usePushToGithub
+  usePushToGithub,
+  useVIewRepo
 } from "./projectQueries";
 import EmptyLogo from "../static/images/empty-state.svg";
 import { PrimaryButton } from "../shared/components/AppButton";
@@ -193,6 +194,10 @@ const ProjectRow = ({
     downloadDotnetCodegen({ projectId: project?.projectId });
   };
 
+  const onPushViewRepo = () => {
+    viewRepo({ projectId: project?.projectId });
+  };
+
   const [enableIcon, setEnableIcon] = useRecoilState(downloadIconSts);
   const [projectIden, setProjectIden] = useRecoilState(downloadIconProj);
   const [githubIcon, setGithubIcon] = React.useState(true);
@@ -207,7 +212,13 @@ const ProjectRow = ({
     reset: resetgithubLogin,
   } = usePushToGithub();
 
-  const onGitHubLoginSuccess = async (response) => {    
+  const {
+    mutate: viewRepo
+  } = useVIewRepo();
+
+
+  const onGitHubLoginSuccess = async (response) => {  
+    console.log("..response..", response)  
     const { code } = response;
     if (code)	{
       pushToGithub({ code: code, projectId: project?.projectId });
@@ -311,7 +322,7 @@ const ProjectRow = ({
                       clientId={process.env.REACT_APP_GITHUB_CLIENT_ID}
                       redirectUri={process.env.REACT_APP_REDIRECT_URI}
                       onSuccess={onGitHubLoginSuccess}
-                      scope='user project repo'
+                      scope='user project repo email'
                       // onFailure={onGitHubFailure}
                       // className="github-push-button"
                       > 
@@ -331,6 +342,12 @@ const ProjectRow = ({
                             <img
                             src = {githubLogo}
                             alt='conektto logo'
+                            onClick={(e) => {
+                              e?.preventDefault();
+                              e?.stopPropagation();
+                              console.log("entereeed here");
+                              onPushViewRepo();
+                            }}
                             />
                           </div>
                         </div>)
@@ -675,6 +692,13 @@ const Content = ({ showCreateProjectDialog }) => {
 
   const history = useHistory();
   const pagination = useRef();
+
+  useEffect(() => {
+    const projectsFetchInterval = setInterval(() => refetchProjects(), 45000);
+    return () => {
+      clearInterval(projectsFetchInterval);
+    };
+  });
 
   useEffect(() => {
     // Fetch items from another resources.

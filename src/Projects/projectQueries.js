@@ -72,6 +72,30 @@ export const usePushToGithub = () => {
   return mutation;   
 };
 
+const view_repo = async ({ projectId }) => {
+  try {
+    const { data } = await client.post(endpoint.view_repo, {
+      projectid: projectId
+    });
+    return data;
+  } catch (error) {
+    throw getApiError(error);
+  }
+};
+
+export const useVIewRepo = () => {
+  const mutation = useMutation(view_repo,{
+    onSuccess: (data) => {
+      console.log("view_repo_data:",data);
+      if(data?.repo_url)
+      {
+        window.open(data.repo_url,"_blank");
+      }
+    }
+  });							
+  return mutation;
+};
+
 export const useUpdateProject = () => {
   const queryClient = useQueryClient();
 

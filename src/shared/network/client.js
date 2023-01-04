@@ -53,6 +53,7 @@ export const endpoint = Object.freeze({
   mandMappingTableData: "/listAllAttributes",
   googleLogin: "/google-signin",
   push_to_github: "/pushToGithub",
+  view_repo: "/view_repo",
 
 
   // Payment
