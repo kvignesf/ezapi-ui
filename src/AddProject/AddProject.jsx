@@ -187,13 +187,27 @@ const AddProject = ({ onClose, onSuccess }) => {
         _.isEmpty(projectDetails?.username) ||
         _.isEmpty(projectDetails?.password) ||
         _.isEmpty(projectDetails?.database) ||
-        _.isEmpty(projectDetails?.type))
+        _.isEmpty(projectDetails?.type)) &&
+        (_.isEmpty(projectDetails?.specs) && isDesign) 
     ) {
-      setErrorDisplay(true);
+      //setErrorDisplay(true);
+      uploadProjectData({
+        name: projectDetails?.name,
+        invitees: projectDetails?.collaborators?.map((collaborator) => {
+          return {
+            email: collaborator,
+          };
+        }),
+        isDesign: isDesign,
+        isDefaultClaimSpec: defaultClaimSpec,
+        isDefaultAdvSpec: defaultAdvSpec,
+        projectType: "noinput"
+      });
     } else if (_.isEmpty(projectDetails?.specs) && !isDesign) {
       setTab(0);
       setSpecErrorDisplay(true);
-    } else {
+    } 
+    else {
       setErrorDisplay(false);
       setSpecErrorDisplay(false);
       uploadProjectData({
@@ -206,6 +220,7 @@ const AddProject = ({ onClose, onSuccess }) => {
         isDesign: isDesign,
         isDefaultClaimSpec: defaultClaimSpec,
         isDefaultAdvSpec: defaultAdvSpec,
+        projectType: "none"
       });
     }
   };

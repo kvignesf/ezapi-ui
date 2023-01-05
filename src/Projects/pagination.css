@@ -96,3 +96,7 @@
   cursor: pointer;
   white-space: nowrap;
 }
+
+.download-icons-styling{
+  width: 20%;
+}

@@ -117,22 +117,43 @@ const addProject = async ({
   isDesign,
   isDefaultClaimSpec,
   isDefaultAdvSpec,
+  projectType
 }) => {
   try {
-    const { data } = await client.post(
-      endpoint.project,
-      {
-        projectName: name,
-        invites: invitees,
-        isDesign: isDesign,
-        isDefaultClaimSpec: isDefaultClaimSpec,
-        isDefaultAdvSpec: isDefaultAdvSpec,
-      },
-      {
-        timeout: 90000,
-      }
-    );
-    return data;
+    if (projectType == "noinput") {
+      const { data } = await client.post(
+        endpoint.project,
+        {
+          projectName: name,
+          invites: invitees,
+          isDesign: isDesign,
+          isDefaultClaimSpec: isDefaultClaimSpec,
+          isDefaultAdvSpec: isDefaultAdvSpec,
+          projectType: projectType
+        },
+        {
+          timeout: 90000,
+        }
+      );
+      return data;
+    }
+    else {
+      const { data } = await client.post(
+        endpoint.project,
+        {
+          projectName: name,
+          invites: invitees,
+          isDesign: isDesign,
+          isDefaultClaimSpec: isDefaultClaimSpec,
+          isDefaultAdvSpec: isDefaultAdvSpec,
+        },
+        {
+          timeout: 90000,
+        }
+      );
+      return data;
+    }
+    
   } catch (error) {
     throw getApiError(error);
   }

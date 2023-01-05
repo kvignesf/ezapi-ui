@@ -288,77 +288,13 @@ const ProjectRow = ({
         <p className='text-overline2'>{project?.status}</p>
       </td>
       
-      <td align='left' >
+      <td align='left'>
         <div className='text-overline2'>{project?.isDesign ? "DESIGN" : "TEST"}
         </div>
       </td>
-      <td align='center'>
+      <td align='left' className = 'download-icons-styling'>
         <div className='flex flex-row items-center gap-2'>
-        {/* Github Upload */}
-        <div className='w-8'>
-            {project?.status?.toLowerCase() === "complete" &&
-              project?.projectType?.toLowerCase() !== "schema" && project?.isDesign &&(
-                <Tooltip title={
-                  (project?.githubCommit == "ReadyForPush")
-                    ? "Push to Github"
-                    : (project?.githubCommit == "ReadyForView") ? "View on Github" : "Commit In Progress"
-                }>
-                  <div
-                    style={{
-                      marginTop: "-5px",
-                      width: "18px",
-                      height: "18px",
-                    }}
-                  >
-                    {/* <GitHubIcon
-                    className='cursor-pointer'
-                    onClick={() => {
-                      // setAnchorEl(null);
-                      handlePushToGithub(project);
-                    }}
-                    /> */}
-                    {project?.githubCommit == "ReadyForPush" &&
-                    (<LoginGithub 
-                      clientId={process.env.REACT_APP_GITHUB_CLIENT_ID}
-                      redirectUri={process.env.REACT_APP_REDIRECT_URI}
-                      onSuccess={onGitHubLoginSuccess}
-                      scope='user project repo email'
-                      // onFailure={onGitHubFailure}
-                      // className="github-push-button"
-                      > 
-                      {/* <GitHubIcon  style={{ color: "#000000", height: "18px", width: "18px" }} />     */}
-                      <div className="github-ico-wrapper mt-1">
-                        <img
-                         src = {githubLogo}
-                         alt='conektto logo'
-                         />
-                      </div>
-                    </LoginGithub>)
-                    }    
-                    {
-                      project?.githubCommit == "ReadyForView" &&(
-                        <div className="github-view-button mt-1">
-                          <div className="github-ico-wrapper">
-                            <img
-                            src = {githubLogo}
-                            alt='conektto logo'
-                            onClick={(e) => {
-                              e?.preventDefault();
-                              e?.stopPropagation();
-                              console.log("entereeed here");
-                              onPushViewRepo();
-                            }}
-                            />
-                          </div>
-                        </div>)
-                    }               
-                  </div>
-                </Tooltip>                
-              )}
-            {(isgithubLoggingIn || project?.githubCommit == "CommitInProgress") && (
-              <CircularProgress style={{ width: "24px", height: "24px" }} />
-            )}
-          </div>
+        
           {/* Codegen download */}
           <div className='w-8'>
             {project?.status?.toLowerCase() === "complete" &&
@@ -602,6 +538,74 @@ const ProjectRow = ({
             )}
           </div>
         </div>
+      </td>
+
+      <td align='left'>
+      {/* Github Upload */}
+        <div className='w-8'>
+            {project?.status?.toLowerCase() === "complete" &&
+              project?.projectType?.toLowerCase() !== "schema" && project?.isDesign &&(
+                <Tooltip title={
+                  (project?.githubCommit == "ReadyForPush")
+                    ? "Push to Github"
+                    : (project?.githubCommit == "ReadyForView") ? "View on Github" : "Commit In Progress"
+                }>
+                  <div
+                    style={{
+                      marginTop: "-5px",
+                      width: "18px",
+                      height: "18px",
+                    }}
+                  >
+                    {/* <GitHubIcon
+                    className='cursor-pointer'
+                    onClick={() => {
+                      // setAnchorEl(null);
+                      handlePushToGithub(project);
+                    }}
+                    /> */}
+                    {project?.githubCommit == "ReadyForPush" && (project?.codegen || project?.dotnetcodegen) &&
+                    (<LoginGithub 
+                      clientId={process.env.REACT_APP_GITHUB_CLIENT_ID}
+                      redirectUri={process.env.REACT_APP_REDIRECT_URI}
+                      onSuccess={onGitHubLoginSuccess}
+                      scope='user project repo email'
+                      // onFailure={onGitHubFailure}
+                      // className="github-push-button"
+                      > 
+                      {/* <GitHubIcon  style={{ color: "#000000", height: "18px", width: "18px" }} />     */}
+                      <div className="github-ico-wrapper mt-1">
+                        <img
+                         src = {githubLogo}
+                         alt='conektto logo'
+                         />
+                      </div>
+                    </LoginGithub>)
+                    }    
+                    {
+                      project?.githubCommit == "ReadyForView" &&(
+                        <div className="github-view-button mt-1">
+                          <div className="github-ico-wrapper">
+                            <img
+                            src = {githubLogo}
+                            alt='conektto logo'
+                            onClick={(e) => {
+                              e?.preventDefault();
+                              e?.stopPropagation();
+                              console.log("entereeed here");
+                              onPushViewRepo();
+                            }}
+                            />
+                          </div>
+                        </div>)
+                    }               
+                  </div>
+                </Tooltip>                
+              )}
+            {(isgithubLoggingIn || project?.githubCommit == "CommitInProgress") && (
+              <CircularProgress style={{ width: "24px", height: "24px" }} />
+            )}
+          </div>
       </td>
 
       <td align='center'>
@@ -877,7 +881,8 @@ const Content = ({ showCreateProjectDialog }) => {
                     <th className=''>LAST ACTIVITY</th>
                     <th className=''>STATUS</th>
                     <th className=''>DESIGN / TEST</th>
-                    <th className='pl-8'>DOWNLOAD</th>                    
+                    <th className='pl-8'>DOWNLOAD</th> 
+                    <th className=''>GITHUB</th>                  
                     <th className='rounded-tr-md rounded-br-md text-center'>
                       {isFetchingProjectsBg ? (
                         <CircularProgress size='20px' />

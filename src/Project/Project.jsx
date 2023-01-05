@@ -949,10 +949,10 @@ const Project = () => {
                     e?.preventDefault();
                     e?.stopPropagation();
                     // console.log(projectDetails?.isConnectDB);
-                    if (projectDetails?.projectType === "db") {
+                    console.log("githubCommit" , projectDetails?.githubCommit);                   
+                    if (projectDetails?.projectType === "db") {                        
                       fetchTables({ projectId });
                       setDisplayEntityMapping(true);
-													 
                     } else {
                       if (
                         projectDetails?.isConnectDB &&
