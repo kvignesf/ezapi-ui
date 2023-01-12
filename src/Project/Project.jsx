@@ -277,7 +277,19 @@ const Project = () => {
         data = newProjectDetails["password"] ?? null;
       }
       updateMappingData(mappedEntityData, data); */
-      updateMappingData();
+      if (!(projectDetails?.isConnectDB && projectDetails?.dbDetails)) {
+        updateMappingData();
+      } else if (projectDetails?.projectType === "db") {
+        fetchTables({ projectId });
+        setDisplayEntityMapping(true);
+      } else {
+        if (projectDetails?.isConnectDB && projectDetails?.dbDetails) {
+          setPasswordBeforePublish(true);
+        } else {
+          submitProject();
+        }
+      }
+      //updateMappingData();
       resetVerify();
     }
   }, [verifyData]);
@@ -370,7 +382,7 @@ const Project = () => {
         showSaveOperationWarning();
       } else {
         resetPublishMutation();
-        verify({ projectId, newProjectDetails });
+        publish({ projectId, newProjectDetails });
       }
     }
   };
@@ -497,6 +509,7 @@ const Project = () => {
 
     setInProgress(true);
     const data = projectDetails.dbDetails;
+    /** IS THIS BELOW COMMENTING REQUIRED 
     await publishProject({ projectId, data })
       .then((data) => {
         console.log("publish");
@@ -505,7 +518,8 @@ const Project = () => {
       .catch((err) => {
         console.log("not publish");
         setEntityMappingError(err);
-      });
+    });*/
+    publish({ projectId, data });
     setInProgress(false);
   };
 
@@ -799,13 +813,14 @@ const Project = () => {
               onPublish={(newProjectDetails, isDefaultproj) => {
                 setPasswordBeforePublish(false);
                 setNewProjectDetails(newProjectDetails, isDefaultproj);
-                if (projectDetails?.projectType === "db") {
+                /* if (projectDetails?.projectType === "db") {
                   //updateMappingData(mappedEntityData, newProjectDetails["password"]);
                   verifyProject({ projectId, newProjectDetails });
                 } else {
                   //setNewProjectDetails(newProjectDetails, isDefaultproj);
                   submitProject();
-                }
+                } */
+                submitProject();
               }}
             />
           )}
@@ -950,7 +965,7 @@ const Project = () => {
                     e?.stopPropagation();
                     // console.log(projectDetails?.isConnectDB);
                     console.log("githubCommit" , projectDetails?.githubCommit);                   
-                    if (projectDetails?.projectType === "db") {                        
+                    /* if (projectDetails?.projectType === "db") {                        
                       fetchTables({ projectId });
                       setDisplayEntityMapping(true);
                     } else {
@@ -964,7 +979,8 @@ const Project = () => {
                         console.log("without password");
                         submitProject();
                       }
-                    }
+                    } */
+                    verifyProject({ projectId, newProjectDetails });
                   }}
                 >
                   {getPublishButtonText()}

@@ -179,18 +179,7 @@ const AddProject = ({ onClose, onSuccess }) => {
       }
 
       return;
-    } else if (
-      (!defaultClaimSpec || !defaultAdvSpec) &&
-      _.isEmpty(projectDetails?.dbs) &&
-      (_.isEmpty(projectDetails?.host) ||
-        _.isEmpty(projectDetails?.port) ||
-        _.isEmpty(projectDetails?.username) ||
-        _.isEmpty(projectDetails?.password) ||
-        _.isEmpty(projectDetails?.database) ||
-        _.isEmpty(projectDetails?.type)) &&
-        (_.isEmpty(projectDetails?.specs) && isDesign) 
-    ) {
-      //setErrorDisplay(true);
+    } else if (_.isEmpty(projectDetails?.dbs) && _.isEmpty(projectDetails?.type) && _.isEmpty(projectDetails?.specs) && isDesign ) {
       uploadProjectData({
         name: projectDetails?.name,
         invitees: projectDetails?.collaborators?.map((collaborator) => {
@@ -203,6 +192,33 @@ const AddProject = ({ onClose, onSuccess }) => {
         isDefaultAdvSpec: defaultAdvSpec,
         projectType: "noinput"
       });
+    }  else if (
+      (!defaultClaimSpec || !defaultAdvSpec) &&
+      _.isEmpty(projectDetails?.dbs) &&
+      (_.isEmpty(projectDetails?.host) ||
+        _.isEmpty(projectDetails?.port) ||
+        _.isEmpty(projectDetails?.username) ||
+        _.isEmpty(projectDetails?.password) ||
+        _.isEmpty(projectDetails?.database) ||
+        _.isEmpty(projectDetails?.type)) &&
+        (_.isEmpty(projectDetails?.keys) &&
+        _.isEmpty(projectDetails?.certificates) &&
+        _.isEmpty(projectDetails?.caCertificates)) &&
+        (_.isEmpty(projectDetails?.specs) && isDesign) 
+    ) {
+      setErrorDisplay(true);
+      /* uploadProjectData({
+        name: projectDetails?.name,
+        invitees: projectDetails?.collaborators?.map((collaborator) => {
+          return {
+            email: collaborator,
+          };
+        }),
+        isDesign: isDesign,
+        isDefaultClaimSpec: defaultClaimSpec,
+        isDefaultAdvSpec: defaultAdvSpec,
+        projectType: "noinput"
+      }); */
     } else if (_.isEmpty(projectDetails?.specs) && !isDesign) {
       setTab(0);
       setSpecErrorDisplay(true);

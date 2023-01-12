@@ -50,7 +50,9 @@ import routes, { generateRoute } from "../shared/routes";
 import dotnetLogo from "../static/images/logo/dotnetlogo.svg";
 import javaLogo from "../static/images/logo/java-vertical.svg";
 import githubLogo from "../static/images/logo/github-icon.svg";
+import viewgithubLogo from "../static/images/GitHubView.svg"
 import Logo from "../static/images/logo/svg.svg";
+import githubCustomSpinner from "../static/images/githubCommit-InProgress.gif";
 import ApigeeLogo from "../static/images/logo/CloudLogo.png";
 import DatabaseLogo from "../static/images/logo/database_download.svg";
 import { useCanEdit } from "../shared/utils";
@@ -209,6 +211,7 @@ const ProjectRow = ({
     isLoading: isgithubLoggingIn,
     isSuccess: isgithubLoginSuccess,
     mutate: pushToGithub,
+    data: githubPushResponse,
     reset: resetgithubLogin,
   } = usePushToGithub();
 
@@ -546,13 +549,13 @@ const ProjectRow = ({
             {project?.status?.toLowerCase() === "complete" &&
               project?.projectType?.toLowerCase() !== "schema" && project?.isDesign &&(
                 <Tooltip title={
-                  (project?.githubCommit == "ReadyForPush")
+                  (project?.githubCommit == "ReadyForPush" && (project?.codegen || project?.dotnetcodegen) && (!isgithubLoggingIn))
                     ? "Push to Github"
-                    : (project?.githubCommit == "ReadyForView") ? "View on Github" : "Commit In Progress"
+                    : (project?.githubCommit == "ReadyForView") ? "View on Github" : (project?.githubCommit == "CommitInProgress") ? "Commit In Progress" : ""
                 }>
                   <div
                     style={{
-                      marginTop: "-5px",
+                      marginTop: "-12px",
                       width: "18px",
                       height: "18px",
                     }}
@@ -564,8 +567,10 @@ const ProjectRow = ({
                       handlePushToGithub(project);
                     }}
                     /> */}
-                    {project?.githubCommit == "ReadyForPush" && (project?.codegen || project?.dotnetcodegen) &&
-                    (<LoginGithub 
+                    {project?.githubCommit === "ReadyForPush" && (project?.codegen || project?.dotnetcodegen) && (!isgithubLoggingIn) &&
+                    (
+                    
+                    <LoginGithub 
                       clientId={process.env.REACT_APP_GITHUB_CLIENT_ID}
                       redirectUri={process.env.REACT_APP_REDIRECT_URI}
                       onSuccess={onGitHubLoginSuccess}
@@ -574,37 +579,47 @@ const ProjectRow = ({
                       // className="github-push-button"
                       > 
                       {/* <GitHubIcon  style={{ color: "#000000", height: "18px", width: "18px" }} />     */}
-                      <div className="github-ico-wrapper mt-1">
+                      <div style={{width: "4px"}} >
+                      <div className="github-ico-wrapper">
+                      
                         <img
                          src = {githubLogo}
-                         alt='conektto logo'
+                         alt='github logo to commit'
+                         style={{ width: "28px", height: "28px" }}
                          />
                       </div>
+                      </div>
+                      
                     </LoginGithub>)
                     }    
                     {
-                      project?.githubCommit == "ReadyForView" &&(
+                      project?.githubCommit == "ReadyForView" && (!isgithubLoggingIn) &&(
                         <div className="github-view-button mt-1">
                           <div className="github-ico-wrapper">
                             <img
-                            src = {githubLogo}
-                            alt='conektto logo'
+                            src = {viewgithubLogo}
+                            alt='view github logo after commit'
+                            style={{ width: "32px", height: "32px" }}
                             onClick={(e) => {
                               e?.preventDefault();
-                              e?.stopPropagation();
-                              console.log("entereeed here");
+                              e?.stopPropagation();                              
                               onPushViewRepo();
                             }}
                             />
-                          </div>
-                        </div>)
+                          </div>               
+                        </div>                        
+                        )
                     }               
                   </div>
                 </Tooltip>                
               )}
-            {(isgithubLoggingIn || project?.githubCommit == "CommitInProgress") && (
-              <CircularProgress style={{ width: "24px", height: "24px" }} />
-            )}
+            {(isgithubLoggingIn || project?.githubCommit == "CommitInProgress" || isgithubLoginSuccess) && (
+              <Tooltip title={
+                "Commit In Progress"
+              }>              
+              <img src={githubCustomSpinner} alt="github commit in progress..." style={{ width: "32px", height: "32px" }} />
+              </Tooltip>
+              )}
           </div>
       </td>
 
