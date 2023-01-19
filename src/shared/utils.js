@@ -282,16 +282,16 @@ export const generateSyncOperationRequestRequest = (operationRequest) => {
     request.body = operationRequest?.body?.map((item) => {
       const clonedItem = _.cloneDeep(item);
 
-      if (isArrayOfObject(item) || isArray(item || isObject(item))) {
+      if (isArrayOfObject(item) || isArray(item) || isObject(item)) {
         if (clonedItem?.hasOwnProperty("data")) {
           delete clonedItem?.data;
         }
         if (clonedItem?.hasOwnProperty("possibleValues")) {
           delete clonedItem?.possibleValues;
         }
-        if (clonedItem?.hasOwnProperty("schemaName")) {
+        /* if (clonedItem?.hasOwnProperty("schemaName")) {
           delete clonedItem?.schemaName;
-        }
+        } */
         if (clonedItem?.hasOwnProperty("schemaRef")) {
           delete clonedItem?.schemaRef;
         }
@@ -515,9 +515,9 @@ export const generateSyncOperationResponseRequest = (operationResponse) => {
           if (clonedItem?.hasOwnProperty("possibleValues")) {
             delete clonedItem?.possibleValues;
           }
-          if (clonedItem?.hasOwnProperty("schemaName")) {
+          /* if (clonedItem?.hasOwnProperty("schemaName")) {
             delete clonedItem?.schemaName;
-          }
+          } */
           if (clonedItem?.hasOwnProperty("schemaRef")) {
             delete clonedItem?.schemaRef;
           }

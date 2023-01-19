@@ -82,7 +82,7 @@ const exportDBSchema = async ({
         rootPath: rootPath,
       },
       {
-        timeout: 90000,
+        timeout: 240000,
       }
     );
     return data;
@@ -117,6 +117,8 @@ const addProject = async ({
   isDesign,
   isDefaultClaimSpec,
   isDefaultAdvSpec,
+  isDefaultAdvWorks,
+  isDefaultMflix,
   projectType
 }) => {
   try {
@@ -129,6 +131,8 @@ const addProject = async ({
           isDesign: isDesign,
           isDefaultClaimSpec: isDefaultClaimSpec,
           isDefaultAdvSpec: isDefaultAdvSpec,
+          isDefaultAdvWorks: isDefaultAdvWorks,
+          isDefaultMflix: isDefaultMflix,
           projectType: projectType
         },
         {
@@ -146,6 +150,8 @@ const addProject = async ({
           isDesign: isDesign,
           isDefaultClaimSpec: isDefaultClaimSpec,
           isDefaultAdvSpec: isDefaultAdvSpec,
+          isDefaultAdvWorks: isDefaultAdvWorks,
+          isDefaultMflix: isDefaultMflix,
         },
         {
           timeout: 90000,

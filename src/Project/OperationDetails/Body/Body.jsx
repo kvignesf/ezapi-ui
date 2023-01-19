@@ -136,9 +136,9 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
           ) {
             const newOperationDetails = _.cloneDeep(operationDetails);
             const clonedItem = _.cloneDeep(item);
-            if (isArrayOrObjectAttribute(item) || isObject(item)) {
+            if (isArrayOfObject(item) || isObject(item)) {
               clonedItem.required = true;
-              //clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
+              clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
               clonedItem.parentName = path ?? "/";
               if (clonedItem.ref && clonedItem.ref !== null) {
                 let str = "";
@@ -153,10 +153,24 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
             }
             if (isAttribute(item)) {
               clonedItem.required = true;
-              //clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
+              clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
               clonedItem.parentName = path ?? "/";
+              if (clonedItem.ref && clonedItem.ref !== null) {
+                let str = "";
+                str = item.ref.split(".ezapi_object").join("");
+                str = str.split(".ezapi_array").join("");
+                str = str.split(".attributes").join("");
+                clonedItem.key = str;
+              }
             } else if (isColumn(item)) {
-              //clonedItem.tableName = fetchParentName(clonedItem) ?? "global";
+              clonedItem.tableName = fetchParentName(clonedItem) ?? "global";
+              if (clonedItem.ref && clonedItem.ref !== null) {
+                let str = "";
+                str = item.ref.split(".ezapi_object").join("");
+                str = str.split(".ezapi_array").join("");
+                str = str.split(".attributes").join("");
+                clonedItem.key = str;
+              }
             }
             if (isColumn(item)) {
               if (item?.foreign) {
@@ -220,7 +234,7 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
             const clonedOperationDetails = _.cloneDeep(operationDetails);
             const clonedResponseData = _.cloneDeep(responseData);
             const clonedItem = _.cloneDeep(item);
-            if (isArrayOrObjectAttribute(item) || isObject(item)) {
+            if (isArrayOfObject(item) || isObject(item)) {
               if (clonedItem.ref && clonedItem.ref !== null) {
                 let str = "";
                 str = item.ref.split(".ezapi_object").join("");
@@ -234,15 +248,15 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
               }
 
               clonedItem.required = true;
-              //clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
+              clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
               clonedItem.parentName = path ?? "/";
             }
             if (isAttribute(item)) {
               clonedItem.required = true;
-              //clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
+              clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
               clonedItem.parentName = path ?? "/";
             } else if (isColumn(item)) {
-              //clonedItem.tableName = fetchParentName(clonedItem) ?? "global";
+              clonedItem.tableName = fetchParentName(clonedItem) ?? "global";
             }
 
             if (isStoredProcedure(item)) {
@@ -301,8 +315,10 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
     // }
 
     if (
-      (isColumn(valueDropped) || isDatabase(valueDropped)) &&
-      isArrayOfObject(data)
+      (isColumn(valueDropped) ||
+        isDatabase(valueDropped) ||
+        isAttribute(valueDropped)) &&
+      (isArrayOfObject(data) || isObject(data))
     ) {
       setOperationDetails((operationDetails) => {
         const newOperationDetails = _.cloneDeep(operationDetails);
@@ -311,32 +327,54 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
           ? newOperationDetails.operationRequest
           : newOperationDetails.operationResponse[0];
 
-        requestOrResponseData?.body.map((bodyItem) => {
-          if (bodyItem.name === data.name) {
-            if (bodyItem.items) {
-              if (bodyItem.items.properties) {
-                bodyItem.items.properties[clonedItem.name] = clonedItem;
-              } else {
-                bodyItem.items.type = "object";
-                bodyItem.items.properties = {};
-                bodyItem.items.properties[clonedItem.name] = clonedItem;
+          if (isObject(data)) {
+            requestOrResponseData?.body.map((bodyItem) => {
+              if (bodyItem.name === data.name) {
+                   
+                if (bodyItem.properties) {
+                  bodyItem.properties[clonedItem.name] = clonedItem;
+                } else {
+                  bodyItem.type = "object";
+                  bodyItem.properties = {};
+                  bodyItem.properties[clonedItem.name] = clonedItem;
+                }
               }
-            } else {
-              bodyItem.items = {};
-              bodyItem.items.properties = {};
-              bodyItem.items.type = "object";
-              bodyItem.items.properties[clonedItem.name] = clonedItem;
-            }
+            });
+          } else if (isArrayOfObject(data)) {
+            requestOrResponseData?.body.map((bodyItem) => {
+              if (bodyItem.name === data.name) {
+                if (bodyItem.items) {
+                  if (bodyItem.items.properties) {
+                    bodyItem.items.properties[clonedItem.name] = clonedItem;
+                  } else {
+                    bodyItem.items.type = "object";
+                    bodyItem.items.properties = {};
+                    bodyItem.items.properties[clonedItem.name] = clonedItem;
+                  }
+                } else {
+                  bodyItem.items = {};
+                  bodyItem.items.properties = {};
+                  bodyItem.items.type = "object";
+                  bodyItem.items.properties[clonedItem.name] = clonedItem;
+                }                                  
+              }         
+            });
           }
-        });
+  
 
-        if (!itemDroppedFromTop) {
-          requestOrResponseData.body.map((item, index) => {
-            if (item.payloadId === clonedItem.payloadId) {
-              requestOrResponseData.body.splice(index, 1);
-            }
-          });
-        }
+          if (!itemDroppedFromTop) {
+            requestOrResponseData.body.map((item, index) => {
+              if (item.payloadId && clonedItem.payloadId) {
+                if (item.payloadId === clonedItem.payloadId) {
+                  requestOrResponseData.body.splice(index, 1);
+                }
+              } else if (item.id && clonedItem.id) {
+                if (item.id === clonedItem.id) {
+                  requestOrResponseData.body.splice(index, 1);
+                }
+              }
+            });
+          }
 
         return newOperationDetails;
       });
@@ -378,10 +416,23 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
                 </div>
               </>
             )}
+            {(projectType === "noinput") && (
+              <>
+                {" "}
+                <div className="flex justify-self-start ">
+                  {" "}
+                  <p className="text-overline2 uppercase text-neutral-gray4 font-bold">
+                    Parameter
+                  </p>
+                </div>
+              </>
+            )}
             <div className="flex justify-self-start ">
-              <p className="text-overline2 uppercase text-neutral-gray4 font-bold">
-                Schema/Attribute
-              </p>
+            {(projectType != "noinput") && (
+                <p className="text-overline2 uppercase text-neutral-gray4 font-bold">
+                  Schema/Attribute
+                </p>
+            )}
             </div>
             <div className="flex justify-self-start ">
               <p className="text-overline2 uppercase text-neutral-gray4 font-bold">
@@ -643,7 +694,7 @@ const BodyItem = ({
   }, [itemRef]);
 
   const deleteItemFromArray = (item, array) => {
-    if (isDatabase(item) || isColumn(item)) {
+    if (isDatabase(item) || isColumn(item) || isAttribute(item)) {
       setOperationDetails((operationDetails) => {
         const newOperationDetails = _.cloneDeep(operationDetails);
         let data = request
@@ -653,7 +704,13 @@ const BodyItem = ({
         const index = data.body.findIndex((x) => x?.name === array?.name);
 
         if (index !== -1) {
-          delete data.body[index].items?.properties[item.name];
+          if (data.body[index].items?.properties) {
+            delete data.body[index].items?.properties[item.name];
+          }
+
+          if (data.body[index].properties) {
+            delete data.body[index].properties[item.name];
+          }
 
           return newOperationDetails;
         }
@@ -1265,6 +1322,9 @@ const BodyItem = ({
     if (bodyItem.items?.properties) {
       const arr = Object.keys(bodyItem.items.properties);
       setArrayData(arr);
+    } else if (bodyItem.properties) {
+      const arr = Object.keys(bodyItem.properties);
+      setArrayData(arr);
     }
   };
 
@@ -1299,6 +1359,8 @@ const BodyItem = ({
         getTableData(bodyItem);
       }
     } else if (isArrayOfObject(bodyItem)) {
+      getArrayData();
+    } else if (isObject(bodyItem) && bodyItem.properties) {
       getArrayData();
     } else if (
       (isArray(bodyItem) || isObject(bodyItem)) &&
@@ -1474,7 +1536,7 @@ const BodyItem = ({
           }
         })}
 
-      {(isArray(bodyItem) || isObject(bodyItem)) &&
+      {(isArray(bodyItem) || isObject(bodyItem && !bodyItem.properties)) &&
         bodyItem.is_child === false &&
         arrayData.map((item) => {
           const clonedRef = _.cloneDeep(item);
@@ -1505,9 +1567,15 @@ const BodyItem = ({
           );
         })}
 
-      {isArrayOfObject(bodyItem) &&
+      {(isArrayOfObject(bodyItem) ||
+        (isObject(bodyItem) && bodyItem.properties)) &&
         arrayData.map((arrayItem) => {
-          let arrayItemRef = bodyItem.items.properties[arrayItem];
+          let arrayItemRef;
+          if (isObject(bodyItem)) {
+            arrayItemRef = bodyItem.properties[arrayItem];
+          } else {
+            arrayItemRef = bodyItem.items.properties[arrayItem];
+          }
 
           if (isDatabase(arrayItemRef)) {
             return (
@@ -1587,11 +1655,21 @@ const BodyItem = ({
             return (
               <ColumnLabel
                 columnLabelItem={arrayItemRef}
-                deleteColumn={() => deleteItemFromArray(arrayItemRef, bodyItem)}
+                deleteItem={() => deleteItemFromArray(arrayItemRef, bodyItem)}
                 array={bodyItem}
                 request={request}
                 responseCode={responseCode}
                 isArrayOfObject
+              />
+            );
+          } else if (isAttribute(arrayItemRef)) {
+            return (
+              <AttributeLabel
+                labelItem={arrayItemRef}
+                deleteItem={() => deleteItemFromArray(arrayItemRef, bodyItem)}
+                request={request}
+                responseCode={responseCode}
+                projectType={projectType}
               />
             );
           }
@@ -2160,7 +2238,7 @@ const AttributeLabel = ({ labelItem, deleteItem, projectType }) => {
         return (
           <div className="flex flex-row p-1 h-8 justify-between items-center border-b-2 ml-6 hover:bg-neutral-gray8">
             <div className="flex flex-row items-center justify-start flex-1">
-              {projectType === "db" && (
+              {(projectType === "db" || projectType === "noinput") && (
                 <div className=" w-full grid grid-cols-5 gap-2 items-center ">
                   {" "}
                   <div className="flex justify-self-start items-center">
@@ -2214,8 +2292,7 @@ const AttributeLabel = ({ labelItem, deleteItem, projectType }) => {
                   </div>
                 </div>
               )}
-              {projectType === "schema" ||
-                (projectType === "both" && (
+              {(projectType === "schema" || projectType === "both") && (
                   <div className=" w-full grid grid-cols-5 gap-2 items-center">
                     {" "}
                     <div className="flex justify-self-start items-center">
@@ -2265,7 +2342,7 @@ const AttributeLabel = ({ labelItem, deleteItem, projectType }) => {
                       {/* isRequired not needed for now */}
                     </div>
                   </div>
-                ))}
+               )}
             </div>
 
             <div className="w-6">

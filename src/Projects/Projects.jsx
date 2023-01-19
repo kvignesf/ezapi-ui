@@ -211,8 +211,8 @@ const ProjectRow = ({
     isLoading: isgithubLoggingIn,
     isSuccess: isgithubLoginSuccess,
     mutate: pushToGithub,
-    data: githubPushResponse,
-    reset: resetgithubLogin,
+    //data: githubPushResponse,
+    //reset: resetgithubLogin,
   } = usePushToGithub();
 
   const {
@@ -295,7 +295,7 @@ const ProjectRow = ({
         <div className='text-overline2'>{project?.isDesign ? "DESIGN" : "TEST"}
         </div>
       </td>
-      <td align='left' className = 'download-icons-styling'>
+      <td align='center' className = 'download-icons-styling'>
         <div className='flex flex-row items-center gap-2'>
         
           {/* Codegen download */}
@@ -332,7 +332,7 @@ const ProjectRow = ({
                       }}
                     />
                   </div>
-                </Tooltip>                
+                </Tooltip>
               )}
             {isDownloadingCodegen && (
               <CircularProgress style={{ width: "24px", height: "24px" }} />

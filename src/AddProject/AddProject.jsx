@@ -1,12 +1,18 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
   AppBar,
   IconButton,
   Tab,
   Tabs,
   MuiThemeProvider,
+  TextField,
 } from "@material-ui/core";
-import { useReward } from "react-rewards";										  
+
+import { useReward } from "react-rewards";						
+import { Field, ErrorMessage, Form, Formik } from "formik";
+import * as Yup from "yup";
+import debounce from "lodash.debounce";
+import apiNameSchema from "../shared/schemas/apiNameSchema";
 //import { ReactComponent as Logo } from "../static/images/logo/connectoLogo.svg";
 import { ReactComponent as Logo } from "../static/images/logo/newconnectoLogo.svg";
 import Button from "@mui/material/Button";
@@ -21,6 +27,7 @@ import { PrimaryButton, TextButton } from "../shared/components/AppButton";
 import LoaderWithMessage from "../shared/components/LoaderWithMessage";
 import { isEmailValid } from "../shared/utils";
 import ProjectDetails from "./ProjectDetails";
+import NoSpecNoDb from "./NoSpecNoDb";
 import ConnectDatabase from "./ConnectDatabase";
 import InviteCollaborators from "../shared/components/InviteCollaborators";
 import projectAtom from "./projectAtom";
@@ -57,12 +64,16 @@ const AddProject = ({ onClose, onSuccess }) => {
   const history = useHistory();
   const [open, setOpen] = useState(false);
   const [isDesign, setIsDesign] = useState(null);
+  const [isMiddleState, setIsMiddleState] = useState(false);
+
   // const [isDesign, setIsDesign] = useState(true);
   const [errorDisplay, setErrorDisplay] = useState(false);
   const [specErrorDisplay, setSpecErrorDisplay] = useState(false);
 
   const [inviteCollabsErrorMssg, setInviteCollabsErrorMssg] = useState(false);
   const [sampleProjCnt, setSampleProjCnt]  = useState(1);
+  const [sampleAdvWorksDBPCnt, setSampleAdvWorksDBCnt] = useState(1);
+  const [sampleMFlixDBCnt, setSampleMFlixDBCnt] = useState(1);
   const loggedInUserId = getUserId();
   const { reward, isAnimating } = useReward("rewardId", "confetti");
   const [specsError, setSpecsError] = useState(null);
@@ -71,7 +82,18 @@ const AddProject = ({ onClose, onSuccess }) => {
   const [projectDetails, setProjectDetails] = useRecoilState(projectAtom);
   const [defaultClaimSpec, setDefaultClaimSpec] = useState(false);
   const [defaultAdvSpec, setDefaultAdvSpec] = useState(false);
+  const [defaultFlow, setDefaultFlow] = useState(false);
+  const [noSpecNoDb, setNoSpecNoDb] = useState(false);
+  const [defaultAdvWorks, setDefaultAdvWorks] = useState(false);
+  const [defaultMflix, setDefaultMflix] = useState(false);
+
+  const [disableAdvSpec, setDisableAdvSpec] = useState(false);
+  const [disableAdvWorks, setDisableAdvWorks] = useState(false);
+  const [disableMflix, setDisableMflix] = useState(false);
+
   const hideClaims = false;
+
+  const sampleProjLimit = process.env.REACT_APP_SAMPLE_PROJ_LIMIT;
 
   useEffect(() => {
     reward();
@@ -190,10 +212,12 @@ const AddProject = ({ onClose, onSuccess }) => {
         isDesign: isDesign,
         isDefaultClaimSpec: defaultClaimSpec,
         isDefaultAdvSpec: defaultAdvSpec,
+        isDefaultAdvWorks: defaultAdvWorks,
+        isDefaultMflix: defaultMflix,
         projectType: "noinput"
       });
     }  else if (
-      (!defaultClaimSpec || !defaultAdvSpec) &&
+      (!defaultClaimSpec || !defaultAdvSpec  || !defaultAdvWorks || !defaultMflix) &&
       _.isEmpty(projectDetails?.dbs) &&
       (_.isEmpty(projectDetails?.host) ||
         _.isEmpty(projectDetails?.port) ||
@@ -236,6 +260,8 @@ const AddProject = ({ onClose, onSuccess }) => {
         isDesign: isDesign,
         isDefaultClaimSpec: defaultClaimSpec,
         isDefaultAdvSpec: defaultAdvSpec,
+        isDefaultAdvWorks: defaultAdvWorks,
+        isDefaultMflix: defaultMflix,
         projectType: "none"
       });
     }
@@ -421,14 +447,52 @@ const AddProject = ({ onClose, onSuccess }) => {
   };
   const handleAdvCheck = (e) => {
     setDefaultAdvSpec(e.target.checked);
+    setDisableMflix(e.target.checked);
+    setDisableAdvWorks(e.target.checked);
+  };
+  const handleDefaultFlow = (e) => {
+    setDefaultFlow(e.target.checked);
   };
 
-  
+  const handleAdvWorks = (e) => {
+    setDefaultAdvWorks(e.target.checked);
+    setDisableMflix(e.target.checked);
+    setDisableAdvSpec(e.target.checked);
+  };
+  const handleMflix = (e) => {
+    console.log("chk status", e.target.checked)
+    setDefaultMflix(e.target.checked);
+    setDisableAdvWorks(e.target.checked);
+    setDisableAdvSpec(e.target.checked);
+  };
+
+  const handlingFlow = ()=>{
+    if (_.isEmpty(projectDetails?.name)) {
+      // setTab(0);
+      // setIsProjectNameEmpty(true);
+      if (formRef.current) {
+        formRef.current.handleSubmit();
+      }
+
+      return;
+    }
+    if(defaultFlow){
+      setNoSpecNoDb(true);
+      setIsDesign(null);
+    }
+    else{
+      setIsDesign(true);
+      setIsMiddleState(false);
+    }
+    return;
+  };
   const { data: userProfile_data } = useUserProfile();
   
   useEffect(() => {
     //console.log("userdata", userProfile_data)
     setSampleProjCnt(userProfile_data?.["sampleProjCount"]);
+    setSampleAdvWorksDBCnt(userProfile_data?.["sampleAdvWorksDBProjCnt"]);
+    setSampleMFlixDBCnt(userProfile_data?.["sampleMFlixDBProjCnt"]);
   }, [userProfile_data]);
 
   useEffect(() => {
@@ -498,7 +562,37 @@ const AddProject = ({ onClose, onSuccess }) => {
             type: "mssql",
           };
         });
-      } else if (!defaultAdvSpec) {
+      }else if(defaultAdvWorks){
+        setProjectDetails((currProjectDetails) => {
+          return {
+            ...currProjectDetails,
+            name: "AdvWorks",
+            specs: [],
+            database: "AdventureWorks2019",
+            host: "34.82.24.189",
+            port: "1433",
+            username: "sa",
+            password: "S0mbari@2022",
+            dbType: "db",
+            type: "mssql",
+          };
+        });
+      } else if(defaultMflix){
+        setProjectDetails((currProjectDetails) => {
+          return {
+            ...currProjectDetails,
+            name: "MflixDB",
+            specs: [],
+            database: "mflix",
+            host: "34.66.45.162",
+            port: "27017",
+            username: "root",
+            password: "JRVvuh9D5V0IZxCW",
+            dbType: "db",
+            type: "mongo",
+          };
+        });
+      } else if (!defaultAdvSpec || !defaultAdvWorks || !defaultMflix) {
         setProjectDetails((currProjectDetails) => {
           return {
             ...currProjectDetails,
@@ -526,7 +620,7 @@ const AddProject = ({ onClose, onSuccess }) => {
       }
     };
     setDefault();
-  }, [defaultClaimSpec, defaultAdvSpec, setProjectDetails]);
+  }, [defaultClaimSpec, defaultAdvSpec, defaultAdvWorks, defaultMflix, setProjectDetails]);
 
   const isClaimChecked = () => {
     setDefaultAdvSpec(false);
@@ -534,11 +628,128 @@ const AddProject = ({ onClose, onSuccess }) => {
   const isAdvChecked = () => {
     setDefaultClaimSpec(false);
   };
-  
+  const isAdvWorksChecked = () => {
+    setDefaultAdvWorks(false);
+  };
+  const isMflixChecked = () => {
+    setDefaultMflix(false);
+  };
+  const debouncedSetName = useCallback(
+    debounce((nextValue) => {
+      // resetProjectApiState();
+
+      setProjectDetails((currProjectDetails) => {
+        return {
+          ...currProjectDetails,
+          name: nextValue,
+        };
+      });
+    }, 300),
+    [] // will be created only once initially
+  );
+
 
   return (
     <>
-      {isDesign != null && (
+    {noSpecNoDb && (<NoSpecNoDb
+              onClose={onClose}
+              onSuccess={onSuccess}/>)}
+    {isDesign != null  && isMiddleState && (
+        <div className='p-4'>
+        <div className='flex flex-row items-center justify-between mb-3'>
+          {<h5>Create API Project</h5>}
+          <div>
+            {" "}
+            <img
+              style={{ width: "150px" }}
+              src={ProductHunt}
+              alt="producthunt"
+            />
+          </div>
+          <AppIcon aria-label='close' onClick={onClose}>
+            <CloseIcon />
+          </AppIcon>
+        </div>{" "}
+        <p className="text-mediumLabel mb-2">API Name</p>
+
+      <div className="mb-6">
+        <Formik
+          initialValues={{
+            name: projectDetails?.name ?? "",
+          }}
+          validationSchema={Yup.object().shape({
+            name: apiNameSchema(Messages.NAME_REQUIRED),
+          })}
+          innerRef={formRef}
+        >
+          {({
+            errors,
+            touched,
+            values,
+            submitForm,
+            validateForm,
+            handleBlur,
+            setErrors,
+          }) => (
+            <Form>
+                <Field
+                  id="name"
+                  name="name"
+                  fullWidth
+                  color="primary"
+                  error={touched.name && Boolean(errors.name)}
+                  helperText={<ErrorMessage name="name" />}
+                  onKeyUp={(e) => {
+                    const { value } = e.target;
+                    debouncedSetName(value);
+                  }}
+                  variant="outlined"
+                  inputProps={{ maxLength: 24 }}
+                  // disabled={addProjectMutation?.isSuccess}
+                  as={TextField}
+                />
+            </Form>
+          )}
+        </Formik>
+      </div>
+        <FormGroup>
+          <FormControlLabel
+            control={
+              
+              ( <Checkbox
+                size="small"
+                // disabled={(sampleProjCnt >= 3 || (currentTab==1 || currentTab ==2 ))}  
+                onChange={(e) => handleDefaultFlow(e)}
+                checked={defaultFlow}
+                // onClick={() => isAdvChecked()}
+              />
+              )
+            }
+            label={<Box fontSize={14}>No SPec No DB Flow</Box>}
+          />
+        </FormGroup>
+        <div className='border-t-2 border-neutral-gray7 flex flex-row items-center justify-end pt-4'>
+          <TextButton
+            onClick={() => {
+                onClose();
+            }}
+            classes='mr-3'
+          >
+            Cancel
+          </TextButton>
+
+          <PrimaryButton
+            onClick={() => {
+              handlingFlow();
+            }}
+          >
+            Next
+          </PrimaryButton>
+        </div>
+      </div>
+      )
+      }
+      {isDesign != null && !isMiddleState &&(
         <div className='p-4'>
           <div className='flex flex-row items-center justify-between mb-3'>
             {isDesign ? (
@@ -611,6 +822,9 @@ const AddProject = ({ onClose, onSuccess }) => {
                         aiMatcherMutation={aiMatcherMutation}
                         isClaimSpec={defaultClaimSpec}
                         isAdvSpec={defaultAdvSpec}
+                        isNoSpecNoDb={false}
+                        isAdvWorks={defaultAdvWorks}
+                        isMflix={defaultMflix}
                       />
                     </div>
                   ) : currentTab === 1 ? (
@@ -627,6 +841,8 @@ const AddProject = ({ onClose, onSuccess }) => {
                         handleTabChange={setConnectDatabaseTab}
                         isClaimSpec={defaultClaimSpec}
                         isAdvSpec={defaultAdvSpec}
+                        isAdvWorks={defaultAdvWorks}
+                        isMflix={defaultMflix}
                       />
                     </div>
                   ) : (
@@ -657,14 +873,42 @@ const AddProject = ({ onClose, onSuccess }) => {
                         
                         ( <Checkbox
                           size="small"
-                          disabled={(sampleProjCnt >= 3 || (currentTab==1 || currentTab ==2 ))}  
+                          disabled={(sampleProjCnt >= sampleProjLimit || (currentTab==1 || currentTab ==2 )) || (disableAdvSpec)}  
                           onChange={(e) => handleAdvCheck(e)}
                           checked={defaultAdvSpec}
                           onClick={() => isAdvChecked()}
                         />
                         )
                       }
-                      label={(sampleProjCnt < 3) ? (<Box fontSize={14}>Use Default BikeStore Spec</Box>) : (<Box fontSize={14}>Sample Projects limit of 3 Utilized</Box>) }
+                      label={(sampleProjCnt < sampleProjLimit) ? (<Box fontSize={14}>Use Default BikeStore Spec</Box>) : (<Box fontSize={14}>Sample Projects limit of {sampleProjLimit} Utilized for Bikestore Spec </Box>) }
+                    />
+                    <FormControlLabel
+                      control={
+                        
+                        ( <Checkbox
+                          size="small"
+                          disabled={(sampleAdvWorksDBPCnt >= sampleProjLimit || (currentTab==1 || currentTab ==2 )) || (disableAdvWorks)}  
+                          onChange={(e) => handleAdvWorks(e)}
+                          checked={defaultAdvWorks}
+                          onClick={() => isAdvWorksChecked()}
+                        />
+                        )
+                      }
+                      label={(sampleAdvWorksDBPCnt < sampleProjLimit) ? (<Box fontSize={14}>Use Default Adventure Works DB</Box>) : (<Box fontSize={14}>Sample Projects limit of {sampleProjLimit} Utilized for Adventure Works DB</Box>) }
+                    />
+                    <FormControlLabel
+                      control={
+                        
+                        ( <Checkbox
+                          size="small"
+                          disabled={(sampleMFlixDBCnt >= sampleProjLimit || (currentTab==1 || currentTab ==2 )) || (disableMflix)}  
+                          onChange={(e) => handleMflix(e)}
+                          checked={defaultMflix}
+                          onClick={() => isMflixChecked()}
+                        />
+                        )
+                      }
+                      label={(sampleMFlixDBCnt < sampleProjLimit) ? (<Box fontSize={14}>Use Default Mflix MongoDB</Box>) : (<Box fontSize={14}>Sample Projects limit of {sampleProjLimit} Utilized for Mflix MongoDB</Box>) }
                     />
                   </FormGroup>
                 </div>
@@ -910,7 +1154,8 @@ const AddProject = ({ onClose, onSuccess }) => {
           )}
         </div>
       )}
-      {isDesign == null && (
+      
+      {isDesign == null && !noSpecNoDb &&(
         <div className='p-4'>
           <div className='flex flex-row items-center justify-between mb-3'>
             {<h5>Create API Project</h5>}
@@ -934,6 +1179,7 @@ const AddProject = ({ onClose, onSuccess }) => {
 			  //disabled={isTestTeam}						
               onClick={() => {
                 setIsDesign(true);
+                setIsMiddleState(true);
               }}
               classes='flex-1 -ml-4 text-brand-secondary'
             >

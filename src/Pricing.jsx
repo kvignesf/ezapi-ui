@@ -50,54 +50,76 @@ export const usePricingData = () => {
 };
 
 const Pricing = () => {
-  console.log(acc_token);
+						 
   const history = useHistory();
   const headings = ["PROJECTS", "API LIFECYCLE", "CONNECTORS", "VALIDITY"];
   const rowNames = [
     [
-      "No. of API Design",
-      "No. of Republish",
-      "No. of Creator Licenses",
-      "No. of Collaborators",
+      "Free Flow API Designs",
+      "Data Provider APIs",      
+      "API Test projects",
+      "Aggregate APIs (Coming soon..)",
+      "Republish",
+      //"No. of Creator Licenses",
+      "Collaborators",
+      "TEST DATA GEN LIMITS",
+      "DATA RETENTION",
+      "GITHUB INTEGRATION",
+      "LOGIN"
     ],
     [
       "Specs",
       "Code",
       "Mock",
       "Test Data",
-      "Functional Test",
-      "Performance Test",
-      "Security Test",
+      "Functional Tests",
+      "Performance Tests",      
+					  
     ],
 
     ["MS SQL Server", "Postgres", "MongoDB", "MYSQL"],
-    ["Validity"],
+    ["Validity"]    
   ];
 
+  let planData = [];
+
   var projectsCardData = {
-    "heading": headings[0],
-    "rowName": rowNames[0],
-    "plan_data": [],
-    "Enterprise": ["Custom", "Custom", "Custom", "Custom"],
+    heading: headings[0],
+    rowName: rowNames[0],
+    plan_data: [],
+    Enterprise: [
+      "UNLIMITED",
+      "UNLIMITED",
+      "UNLIMITED",
+      "UNLIMITED",
+      "UNLIMITED",
+      //"Custom",
+      "UNLIMITED",
+      "UNLIMITED",
+      "UNLIMITED",
+      "ENTERPRISE",
+      "SSO"
+    ],
   };
   var apiLifecycleCardData = {
-    "heading": headings[1],
-    "rowName": rowNames[1],
-    "plan_data": [],
-    "Enterprise": [true, true, true, true, true, true, true],
+    heading: headings[1],
+    rowName: rowNames[1],
+    plan_data: [],
+    Enterprise: [true, true, true, true, true, true],
   };
   var connectorsCardData = {
-    "heading": headings[2],
-    "rowName": rowNames[2],
-    "plan_data": [],
-    "Enterprise": [true, true, true, true],
+    heading: headings[2],
+    rowName: rowNames[2],
+    plan_data: [],
+    Enterprise: [true, true, true, true],
   };
   var validityCardData = {
-    "heading": headings[3],
-    "rowName": rowNames[3],
-    "plan_data": [],
-    "Enterprise": ["Contract Based"],
+    heading: headings[3],
+    rowName: rowNames[3],
+    plan_data: [],
+    Enterprise: ["Contract Based"],
   };
+
   var cardHeaderData = [];
 
   const [endSubDate, setEndSubDate] = React.useState();
@@ -110,28 +132,11 @@ const Pricing = () => {
   const [proButton, setProButton] = React.useState("SUBSCRIBE");
   //const [user_id, setUserId] = useState();
 
-  const planTypeCardData2 = [];
-
-  //setUserId(getUserId())
+  const planTypeCardData2 = [];						  
 
   const { data } = useQuery("userProfileKey", userProfile, {
     refetchOnWindowFocus: false,
-  });
-  /* const user_id = getUserId();
-  const pricingData2 = async () => {
-    const { data } = await client.get(endpoint.products2, {
-      headers: {
-        user_id: user_id,
-      },
-    });
-    return data;
-  };
-
-  const usePricingData2 = () => {
-    return useQuery([queries.products], pricingData2, {
-      refetchOnWindowFocus: false,
-    });
-  }; */
+  }); // plan details of the loggedIn user 
 
   const pricingData2 = async () => {
     const { data } = await client.get(endpoint.products2);
@@ -162,11 +167,7 @@ const Pricing = () => {
     dateObject =
       dateObject[1] + "/" + dateObject[2].substring(0, 2) + "/" + dateObject[0];
     return dateObject;
-  }
-
-  /*   useEffect(() => {      
-
-  }, [user_id]) */
+  } 
 
   useEffect(() => {
     if (!_.isEmpty(data)) {
@@ -176,25 +177,19 @@ const Pricing = () => {
         CalculateTrialExpiryDate(data?.["registeredOn"].split(" ")[0], 6, "20")
       );
 
-      if (data?.["plan_name"] == "Trial") {
+      if (data?.["stripeCustomerId"] == "") {
         setTrialButton("Subscribed");
       } else {
         setTrialButton("Expired");
       }
 
-      if (data?.["plan_name"] == "POC") {
-        setPOCButton("Subscribed");
-      } else {
-        setPOCButton("Subscribe");
-      }
-
-      if (data?.["plan_name"] == "Pro") {
+      if (data?.["stripeCustomerId"] !== "") {								 
         setProButton("Subscribed");
       } else {
         setProButton("Subscribe");
       }
 
-      if (data?.["plan_name"] == "Basic") {
+      if (data?.["stripeCustomerId"] !== "") {
         setBasicButton("Subscribed");
       } else {
         setBasicButton("Subscribe");
@@ -222,7 +217,7 @@ const Pricing = () => {
 
     item?.["stripe"].map((item2, index2) => {
       if (durationMatchPlaceHolder == item2["plan_interval"]) {
-        //console.log(planTypeCardData2, item["plan_name"]);
+															
         planTypeCardData2[index]["price"] = item2?.["plan_price"];
       }
     });
@@ -230,27 +225,17 @@ const Pricing = () => {
 
   function setOtherCardDetails() {
     planTypeCardData2.map((item, index) => {
-      switch (item["title"]) {
-        case "Trial":
+      switch (item["package"]) {
+        case "free":
           item["logo"] = trialLogo;
-          item["description"] = ["Get the Trial, free"];
+          item["description"] = ["Get the Cummunity, free"];
           item["buttonText"] = trialButton;
           break;
-        case "POC":
-          item["logo"] = basicLogo;
-          item["description"] = ["Everything in Trial +"];
-          item["buttonText"] = pocButton;
-          break;
-        case "Pro":
+        case "paid":				   
           item["logo"] = proLogo;
-          item["description"] = ["Everything in Trial +"];
+          item["description"] = ["Everything in Cummunity +"];
           item["buttonText"] = proButton;
-          break;
-        case "Basic":
-          item["logo"] = basicLogo;
-          item["description"] = ["Everything in Trial +"];
-          item["buttonText"] = basicButton;
-          break;
+          break;			
       }
     });
   }
@@ -259,11 +244,11 @@ const Pricing = () => {
     if (pricing_data?.products.length > 0) {
       pricing_data["products"].map((item, index) => {
         planTypeCardData2.push({
-          "title": "",
-          "description": "",
-          "buttonText": "",
-          "logo": "",
-          "price": "",
+          title: "",
+          description: "",
+          buttonText: "",
+          logo: "",
+          price: "",
         });
 
         planTypeCardData2[index]["title"] = item["plan_name"];
@@ -272,35 +257,46 @@ const Pricing = () => {
         connectorsCardData[item["plan_name"]] = [];
         validityCardData[item["plan_name"]] = [];
 
-        if (item["plan_name"] != "Trial") {
+        if (item.stripe_product_id) {
           setPlanPriceBasedOnDuration(item, index);
+          planTypeCardData2[index]["package"] = "paid";
         } else {
           planTypeCardData2[index]["price"] = 0;
+          planTypeCardData2[index]["package"] = "free";
         }
         setOtherCardDetails();
       });
       planTypeCardData2.map((item, index) => {
-        if (item["title"] == "Trial") {
+        if (item.stripe_product_id === undefined) {
           var trialDataPlaceHolder = item;
           planTypeCardData2.splice(index, 1);
           planTypeCardData2.unshift(trialDataPlaceHolder);
         }
       });
       planTypeCardData2.push({
-        title: "Enterprise",
+        title: "ENTERPRISE",
         price: "Custom",
         description: ["Everything in Pro +"],
         buttonText: "CONTACT US",
         logo: enterpriseLogo,
+        package: "custom",
       });
     }
-    //console.log(planTypeCardData2);
+									 
     pricing_data["products"].map((item, index) => {
+      planData.push(item);
       projectsCardData[item["plan_name"]].push(
-        item["no_of_projects"],
+        item["noSpecNoDb"],
+        item["designProjects"],        
+        item["testProjects"],
+        item["aggregateProjects"],
         item["no_of_republish"],
-        item["no_of_creator_licenses"],
-        item["no_of_collaborators"]
+        //item["no_of_creator_licenses"],
+        item["no_of_collaborators"],
+        item["dataGenLimits"],
+        item["dataRetention"],
+        item["githubIntegration"],
+        item["login"]
       );
 
       apiLifecycleCardData[item["plan_name"]].push(
@@ -310,7 +306,7 @@ const Pricing = () => {
         item["test_data"],
         item["functional_tests"],
         item["performance_tests"],
-        item["security_tests"]
+        //item["security_tests"]
       );
       connectorsCardData[item["plan_name"]].push(
         item["connectors"]["ms_sql"],
@@ -319,48 +315,29 @@ const Pricing = () => {
         item["connectors"]["my_sql"]
       );
       validityCardData[item["plan_name"]].push(item["validity"]);
+      //otherCardData[]
     });
-    //console.log(projectsCardData);
+									
 
     cardHeaderData.push(
       projectsCardData,
       apiLifecycleCardData,
       connectorsCardData,
-      validityCardData
+      validityCardData,
+      //otherCardData   
     );
-    cardHeaderData.map((item) => {
-      for (const key in item) {
-        if (
-          pricing_data?.products.length < 3 &&
-          item?.["plan_data"]?.length == 0
-        ) {
-          if (key == "POC") {
-            item?.["plan_data"].push(item["Trial"]);
-            item?.["plan_data"].push(item["POC"]);
-            item?.["plan_data"].push(item["Enterprise"]);
-          } else if (key == "Pro") {
-            item?.["plan_data"].push(item["Trial"]);
-            item?.["plan_data"].push(item["Pro"]);
-            item?.["plan_data"].push(item["Enterprise"]);
-          } else if (key == "Basic") {
-            item?.["plan_data"].push(item["Trial"]);
-            item?.["plan_data"].push(item["Basic"]);
-            item?.["plan_data"].push(item["Enterprise"]);
-          }
-        }
-        if (
-          pricing_data?.products.length == 3 &&
-          item?.["plan_data"]?.length == 0
-        ) {
-          item?.["plan_data"].push(item["Trial"]);
-          item?.["plan_data"].push(item["Basic"]);
-          item?.["plan_data"].push(item["Pro"]);
-          item?.["plan_data"].push(item["Enterprise"]);
-        }
+
+    cardHeaderData.map((item) => {											  
+      if (item?.["plan_data"]?.length == 0) {
+        planData.sort((a, b) => a.priority - b.priority);
+        planData.map((name) => {	   
+          item?.["plan_data"].push(item[name.plan_name]);
+        });		 
       }
+      item?.["plan_data"].push(item["Enterprise"]);
     });
 
-    //console.log("cardHeaderData", cardHeaderData);
+    planTypeCardData2.sort((a, b) => a.price - b.price);
   }
 
   function handleSwitchChange(event) {
@@ -380,60 +357,60 @@ const Pricing = () => {
   }
   return (
     <Dashboard selectedIndex={3}>
-      <div className='flex flex-col items-center justify-center w-full  '>
+      <div className="flex flex-col items-center justify-center w-full  ">
         {" "}
-        <div className='flex flex-col  items-center justify-center w-full px-3 h-full mb-12'>
-          <div id='heading' className='container mx-auto pt-4'>
+        <div className="flex flex-col  items-center justify-center w-full px-3 h-full mb-12">
+          <div id="heading" className="container mx-auto pt-4">
             {" "}
-            <h1 className=' text-customGray text-4xl font-sans font-medium tracking-wide text-center'>
+            <h1 className=" text-customGray text-4xl font-sans font-medium tracking-wide text-center">
               The Right Pricing Plan for Your Business
             </h1>
           </div>
 
-          <div id='durationMY' className='container mx-auto p-4 '>
-            <div className='flex justify-center '>
+          <div id="durationMY" className="container mx-auto p-4 ">
+            <div className="flex justify-center ">
               {" "}
-              <div id='mo' style={{ color: "#c72c71" }} className='mt-1.5'>
+              <div id="mo" style={{ color: "#c72c71" }} className="mt-1.5">
                 {/* <text style={{ color: '#c72c71' }}>Monthly</text> */}
                 Monthly
               </div>
               <Switch
-                color='default'
+                color="default"
                 checked={durationMY == "Y"}
                 onChange={handleSwitchChange}
               />
-              <div id='yr' className='mt-1.5 text-black-500'>
+              <div id="yr" className="mt-1.5 text-black-500">
                 Yearly
               </div>
             </div>
           </div>
 
-          <div id='pricingTypeCards1' className='container mx-auto   p-2 '>
+          <div id="pricingTypeCards1" className="container mx-auto   p-2 ">
             {durationMY == "Y" ? (
-              <div className='grid grid-cols-11 gap-5    '>
-                <Grid className='col-start-6 col-span-2 '>
-                  <div className='flex  justify-center '>
+              <div className="grid grid-cols-11 gap-5    ">
+                <Grid className="col-start-6 col-span-2 ">
+                  <div className="flex  justify-center ">
                     <BestValueIcon />
                   </div>
                 </Grid>
-                <Grid className='col-start-8 col-span-2 '>
+                <Grid className="col-start-8 col-span-2 ">
                   {" "}
-                  <div className='flex  justify-center '>
+                  <div className="flex  justify-center ">
                     <BestValueIcon />
                   </div>
                 </Grid>
               </div>
             ) : null}
 
-            <div className='grid grid-cols-11 gap-5   '>
-              <Grid className='col-span-3 ...'></Grid>
+            <div className="grid grid-cols-11 gap-5   ">
+              <Grid className="col-span-3 ..."></Grid>
               {planTypeCardData2.map((tier, index) => (
-                <Grid className='col-span-2 ' item key={tier.title}>
-                  <Card className='flex flex-col h-full self-center'>
-                    <div className='flex justify-center ...'></div>
-                    <div className='flex justify-center ...'>
+                <Grid className="col-span-2 " item key={tier.title}>
+                  <Card className="flex flex-col h-full self-center">
+                    <div className="flex justify-center ..."></div>
+                    <div className="flex justify-center ...">
                       {" "}
-                      <img src={tier.logo} alt='logo' />
+                      <img src={tier.logo} alt="logo" />
                     </div>{" "}
                     <CardHeader
                       style={{
@@ -451,7 +428,7 @@ const Pricing = () => {
                       title={tier.title}
                       titleTypographyProps={{ align: "center" }}
                     />
-                    <CardContent className='flex flex-col'>
+                    <CardContent className="flex flex-col">
                       <Box
                         sx={{
                           display: "flex",
@@ -460,8 +437,8 @@ const Pricing = () => {
                         }}
                       >
                         <Typography
-                          component='h4'
-                          variant='h6'
+                          component="h4"
+                          variant="h6"
                           style={{
                             color:
                               index == 0
@@ -482,7 +459,7 @@ const Pricing = () => {
                           )}
                         </Typography>
                         <Typography
-                          variant='h6'
+                          variant="h6"
                           style={{
                             color:
                               index == 0
@@ -505,12 +482,12 @@ const Pricing = () => {
                             ))}
                         </Typography>
                       </Box>
-                      <ul className='flex flex-col h-3'>
+                      <ul className="flex flex-col h-3">
                         {tier.description.map((line) => (
                           <Typography
                             // component="li"
-                            variant='subtitle1'
-                            align='center'
+                            variant="subtitle1"
+                            align="center"
                             key={line}
                             style={{
                               color:
@@ -530,7 +507,7 @@ const Pricing = () => {
                         ))}
                       </ul>
                     </CardContent>
-                    <CardActions className='flex mt-7 '>
+                    <CardActions className="flex mt-7 ">
                       <Button
                         style={{
                           color:
@@ -559,15 +536,15 @@ const Pricing = () => {
                           tier.buttonText == "Expired"
                         }
                         fullWidth
-                        variant='outlined'
+                        variant="outlined"
                       >
                         {tier.buttonText}
                       </Button>
                     </CardActions>
                     {tier.buttonText == "Subscribed" && endSubDate != "" && (
-                      <CardContent className='flex flex-col'>
+                      <CardContent className="flex flex-col">
                         <p
-                          class=' text-center text-sm ...'
+                          class=" text-center text-sm ..."
                           style={{
                             color:
                               index == 0
@@ -581,16 +558,16 @@ const Pricing = () => {
                                 : "red",
                           }}
                         >
-                          {tier.title == "Trial"
+                          {tier.package == "free"
                             ? "Subscription Ends at " + regDate
                             : "Subscription Ends at " + endSubDate}
                         </p>
                       </CardContent>
                     )}
                     {tier.buttonText == "Subscribed" && endSubDate == "" && (
-                      <CardContent className='flex flex-col'>
+                      <CardContent className="flex flex-col">
                         <p
-                          class=' text-center text-sm ...'
+                          class=" text-center text-sm ..."
                           style={{
                             color:
                               index == 0
@@ -604,7 +581,7 @@ const Pricing = () => {
                                 : "red",
                           }}
                         >
-                          {tier.title != "Trial" &&
+                          {tier.package != "free" &&
                             "Subscription Renews at " + renewSub}
                         </p>
                       </CardContent>
@@ -615,37 +592,38 @@ const Pricing = () => {
             </div>
           </div>
 
-          <div id='pricingDataTables' className='container mx-auto   px-2 '>
+          <div id="pricingDataTables" className="container mx-auto   px-2 ">
             {cardHeaderData.map((card, cardIndex) => (
-              <Card className='p-2 mb-3'>
-                <div className='bg-gray-100'>
+              <Card className="p-2 mb-3">
+                <div className="bg-gray-100">
                   <h4
-                    className='text-neutral-gray2 uppercase text-base tracking-normal font-bold px-2 '
-                    align='left'
+                    className="text-neutral-gray2 uppercase text-base tracking-normal font-bold px-2 "
+                    align="left"
                   >
                     {card?.["heading"]}
                   </h4>
                 </div>
-                <div className='grid grid-flow-row grid-cols-11 pt-2 gap-4'>
-                  <Grid item className='col-span-3'>
+                <div className="grid grid-flow-row grid-cols-11 pt-2 gap-4">
+                  <Grid item className="col-span-3">
                     {card?.["rowName"].map((row) => (
                       <h6
-                        className=' uppercase text-base tracking-normal font-medium px-2 py-2'
-                        align='left'
+                        className=" uppercase text-base tracking-normal font-medium px-2 py-2"
+                        align="left"
                       >
                         {row}
                       </h6>
                     ))}
                   </Grid>
                   {card?.["plan_data"].map((row, index) => (
-                    <Grid className='col-span-2' item>
+                    <Grid className="col-span-2" item>
                       {}
                       {row.map((row2, index2) => (
                         <div
-                          className='uppercase text-base tracking-normal font-medium px-2 py-2'
-                          align='center'
+                          className="uppercase text-base tracking-normal font-medium px-2 py-2"
+                          align="center"
                         >
-                          {(cardIndex == 0 || cardIndex == 3) && row2}
+                          {(cardIndex == 0 || cardIndex == 3) && ((row2 === 999)) ? "UNLIMITED" : row2}
+                          
                           {(cardIndex == 1 || cardIndex == 2) &&
                             (row2 == true ? (
                               <img src={tickLogo} />
