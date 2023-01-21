@@ -179,7 +179,7 @@ const ProjectPayment = (props) => {
   useEffect(() => {
     var selectedPlanType;
     console.log(location.state?.["duration"]);
-    if (location.state?.["duration"] == "M") {
+    if (location.state?.["duration"] === "M") {
       selectedPlanType = "mo";
     } else {
       selectedPlanType = "yr";

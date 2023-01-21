@@ -122,7 +122,7 @@ const addProject = async ({
   projectType
 }) => {
   try {
-    if (projectType == "noinput") {
+    if (projectType === "noinput") {
       const { data } = await client.post(
         endpoint.project,
         {

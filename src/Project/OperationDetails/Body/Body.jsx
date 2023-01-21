@@ -10,6 +10,7 @@ import { CircularProgress } from "@material-ui/core";
 import _ from "lodash";
 import debounce from "lodash.debounce";
 import DeleteIcon from "@material-ui/icons/Delete";
+import BlurCircularIcon from '@mui/icons-material/BlurCircular'; 
 import classNames from "classnames";
 import TreeView from "@material-ui/lab/TreeView";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
@@ -1379,6 +1380,23 @@ const BodyItem = ({
     }
   };
 
+  
+  if (isColumn(bodyItem)) {
+    return (
+      <DraggableBodyItem>
+        <ColumnLabel
+          columnLabelItem={bodyItem}
+          deleteColumn={deleteItem}
+          renameColumn={renameColumn}
+          isNameTaken={isNameTaken}
+          request={request}
+          responseCode={responseCode}
+          isPartOfTable={false}
+        />
+      </DraggableBodyItem>
+    );
+  }
+
   if (isAttribute(bodyItem)) {
     return (
       <AttributeLabel
@@ -1391,20 +1409,6 @@ const BodyItem = ({
     );
   }
 
-  if (isColumn(bodyItem)) {
-    return (
-      <DraggableBodyItem>
-        <ColumnLabel
-          columnLabelItem={bodyItem}
-          deleteColumn={deleteItem}
-          renameColumn={renameColumn}
-          isNameTaken={isNameTaken}
-          request={request}
-          responseCode={responseCode}
-        />
-      </DraggableBodyItem>
-    );
-  }
 
   if (isArray(bodyItem) && bodyItem.is_child) {
     return (
@@ -2242,12 +2246,20 @@ const AttributeLabel = ({ labelItem, deleteItem, projectType }) => {
                 <div className=" w-full grid grid-cols-5 gap-2 items-center ">
                   {" "}
                   <div className="flex justify-self-start items-center">
-                    <img
+                    {labelItem?.id ?
+                      <BlurCircularIcon
+                      className="bg-white mr-4"
+                      sx={{ height: "24px", width: "24px" }}
+                      color={"Primary"}/>
+                    :
+                      
+                     <img
                       src={AttributeIcon}
                       alt="conektto logo"
                       className="bg-white mr-4"
                       style={{ height: "24px", width: "24px" }}
                     />
+                    }
                     <Tooltip
                       title={labelItem?.name}
                       open={openTooltip}
@@ -2296,12 +2308,20 @@ const AttributeLabel = ({ labelItem, deleteItem, projectType }) => {
                   <div className=" w-full grid grid-cols-5 gap-2 items-center">
                     {" "}
                     <div className="flex justify-self-start items-center">
+                      {labelItem?.id ?
+                        <BlurCircularIcon
+                        className="bg-white mr-4"
+                        sx={{ height: "24px", width: "24px" }}
+                        color={"Primary"}/>
+                      :
+                        
                       <img
                         src={AttributeIcon}
                         alt="conektto logo"
                         className="bg-white mr-4"
                         style={{ height: "24px", width: "24px" }}
                       />
+                      }
                       <Tooltip
                         title={labelItem?.name}
                         open={openTooltip}
@@ -2618,6 +2638,7 @@ const ColumnLabel = ({
   isDeletable = true,
   isArrayOfObject = false,
   array,
+  isPartOfTable = true
 }) => {
   let [operationData, setOperationDetails] = useRecoilState(
     operationAtomWithMiddleware
@@ -2740,14 +2761,14 @@ const ColumnLabel = ({
                 <div className=" w-full grid grid-cols-5 gap-2 items-center ">
                   {" "}
                   <div className="flex justify-self-start items-center ">
-                    <AppIcon className="mr-1 opacity-50">
+                    {isPartOfTable && <AppIcon className="mr-1 opacity-50">
                       <DragIndicatorIcon
                         className={classNames({
                           "cursor-move": canEdit(),
                         })}
                         style={{ height: "24px", width: "24px" }}
                       />
-                    </AppIcon>
+                    </AppIcon>}
                     <img
                       src={ColumnIcon}
                       alt="conektto logo"

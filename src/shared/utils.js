@@ -44,6 +44,11 @@ export const getApiError = (error) => {
       return error;
     }
 
+    /* if(url && url === endpoint.verifyProject) {
+      console.log("err", error?.message)
+      return error?.message[0];
+    } */
+
     if (url && url === endpoint.testDBConnection) {
       return new Error(error?.response?.data?.message);
     }

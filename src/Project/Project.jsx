@@ -263,7 +263,7 @@ const Project = () => {
   }, [projectDetailsError]);
 
   useEffect(() => {
-    if (verifyData && verifyData.message === "") {
+    if (verifyData && verifyData.message.length == 0) {
       fetchTables({ projectId });
       setDisplayEntityMapping(true);
       setMandMappinErr(false);						
@@ -582,7 +582,7 @@ const Project = () => {
         // throw getApiError(error);
       });
   };
-
+  
   return (
     <UserRoleProvider role={userRole}>
       <>
@@ -599,6 +599,7 @@ const Project = () => {
             entityMappingError ||
             //verifyProjectError ||
             verifyError ||
+            (verifyData && verifyData?.message.length > 0) ||
             //isProjectHavingErrors() ||
             didVerifyFailed() ||
             passwordBeforePublish ||
@@ -615,6 +616,7 @@ const Project = () => {
             publishProjectError ||
             //verifyProjectError ||
             verifyError ||
+            (verifyData && verifyData?.message.length > 0) ||
             //isProjectHavingErrors() ||
             didVerifyFailed() ||
             dialog?.show
@@ -681,10 +683,17 @@ const Project = () => {
             />
           )} */}
 
-          {verifyError &&
+          {verifyError &&            
             verifyError?.message !== "Mandatory mapping is required" && (
               <ProjectVerificationErrors
                 error={verifyError}
+                onClose={resetVerify}
+              />
+          )}
+
+          {(verifyData && verifyData?.message.length > 0)  && (
+              <ProjectVerificationErrors
+                error={verifyData}
                 onClose={resetVerify}
               />
           )}
@@ -802,9 +811,10 @@ const Project = () => {
               }}
               newProjectDetails={projectDetails.dbDetails}
               isDefaultproj={projectDetails.isDefaultSpecDb}
-              onPublish={(newProjectDetails, isDefaultproj) => {
+              dbType={projectDetails.dbDetails.dbtype}
+              onPublish={(newProjectDetails, isDefaultproj, dbType) => {
                 setPasswordBeforePublish(false);
-                setNewProjectDetails(newProjectDetails, isDefaultproj);
+                setNewProjectDetails(newProjectDetails, isDefaultproj,dbType);
                 /* if (projectDetails?.projectType === "db") {
                   //updateMappingData(mappedEntityData, newProjectDetails["password"]);
                   verifyProject({ projectId, newProjectDetails });
@@ -831,8 +841,9 @@ const Project = () => {
                 fetchTables({ projectId });
                 setMandMappinErr(false);
                 setDisplayEntityMapping(true);
+              } else {
+                handleCloseDialog();
               }
-              //handleCloseDialog();
             }}
             mmtableData={mmtablesData}
             tablesData={tablesData}

@@ -7,10 +7,11 @@ const EzapiFooter = () => {
       style={{ height: "5vh" }}
     >
       <p className='flex text-overline3 align-middle items-center self-center'>
-        © 2022 Conektto INC. All Rights Reserved.
+        © {new Date().getFullYear()} Conektto INC. All Rights Reserved.
       </p>
     </footer>
   );
 };
 
 export default EzapiFooter;
+  

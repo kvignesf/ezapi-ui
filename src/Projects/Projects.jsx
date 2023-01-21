@@ -549,9 +549,9 @@ const ProjectRow = ({
             {project?.status?.toLowerCase() === "complete" &&
               project?.projectType?.toLowerCase() !== "schema" && project?.isDesign &&(
                 <Tooltip title={
-                  (project?.githubCommit == "ReadyForPush" && (project?.codegen || project?.dotnetcodegen) && (!isgithubLoggingIn))
+                  (project?.githubCommit === "ReadyForPush" && (project?.codegen || project?.dotnetcodegen) && (!isgithubLoggingIn))
                     ? "Push to Github"
-                    : (project?.githubCommit == "ReadyForView") ? "View on Github" : (project?.githubCommit == "CommitInProgress") ? "Commit In Progress" : ""
+                    : (project?.githubCommit === "ReadyForView") ? "View on Github" : (project?.githubCommit === "CommitInProgress") ? "Commit In Progress" : ""
                 }>
                   <div
                     style={{
@@ -593,7 +593,7 @@ const ProjectRow = ({
                     </LoginGithub>)
                     }    
                     {
-                      project?.githubCommit == "ReadyForView" && (!isgithubLoggingIn) &&(
+                      project?.githubCommit === "ReadyForView" && (!isgithubLoggingIn) &&(
                         <div className="github-view-button mt-1">
                           <div className="github-ico-wrapper">
                             <img
@@ -613,7 +613,7 @@ const ProjectRow = ({
                   </div>
                 </Tooltip>                
               )}
-            {(isgithubLoggingIn || project?.githubCommit == "CommitInProgress" || isgithubLoginSuccess) && (
+            {(isgithubLoggingIn || project?.githubCommit === "CommitInProgress" && isgithubLoginSuccess) && (
               <Tooltip title={
                 "Commit In Progress"
               }>              

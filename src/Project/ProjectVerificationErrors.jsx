@@ -8,7 +8,9 @@ import routes from '../shared/routes';
 import { useHistory } from 'react-router-dom';
 
 const ProjectVerificationErrors = ({ onClose, error }) => {
-  /* const getLocationName = (responseItem) => {
+  //console.log("error1", error )
+  //console.log("errro", error.message)
+  const getLocationName = (responseItem) => {
     let location;
 
     if (responseItem?.resource_name) {
@@ -24,8 +26,9 @@ const ProjectVerificationErrors = ({ onClose, error }) => {
     }
 
     return location;
-  }; */
+  };
   const history = useHistory();
+  //console.log("...",Array.isArray(error?.message))
 
   return (
     <div
@@ -54,11 +57,40 @@ const ProjectVerificationErrors = ({ onClose, error }) => {
           Looks like there are a few issues found in this project. Kindly
           resolve them to proceed.
         </p>
+        
+        {/* <div className="max-h-96">
+          <p className="text-overline2 mb-1 text-accent-red">{`- ${
+            error?.message ?? ""
+          }`}</p>
+        </div> */}
+        {Array.isArray(error?.message) ?
+        <Scrollbar>
+          <div className='max-h-96'>
+            {error?.message?.map((responseItem) => {
+              return (
+                <div className='mb-2'>
+                  {getLocationName(responseItem) && (
+                    <p className='text-overline1 mb-1'>
+                      {getLocationName(responseItem)}
+                    </p>
+                  )}
+                  {responseItem?.errors?.map((errorMessage) => {
+                    return (
+                      <p className='text-overline2 mb-1 text-accent-red'>{`- ${errorMessage}`}</p>
+                    );
+                  })}
+                </div>
+              );
+            })}
+          </div>
+        </Scrollbar>
+        :
         <div className="max-h-96">
           <p className="text-overline2 mb-1 text-accent-red">{`- ${
             error?.message ?? ""
           }`}</p>
         </div>
+        }
       </div>
       <div className="border-t-1 p-4 flex flex-row justify-end">
         {error?.message.includes("upgrade") ?

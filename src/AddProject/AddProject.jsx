@@ -302,7 +302,7 @@ const AddProject = ({ onClose, onSuccess }) => {
         setSpecErrorDisplay(true);
       } else {
         setErrorDisplay(false);
-        setSpecErrorDisplay(false);
+        setSpecErrorDisplay(false);        
         uploadProjectData({
           name: projectDetails?.name,
           invitees: projectDetails?.collaborators?.map((collaborator) => {
@@ -653,7 +653,8 @@ const AddProject = ({ onClose, onSuccess }) => {
     <>
     {noSpecNoDb && (<NoSpecNoDb
               onClose={onClose}
-              onSuccess={onSuccess}/>)}
+              onSuccess={onSuccess}
+              noSpecNoDb={noSpecNoDb}/>)}
     {isDesign != null  && isMiddleState && (
         <div className='p-4'>
         <div className='flex flex-row items-center justify-between mb-3'>
@@ -725,7 +726,7 @@ const AddProject = ({ onClose, onSuccess }) => {
               />
               )
             }
-            label={<Box fontSize={14}>No SPec No DB Flow</Box>}
+            label={<Box fontSize={14}>FreeFlow API Design</Box>}
           />
         </FormGroup>
         <div className='border-t-2 border-neutral-gray7 flex flex-row items-center justify-end pt-4'>
@@ -864,7 +865,7 @@ const AddProject = ({ onClose, onSuccess }) => {
                           onClick={() => isClaimChecked()}
                         />
                       }
-                      label={<Box fontSize={14}>Use Default Claim Spec</Box>}
+                      label={<Box fontSize={14}>Use default Claim Spec</Box>}
                     />
                   </FormGroup> ) }
                   <FormGroup>
@@ -880,8 +881,10 @@ const AddProject = ({ onClose, onSuccess }) => {
                         />
                         )
                       }
-                      label={(sampleProjCnt < sampleProjLimit) ? (<Box fontSize={14}>Use Default BikeStore Spec</Box>) : (<Box fontSize={14}>Sample Projects limit of {sampleProjLimit} Utilized for Bikestore Spec </Box>) }
+                      label={(sampleProjCnt < sampleProjLimit) ? (<Box fontSize={14}>Use default BikeStore Spec</Box>) : (<Box fontSize={14}>Sample Projects limit of {sampleProjLimit} Utilized for Bikestore Spec </Box>) }
                     />
+                    {isDesign && (
+                      <>
                     <FormControlLabel
                       control={
                         
@@ -894,7 +897,7 @@ const AddProject = ({ onClose, onSuccess }) => {
                         />
                         )
                       }
-                      label={(sampleAdvWorksDBPCnt < sampleProjLimit) ? (<Box fontSize={14}>Use Default Adventure Works DB</Box>) : (<Box fontSize={14}>Sample Projects limit of {sampleProjLimit} Utilized for Adventure Works DB</Box>) }
+                      label={(sampleAdvWorksDBPCnt < sampleProjLimit) ? (<Box fontSize={14}>Use default Adventure Works DB</Box>) : (<Box fontSize={14}>Sample Projects limit of {sampleProjLimit} Utilized for Adventure Works DB</Box>) }
                     />
                     <FormControlLabel
                       control={
@@ -908,8 +911,10 @@ const AddProject = ({ onClose, onSuccess }) => {
                         />
                         )
                       }
-                      label={(sampleMFlixDBCnt < sampleProjLimit) ? (<Box fontSize={14}>Use Default Mflix MongoDB</Box>) : (<Box fontSize={14}>Sample Projects limit of {sampleProjLimit} Utilized for Mflix MongoDB</Box>) }
+                      label={(sampleMFlixDBCnt < sampleProjLimit) ? (<Box fontSize={14}>Use default Mflix MongoDB</Box>) : (<Box fontSize={14}>Sample Projects limit of {sampleProjLimit} Utilized for Mflix MongoDB</Box>) }
                     />
+                    </>
+                    )}
                   </FormGroup>
                 </div>
 

@@ -42,7 +42,7 @@ import TabLabel from "../shared/components/TabLabel";
 
 import { getUserId } from "../shared/storage";
 
-const NoSpecNoDb = ({ onClose, onSuccess }) => {
+const NoSpecNoDb = ({ onClose, onSuccess, noSpecNoDb }) => {
   const [currentTab, setTab] = useState(1);
   const [connectDatabaseTab, setConnectDatabaseTab] = useState(0);
   const history = useHistory();
@@ -187,6 +187,8 @@ const NoSpecNoDb = ({ onClose, onSuccess }) => {
       } else {
         setErrorDisplay(false);
         setSpecErrorDisplay(false);
+        console.log("isDesign", isDesign)
+        console.log("noSpecNoDb", noSpecNoDb)
         uploadProjectData({
           name: projectDetails?.name,
           invitees: projectDetails?.collaborators?.map((collaborator) => {
@@ -194,7 +196,7 @@ const NoSpecNoDb = ({ onClose, onSuccess }) => {
               email: collaborator,
             };
           }),
-          isDesign: isDesign,
+          isDesign: isDesign || noSpecNoDb,
           isDefaultClaimSpec: defaultClaimSpec,
           isDefaultAdvSpec: defaultAdvSpec,
           isDefaultAdvWorks: defaultAdvWorks,

@@ -8,6 +8,7 @@ const Messages = {
   TABLE_REQUIRED: "Please select a table name",
   COLUMN_REQUIRED: "Please select a column name",
   FIELD_REQUIRED: "Please fill this field",
+  PARAMETER_FIELD_REQUIRED: "Required field",
   TABLE_COLUMN_EXISTS: "Table/Column with this name already exists",
   INVALID_EMAIL: "Please enter valid email",
   NO_USER_DETAILS: "Failed to get the user details, please try again.",

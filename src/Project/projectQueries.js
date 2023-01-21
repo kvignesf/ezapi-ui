@@ -40,7 +40,9 @@ const verifyProject = async ({ projectId }) => {
     });
     return data;
   } catch (error) {
+    console.log("errror", error)
     throw getApiError(error);
+    
   }
 };
 
@@ -118,7 +120,7 @@ export const publishProject = async ({ projectId, newProjectDetails }) => {
           return status == 200 || status == 400;
         },
 		
-        timeout: 120000,
+        timeout: 480000,
       }
     );
     return data;
