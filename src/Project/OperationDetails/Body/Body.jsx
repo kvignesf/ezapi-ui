@@ -242,21 +242,27 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
                 str = str.split(".ezapi_array").join("");
                 str = str.split(".attribute").join("");
                 clonedItem.key = str;
-              }
-
-              if (isArray(item)) {
-                clonedItem.isArray = true;
-              }
+              }             
 
               clonedItem.required = true;
               clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
               clonedItem.parentName = path ?? "/";
             }
+
+            if (isArray(item)) {
+              clonedItem.isArray = true;  
+              if (item?.id) { 
+                clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
+              }
+            }
+
             if (isAttribute(item)) {
               clonedItem.required = true;
               clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
               clonedItem.parentName = path ?? "/";
             } else if (isColumn(item)) {
+              clonedItem.tableName = fetchParentName(clonedItem) ?? "global";
+            } else if (isArrayOrObjectAttribute(item) && isArray(item)) {
               clonedItem.tableName = fetchParentName(clonedItem) ?? "global";
             }
 
@@ -284,7 +290,7 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
 
             clonedOperationDetails.operationResponse[responseIndex] =
               clonedResponseData;
-              
+
             return clonedOperationDetails;
           }
         }

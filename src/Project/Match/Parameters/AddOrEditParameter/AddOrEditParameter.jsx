@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import DoneIcon from '@mui/icons-material/Done';
 import CloseIcon from '@mui/icons-material/Close';
 import {
@@ -18,10 +18,17 @@ import addParameterSchema from "./parameterSchema";
 import { useEditParameter, useAddParameter } from "./modifyParameterQueries";
 import { FormHelperText } from "@mui/material";
 import Colors from "../../../../shared/colors";
+import DeleteIcon from '@mui/icons-material/Delete';
+import addParamAtom from "../../../../shared/atom/addParamAtom";
+import { useRecoilState } from "recoil";
 
 const AddOrEditParameter = ({ parameter, onClose, stopEdit }) => {
   const formRef = useRef(null);
   const { projectId } = useParams();
+  const [addParamCheck, setAddParamCheck] = useRecoilState(
+    addParamAtom
+  );
+  const [clearErrorMssgs, setClearErrorMssgs] = useState(true);
   const {
     isLoading: isAddingParameter,
     isSuccess: isAddSuccess,
@@ -34,7 +41,7 @@ const AddOrEditParameter = ({ parameter, onClose, stopEdit }) => {
     isSuccess: isEditSuccess,
     error: editParamError,
     mutate: editParam,
-    reset: resetEditParam,
+    reset: resetEditParam
   } = useEditParameter();
 
   
@@ -45,14 +52,16 @@ const AddOrEditParameter = ({ parameter, onClose, stopEdit }) => {
         paramId: parameter?.id,
         ...values,
       });
-      resetForm({values:''})
+      //console.log("editparamerror", editParamError);
+      //resetForm({values:''})
       return;
     }
     addParam({
       projectId,
       ...values,
     });
-    resetForm({values:''})
+    //console.log("addParamError", addParamError?.response?.data?.error);
+    //resetForm({values:''})
     return ;
   };
 
@@ -69,7 +78,25 @@ const AddOrEditParameter = ({ parameter, onClose, stopEdit }) => {
     }
   };
 
+  useEffect(() => {
+    if(addParamCheck){
+      formRef.current.submitForm();
+      setAddParamCheck(false);
+    }
+  }, [addParamCheck]);
+  useEffect(() => {
+    if(isAddSuccess){
+      formRef.current.resetForm({values:''})
+    }
+  }, [isAddSuccess]);
+  // useEffect(() => {
+  //   if(addParamError){
+  //     formRef.current.resetForm({values:{attribute:""}})
+  //   }
+  // }, [addParamError]);
+
   return (
+    <>
     <div className='flex flex-col mt-2'>
         <div className='mb-3'>
           <Formik
@@ -90,7 +117,7 @@ const AddOrEditParameter = ({ parameter, onClose, stopEdit }) => {
             innerRef={formRef}
             onSubmit={handleSubmit}
           >
-            {({ errors, touched }) => (
+            {({ errors, touched, formik}) => (
               <Form>
                 <div onKeyUp={(e) => {
                       // resetMutationState();
@@ -98,6 +125,9 @@ const AddOrEditParameter = ({ parameter, onClose, stopEdit }) => {
                         e.preventDefault();
                         e.stopPropagation();
                         formRef.current.submitForm();
+                        if(parameter){
+                          stopEdit(); 
+                          }
                       }
                     }} 
                     onKeyDown={(e)=>{
@@ -105,6 +135,9 @@ const AddOrEditParameter = ({ parameter, onClose, stopEdit }) => {
                         e.preventDefault();
                         e.stopPropagation();
                         formRef.current.submitForm();
+                        if(parameter){
+                          stopEdit(); 
+                        }
                       }
                     }}
                     className = 'bg-white mb-1 rounded-md flex flex-row p-1 py-1 items-center'>
@@ -273,8 +306,22 @@ const AddOrEditParameter = ({ parameter, onClose, stopEdit }) => {
                 </AppIcon>    
                 </div>
                   ):
-                  <div className='w-12 h-8'>
+                  <div className='w-12 h-8 flex flex-row pt-1 pl-7'>
+                    <AppIcon 
+                        className='mr-1'
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          formRef.current.resetForm();
+                          resetAddParam();
+                        }}>
+                      <DeleteIcon
+                        className={"cursor-pointer"}
+                        style={{ height: "1.25rem", color: "#c72c71" }}
+                      />
+                    </AppIcon>
                   </div>}
+                
                 
               </div>
               </Form>
@@ -292,10 +339,11 @@ const AddOrEditParameter = ({ parameter, onClose, stopEdit }) => {
 
         {editParamError && (
           <p className='text-accent-red text-overline2'>
-            {editParamError?.message}
+            {editParamError?.error}
           </p>
         )}
     </div>
+    </>
   );
 };
 

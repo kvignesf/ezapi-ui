@@ -29,11 +29,15 @@ import AddOrEditCustomParameter from "./CustomParameters/AddOrEditCustomParamete
 import StoredProcedure from "./StoredProcedures/StoredProcedures";
 import storedProcedureAtom from "../../shared/atom/storedProcedureAtom";
 import tablesDataAtom from "../../shared/atom/tablesDataAtom";
+import addParamAtom from "../../shared/atom/addParamAtom";
 
 
 const Match = ({ projectType, ...props }) => {
   let [operationData, setOperationDetails] = useRecoilState(
     operationAtomWithMiddleware
+  );
+  const [addParamCheck, setAddParamCheck] = useRecoilState(
+    addParamAtom
   );
   const [currentTab, setTab] = useState(null);
   const [schemaState, setSchemaState] = useRecoilState(schemaAtom);
@@ -434,12 +438,13 @@ const Match = ({ projectType, ...props }) => {
 
         {(currentTab === "param" || currentTab === "customParam") && canEdit() && (
           <div
-            className='flex flex-row items-center cursor-pointer hover:opacity-80 mr-8 border-1 rounded-md border-brand-secondary px-2 py-2'
+            className='flex flex-row items-center cursor-pointer hover:opacity-80 mr-16 border-1 rounded-md border-brand-secondary px-2 py-2'
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
               if (currentTab === "param") {
-                showAddParameterDialog();
+                //showAddParameterDialog();
+                setAddParamCheck(true);
               }
               if (currentTab === "customParam") {
                 showAddCustomParameterDialog();
@@ -453,7 +458,7 @@ const Match = ({ projectType, ...props }) => {
             >
               <AddIcon style={{ fontSize: "20px" }} />
             </AppIcon>
-            <p className='text-overline2 text-brand-secondary'>Add Parameter</p>
+            <p className='text-overline2 text-brand-secondary'>Save Parameter</p>
           </div>
         )}
 
