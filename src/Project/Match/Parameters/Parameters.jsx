@@ -126,7 +126,7 @@ const Parameters = () => {
               }}
             >
               {parameters?.data?.map((param) => {
-                console.log("eachParam:",param);
+                //console.log("eachParam:",param);
                 return <ParamRow param={param} />;
               })}
               <AddOrEditParameter onClose={handleCloseDialog} />
@@ -167,7 +167,7 @@ const ParamRow = ({ param }) => {
   );
   const [editParameter, setEditParameter] = useState(false);
   
-  console.log("editPar:",editParameter);
+  //console.log("editPar:",editParameter);
   const [dialog, setDialog] = useState({
     show: false,
     type: null,
@@ -203,7 +203,7 @@ const ParamRow = ({ param }) => {
   const handleEditParameter = () => {
     setEditParameter(false);
   };
-  console.log("check:",param);
+  //console.log("check:",param);
   return (
     <div
       ref={canEdit() ? drag : null}

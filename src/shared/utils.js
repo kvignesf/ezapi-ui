@@ -75,6 +75,7 @@ export const isArray = (object) => {
 };
 
 export const isAttribute = (object) => {
+  //console.log("object,", object)
   return (
     object?.type === "string" ||
     object?.type === "date" ||
@@ -89,6 +90,7 @@ export const isAttribute = (object) => {
 };
 
 export const isArrayOrObjectAttribute = (object) => {
+  
   return (
     object?.type &&
     _.isEmpty(object?.ref) &&
@@ -517,8 +519,10 @@ export const generateSyncOperationResponseRequest = (operationResponse) => {
           if (clonedItem?.hasOwnProperty("data")) {
             delete clonedItem?.data;
           }
-          if (clonedItem?.hasOwnProperty("possibleValues")) {
-            delete clonedItem?.possibleValues;
+          if (!isArray(item)) {
+            if (clonedItem?.hasOwnProperty("possibleValues")) {
+              delete clonedItem?.possibleValues;
+            }
           }
           /* if (clonedItem?.hasOwnProperty("schemaName")) {
             delete clonedItem?.schemaName;
@@ -679,7 +683,6 @@ export const useGetParentName = () => {
     } else if (isColumn(object)) {
       const { loadable: tableAtomLoadable } = getRecoilValueInfo(tableAtom);
       const tableDetails = tableAtomLoadable?.contents;
-      console.log("tableDetails..",tableDetails)
       if (
         tableDetails &&
         tableDetails?.selected &&

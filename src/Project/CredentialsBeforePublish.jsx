@@ -20,7 +20,7 @@ const CredentialsBeforePublish = ({
   dbType
 }) => {
   const formRef = useRef();
-  console.log("isDefaultproj.. ", isDefaultproj, dbType)
+  //console.log("isDefaultproj.. ", isDefaultproj, dbType)
   return (
     <div className='p-4'>
       <>

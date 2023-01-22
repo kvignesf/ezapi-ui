@@ -20,6 +20,7 @@ const Messages = {
   CONDITION_REQUIRED: "Please select a condtion",
   VALUE_REQUIRED: "Please enter a valid value",
   RELATION_REQUIRED: "Please select a relation",
+  MANDATORY_MAPPING_MSG: "You have attributes that are either partial match or no match, provide relevant database columns matching to proceed further",
 
 
 

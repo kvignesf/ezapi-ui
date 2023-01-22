@@ -207,7 +207,7 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
                   inputExists = true;
                 }
               });
-              if (item["draggedFrom"] == "input" && inputExists) {
+              if (item["draggedFrom"] === "input" && inputExists) {
                 clonedItem["inputAttributes"] = clonedItem.data[0];
                 clonedItem["required"] = true;
                 clonedItem["payloadId"] = null;
@@ -263,12 +263,12 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
             if (isStoredProcedure(item)) {
               let outputExists = false;
               item?.data?.[1]?.map((row) => {
-                if (row.type == "output") {
+                if (row.type === "output") {
                   outputExists = true;
                 }
               });
 
-              if (item["draggedFrom"] == "output" && outputExists) {
+              if (item["draggedFrom"] === "output" && outputExists) {
                 clonedItem["outputAttributes"] = clonedItem.data[1];
                 clonedItem["required"] = true;
                 clonedItem["payloadId"] = null;
@@ -284,7 +284,7 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
 
             clonedOperationDetails.operationResponse[responseIndex] =
               clonedResponseData;
-
+              
             return clonedOperationDetails;
           }
         }
@@ -502,7 +502,7 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
                     clonedRef = _.cloneDeep(item);
                   }
 
-                  return clonedRef == "wrongData" ? null : (
+                  return clonedRef === "wrongData" ? null : (
                     <DropArea onItemDropped={nestedItemDropped} state={refresh}>
                       <DraggableBodyItem state={refresh}>
                         <BodyItem

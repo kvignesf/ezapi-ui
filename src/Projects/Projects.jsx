@@ -737,7 +737,7 @@ const Content = ({ showCreateProjectDialog }) => {
   };
 
   const requestSearch = (searchedVal) => {
-    console.log(searchedVal);
+    //console.log(searchedVal);
     if (searchedVal) {
       document.querySelector('[aria-label="Page 1"]')?.click();
       const filteredRows = projects.filter((row) => {
@@ -839,7 +839,7 @@ const Content = ({ showCreateProjectDialog }) => {
     return <LoaderWithMessage message={"Fetching Projects"} />;
   }
   // console.log(dialog?.data);
-  console.log(projects);
+  //console.log(projects);
 
   // console.log(projects);
   return (

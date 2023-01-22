@@ -55,7 +55,7 @@ const Pricing = () => {
   const headings = ["PROJECTS", "API LIFECYCLE", "CONNECTORS", "VALIDITY"];
   const rowNames = [
     [
-      "Free Flow API Designs",
+      "Free format API Designs",
       "Data Provider APIs",      
       "API Test projects",
       "Aggregate APIs (Coming soon..)",
@@ -341,13 +341,13 @@ const Pricing = () => {
   }
 
   function handleSwitchChange(event) {
-    if (durationMY == "M") setDurationMY("Y");
+    if (durationMY === "M") setDurationMY("Y");
     else setDurationMY("M");
 
-    if (durationMY == "M") {
+    if (durationMY === "M") {
       document.getElementById("yr").style.color = "#c72c71";
       document.getElementById("mo").style.color = "black";
-    } else if (durationMY == "Y") {
+    } else if (durationMY === "Y") {
       document.getElementById("yr").style.color = "black";
       document.getElementById("mo").style.color = "#c72c71";
     }
@@ -511,16 +511,16 @@ const Pricing = () => {
                       <Button
                         style={{
                           color:
-                            tier.buttonText == "Subscribed"
+                            tier.buttonText === "Subscribed"
                               ? "white"
-                              : tier.buttonText == "Expired"
+                              : tier.buttonText === "Expired"
                               ? "black"
                               : "white",
 
                           background:
-                            tier.buttonText == "Subscribed"
+                            tier.buttonText === "Subscribed"
                               ? "#c72c71"
-                              : tier.buttonText == "Expired"
+                              : tier.buttonText === "Expired"
                               ? "#9f9f9f"
                               : "#0971f1",
                         }}
@@ -532,8 +532,8 @@ const Pricing = () => {
                           );
                         }}
                         disabled={
-                          tier.buttonText == "Subscribed" ||
-                          tier.buttonText == "Expired"
+                          tier.buttonText === "Subscribed" ||
+                          tier.buttonText === "Expired"
                         }
                         fullWidth
                         variant="outlined"
@@ -541,7 +541,7 @@ const Pricing = () => {
                         {tier.buttonText}
                       </Button>
                     </CardActions>
-                    {tier.buttonText == "Subscribed" && endSubDate != "" && (
+                    {tier.buttonText === "Subscribed" && endSubDate !== "" && (
                       <CardContent className="flex flex-col">
                         <p
                           class=" text-center text-sm ..."
@@ -558,13 +558,13 @@ const Pricing = () => {
                                 : "red",
                           }}
                         >
-                          {tier.package == "free"
+                          {tier.package === "free"
                             ? "Subscription Ends at " + regDate
                             : "Subscription Ends at " + endSubDate}
                         </p>
                       </CardContent>
                     )}
-                    {tier.buttonText == "Subscribed" && endSubDate == "" && (
+                    {tier.buttonText === "Subscribed" && endSubDate == "" && (
                       <CardContent className="flex flex-col">
                         <p
                           class=" text-center text-sm ..."

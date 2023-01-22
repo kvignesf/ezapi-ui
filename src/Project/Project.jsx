@@ -264,9 +264,14 @@ const Project = () => {
 
   useEffect(() => {
     if (verifyData && verifyData.message.length == 0) {
-      fetchTables({ projectId });
-      setDisplayEntityMapping(true);
-      setMandMappinErr(false);						
+      
+      if (projectDetails?.projectType !== "noinput") {
+        fetchTables({ projectId });
+        setDisplayEntityMapping(true);
+      } else {
+        publish({ projectId, newProjectDetails });
+      }
+      setMandMappinErr(false);
     } else if (
       verifyError &&
       verifyError.message === "Mandatory mapping is required"
@@ -551,7 +556,7 @@ const Project = () => {
   };
 
   const simulateAPI = (operation) => {
-    console.log(operation);
+    //console.log(operation);
     fetch(process.env.REACT_APP_API_URL + "/simulate", {
       headers: {
         Authorization: `Bearer ${acc_token}`,

@@ -99,7 +99,7 @@ const Login = () => {
   */
 
   const handleSuccess = (data) => {
-    console.log(data)
+    //console.log(data)
     if (data?.code && !_.isEmpty(data?.code)) {
       login({ linkedInAuthToken: data?.code, redirect_uri: redirect_uri });
     }

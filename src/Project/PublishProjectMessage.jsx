@@ -8,6 +8,7 @@ import { useGetBasicProduct } from "../ProjectPayment/paymentQueries";
 import { CircularProgress } from "@material-ui/core";
 import { useHistory } from 'react-router-dom';
 import routes from '../shared/routes';
+import Messages from "../shared/messages";
 
 
 
@@ -68,7 +69,7 @@ const PublishProjectMessage = ({
 
   return (
     <div>
-      <div className='p-4 flex flex-row justify-between border-b-1'>
+      <div className='p-2 flex flex-row justify-between border-b-1'>
         <p className='text-subtitle2'>
           {publishProjectData?.success
             ? "Publish Successful"
@@ -97,9 +98,9 @@ const PublishProjectMessage = ({
         {publishProjectData?.success ? (
           <p className='text-overline2'>{`Project ${project?.projectName} successfully published. You can now download the specs and artifacts.`}</p>
           ) : mandMappingErr ? (
-            <div className='flex flex-col items-center align-middle self-center justify-center p-4 py-6'>
+            <div className='flex flex-col items-center align-middle self-center justify-center p-2 py-6'>
               <FailureLogo width={60} height={60} className=' mb-5' />
-              <p className='text-overline2 '>Mandatory Mapping is required</p>
+              <p className='text-overline2 '>{Messages.MANDATORY_MAPPING_MSG}</p>
             </div>
         ) : (
           <p className='text-overline2'>{publishProjectData?.message}</p>

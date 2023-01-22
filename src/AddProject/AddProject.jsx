@@ -460,7 +460,7 @@ const AddProject = ({ onClose, onSuccess }) => {
     setDisableAdvSpec(e.target.checked);
   };
   const handleMflix = (e) => {
-    console.log("chk status", e.target.checked)
+    //console.log("chk status", e.target.checked)
     setDefaultMflix(e.target.checked);
     setDisableAdvWorks(e.target.checked);
     setDisableAdvSpec(e.target.checked);
@@ -726,7 +726,7 @@ const AddProject = ({ onClose, onSuccess }) => {
               />
               )
             }
-            label={<Box fontSize={14}>FreeFlow API Design</Box>}
+            label={<Box fontSize={14}>Free format API Design</Box>}
           />
         </FormGroup>
         <div className='border-t-2 border-neutral-gray7 flex flex-row items-center justify-end pt-4'>
