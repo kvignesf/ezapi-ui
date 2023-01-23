@@ -228,12 +228,12 @@ const Pricing = () => {
       switch (item["package"]) {
         case "free":
           item["logo"] = trialLogo;
-          item["description"] = ["Get the Cummunity, free"];
+          item["description"] = ["Get the Community, free"];
           item["buttonText"] = trialButton;
           break;
         case "paid":				   
           item["logo"] = proLogo;
-          item["description"] = ["Everything in Cummunity +"];
+          item["description"] = ["Everything in Community +"];
           item["buttonText"] = proButton;
           break;			
       }
