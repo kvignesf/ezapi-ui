@@ -56,12 +56,14 @@ const ConnectDatabase = ({
   handleTabChange,
   isClaimSpec,
   isAdvSpec,
+  isAdvWorks,
+  isMflix
 }) => {
   const [projectDetails, setProjectDetails] = useRecoilState(projectAtom);
   const [open, setOpen] = useState(false);
   const [connectors, setConnectors] = useState({
     ms_sql: true,
-    my_sql: false,
+    my_sql: true,
     postgres: false,
   });
 
@@ -467,6 +469,7 @@ const ConnectDatabase = ({
     { value: "mysql", label: "MySQL", check: "my_sql" },
     { value: "mssql", label: "SQL Server", check: "ms_sql" },
     { value: "postgres", label: "Postgres", check: "postgres" },
+    { value: "mongo", label: "MongoDb", check: "mongo" },
   ];
 
   const { data: pricing_data } = usePricingData();
@@ -481,7 +484,7 @@ const ConnectDatabase = ({
         userProfile_data["plan_name"] == "Basic"
       ) {
         debouncedSetNumberOfCollaborators(2);
-        setConnectors({ ms_sql: true, my_sql: false, postgres: false });
+        setConnectors({ ms_sql: true, my_sql: true, postgres: true, mongodb: true });
       } else {
         const filtered_plan = pricing_data["products"].filter(
           (item) => item["plan_name"] == userProfile_data["plan_name"]
@@ -490,10 +493,12 @@ const ConnectDatabase = ({
         setConnectors(filtered_plan["connectors"]);
       }
     }
-    if (isClaimSpec || isAdvSpec) {
+    if (isClaimSpec || isAdvSpec || isAdvWorks) {
       debouncedSetDbType("mssql");
+    } else if (isMflix) {
+      debouncedSetDbType("mongo");
     }
-  }, [pricing_data, userProfile_data, isClaimSpec, isAdvSpec]);
+  }, [pricing_data, userProfile_data, isClaimSpec, isAdvSpec, isAdvWorks, isMflix]);
   return (
     <div className="p-4" style={{ height: "300px", overflowY: "scroll" }}>
       {/* <Scrollbar className="max-h-60" alwaysShowTracks={true}> */}
@@ -560,16 +565,16 @@ const ConnectDatabase = ({
                         <Field
                           id="type"
                           name="type"
-                          value={isClaimSpec || isAdvSpec ? "mssql" : values.type}
+                          value={isClaimSpec || isAdvSpec || isAdvWorks  ? "mssql" : values.type}
                           // color = "primary"
                           onChange={handleChange}
                           onBlur={(e) => {
                             debouncedSetType(values.type);
                           }}
-                          disabled={isClaimSpec || isAdvSpec}
-                          error={(!isClaimSpec || !isAdvSpec) && touched.type && Boolean(errors.type)}
+                          disabled={isClaimSpec || isAdvSpec || isAdvWorks || isMflix }
+                          error={(!isClaimSpec || !isAdvSpec || !isAdvWorks || !isMflix) && touched.type && Boolean(errors.type)}
                           helperText={
-                            (!isClaimSpec || !isAdvSpec) && (
+                            (!isClaimSpec || !isAdvSpec || isAdvWorks || isMflix) && (
                               <ErrorMessage name="type" />
                             )
                           }
@@ -622,14 +627,14 @@ const ConnectDatabase = ({
                           fullWidth
                           color="primary"
                           placeholder="127.0.0.1"
-                          value={isClaimSpec || isAdvSpec ? "3*.*.*.*" : values.host}
+                          value={isClaimSpec || isAdvSpec || isAdvWorks || isMflix ? "3*.*.*.*" : values.host}
                           error={
-                            (!isClaimSpec || !isAdvSpec) &&
+                            (!isClaimSpec || !isAdvSpec || isAdvWorks || isMflix ) &&
                             touched.host &&
                             Boolean(errors.host)
                           }
                           helperText={
-                            (!isClaimSpec || !isAdvSpec) && (
+                            (!isClaimSpec || !isAdvSpec || !isAdvWorks || !isMflix) && (
                               <ErrorMessage name="host" />
                             )
                           }
@@ -639,7 +644,7 @@ const ConnectDatabase = ({
                           }}
                           variant="outlined"
                           inputProps={{ maxLength: 55 }}
-                          disabled={isClaimSpec || isAdvSpec}
+                          disabled={isClaimSpec || isAdvSpec || isAdvWorks || isMflix}
                           // disabled={addProjectMutation?.isSuccess}
                           as={TextField}
                         />
@@ -652,14 +657,14 @@ const ConnectDatabase = ({
                           fullWidth
                           color="primary"
                           placeholder="7744"
-                          value={isAdvSpec || isClaimSpec ? "1433" : values.port}
+                          value={isAdvSpec || isClaimSpec || isAdvWorks || isMflix ? "1433" : values.port}
                           error={
-                            (!isClaimSpec || !isAdvSpec) &&
+                            (!isClaimSpec || !isAdvSpec || !isAdvWorks || !isMflix) &&
                             touched.port &&
                             Boolean(errors.port)
                           }
                           helperText={
-                            (!isClaimSpec || !isAdvSpec) && (
+                            (!isClaimSpec || !isAdvSpec || isAdvWorks || isMflix ) && (
                               <ErrorMessage name="port" />
                             )
                           }
@@ -669,7 +674,7 @@ const ConnectDatabase = ({
                           }}
                           variant="outlined"
                           inputProps={{ maxLength: 24 }}
-                          disabled={isClaimSpec || isAdvSpec}
+                          disabled={isClaimSpec || isAdvSpec || isAdvWorks || isMflix}
                           // disabled={addProjectMutation?.isSuccess}
                           as={TextField}
                         />
@@ -681,14 +686,14 @@ const ConnectDatabase = ({
                           name="username"
                           fullWidth
                           color="primary"
-                          value={isClaimSpec || isAdvSpec ? "sa" : values.username}
+                          value={isClaimSpec || isAdvSpec || isAdvWorks || isMflix ? "sa" : values.username}
                           error={
-                            (!isClaimSpec || !isAdvSpec) &&
+                            (!isClaimSpec || !isAdvSpec || !isAdvWorks || !isMflix) &&
                             touched.username &&
                             Boolean(errors.username)
                           }
                           helperText={
-                            (!isClaimSpec || !isAdvSpec) && (
+                            (!isClaimSpec || !isAdvSpec || isAdvWorks || isMflix) && (
                               <ErrorMessage name="username" />
                             )
                           }
@@ -698,7 +703,7 @@ const ConnectDatabase = ({
                           }}
                           variant="outlined"
                           inputProps={{ maxLength: 24 }}
-                          disabled={isClaimSpec || isAdvSpec}
+                          disabled={isClaimSpec || isAdvSpec || isAdvWorks || isMflix}
                           // disabled={addProjectMutation?.isSuccess}
                           as={TextField}
                         />
@@ -713,15 +718,15 @@ const ConnectDatabase = ({
                           fullWidth
                           color="primary"
                           value={
-                            isClaimSpec || isAdvSpec ? "S0mbari@2022" : values.password
+                            isClaimSpec || isAdvSpec || isAdvWorks || isMflix ? "S0mbari@2022" : values.password
                           }
                           error={
-                            (!isClaimSpec || !isAdvSpec) &&
+                            (!isClaimSpec || !isAdvSpec || !isAdvWorks || !isMflix) &&
                             touched.password &&
                             Boolean(errors.password)
                           }
                           helperText={
-                            (!isClaimSpec || !isAdvSpec) && (
+                            (!isClaimSpec || !isAdvSpec || isAdvWorks || isMflix) && (
                               <ErrorMessage name="password" />
                             )
                           }
@@ -731,7 +736,7 @@ const ConnectDatabase = ({
                           }}
                           variant="outlined"
                           inputProps={{ maxLength: 24 }}
-                          disabled={isClaimSpec || isAdvSpec}
+                          disabled={isClaimSpec || isAdvSpec || isAdvWorks || isMflix}
                           // disabled={addProjectMutation?.isSuccess}
                           as={TextField}
                         />
@@ -751,12 +756,12 @@ const ConnectDatabase = ({
                               : values.database
                           }
                           error={
-                            (!isClaimSpec || !isAdvSpec) &&
+                            (!isClaimSpec || !isAdvSpec || !isAdvWorks || !isMflix) &&
                             touched.database &&
                             Boolean(errors.database)
                           }
                           helperText={
-                            (!isClaimSpec || !isAdvSpec) && (
+                            (!isClaimSpec || !isAdvSpec || !isAdvWorks || !isMflix) && (
                               <ErrorMessage name="database" />
                             )
                           }
@@ -766,7 +771,7 @@ const ConnectDatabase = ({
                           }}
                           variant="outlined"
                           inputProps={{ maxLength: 55 }}
-                          disabled={isClaimSpec || isAdvSpec}
+                          disabled={isClaimSpec || isAdvSpec || isAdvWorks || isMflix}
                           // disabled={addProjectMutation?.isSuccess}
                           as={TextField}
                         />
@@ -776,7 +781,7 @@ const ConnectDatabase = ({
                         <Field
                             type="checkbox"
                             name="toggle"
-                            disabled={isClaimSpec || isAdvSpec}
+                            disabled={isClaimSpec || isAdvSpec || isAdvWorks || isMflix}
                           />
                           {" Over SSL"}
                         </label>
@@ -792,7 +797,7 @@ const ConnectDatabase = ({
                                 accept=".key,.pem"
                                 multiple
                                 hidden
-                                disabled={isClaimSpec || isAdvSpec}
+                                disabled={isClaimSpec || isAdvSpec || isAdvWorks || isMflix}
                                 onChange={(e) => {
                                   handleOnKeysPick(Array.from(e.target.files));
                                   e.target.value = "";
@@ -1122,7 +1127,7 @@ const ConnectDatabase = ({
                                 touched.dbType && errors.dbType && "red",
                             }}
                             as="select"
-                            disabled={isClaimSpec || isAdvSpec}
+                            disabled={isClaimSpec || isAdvSpec || isAdvWorks || isMflix}
                           >
                             <option value="" label="Select db type" />
 
@@ -1172,7 +1177,7 @@ const ConnectDatabase = ({
                   // multiple
                   hidden
                   disabled={
-                    isAdvSpec || isClaimSpec || projectDetails?.dbs !== null
+                    isAdvSpec || isClaimSpec || isAdvWorks || isMflix || projectDetails?.dbs !== null
                       ? projectDetails?.dbs?.length === 0
                         ? false
                         : true
@@ -1194,7 +1199,7 @@ const ConnectDatabase = ({
                     }
                   }}
                   className={`bg-brand-secondary  ${
-                    isClaimSpec || isAdvSpec ? "opacity-40" : "hover:opacity-90"
+                    isClaimSpec || isAdvSpec || isAdvWorks || isMflix ? "opacity-40" : "hover:opacity-90"
                   }  rounded-md px-4 py-2 text-white text-mediumLabel`}
                 >
                   Upload DDL

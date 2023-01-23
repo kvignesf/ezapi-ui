@@ -1,7 +1,8 @@
 import { atom } from "recoil";
 
 export const defaultState = {
-  selected: null,
+  selected: [],
+  ref: "",
 };
 
 const tableAtom = atom({

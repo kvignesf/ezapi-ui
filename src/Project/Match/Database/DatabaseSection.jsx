@@ -8,7 +8,9 @@ import AppIcon from "../../../shared/components/AppIcon";
 import DraggableDatabaseItem from "./DraggableDatabaseItem";
 import {
   isAttribute,
+  isColumn,
   isDatabase,
+  isMongoDb,
   operationAtomWithMiddleware,
 } from "../../../shared/utils";
 import primaryAtom from "../../../shared/atom/primaryAtom";
@@ -25,21 +27,23 @@ const DatabaseSection = ({ items, onItemClick, section }) => {
     if (items && !_.isEmpty(items)) {
       const firstItem = items[0];
 
-      return isDatabase(firstItem);
+      if (isDatabase(firstItem)) {
+        return "Tables";
+      } else if (isMongoDb(firstItem)) {
+        return "Collections";
+      } else if (isColumn(firstItem)) {
+        return "Columns";
+      } else {
+        return "Documents";
+      }
     }
-    return null;
+    return "-";
   };
 
   return (
     <div className='flex flex-col'>
       <div className='flex flex-row justify-between'>
-        <p className='text-overline2 mb-2'>
-          {isItemsTypeTable() === null
-            ? "-"
-            : isItemsTypeTable()
-            ? "Tables"
-            : "Columns"}
-        </p>
+        <p className='text-overline2 mb-2'>{isItemsTypeTable()}</p>
         <p className='text-overline2'>{items?.length}</p>
       </div>
 
@@ -62,7 +66,7 @@ const DatabaseSection = ({ items, onItemClick, section }) => {
                   index={index}
                   item={item}
                   section={section}
-                  primaryKey = {primaryKeyRef}
+                  primaryKey={primaryKeyRef}
                   onClick={(e) => {
                     e?.preventDefault();
                     e?.stopPropagation();

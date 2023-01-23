@@ -3,13 +3,20 @@ import { useParams } from "react-router-dom";
 import { useRecoilState } from "recoil";
 import _ from "lodash";
 
-import { useGetTablesData } from "../../../shared/query/tablesQueries";
+import {
+  useGetSubTables,
+  useGetTablesData,
+} from "../../../shared/query/tablesQueries";
 import LoaderWithMessage from "../../../shared/components/LoaderWithMessage";
 import DatabaseSection from "./DatabaseSection";
 import tableAtom from "../../../shared/atom/tableAtom";
 import tablesDataAtom from "../../../shared/atom/tablesDataAtom";
-import { isDatabase } from "../../../shared/utils";
-
+import {
+  isArray,
+  isDatabase,
+  isMongoDb,
+  isObject,
+} from "../../../shared/utils";
 const Database = () => {
   const { projectId } = useParams();
   const {
@@ -18,18 +25,106 @@ const Database = () => {
     data: tablesData,
     mutate: fetchTablesData,
   } = useGetTablesData();
+  const {
+    isLoading: isLoadingSubTable,
+    error: getSubTablesError,
+    data: subTableData,
+    mutate: getSubTable,
+    reset: resetSubTableData,
+    isIdle: isGetSubTableIdle,
+  } = useGetSubTables();
   const [content, setContent] = useState(null);
   const [tableState, setTableState] = useRecoilState(tableAtom);
   const [tablesDataState, setTablesDataState] = useRecoilState(tablesDataAtom);
+  const [selectedItem, setSelectedItem] = useState();
 
   useEffect(() => {
     fetchTablesData({ projectId });
   }, []);
 
-  useEffect(() => {
-    if (tableState?.selected) {
-      const columnsData = _.cloneDeep(tableState?.selected?.selectedColumns);
+  const handleItemClick = (item) => {
+    setSelectedItem(item);
+    if (isDatabase(item) || isMongoDb(item)) {
+      setTableState((tableState) => {
+        const clonedTableState = _.cloneDeep(tableState);
 
+        clonedTableState.selected.push(item);
+
+        return clonedTableState;
+      });
+    } else if (isObject(item) && !item.is_child) {
+      console.log("object", item);
+      let newRef;
+      if (tableState.ref === "") {
+        newRef = `${item.tableName}.attributes.${item.name}.ezapi_object`;
+      } else {
+        newRef = `${tableState.ref}.${item.name}.ezapi_object`;
+      }
+      setTableState((tableState) => {
+        const clonedTableState = _.cloneDeep(tableState);
+        clonedTableState.ref = newRef;
+        return clonedTableState;
+      });
+      getSubTable({
+        projectId,
+        name: item?.name,
+        type: item?.type,
+        ref: newRef,
+      });
+    } else if (isArray(item) && !item.is_child) {
+      console.log("array", item);
+      let newRef;
+      if (tableState.ref === "") {
+        newRef = `${item.tableName}.attributes.${item.name}.ezapi_array.ezapi_object`;
+      } else {
+        newRef = `${tableState.ref}.${item.name}.ezapi_array.ezapi_object`;
+      }
+      setTableState((tableState) => {
+        const clonedTableState = _.cloneDeep(tableState);
+        clonedTableState.ref = newRef;
+        return clonedTableState;
+      });
+      item["ref"] = newRef;
+      getSubTable({
+        projectId,
+        name: item?.name,
+        type: item?.type,
+        ref: newRef,
+      });
+
+      // setTableState((tableState) => {
+      //   const clonedTableState = _.cloneDeep(tableState);
+
+      //   clonedTableState.selected = item;
+
+      //   return clonedTableState;
+      // });
+    }
+  };
+
+  useEffect(() => {
+    if (subTableData) {
+      setTableState((tableState) => {
+        const clonedTableState = _.cloneDeep(tableState);
+        selectedItem.selectedColumns = subTableData.data;
+        clonedTableState.selected.push(selectedItem);
+        clonedTableState.selected[
+          clonedTableState.selected.length - 1
+        ].selectedColumns.map((item) => {
+          item.ref = clonedTableState.ref;
+        });
+
+        return clonedTableState;
+      });
+    }
+  }, [subTableData]);
+
+  useEffect(() => {
+    if (tableState?.selected.length > 0) {
+      const length = tableState.selected.length;
+      const columnsData = _.cloneDeep(
+        tableState?.selected[length - 1]?.selectedColumns
+      );
       const threePartIndex = Math.ceil(columnsData?.length / 3);
 
       const thirdPart = columnsData.splice(-threePartIndex);
@@ -56,12 +151,12 @@ const Database = () => {
       const firstPart = clonedTablesData;
       setContent([firstPart, secondPart, thirdPart]);
     }
-  }, [tablesData, tableState?.selected]);
+  }, [tablesData, tableState?.selected.length]);
 
-  if (isFetchingTables) {
+  if (isLoadingSubTable || isFetchingTables) {
     return (
       <LoaderWithMessage
-        message='Loading tables data'
+        message='Loading data'
         className='h-full'
         contained
       />
@@ -84,15 +179,7 @@ const Database = () => {
             section={"1"}
             items={content[0]}
             onItemClick={(item) => {
-              if (isDatabase(item)) {
-                setTableState((tableState) => {
-                  const clonedTableState = _.cloneDeep(tableState);
-
-                  clonedTableState.selected = item;
-
-                  return clonedTableState;
-                });
-              }
+              handleItemClick(item);
             }}
           />
         </div>
@@ -102,15 +189,7 @@ const Database = () => {
             section={"2"}
             items={content[1]}
             onItemClick={(item) => {
-              if (isDatabase(item)) {
-                setTableState((tableState) => {
-                  const clonedTableState = _.cloneDeep(tableState);
-
-                  clonedTableState.selected = item;
-
-                  return clonedTableState;
-                });
-              }
+              handleItemClick(item);
             }}
           />
         </div>
@@ -120,15 +199,7 @@ const Database = () => {
             section={"3"}
             items={content[2]}
             onItemClick={(item) => {
-              if (isDatabase(item)) {
-                setTableState((tableState) => {
-                  const clonedTableState = _.cloneDeep(tableState);
-
-                  clonedTableState.selected = item;
-
-                  return clonedTableState;
-                });
-              }
+              handleItemClick(item);
             }}
           />
         </div>

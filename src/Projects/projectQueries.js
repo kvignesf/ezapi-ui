@@ -52,6 +52,50 @@ const updateProject = async ({ id, projectName, removeInvites }) => {
   }
 };
 
+
+const push_to_github = async ({ code, projectId }) => {
+  try {
+    console.log("projectid::",projectId);
+    const { data } = await client.post(endpoint.push_to_github, {
+      code: code,
+      projectid: projectId,
+      isMaster: true
+    },{timeout: 600000});
+    return data;
+  } catch (error) {
+    throw getApiError(error);
+  }
+};
+
+export const usePushToGithub = () => {
+  const mutation = useMutation(push_to_github);							
+  return mutation;   
+};
+
+const view_repo = async ({ projectId }) => {
+  try {
+    const { data } = await client.post(endpoint.view_repo, {
+      projectid: projectId
+    });
+    return data;
+  } catch (error) {
+    throw getApiError(error);
+  }
+};
+
+export const useVIewRepo = () => {
+  const mutation = useMutation(view_repo,{
+    onSuccess: (data) => {
+      console.log("view_repo_data:",data);
+      if(data?.repo_url)
+      {
+        window.open(data.repo_url,"_blank");
+      }
+    }
+  });							
+  return mutation;
+};
+
 export const useUpdateProject = () => {
   const queryClient = useQueryClient();
 

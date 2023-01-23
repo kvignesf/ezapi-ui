@@ -16,10 +16,11 @@ const CredentialsBeforePublish = ({
   onClose,
   onPublish,
   newProjectDetails,
-  isDefaultproj
+  isDefaultproj,
+  dbType
 }) => {
   const formRef = useRef();
-
+  //console.log("isDefaultproj.. ", isDefaultproj, dbType)
   return (
     <div className='p-4'>
       <>
@@ -140,7 +141,8 @@ const CredentialsBeforePublish = ({
                         autocomplete='off'
                         fullWidth
                         disabled={isDefaultproj}
-                        value={isDefaultproj ? "S0mbari@2022" : null}
+                        
+                        value={(isDefaultproj && dbType === "mssql") ? "S0mbari@2022" : (isDefaultproj && dbType === "mongo") ? "JRVvuh9D5V0IZxCW" : null}
                         color='primary'
                         error={(!isDefaultproj) && Boolean(errors.password)}
                         helperText={errors.password}

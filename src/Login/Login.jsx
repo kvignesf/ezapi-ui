@@ -6,10 +6,12 @@ import { Field, ErrorMessage, Form, Formik } from "formik";
 import CloseIcon from "@material-ui/icons/Close";
 import * as Yup from "yup";
 import "./Login.css";
-import { Select, MenuItem, OutlinedInput, Grid } from "@material-ui/core";
+import { Select, MenuItem, OutlinedInput, Grid, Button } from "@material-ui/core";
 import { LinkedIn } from "react-linkedin-login-oauth2";
 import linkedin from "./images/LinkdInLogo.svg";
 import sso from "./images/SSOLogo.svg";
+import googlesvgIcon from "./images/GoogleIcon.svg"
+import linkedinsvgIcon from "./images/LinkedInIcon.svg"
 import EzapiLogo from "./images/EzapiLogo.svg";
 import EnterpriseAPI from "./images/EnterpriseAPI.svg";
 import APIDesignStudio from "./images/APIDesignStudio.svg";
@@ -18,7 +20,7 @@ import HybridAPIOrchestrator from "./images/HybridAPIOrchestrator.svg";
 import { useHistory, useLocation } from "react-router-dom";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 import { getAccessToken } from "../shared/storage";
-import { FormHelperText } from "@mui/material";
+import { FormHelperText,  Stack} from "@mui/material";
 import { TextField } from "@material-ui/core";
 import Logo from "../static/images/logo/connectoLogoWithName.svg";
 import Constants from "../shared/constants";
@@ -27,7 +29,7 @@ import { Dialog } from "@material-ui/core/index";
 import { PrimaryButton } from "../shared/components/AppButton";
 import routes from "../shared/routes";
 import Colors from "../shared/colors";
-import { useLogin } from "../shared/query/authQueries";
+import { useGithubLogin, useLogin } from "../shared/query/authQueries";
 import EzapiFooter from "../shared/components/EzapiFooter";
 import {
   clearSession,
@@ -43,10 +45,12 @@ import _ from "lodash";
 import { isUserLoggedIn } from "../shared/utils";
 import { useQuery } from "react-query";
 import { border, maxHeight } from "@mui/system";
-//import GoogleLogin from "react-google-login";
-//import { Google } from "@mui/icons-material";
+import GitHubIcon from '@mui/icons-material/GitHub';
+import LoginGithub from 'react-login-github';
+
 
 const acc_token = getAccessToken();
+const path = "/";
 const Login = () => {
   const formRef = useRef();
   const [ssoLoggedIn, setSsoLoggedIn] = useState(false);
@@ -55,7 +59,6 @@ const Login = () => {
   const [ssoError, setSsoError] = useState();
   const history = useHistory();
   const redirect_uri = `${window.location.origin}/linkedin`;
-  // console.log(formValues);
   const {
     error: loginError,
     isLoading: isLoggingIn,
@@ -64,11 +67,43 @@ const Login = () => {
     reset: resetLogin,
   } = useLogin();
 
+  const {
+    error: githubLoginError,
+    isLoading: isgithubLoggingIn,
+    isSuccess: isgithubLoginSuccess,
+    mutate: githubLogin,
+    reset: resetgithubLogin,
+  } = useGithubLogin();
+
+  const onGitHubSuccess = async (response) => {    
+    const { code } = response;
+    if (code)	{
+      setIsLoading(true);
+    }
+    githubLogin({ code, redirect_uri: process.env.REACT_APP_REDIRECT_URI});
+  };
+
+/*   const {
+    error: loginGoogleError,
+    isLoading: isGoogleLoggingIn,
+    isSuccess: isGoogleLoginSuccess,
+    reset: resetGoogleLogin,
+  } = useGoogleLogin(); 
+  
+  const handleGoogleLoginSuccess = (data) => {
+    console.log(data)
+    if (data?.code && !_.isEmpty(data?.code)) {
+      login({ googleAuthToken: data?.code, redirect_uri: redirect_uri });
+    }
+  };
+  */
+
   const handleSuccess = (data) => {
+    //console.log(data)
     if (data?.code && !_.isEmpty(data?.code)) {
       login({ linkedInAuthToken: data?.code, redirect_uri: redirect_uri });
     }
-  };
+  };  
 
   useEffect(() => {
     if (isUserLoggedIn()) {
@@ -89,11 +124,18 @@ const Login = () => {
   }, [ssoLoggedIn]);
 
   useEffect(() => {
+    if (isgithubLoginSuccess && !isgithubLoggingIn && !githubLoginError) {
+      history.push({
+        pathname: routes.projects,
+        state: { allow: false },
+      });
+    }
+  }, [isgithubLoginSuccess]);
+
+  useEffect(() => {
     const queryParams = new URLSearchParams(window.location.search);
     const code = queryParams.get("code");
-    // const error = queryParams.get("error");
-    // console.log("error: " + error);
-    // console.log(code);
+
     if (code) {
       setIsLoading(true);
       const requestOptions = {
@@ -102,8 +144,8 @@ const Login = () => {
         body: JSON.stringify({ code: code }),
       };
       fetch(
-        process.env.REACT_APP_API_URL + "/auth_workos",
-        // "http://localhost:7744/auth_workos",
+        //process.env.REACT_APP_API_URL + `/auth_workos?code=${code}`,
+        process.env.REACT_APP_API_URL + `/auth_workos`,
         requestOptions
       )
         .then((response) => response.json())
@@ -125,6 +167,23 @@ const Login = () => {
     }
   }, []);
 
+
+  function GoogleoAuthLogin(data) {
+    console.log("data..", data)
+    const requestOptions = {
+      method: "GET",
+      headers: { "Content-Type": "application/json" }
+    };
+    fetch(process.env.REACT_APP_API_URL + "/google-signin", { method: 'GET' })
+    .then((response) => response.json())
+    .then(response => {          
+      window.location.replace(response.url);
+    })
+    .catch(function(err) {
+        console.info(err + " url: ");
+    });
+  }
+
   function SSOLogin(values) {
     setIsLoading(true);
     const requestOptions = {
@@ -136,23 +195,18 @@ const Login = () => {
     };
     fetch(
       process.env.REACT_APP_API_URL + "/sso_url",
-      // "http://localhost:7744/sso_url",
       requestOptions
     )
       .then((response) => response.json())
 
       .then((data) => {
-        // console.log(data);
         if (!data?.url && data?.error) {
-          // console.log("inside error");
-
           setSsoError(data?.error);
           setIsLoading(false);
         }
         if (data?.url) {
           setSsoError();
           window.location = data?.url;
-          // setIsLoading(false);
         }
       });
   }
@@ -161,6 +215,12 @@ const Login = () => {
     resetLogin();
     setAccessToken(null);
   };
+
+  const onGitHubFailure = (error) => {
+    resetgithubLogin();
+    setAccessToken(null);
+  };
+
 
   if (isLoginSuccess && !isLoggingIn && !loginError) {
     history.replace({
@@ -187,10 +247,10 @@ const Login = () => {
             </div>
           </div>
 
-          <div class='flex flex-col justify-start justify-items-center items-center align-top row-start-3 row-span-2 gap-7'>
+          <div class='flex flex-col justify-start justify-items-center items-center align-top row-start-3 row-span-3 gap-7'>
             <Card
               className='flex w-3/4 max-w-sm p-3 place-items-center justify-center items-center align-middle justify-items-center'
-              style={{ minHeight: "150px", maxHeight: "230px" }}
+              style={{ minHeight: "150px", maxHeight: "400px" }}
             >
               {" "}
               {/* selection card */}
@@ -207,18 +267,69 @@ const Login = () => {
                         redirectUri={encodeURIComponent(redirect_uri)}
                         redirectPath={"/signin"}
                         scope='r_liteprofile r_emailaddress'
+                        height='49'
                       >
                         <img
                           src={linkedin}
                           alt='Log in with Linked In'
-                          style={{ width: "260px", height: "44px" }}
+                          style={{ width: "260px", height: "45px" }}
                           className='w-full'
                         />
                       </LinkedIn>
+
+                      
+                      <div class='relative flex items-center justify-center align-middle'>                        
+                      </div>        
+
+                       {/* 
+                      below is linkedin custom button using npm lib 
+                      <div class='mt-1 flex w-4'></div>
+                      <button className="linkedIn-login-button" onClick={() => handleSuccess()}>
+                        <div class='mt-1 flex w-2'></div>                        
+                        <div class="linkedIn-ico-wrapper"><img src={linkedinsvgIcon} 
+                        style={{ height: "44px", width: "48px" }}/> </div>                                             
+                        <div class='mt-2 flex w-12'></div>
+                        <div class='pr-12'>Continue with LinkedIn</div>                      
+                      </button> */} 
+                                
+
+                      <LoginGithub 
+                      clientId={process.env.REACT_APP_GITHUB_CLIENT_ID}
+                      redirectUri={process.env.REACT_APP_REDIRECT_URI}
+                      onSuccess={onGitHubSuccess}
+                      onFailure={onGitHubFailure}
+                      className="github-login-button"> 
+                      <div class='mt-2 flex w-4'></div>                      
+                      <GitHubIcon  style={{ height: "24px", width: "24px" }} />
+                      <div class='mt-2 flex w-12'></div>
+                      <div class='pr-12'>Continue with Github</div>
+                      </LoginGithub>
+                      
+                      
+                      <div class='relative flex items-center justify-center align-middle'>                        
+                      </div>           
+                      
+                      
+                      <div class='mt-1 flex w-4'></div>
+                      <button className="google-login-button" onClick={() => GoogleoAuthLogin()}>
+                        <div class='mt-2 flex w-4'></div>                        
+                        <img src={googlesvgIcon} 
+                        style={{ height: "24px", width: "24px" }}/>                        
+                        <div class='mt-2 flex w-12'></div>
+                        <div class='pr-12'>Continue with Google</div>
+                      </button>
+                      
+  
+                      {/* 
+                      below is google button using npm lib
+                      <GoogleButton onClick={() => GoogleoAuthLogin()} type='light' style={{ width: "260px", height: "46px", fontSize:"12px", align:"center"}}>                        
+                      </GoogleButton> 
+                      */}
+
                       <div class='relative flex items-center justify-center align-middle'>
-                        <div class='mt-1 flex w-14 border-t border-black'></div>
-                        <span class='flex-shrink px-1'>or</span>
-                        <div class='mt-1  flex w-14 border-t border-black'></div>
+                        <div class='mt-2 flex w-14 border-t border-black'></div>
+                        <span class='mt-2 flex-shrink px-2'>or</span>
+                        <div class='mt-2 flex w-14 border-t border-black'></div>
                       </div>
 
                       <img
@@ -227,7 +338,7 @@ const Login = () => {
                           setDialog(true);
                         }}
                         alt='Log in with SSO'
-                        style={{ width: "260px", height: "44px" }}
+                        style={{ width: "260px", height: "45px" }}
                         className='w-full mt-2 cursor-pointer ... '
                       />
                     </div>
@@ -348,7 +459,7 @@ const Login = () => {
             </Card>
 
             <p className=' flex items-center justify-center text-overline3'>
-              © 2022 Conektto INC. All Rights Reserved.
+              © {new Date().getFullYear()} Conektto INC. All Rights Reserved.
             </p>
           </div>
         </div>

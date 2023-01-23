@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import _ from "lodash";
-import AddIcon from "@material-ui/icons/Add";
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import {
   CircularProgress,
   Dialog,
@@ -20,7 +21,6 @@ import Colors from "../../../shared/colors";
 import { useCanEdit } from "../../../shared/utils";
 import AddOrEditParameter from "./AddOrEditParameter/AddOrEditParameter";
 import { useGetParameters } from "./parametersQuery";
-import operationAtom from "../../operationAtom";
 import { useRecoilValue } from "recoil";
 import DeleteParameter from "./DeleteParameter/DeleteParameter";
 import { useDrag } from "react-dnd";
@@ -41,14 +41,9 @@ const Parameters = () => {
     data: null,
   });
   const operationState = useRecoilValue(operationAtomWithMiddleware);
+
   const canEdit = useCanEdit();
 
-  const showAddParameterDialog = () => {
-    setDialog({
-      show: true,
-      type: "add-parameter",
-    });
-  };
 
   const handleCloseDialog = () => {
     setDialog({
@@ -56,7 +51,7 @@ const Parameters = () => {
       data: null,
     });
   };
-
+  
   return (
     <>
       <Dialog
@@ -99,87 +94,60 @@ const Parameters = () => {
             </div>
           )}
 
-          {parameters && parameters?.data && !_.isEmpty(parameters?.data) ? (
-            <div className='flex-1 flex flex-col'>
-              <div className='flex flex-row justify-start bg-neutral-gray6 rounded-md p-1 py-2 mb-2'>
-                <p className='flex-1 text-smallLabel ml-7 text-neutral-gray2 uppercase'>
-                  Attribute
-                </p>
-                <p className='flex-1 text-smallLabel uppercase text-neutral-gray2'>
-                  Data Type
-                </p>
-                <p className='flex-1 text-smallLabel uppercase text-neutral-gray2'>
-                  Description
-                </p>
-                <p className='flex-1 text-smallLabel uppercase text-neutral-gray2'>
-                  Required
-                </p>
-                <p className='flex-1 text-smallLabel uppercase text-neutral-gray2'>
-                  Possible Values
-                </p>
-                <div className='w-8'></div>
-              </div>
-
-              <Scrollbar
-                style={{
-                  height: !operationState?.operationIndex
-                    ? `calc(100vh - 210px)`
-                    : null,
-                  maxHeight: operationState?.operationIndex
-                    ? `calc(50vh - 210px)`
-                    : null,
-                }}
-              >
-                {parameters?.data?.map((param) => {
-                  return <ParamRow param={param} />;
-                })}
-              </Scrollbar>
+          
+          <div className='flex-1 flex flex-col'>
+            <div className='flex flex-row justify-start bg-neutral-gray6 rounded-md p-1 py-2 mb-2'>
+              <p className='flex-1 text-smallLabel ml-7 text-neutral-gray2 uppercase'>
+                Attribute
+              </p>
+              <p className='flex-1 text-smallLabel uppercase text-neutral-gray2'>
+                Data Type
+              </p>
+              <p className='flex-1 text-smallLabel uppercase text-neutral-gray2'>
+                Possible Values
+              </p>
+              <p className='flex-1'>
+                <p style = {{marginRight:"24px"}}className = "text-center uppercase text-neutral-gray2 text-smallLabel">Required</p>
+              </p>
+              <p className='flex-1 text-smallLabel uppercase text-neutral-gray2'>
+                Description
+              </p>
+              <div className='w-12'></div>
             </div>
-          ) : (
-            !isFetchingParameters &&
-            !getParametersError && (
-              <div className='flex-1 flex flex-col items-center justify-center'>
-                <img
-                  src={EmptyParameters}
-                  style={{
-                    width: "110px",
-                    height: "110px",
-                  }}
-                />
-                <p className='text-overline2 mb-3'>
-                  You don’t have any parameter
-                </p>
+            {parameters && parameters?.data && !_.isEmpty(parameters?.data) ?(
+            <Scrollbar
+              style={{
+                height: !operationState?.operationIndex
+                  ? `calc(100vh - 210px)`
+                  : null,
+                maxHeight: operationState?.operationIndex
+                  ? `calc(50vh - 210px)`
+                  : null,
+              }}
+            >
+              {parameters?.data?.map((param) => {
+                //console.log("eachParam:",param);
+                return <ParamRow param={param} />;
+              })}
+              <AddOrEditParameter onClose={handleCloseDialog} />
+            </Scrollbar>):(
+              <Scrollbar
+              style={{
+                height: !operationState?.operationIndex
+                  ? `calc(100vh - 210px)`
+                  : null,
+                maxHeight: operationState?.operationIndex
+                  ? `calc(50vh - 210px)`
+                  : null,
+              }}
+            >
+              <AddOrEditParameter onClose={handleCloseDialog} />
+            </Scrollbar>
+            )}
 
-                {canEdit() && (
-                  <OutlineButton
-                    style={{
-                      borderColor: Colors.brand.secondary,
-                      borderWidth: "1px",
-                    }}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
 
-                      showAddParameterDialog();
-                    }}
-                  >
-                    <div className='flex flex-row items-center'>
-                      <AppIcon
-                        size='20px'
-                        color={Colors.brand.secondary}
-                        style={{ marginRight: "0.5rem" }}
-                      >
-                        <AddIcon style={{ fontSize: "20px" }} />
-                      </AppIcon>
-                      <p className='text-overline2 text-brand-secondary'>
-                        Add Parameter
-                      </p>
-                    </div>
-                  </OutlineButton>
-                )}
-              </div>
-            )
-          )}
+          </div>
+          
         </div>
       </div>
     </>
@@ -197,8 +165,9 @@ const ParamRow = ({ param }) => {
     }),
     [param]
   );
-  const [isHovering, setHovering] = useState(false);
-  const [menuAnchorEl, setMenuAnchorEl] = useState(false);
+  const [editParameter, setEditParameter] = useState(false);
+  
+  //console.log("editPar:",editParameter);
   const [dialog, setDialog] = useState({
     show: false,
     type: null,
@@ -208,10 +177,10 @@ const ParamRow = ({ param }) => {
 
   const showEditParameterDialog = () => {
     if (canEdit()) {
-      setDialog({
-        show: true,
-        type: "edit-parameter",
-      });
+      // setDialog({
+      //   show: true,
+      //   type: "edit-parameter",
+      // });
     }
   };
 
@@ -230,7 +199,11 @@ const ParamRow = ({ param }) => {
       data: null,
     });
   };
-
+  
+  const handleEditParameter = () => {
+    setEditParameter(false);
+  };
+  //console.log("check:",param);
   return (
     <div
       ref={canEdit() ? drag : null}
@@ -250,110 +223,68 @@ const ParamRow = ({ param }) => {
           }}
           disableBackdropClick
         >
-          {dialog?.type === "edit-parameter" && canEdit() && (
-            <AddOrEditParameter onClose={handleCloseDialog} parameter={param} />
-          )}
-
           {dialog?.type === "delete-parameter" && canEdit() && (
             <DeleteParameter onClose={handleCloseDialog} parameter={param} />
           )}
         </Dialog>
-
-        <div
-          key={param.name}
-          onMouseEnter={(e) => {
-            e?.preventDefault();
-            e?.stopPropagation();
-
-            if (canEdit()) {
-              setHovering(true);
-            }
-          }}
-          onMouseLeave={(e) => {
-            e?.preventDefault();
-            e?.stopPropagation();
-
-            if (canEdit()) {
-              setHovering(false);
-            }
-          }}
-          className='bg-white mb-1 rounded-md flex flex-row p-1 py-1 items-center'
-        >
-          <AppIcon className='mr-1 opacity-50'>
-            <DragIndicatorIcon
-              className={"cursor-move"}
-              style={{ height: "1.25rem" }}
-            />
-          </AppIcon>
-          <p className='flex-1 ml-1 text-overline2'>{param?.name}</p>
-          <p className='flex-1 text-overline2'>{param?.commonName}</p>
-          <p className='flex-1 text-overline2'>{param?.description}</p>
-          <p className='flex-1 text-overline2'>
-            {param?.required ? "Yes" : "No"}
-          </p>
-          <p className='flex-1 text-overline2'>
-            {param.possibleValues?.reduce((acc, curr) => {
-              if (!_.isEmpty(acc)) {
-                return acc + ", " + curr;
-              }
-              return curr;
-            }, "")}
-          </p>
-
-          <div className='w-8 h-8'>
-            {isHovering && canEdit() ? (
-              <AppIcon
-                style={{ padding: "0px" }}
+        {(editParameter && canEdit())?(
+          <AddOrEditParameter stopEdit = {handleEditParameter} onClose={handleCloseDialog} parameter={param}/>
+        ):(
+          <div
+            key={param.name}
+            className='bg-white mb-1 rounded-md flex flex-row p-1 py-1 items-center'
+          >
+            <AppIcon className='mr-1 opacity-50'>
+              <DragIndicatorIcon
+                className={"cursor-move"}
+                style={{ height: "1.25rem" }}
+              />
+            </AppIcon>
+            <p className='flex-1 ml-1 text-overline2'>{param?.name}</p>
+            <p className='flex-1 text-overline2'>{param?.type}</p>
+            <p className='flex-1 text-overline2'>
+              {param.possibleValues?.reduce((acc, curr) => {
+                if (!_.isEmpty(acc)) {
+                  return acc + ", " + curr;
+                }
+                return curr;
+              }, "")}
+            </p>
+            <p className='flex-1'>
+            <p style = {{marginRight:"29px"}} className = "text-center text-overline2 mr-2">
+              {param?.required ? "Yes" : "No"}
+              </p>
+            </p>
+            <p className='flex-1 text-overline2'>{param?.description}</p>  
+            <div className='w-12 h-8 flex flex-row pt-1'>
+              <AppIcon 
+                className='mr-1'
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-
-                  setMenuAnchorEl(e.currentTarget);
-                }}
-              >
-                <MoreVertIcon
-                  style={{ width: "20px", height: "min-content" }}
-                />
-              </AppIcon>
-            ) : (
-              <div style={{ width: "20px", height: "min-content" }}></div>
-            )}
-          </div>
-
-          {canEdit() && (
-            <Menu
-              id='param-menu'
-              anchorEl={menuAnchorEl}
-              keepMounted
-              open={Boolean(menuAnchorEl)}
-              onClose={() => {
-                setMenuAnchorEl(null);
+                  setEditParameter(true);
+                  
+                }}>
+              <EditIcon
+                className={"cursor-pointer"}
+                style={{ height: "1.25rem", color: "#c72c71" }}
+              />
+            </AppIcon>
+            <AppIcon
+              className='mr-1'
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                showDeleteParameterDialog();
               }}
-              TransitionComponent={Fade}
-              style={{ borderRadius: "1rem", zIndex: "100" }}
             >
-              <MenuItem
-                onClick={() => {
-                  setMenuAnchorEl(null);
-
-                  showEditParameterDialog();
-                }}
-              >
-                Edit
-              </MenuItem>
-              <MenuItem
-                onClick={() => {
-                  setMenuAnchorEl(null);
-
-                  showDeleteParameterDialog();
-                }}
-                style={{ color: Colors.accent.red }}
-              >
-                Delete
-              </MenuItem>
-            </Menu>
-          )}
-        </div>
+              <DeleteIcon
+                className={"cursor-pointer"}
+                style={{ marginLeft: "5px", height: "1.25rem", color: "#c72c71"}}
+              />
+            </AppIcon>    
+            </div>
+          </div>)}
       </>
     </div>
   );

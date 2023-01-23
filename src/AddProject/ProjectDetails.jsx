@@ -27,6 +27,9 @@ const ProjectDetails = ({
   aiMatcherMutation,
   isClaimSpec,
   isAdvSpec,
+  isNoSpecNoDb,
+  isAdvWorks,
+  isMflix
 }) => {
   const [projectDetails, setProjectDetails] = useRecoilState(projectAtom);
 
@@ -165,13 +168,14 @@ const ProjectDetails = ({
             setErrors,
           }) => (
             <Form>
-              {isClaimSpec || isAdvSpec ? (
+              {isClaimSpec || isAdvSpec || isAdvWorks || isMflix? (
                 <Field
                   id="name"
                   name="name"
                   fullWidth
                   color="primary"
-                  value={isAdvSpec ? "BikeStore" : "Claims"}
+                  //value={isAdvSpec ? "BikeStore" : "Claims"}
+                  value={projectDetails?.name}
                   disabled={true}
                   variant="outlined"
                   inputProps={{ maxLength: 24 }}
@@ -200,7 +204,8 @@ const ProjectDetails = ({
           )}
         </Formik>
       </div>
-
+      
+      {!isNoSpecNoDb ? (
       <div className="mb-6">
         <p className="text-mediumLabel mb-2">Upload Spec</p>
         <input
@@ -212,7 +217,7 @@ const ProjectDetails = ({
             handleOnSpecsPick(Array.from(e.target.files));
             e.target.value = "";
           }}
-          disabled={isClaimSpec || isAdvSpec}
+          disabled={isClaimSpec || isAdvSpec || isAdvWorks || isMflix}
         />
 
         <label
@@ -261,7 +266,7 @@ const ProjectDetails = ({
           !_.isEmpty(specsError) && (
             <p className="text-accent-red text-overline2 mt-2">{specsError}</p>
           )}
-      </div>
+      </div>):null}
 
       {/* <div className='mb-3'>
         <p className='text-mediumLabel mb-2'>Connect DB</p>

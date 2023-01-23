@@ -5,6 +5,7 @@ import GetAppIcon from "@material-ui/icons/GetApp";
 import SystemUpdateAltIcon from "@material-ui/icons/SystemUpdateAlt";
 import TimeAgo from "react-timeago";
 import _ from "lodash";
+import LoginGithub from 'react-login-github';
 import classNames from "classnames";
 import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
@@ -14,6 +15,7 @@ import { CircularProgress, Dialog } from "@material-ui/core";
 // import { useHistory } from 'react-router';
 import ReactPaginate from "react-paginate";
 import { useHistory, useLocation } from "react-router-dom";
+import GitHubIcon from '@mui/icons-material/GitHub';
 import CodeIcon from "@material-ui/icons/Code";
 import { useQuery } from "react-query";
 import ReplayIcon from "@material-ui/icons/Replay";
@@ -37,6 +39,8 @@ import {
   useGetProjects,
   useDownloadDatabase,
   useDownloadApigee,
+  usePushToGithub,
+  useVIewRepo
 } from "./projectQueries";
 import EmptyLogo from "../static/images/empty-state.svg";
 import { PrimaryButton } from "../shared/components/AppButton";
@@ -45,7 +49,10 @@ import { getUserId } from "../shared/storage";
 import routes, { generateRoute } from "../shared/routes";
 import dotnetLogo from "../static/images/logo/dotnetlogo.svg";
 import javaLogo from "../static/images/logo/java-vertical.svg";
+import githubLogo from "../static/images/logo/github-icon.svg";
+import viewgithubLogo from "../static/images/GitHubView.svg"
 import Logo from "../static/images/logo/svg.svg";
+import githubCustomSpinner from "../static/images/githubCommit-InProgress.gif";
 import ApigeeLogo from "../static/images/logo/CloudLogo.png";
 import DatabaseLogo from "../static/images/logo/database_download.svg";
 import { useCanEdit } from "../shared/utils";
@@ -129,6 +136,7 @@ const ProjectRow = ({
   handleOnView,
   handleOnInvite,
   handleOnRename,
+  handlePushToGithub
 }) => {
   const CustomTooltip = styled(({ className, ...props }) => (
     // eslint-disable-next-line react/jsx-props-no-spreading
@@ -188,11 +196,44 @@ const ProjectRow = ({
     downloadDotnetCodegen({ projectId: project?.projectId });
   };
 
+  const onPushViewRepo = () => {
+    viewRepo({ projectId: project?.projectId });
+  };
+
   const [enableIcon, setEnableIcon] = useRecoilState(downloadIconSts);
   const [projectIden, setProjectIden] = useRecoilState(downloadIconProj);
+  const [githubIcon, setGithubIcon] = React.useState(true);
 
   // console.log("enableIcon..", enableIcon);
   // console.log("projectIden..", projectIden);
+  const {
+    error: githubLoginError,
+    isLoading: isgithubLoggingIn,
+    isSuccess: isgithubLoginSuccess,
+    mutate: pushToGithub,
+    //data: githubPushResponse,
+    //reset: resetgithubLogin,
+  } = usePushToGithub();
+
+  const {
+    mutate: viewRepo
+  } = useVIewRepo();
+
+
+  const onGitHubLoginSuccess = async (response) => {  
+    console.log("..response..", response)  
+    const { code } = response;
+    if (code)	{
+      pushToGithub({ code: code, projectId: project?.projectId });
+    }
+  };
+  useEffect(()=>{
+    if(isgithubLoginSuccess){
+      console.log("entered into useeffectt");
+      setGithubIcon(false);
+    }
+  },[isgithubLoginSuccess])
+
   useEffect(() => {
     if (project?.lastDataGenerated) {
       const p = "Download Data ".concat(
@@ -250,12 +291,13 @@ const ProjectRow = ({
         <p className='text-overline2'>{project?.status}</p>
       </td>
       
-      <td align='left' >
+      <td align='left'>
         <div className='text-overline2'>{project?.isDesign ? "DESIGN" : "TEST"}
         </div>
       </td>
-      <td align='center'>
+      <td align='center' className = 'download-icons-styling'>
         <div className='flex flex-row items-center gap-2'>
+        
           {/* Codegen download */}
           <div className='w-8'>
             {project?.status?.toLowerCase() === "complete" &&
@@ -290,7 +332,7 @@ const ProjectRow = ({
                       }}
                     />
                   </div>
-                </Tooltip>                
+                </Tooltip>
               )}
             {isDownloadingCodegen && (
               <CircularProgress style={{ width: "24px", height: "24px" }} />
@@ -501,6 +543,86 @@ const ProjectRow = ({
         </div>
       </td>
 
+      <td align='left'>
+      {/* Github Upload */}
+        <div className='w-8'>
+            {project?.status?.toLowerCase() === "complete" &&
+              project?.projectType?.toLowerCase() !== "schema" && project?.isDesign &&(
+                <Tooltip title={
+                  (project?.githubCommit === "ReadyForPush" && (project?.codegen || project?.dotnetcodegen) && (!isgithubLoggingIn))
+                    ? "Push to Github"
+                    : (project?.githubCommit === "ReadyForView") ? "View on Github" : (project?.githubCommit === "CommitInProgress") ? "Commit In Progress" : ""
+                }>
+                  <div
+                    style={{
+                      marginTop: "-12px",
+                      width: "18px",
+                      height: "18px",
+                    }}
+                  >
+                    {/* <GitHubIcon
+                    className='cursor-pointer'
+                    onClick={() => {
+                      // setAnchorEl(null);
+                      handlePushToGithub(project);
+                    }}
+                    /> */}
+                    {project?.githubCommit === "ReadyForPush" && (project?.codegen || project?.dotnetcodegen) && (!isgithubLoggingIn) &&
+                    (
+                    
+                    <LoginGithub 
+                      clientId={process.env.REACT_APP_GITHUB_CLIENT_ID}
+                      redirectUri={process.env.REACT_APP_REDIRECT_URI}
+                      onSuccess={onGitHubLoginSuccess}
+                      scope='user project repo email'
+                      // onFailure={onGitHubFailure}
+                      // className="github-push-button"
+                      > 
+                      {/* <GitHubIcon  style={{ color: "#000000", height: "18px", width: "18px" }} />     */}
+                      <div style={{width: "4px"}} >
+                      <div className="github-ico-wrapper">
+                      
+                        <img
+                         src = {githubLogo}
+                         alt='github logo to commit'
+                         style={{ width: "28px", height: "28px" }}
+                         />
+                      </div>
+                      </div>
+                      
+                    </LoginGithub>)
+                    }    
+                    {
+                      project?.githubCommit === "ReadyForView" && (!isgithubLoggingIn) &&(
+                        <div className="github-view-button mt-1">
+                          <div className="github-ico-wrapper">
+                            <img
+                            src = {viewgithubLogo}
+                            alt='view github logo after commit'
+                            style={{ width: "32px", height: "32px" }}
+                            onClick={(e) => {
+                              e?.preventDefault();
+                              e?.stopPropagation();                              
+                              onPushViewRepo();
+                            }}
+                            />
+                          </div>               
+                        </div>                        
+                        )
+                    }               
+                  </div>
+                </Tooltip>                
+              )}
+            {(isgithubLoggingIn || project?.githubCommit === "CommitInProgress" && isgithubLoginSuccess) && (
+              <Tooltip title={
+                "Commit In Progress"
+              }>              
+              <img src={githubCustomSpinner} alt="github commit in progress..." style={{ width: "32px", height: "32px" }} />
+              </Tooltip>
+              )}
+          </div>
+      </td>
+
       <td align='center'>
         <AppIcon onClick={handleOnOptionsClick}>
           <MoreVertIcon />
@@ -591,6 +713,13 @@ const Content = ({ showCreateProjectDialog }) => {
   const pagination = useRef();
 
   useEffect(() => {
+    const projectsFetchInterval = setInterval(() => refetchProjects(), 45000);
+    return () => {
+      clearInterval(projectsFetchInterval);
+    };
+  });
+
+  useEffect(() => {
     // Fetch items from another resources.
     const endOffset = itemOffset + itemsPerPage;
     console.log(`Loading items from ${itemOffset} to ${endOffset}`);
@@ -599,6 +728,7 @@ const Content = ({ showCreateProjectDialog }) => {
   }, [itemOffset, itemsPerPage, projects]);
 
   const handlePageClick = (event) => {
+    sessionStorage.setItem("pageIndex", event.selected);
     const newOffset = (event.selected * itemsPerPage) % projects.length;
     console.log(
       `User requested page number ${event.selected}, which is offset ${newOffset}`
@@ -607,7 +737,7 @@ const Content = ({ showCreateProjectDialog }) => {
   };
 
   const requestSearch = (searchedVal) => {
-    console.log(searchedVal);
+    //console.log(searchedVal);
     if (searchedVal) {
       document.querySelector('[aria-label="Page 1"]')?.click();
       const filteredRows = projects.filter((row) => {
@@ -655,6 +785,14 @@ const Content = ({ showCreateProjectDialog }) => {
     });
   };
 
+  const showPushToGithubProjectDialog = (project) => {
+    setDialog({
+      show: true,
+      type: "push-to-github",
+      data: project,
+    });
+  };
+
   const showDeleteProjectDialog = (project) => {
     setDialog({
       show: true,
@@ -689,6 +827,10 @@ const Content = ({ showCreateProjectDialog }) => {
     showRenameProjectDialog(project);
   };
 
+  const handlePushToGithub = (project) => {
+    showPushToGithubProjectDialog(project);
+  };
+
   const handleOnDeleteApi = (project) => {
     showDeleteProjectDialog(project);
   };
@@ -697,7 +839,7 @@ const Content = ({ showCreateProjectDialog }) => {
     return <LoaderWithMessage message={"Fetching Projects"} />;
   }
   // console.log(dialog?.data);
-  console.log(projects);
+  //console.log(projects);
 
   // console.log(projects);
   return (
@@ -754,7 +896,8 @@ const Content = ({ showCreateProjectDialog }) => {
                     <th className=''>LAST ACTIVITY</th>
                     <th className=''>STATUS</th>
                     <th className=''>DESIGN / TEST</th>
-                    <th className='pl-8'>DOWNLOAD</th>                    
+                    <th className='pl-8'>DOWNLOAD</th> 
+                    <th className=''>GITHUB</th>                  
                     <th className='rounded-tr-md rounded-br-md text-center'>
                       {isFetchingProjectsBg ? (
                         <CircularProgress size='20px' />
@@ -787,6 +930,7 @@ const Content = ({ showCreateProjectDialog }) => {
                         handleOnInvite={handleOnInvite}
                         handleOnView={handleOnView}
                         handleOnDeleteApi={handleOnDeleteApi}
+                        handlePushToGithub = {handlePushToGithub}
                       />
                     );
                   })}
@@ -827,7 +971,7 @@ const Content = ({ showCreateProjectDialog }) => {
         <ReactPaginate
           // class='pagination'
           // className='flex'
-          page
+          initialPage={Number(sessionStorage.getItem("pageIndex"))}
           ref={pagination}
           pageCount={projects.length / itemsPerPage}
           pageRangeDisplayed={5}

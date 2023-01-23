@@ -47,6 +47,9 @@ const syncOperation = async ({
       `simulation_artefacts`,
       {
         projectid: projectId,
+      },
+      {
+        timeout: 120000,
       }
     );
 

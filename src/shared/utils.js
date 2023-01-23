@@ -44,6 +44,11 @@ export const getApiError = (error) => {
       return error;
     }
 
+    /* if(url && url === endpoint.verifyProject) {
+      console.log("err", error?.message)
+      return error?.message[0];
+    } */
+
     if (url && url === endpoint.testDBConnection) {
       return new Error(error?.response?.data?.message);
     }
@@ -65,19 +70,27 @@ export const getApiError = (error) => {
 };
 
 export const isArray = (object) => {
-  return object?.type === "array" && !object?.schemaName;
+  //return object?.type === "array" && !object?.schemaName;
+  return object?.type === "array"
 };
 
 export const isAttribute = (object) => {
+  //console.log("object,", object)
   return (
-    object?.type &&
-    !_.isEmpty(object?.type) &&
-    object?.paramType !== "column" &&
-    (_.includes(Constants.acceptedTypes, object?.type) || isCustomParam(object))
+    object?.type === "string" ||
+    object?.type === "date" ||
+    object?.type === "float" ||
+    object?.type === "objectId" || object?.type === "oid" ||
+    (object?.type &&
+      !_.isEmpty(object?.type) &&
+      object?.paramType !== "column" &&
+      (_.includes(Constants.acceptedTypes, object?.type) ||
+        isCustomParam(object)))
   );
 };
 
 export const isArrayOrObjectAttribute = (object) => {
+  
   return (
     object?.type &&
     _.isEmpty(object?.ref) &&
@@ -105,6 +118,11 @@ export const isArrayOfObject = (object) => {
 export const isDatabase = (object) => {
   return object?.type === "ezapi_table";
 };
+
+export const isMongoDb = (object) => {
+  return object?.type === "ezapi_collection";
+};
+
 export const isStoredProcedure = (object) => {
   return object?.type === "storedProcedure";
 };
@@ -134,6 +152,10 @@ export const isPartialMatch = (object) => {
 export const isCustomParam = (object) => {
   return object?.paramType === "customParam";
 };
+
+export const isDocumentField = (object) => {
+  return object?.paramType === "documentField";
+}
 
 export const isNoMatch = (object) => {
   return (
@@ -267,16 +289,16 @@ export const generateSyncOperationRequestRequest = (operationRequest) => {
     request.body = operationRequest?.body?.map((item) => {
       const clonedItem = _.cloneDeep(item);
 
-      if (isArrayOfObject(item)) {
+      if (isArrayOfObject(item) || isArray(item) || isObject(item)) {
         if (clonedItem?.hasOwnProperty("data")) {
           delete clonedItem?.data;
         }
         if (clonedItem?.hasOwnProperty("possibleValues")) {
           delete clonedItem?.possibleValues;
         }
-        if (clonedItem?.hasOwnProperty("schemaName")) {
+        /* if (clonedItem?.hasOwnProperty("schemaName")) {
           delete clonedItem?.schemaName;
-        }
+        } */
         if (clonedItem?.hasOwnProperty("schemaRef")) {
           delete clonedItem?.schemaRef;
         }
@@ -491,18 +513,20 @@ export const generateSyncOperationResponseRequest = (operationResponse) => {
 
     if (reponseData?.body && !_.isEmpty(reponseData?.body)) {
       responseObject.content = reponseData?.body?.map((item) => {
-        if (isArrayOfObject(item)) {
+        if (isArrayOfObject(item) || isArray(item) || isObject(item)) {
           const clonedItem = _.cloneDeep(item);
 
           if (clonedItem?.hasOwnProperty("data")) {
             delete clonedItem?.data;
           }
-          if (clonedItem?.hasOwnProperty("possibleValues")) {
-            delete clonedItem?.possibleValues;
+          if (!isArray(item)) {
+            if (clonedItem?.hasOwnProperty("possibleValues")) {
+              delete clonedItem?.possibleValues;
+            }
           }
-          if (clonedItem?.hasOwnProperty("schemaName")) {
+          /* if (clonedItem?.hasOwnProperty("schemaName")) {
             delete clonedItem?.schemaName;
-          }
+          } */
           if (clonedItem?.hasOwnProperty("schemaRef")) {
             delete clonedItem?.schemaRef;
           }
@@ -659,13 +683,12 @@ export const useGetParentName = () => {
     } else if (isColumn(object)) {
       const { loadable: tableAtomLoadable } = getRecoilValueInfo(tableAtom);
       const tableDetails = tableAtomLoadable?.contents;
-
       if (
         tableDetails &&
         tableDetails?.selected &&
         !_.isEmpty(tableDetails?.selected)
       ) {
-        return tableDetails?.selected?.name;
+        return tableDetails?.selected[tableDetails.selected.length - 1]?.name;
       }
       return null;
     }

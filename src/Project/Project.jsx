@@ -113,14 +113,6 @@ const Project = () => {
   } = useSyncOperation();
   const [newProjectDetails, setNewProjectDetails] = useState(null);
   const {
-    verifyProjectMutation: {
-      isLoading: isVerifyingProject,
-      isSuccess: isVerifyProjectSuccess,
-      data: verifyProjectData,
-      error: verifyProjectError,
-      mutate: verify,
-      reset: resetVerifyMutation,
-    },
     publishProjectMutation: {
       isLoading: isPublishingProject,
       isSuccess: isPublishProjectSuccess,
@@ -271,16 +263,25 @@ const Project = () => {
   }, [projectDetailsError]);
 
   useEffect(() => {
-    if (verifyData && verifyData.response.length === 0) {
-      /* let data = null;
-      if (newProjectDetails) {
-        data = newProjectDetails["password"] ?? null;
+    if (verifyData && verifyData.message.length == 0) {
+      
+      if (projectDetails?.projectType !== "noinput") {
+        fetchTables({ projectId });
+        setDisplayEntityMapping(true);
+      } else {
+        publish({ projectId, newProjectDetails });
       }
-      updateMappingData(mappedEntityData, data); */
-      updateMappingData();
-      resetVerify();
+      setMandMappinErr(false);
+    } else if (
+      verifyError &&
+      verifyError.message === "Mandatory mapping is required"
+    ) {
+      setMandMappinErr(true);
+    } else {
+      setMandMappinErr(false);
     }
-  }, [verifyData]);
+    sessionStorage.removeItem("pageIndex");
+  }, [verifyError, verifyData]);
 
   useEffect(() => {
     if (
@@ -298,13 +299,13 @@ const Project = () => {
   }, [isSyncOperationSuccess]);
 
   useEffect(() => {
-    if (publishProjectData?.message == "Mandatory mapping is required") {
+    /* if (publishProjectData?.message == "Mandatory mapping is required") {
       setMandMappinErr(true);
     } else {
       setMandMappinErr(false);
-    }
+    } */
+    setNewProjectDetails(null)
   }, [publishProjectData, publishProjectError]);
-
   const startAutoSync = () => {
     stopAutoSync();
 
@@ -370,7 +371,9 @@ const Project = () => {
         showSaveOperationWarning();
       } else {
         resetPublishMutation();
-        verify({ projectId, newProjectDetails });
+        //console.log("newProjectDetails", newProjectDetails)
+        publish({ projectId, newProjectDetails });        
+        //console.log("newProjectDetails2", newProjectDetails)
       }
     }
   };
@@ -380,7 +383,7 @@ const Project = () => {
     setEntityMappingData(undefined);
     setEntityMappingError(undefined);
     resetPublishMutation();
-    resetVerifyMutation();
+    resetVerify();
     history.push({
       pathname: routes.projects,
       state: { allow: true },
@@ -430,15 +433,15 @@ const Project = () => {
 
   const resetSubmitProjectMutation = () => {
     resetPublishMutation();
-    resetVerifyMutation();
+    //resetVerifyMutation();
     resetVerify();
   };
 
-  const isProjectHavingErrors = () =>
+  /* const isProjectHavingErrors = () =>
     isVerifyProjectSuccess &&
     verifyProjectData?.response &&
     !_.isEmpty(verifyProjectData?.response);
-
+ */
   const didVerifyFailed = () =>
     verificationSuccess &&
     verifyData?.response &&
@@ -493,10 +496,11 @@ const Project = () => {
     );
   };
 
-  const updateMappingData = async () => {										 
+  /* const updateMappingData = async () => {										 
 
     setInProgress(true);
     const data = projectDetails.dbDetails;
+    /** IS THIS BELOW COMMENTING REQUIRED 
     await publishProject({ projectId, data })
       .then((data) => {
         console.log("publish");
@@ -505,9 +509,11 @@ const Project = () => {
       .catch((err) => {
         console.log("not publish");
         setEntityMappingError(err);
-      });
+    });
+
+    publish({ projectId, data });
     setInProgress(false);
-  };
+  }; */
 
   /*const updateMappingData = async (mappingData, credentials) => {
     const password = credentials ?? null;
@@ -552,7 +558,7 @@ const Project = () => {
   };
 
   const simulateAPI = (operation) => {
-    console.log(operation);
+    //console.log(operation);
     fetch(process.env.REACT_APP_API_URL + "/simulate", {
       headers: {
         Authorization: `Bearer ${acc_token}`,
@@ -584,6 +590,14 @@ const Project = () => {
       });
   };
 
+  useEffect(() => {
+    //console.log("outisde if", newProjectDetails)
+    if (newProjectDetails?.password) {
+      //console.log("inside if", newProjectDetails)
+      submitProject();
+    }
+  },[newProjectDetails])
+  
   return (
     <UserRoleProvider role={userRole}>
       <>
@@ -591,16 +605,17 @@ const Project = () => {
           aria-labelledby='save-operation-dialog'
           open={
             isPublishingProject ||
-            isVerifyingProject ||
+            //isVerifyingProject ||
             isVerifying ||
             inProgress ||
             publishProjectData ||
             publishProjectError ||
             entityMappingData ||
             entityMappingError ||
-            verifyProjectError ||
+            //verifyProjectError ||
             verifyError ||
-            isProjectHavingErrors() ||
+            (verifyData && verifyData?.message.length > 0) ||
+            //isProjectHavingErrors() ||
             didVerifyFailed() ||
             passwordBeforePublish ||
             dialog?.show
@@ -608,15 +623,16 @@ const Project = () => {
           closeAfterTransition={
             isPublishingProject ||
             inProgress ||
-            isVerifyingProject ||
+            //isVerifyingProject ||
             isVerifying ||
             entityMappingError ||
-            verifyProjectError ||
+            //verifyProjectError ||
             publishProjectData ||
             publishProjectError ||
-            verifyProjectError ||
+            //verifyProjectError ||
             verifyError ||
-            isProjectHavingErrors() ||
+            (verifyData && verifyData?.message.length > 0) ||
+            //isProjectHavingErrors() ||
             didVerifyFailed() ||
             dialog?.show
           }
@@ -629,7 +645,6 @@ const Project = () => {
           {(isPublishingProject ||
             inProgress ||
             isVerifying ||
-            isVerifyingProject ||
             isLoggingOut) && (
             <div className='p-6'>
               <div className='w-full flex flex-row items-center'>
@@ -638,9 +653,9 @@ const Project = () => {
                     ? "Publishing project"
                     : isLoggingOut
                     ? "Logging out"
-                    : isVerifying || isVerifyingProject
+                    : isVerifying 
                     ? "Logging in"
-                    : isVerifyProjectSuccess || verificationSuccess
+                    : verificationSuccess
                     ? "Verifying Project"
                     : null}
                 </p>
@@ -649,7 +664,7 @@ const Project = () => {
             </div>
           )}
 
-          {verifyProjectError && (
+          {/* {verifyProjectError && (
             <VerifyProjectError
               error={verifyProjectError}
               onClose={resetSubmitProjectMutation}
@@ -681,9 +696,24 @@ const Project = () => {
               response={verifyData?.response}
               onClose={resetSubmitProjectMutation}
             />
+          )} */}
+
+          {verifyError &&            
+            verifyError?.message !== "Mandatory mapping is required" && (
+              <ProjectVerificationErrors
+                error={verifyError}
+                onClose={resetVerify}
+              />
           )}
 
-          {(publishProjectData || publishProjectError) && (
+          {(verifyData && verifyData?.message.length > 0)  && (
+              <ProjectVerificationErrors
+                error={verifyData}
+                onClose={resetVerify}
+              />
+          )}
+
+          {(mandMappingErr || publishProjectData || publishProjectError) && (
             <PublishProjectMessage
               publishProjectData={publishProjectData}
               publishProjectError={publishProjectError}
@@ -796,16 +826,19 @@ const Project = () => {
               }}
               newProjectDetails={projectDetails.dbDetails}
               isDefaultproj={projectDetails.isDefaultSpecDb}
-              onPublish={(newProjectDetails, isDefaultproj) => {
+              dbType={projectDetails.dbDetails.dbtype}
+              onPublish={(newProjectDetails, isDefaultproj, dbType) => {
+                //console.log("newProjectDetails,,",newProjectDetails)
                 setPasswordBeforePublish(false);
-                setNewProjectDetails(newProjectDetails, isDefaultproj);
-                if (projectDetails?.projectType === "db") {
+                setNewProjectDetails(newProjectDetails, isDefaultproj,dbType);
+                /* if (projectDetails?.projectType === "db") {
                   //updateMappingData(mappedEntityData, newProjectDetails["password"]);
                   verifyProject({ projectId, newProjectDetails });
                 } else {
                   //setNewProjectDetails(newProjectDetails, isDefaultproj);
                   submitProject();
-                }
+                } */
+                //submitProject();
               }}
             />
           )}
@@ -819,10 +852,14 @@ const Project = () => {
             newProjectDetails={newProjectDetails}
             onClose={(data) => {
               if (data == "publish") {
-                resetPublishMutation();
-                verify({ projectId, newProjectDetails });
+                //resetPublishMutation();
+                //verify({ projectId, newProjectDetails });
+                fetchTables({ projectId });
+                setMandMappinErr(false);
+                setDisplayEntityMapping(true);
+              } else {
+                handleCloseDialog();
               }
-              handleCloseDialog();
             }}
             mmtableData={mmtablesData}
             tablesData={tablesData}
@@ -843,7 +880,8 @@ const Project = () => {
                 setPasswordBeforePublish(true);
               } else {
                 //updateMappingData(mappedData);
-                verifyProject({ projectId, newProjectDetails });
+                //verifyProject({ projectId, newProjectDetails });
+                publish({ projectId, newProjectDetails });
               }
             }}
             tablesData={tablesData}
@@ -949,10 +987,10 @@ const Project = () => {
                     e?.preventDefault();
                     e?.stopPropagation();
                     // console.log(projectDetails?.isConnectDB);
-                    if (projectDetails?.projectType === "db") {
+                    console.log("githubCommit" , projectDetails?.githubCommit);                   
+                    /* if (projectDetails?.projectType === "db") {                        
                       fetchTables({ projectId });
                       setDisplayEntityMapping(true);
-													 
                     } else {
                       if (
                         projectDetails?.isConnectDB &&
@@ -964,7 +1002,8 @@ const Project = () => {
                         console.log("without password");
                         submitProject();
                       }
-                    }
+                    } */
+                    verifyProject({ projectId, newProjectDetails });
                   }}
                 >
                   {getPublishButtonText()}

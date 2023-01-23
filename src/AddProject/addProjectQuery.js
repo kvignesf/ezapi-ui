@@ -82,7 +82,7 @@ const exportDBSchema = async ({
         rootPath: rootPath,
       },
       {
-        timeout: 90000,
+        timeout: 240000,
       }
     );
     return data;
@@ -117,22 +117,49 @@ const addProject = async ({
   isDesign,
   isDefaultClaimSpec,
   isDefaultAdvSpec,
+  isDefaultAdvWorks,
+  isDefaultMflix,
+  projectType
 }) => {
   try {
-    const { data } = await client.post(
-      endpoint.project,
-      {
-        projectName: name,
-        invites: invitees,
-        isDesign: isDesign,
-        isDefaultClaimSpec: isDefaultClaimSpec,
-        isDefaultAdvSpec: isDefaultAdvSpec,
-      },
-      {
-        timeout: 90000,
-      }
-    );
-    return data;
+    if (projectType === "noinput") {
+      const { data } = await client.post(
+        endpoint.project,
+        {
+          projectName: name,
+          invites: invitees,
+          isDesign: isDesign,
+          isDefaultClaimSpec: isDefaultClaimSpec,
+          isDefaultAdvSpec: isDefaultAdvSpec,
+          isDefaultAdvWorks: isDefaultAdvWorks,
+          isDefaultMflix: isDefaultMflix,
+          projectType: projectType
+        },
+        {
+          timeout: 90000,
+        }
+      );
+      return data;
+    }
+    else {
+      const { data } = await client.post(
+        endpoint.project,
+        {
+          projectName: name,
+          invites: invitees,
+          isDesign: isDesign,
+          isDefaultClaimSpec: isDefaultClaimSpec,
+          isDefaultAdvSpec: isDefaultAdvSpec,
+          isDefaultAdvWorks: isDefaultAdvWorks,
+          isDefaultMflix: isDefaultMflix,
+        },
+        {
+          timeout: 90000,
+        }
+      );
+      return data;
+    }
+    
   } catch (error) {
     throw getApiError(error);
   }

@@ -30,7 +30,7 @@ export default function Authorization({
 
   const handleChangeAuthType = (event) => {
     var tempTokenType = tokentype;
-    if (event.target.value == "Bearer Token") {
+    if (event.target.value === "Bearer Token") {
       tempTokenType = "JWT";
     }
 
