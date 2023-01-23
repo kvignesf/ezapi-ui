@@ -707,6 +707,11 @@ const DBMappingDrawer = ({ projectId, onClose, onSubmit, tablesData }) => {
   }, [triggerUpdate]);
 
   useEffect(() => {
+    setDisableButton(isMappingLoading);
+  }, [isMappingLoading]);
+
+
+  useEffect(() => {
     if (tablesData) {
       let schemaArray = [];
       const newData = tablesData.map((item) => {

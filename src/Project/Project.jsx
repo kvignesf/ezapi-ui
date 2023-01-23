@@ -298,14 +298,14 @@ const Project = () => {
     }
   }, [isSyncOperationSuccess]);
 
-  /* useEffect(() => {
-    if (publishProjectData?.message == "Mandatory mapping is required") {
+  useEffect(() => {
+    /* if (publishProjectData?.message == "Mandatory mapping is required") {
       setMandMappinErr(true);
     } else {
       setMandMappinErr(false);
-    }
+    } */
+    setNewProjectDetails(null)
   }, [publishProjectData, publishProjectError]);
- */
   const startAutoSync = () => {
     stopAutoSync();
 
@@ -371,7 +371,9 @@ const Project = () => {
         showSaveOperationWarning();
       } else {
         resetPublishMutation();
-        publish({ projectId, newProjectDetails });
+        //console.log("newProjectDetails", newProjectDetails)
+        publish({ projectId, newProjectDetails });        
+        //console.log("newProjectDetails2", newProjectDetails)
       }
     }
   };
@@ -587,6 +589,14 @@ const Project = () => {
         // throw getApiError(error);
       });
   };
+
+  useEffect(() => {
+    //console.log("outisde if", newProjectDetails)
+    if (newProjectDetails?.password) {
+      //console.log("inside if", newProjectDetails)
+      submitProject();
+    }
+  },[newProjectDetails])
   
   return (
     <UserRoleProvider role={userRole}>
@@ -818,6 +828,7 @@ const Project = () => {
               isDefaultproj={projectDetails.isDefaultSpecDb}
               dbType={projectDetails.dbDetails.dbtype}
               onPublish={(newProjectDetails, isDefaultproj, dbType) => {
+                //console.log("newProjectDetails,,",newProjectDetails)
                 setPasswordBeforePublish(false);
                 setNewProjectDetails(newProjectDetails, isDefaultproj,dbType);
                 /* if (projectDetails?.projectType === "db") {
@@ -827,7 +838,7 @@ const Project = () => {
                   //setNewProjectDetails(newProjectDetails, isDefaultproj);
                   submitProject();
                 } */
-                submitProject();
+                //submitProject();
               }}
             />
           )}
