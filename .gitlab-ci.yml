@@ -27,6 +27,10 @@ before_script:
   - 'echo \REACT_APP_FEATURE_CUSTOM_PARAMETER\ = \"$PREACT_APP_FEATURE_CUSTOM_PARAMETER\">> .env.prod'
   - 'echo \REACT_APP_FEATURE_STORED_PROCS\ = \"$PREACT_APP_FEATURE_STORED_PROCS\">> .env.prod'
   - 'echo \REACT_APP_AES_ENCRYPTION_KEY\ = \"$PROD_AES_ENCRYPTION_KEY\">> .env.prod'
+  - 'echo \REACT_APP_GOOGLE_CLIENT_ID\ = \"$PROD_GOOGLE_CLIENT_ID\">> .env.prod'
+  - 'echo \REACT_APP_GITHUB_CLIENT_ID\ = \"$PROD_GITHUB_CLIENT_ID\">> .env.prod'
+  - 'echo \REACT_APP_REDIRECT_URI\ = \"$PROD_APP_REDIRECT_URI\">> .env.prod'
+  - 'echo \REACT_APP_SAMPLE_PROJ_LIMIT\ = \"$PROD_SAMPLE_PROJ_LIMIT\">> .env.prod'
   -  cat .env.prod
 include:
   project: 'ezapi_poc/infra_poc'
