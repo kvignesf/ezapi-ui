@@ -45,7 +45,7 @@ const CredentialsBeforePublish = ({
                 port: newProjectDetails.port,
                 database: newProjectDetails.database,
                 username: newProjectDetails.username,
-                
+                password: (isDefaultproj && dbType === "mssql") ? "S0mbari@2022" : (isDefaultproj && dbType === "mongo") ? "JRVvuh9D5V0IZxCW" : null
                                 
               }}
               validationSchema={Yup.object().shape({
@@ -194,6 +194,7 @@ const CredentialsBeforePublish = ({
               if (!isDefaultproj) formRef.current.handleSubmit();
               setTimeout(function () {
                 if (formRef.current.isValid) {
+                  //console.log("formRef.current", formRef.current.values.password)
                   newProjectDetails["password"] =
                     formRef.current.values.password;
 
