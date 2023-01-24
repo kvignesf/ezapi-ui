@@ -373,6 +373,8 @@ const ProjectPayment = (props) => {
       return "Trial cant be subscribed";
     }
     item["stripe"].map((item2, index2) => {
+      //console.log("duration", duration)
+      //console.log("lan_interval", item2["plan_interval"])
       if (duration == item2["plan_interval"]) {
         // console.log(item2["price_id"]);
         priceIDData = item2["price_id"];
@@ -384,13 +386,13 @@ const ProjectPayment = (props) => {
   const initiatePaymentProcess = async (billingDetails, type, duration) => {
     switch (type) {
       case 10:
-        type = "Trial";
+        type = "COMMUNITY";
         break;
       case 20:
         type = "Basic";
         break;
       case 30:
-        type = "Pro";
+        type = "PRO";
         break;
     }
     switch (duration) {
@@ -401,7 +403,8 @@ const ProjectPayment = (props) => {
         duration = "year";
         break;
     }
-
+    //console.log("type", type)
+    //console.log("duration", duration)
     priceIDFinder(type, duration);
 
     const { token, error } = await stripe.createToken(

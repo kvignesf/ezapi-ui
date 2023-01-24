@@ -177,13 +177,14 @@ const Pricing = () => {
         CalculateTrialExpiryDate(data?.["registeredOn"].split(" ")[0], 6, "20")
       );
 
-      if (data?.["stripeCustomerId"] == "") {
+      if (data?.["subscribed_plan"] == "") {
         setTrialButton("Subscribed");
       } else {
-        setTrialButton("Expired");
+        setTrialButton("Subscribe");
+        
       }
 
-      if (data?.["stripeCustomerId"] !== "") {								 
+      if (data?.["stripeCustomerId"] !== "" && data?.["subscribed_plan"] !== "") {								 
         setProButton("Subscribed");
       } else {
         setProButton("Subscribe");
@@ -513,14 +514,14 @@ const Pricing = () => {
                           color:
                             tier.buttonText === "Subscribed"
                               ? "white"
-                              : tier.buttonText === "Expired"
+                              : tier.buttonText === "Expired" || data.subscribed_plan !== ""
                               ? "black"
                               : "white",
 
                           background:
                             tier.buttonText === "Subscribed"
                               ? "#c72c71"
-                              : tier.buttonText === "Expired"
+                              : tier.buttonText === "Expired"|| data.subscribed_plan !== ""
                               ? "#9f9f9f"
                               : "#0971f1",
                         }}
@@ -533,7 +534,8 @@ const Pricing = () => {
                         }}
                         disabled={
                           tier.buttonText === "Subscribed" ||
-                          tier.buttonText === "Expired"
+                          tier.buttonText === "Expired" ||
+                          data.subscribed_plan !== ""
                         }
                         fullWidth
                         variant="outlined"

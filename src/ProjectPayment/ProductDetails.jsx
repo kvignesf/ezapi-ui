@@ -46,13 +46,13 @@ const ProductDetails = ({
   var defType;
   var defSub;
   switch (type) {
-    case "Trial":
+    case "COMMUNITY":
       defType = 10;
       break;
     case "Basic":
       defType = 20;
       break;
-    case "Pro":
+    case "PRO":
       defType = 30;
   }
   switch (duration) {
@@ -82,13 +82,13 @@ const ProductDetails = ({
   function priceFinder(type, duration) {
     switch (type) {
       case 10:
-        type = "Trial";
+        type = "COMMUNITY";
         break;
       case 20:
         type = "Basic";
         break;
       case 30:
-        type = "Pro";
+        type = "PRO";
     }
     switch (duration) {
       case 10:
@@ -132,12 +132,12 @@ const ProductDetails = ({
               labelId='demo-simple-select-standard-label'
               id='demo-simple-select-standard'
               value={planType}
-              disabled={true}
+              disabled={false}
               onChange={handleChange}
               label='Plan Type'
-              defaultValue={20}
+              defaultValue={30}
             >
-              <MenuItem value={20}>Basic</MenuItem>
+              {/* <MenuItem value={20}>Basic</MenuItem> */}
               <MenuItem value={30}>Pro</MenuItem>
             </Select>
           </FormControl>

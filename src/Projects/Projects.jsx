@@ -302,7 +302,7 @@ const ProjectRow = ({
           <div className='w-8'>
             {project?.status?.toLowerCase() === "complete" &&
               project?.projectType?.toLowerCase() !== "schema" &&
-              !isDownloadingCodegen && project?.isDesign &&(
+              !isDownloadingCodegen && project?.isDesign && project?.projectType !== "noinput" &&(
                 <Tooltip title={
                   project?.codegen
                     ? "Java"
@@ -377,7 +377,7 @@ const ProjectRow = ({
           <div className='w-8'>
             {project?.status?.toLowerCase() === "complete" &&
               project?.projectType?.toLowerCase() !== "schema" &&
-              !isDownloadingDotnetCodegen && project?.isDesign &&(
+              !isDownloadingDotnetCodegen && project?.isDesign && project?.projectType !== "noinput" &&(
                 <Tooltip title={
                   project?.dotnetcodegen
                     ? "dotnet"
