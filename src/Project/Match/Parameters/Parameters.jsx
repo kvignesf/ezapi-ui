@@ -155,64 +155,6 @@ const Parameters = () => {
 };
 
 const ParamRow = ({ param }) => {
-  const DataTypeTable = {
-    array: {
-      type: 'array',
-      format: 'array'
-    },
-    object: {
-      type: 'object',
-      format: 'object'
-    },
-    int32: {
-      type: 'integer',
-      format: 'integer'
-    },
-    int64: {
-      type: 'integer',
-      format: 'long'
-    },
-    float: {
-      type: 'number',
-      format: 'float'
-    },
-    double: {
-      type: 'number',
-      format: 'double'
-    },
-    string: {
-      type: 'string',
-      format: 'string'
-    },
-    byte: {
-      type: 'string',
-      format: 'byte'
-    },
-    binary: {
-      type: 'string',
-      format: 'binary'
-    },
-    arrayOfObjects: {
-      type: 'arrayOfObjects',
-      format: 'arrayOfObjects'
-    },
-    boolean: {
-      type: 'boolean',
-      format: ''
-    },
-    date: {
-      type: 'string',
-      format: 'date'
-    },
-    dateTime: {
-      type: 'string',
-      format: 'date-time'
-    },
-    password: {
-      type: 'string',
-      format: 'password'
-    }
-  };
 
   const [{ isDragging }, drag, dragPreview] = useDrag(
     () => ({
@@ -301,7 +243,8 @@ const ParamRow = ({ param }) => {
             </AppIcon>
             <p className='flex-1 ml-1 text-overline2'>{param?.name}</p>
             <p className='flex-1 text-overline2'>
-            {(param?.format)?DataTypeTable[param.format].format:param.type}</p>
+            {/* {(param?.format) ? DataTypeTable[param.format].format:param.type}</p> */}
+            {param?.commonName}</p>
             <p className='flex-1 text-overline2'>
               {param.possibleValues?.reduce((acc, curr) => {
                 if (!_.isEmpty(acc)) {
