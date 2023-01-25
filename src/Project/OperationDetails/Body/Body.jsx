@@ -2049,6 +2049,7 @@ const ArrayOrObjectLabel = ({
                 ? "ml-6 flex flex-row p-1 h-8 justify-between items-center border-b-2"
                 : "flex flex-row p-1 justify-between items-center border-b-2 h-8"
             }
+            style={isArray(labelItem) ? { paddingTop: "12px" } : null}
           >
             <div className="flex flex-row items-center justify-start w-full">
               <div className="w-full grid grid-cols-5 gap-2 items-center">

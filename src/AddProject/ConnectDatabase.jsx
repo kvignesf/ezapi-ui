@@ -57,16 +57,17 @@ const ConnectDatabase = ({
   isClaimSpec,
   isAdvSpec,
   isAdvWorks,
-  isMflix
+  isMflix,
+  connectors
 }) => {
   const [projectDetails, setProjectDetails] = useRecoilState(projectAtom);
   const [open, setOpen] = useState(false);
-  const [connectors, setConnectors] = useState({
+  /* const [connectors, setConnectors] = useState({
     ms_sql: true,
     my_sql: true,
     postgres: false,
   });
-
+ */
   const debouncedSetDatabase = useCallback(
     debounce((nextValue) => {
       resetProjectApiState();
@@ -472,16 +473,16 @@ const ConnectDatabase = ({
     { value: "mongo", label: "MongoDb", check: "mongo" },
   ];
 
-  const { data: pricing_data } = usePricingData();
-  const { data: userProfile_data } = useUserProfile();
+  //const { data: pricing_data } = usePricingData();
+  //const { data: userProfile_data } = useUserProfile();
 
-  //console.log("pricing_data:",pricing_data);
+  
 
   useEffect(() => {
-    if (pricing_data && userProfile_data) {
+    /* if (pricing_data && userProfile_data) {
       if (
         userProfile_data["plan_name"] == null ||
-        userProfile_data["plan_name"] == "Basic"
+        userProfile_data["plan_name"] === "Basic"
       ) {
         debouncedSetNumberOfCollaborators(2);
         setConnectors({ ms_sql: true, my_sql: true, postgres: true, mongodb: true });
@@ -492,13 +493,15 @@ const ConnectDatabase = ({
         debouncedSetNumberOfCollaborators(filtered_plan["no_of_collaborators"]);
         setConnectors(filtered_plan["connectors"]);
       }
-    }
+    } */
     if (isClaimSpec || isAdvSpec || isAdvWorks) {
       debouncedSetDbType("mssql");
     } else if (isMflix) {
       debouncedSetDbType("mongo");
     }
-  }, [pricing_data, userProfile_data, isClaimSpec, isAdvSpec, isAdvWorks, isMflix]);
+}, [isClaimSpec, isAdvSpec, isAdvWorks, isMflix]);
+//}, [pricing_data, userProfile_data, isClaimSpec, isAdvSpec, isAdvWorks, isMflix]);
+
   return (
     <div className="p-4" style={{ height: "300px", overflowY: "scroll" }}>
       {/* <Scrollbar className="max-h-60" alwaysShowTracks={true}> */}
