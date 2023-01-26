@@ -32,11 +32,21 @@ import LoaderWithMessage from "../shared/components/LoaderWithMessage";
 
 const RelationTableRow = ({ data, tables, onUpdate, schema, onDelete }) => {
   const [mainTable, setMainTable] = useState(data?.mainTable ?? "");
-  const [dependentTableSchema, setDependentTableSchema] = useState(data?.dependentTableSchema ?? "");
-  const [mainTableSchema, setMainTableSchema] = useState(data?.mainTableSchema ?? "");
-  const [dependentTable, setDependentTable] = useState(data?.dependentTable ?? "");
-  const [dependentTableColumn, setDependentTableColumn] = useState(data?.dependentTableColumn ?? "");
-  const [mainTableColumn, setMainTableColumn] = useState(data?.mainTableColumn ?? "");
+  const [dependentTableSchema, setDependentTableSchema] = useState(
+    data?.dependentTableSchema ?? ""
+  );
+  const [mainTableSchema, setMainTableSchema] = useState(
+    data?.mainTableSchema ?? ""
+  );
+  const [dependentTable, setDependentTable] = useState(
+    data?.dependentTable ?? ""
+  );
+  const [dependentTableColumn, setDependentTableColumn] = useState(
+    data?.dependentTableColumn ?? ""
+  );
+  const [mainTableColumn, setMainTableColumn] = useState(
+    data?.mainTableColumn ?? ""
+  );
   const [availableTable, setAvailableTable] = useState([]);
   const [availableTableColumn, setAvailableTableColumn] = useState([]);
   const [availableColumn, setAvailableColumn] = useState([]);
@@ -689,7 +699,10 @@ const DBMappingDrawer = ({ projectId, onClose, onSubmit, tablesData }) => {
       tablesFilter.map((item) => {
         if (
           item.tableName === filter.tableName &&
-          item.columnName === filter.columnName
+          item.columnName === filter.columnName &&
+          item.schemaName === filter.schemaName &&
+          item.filterCondition === filter.filterCondition &&
+          item.value === filter.value
         ) {
           count++;
         }
@@ -821,74 +834,106 @@ const DBMappingDrawer = ({ projectId, onClose, onSubmit, tablesData }) => {
                   justifyContent="space-between"
                   alignItems="center"
                 >
-                <Tabs
-                  classes={{
-                    indicator: tabsClasses.indicator,
-                  }}
-                  value={isFilter}
-                  onChange={handleChange}
-                  aria-label="add project tabs"
-                  indicatorColor="primary"
-                  textColor="primary"
-                  style={{ width: "min-content" }}
-                >
-                  <Tab
-                    label={<TabLabel label={"Relations / Joins"} />}
-                    classes={{ root: tabClasses.tab }}
-                    style={{
-                      borderRight: `2px solid ${Colors.neutral.gray6}`,
-                      outline: "none",
+                  <Tabs
+                    classes={{
+                      indicator: tabsClasses.indicator,
                     }}
-                  />
+                    value={isFilter}
+                    onChange={handleChange}
+                    aria-label="add project tabs"
+                    indicatorColor="primary"
+                    textColor="primary"
+                    style={{ width: "min-content" }}
+                  >
+                    <Tab
+                      label={<TabLabel label={"Relations / Joins"} />}
+                      classes={{ root: tabClasses.tab }}
+                      style={{
+                        borderRight: `2px solid ${Colors.neutral.gray6}`,
+                        outline: "none",
+                      }}
+                    />
 
-                  <Tab
-                    label={<TabLabel label={"Filters"} />}
-                    classes={{ root: tabClasses.tab }}
-                    style={{
-                      outline: "none",
-                      borderRight: `2px solid ${Colors.neutral.gray6}`,
-                    }}
-                  />
-                </Tabs>
+                    <Tab
+                      label={<TabLabel label={"Filters"} />}
+                      classes={{ root: tabClasses.tab }}
+                      style={{
+                        outline: "none",
+                        borderRight: `2px solid ${Colors.neutral.gray6}`,
+                      }}
+                    />
+                  </Tabs>
+                  {isFilter ? (
+                    <OutlineButton
+                      style={
+                        filterDuplicateError
+                          ? {
+                              color: "#808080",
+                              height: "35px",
+                              marginRight: "5px",
+                              cursor: "not-allowed",
+                            }
+                          : { height: "35px", marginRight: "5px" }
+                      }
+                      disabled={filterDuplicateError}
+                      onClick={() => {
+                        const data = {
+                          tableName: "",
+                          columnName: "",
+                          filterCondition: "",
+                          schemaName: "",
+                          value: "",
+                        };
+                        setTablesFilter([...tablesFilter, data]);
 
-                <OutlineButton
-                  style={{ height: "35px", marginRight: "5px" }}
-                  onClick={() => {
-                    if (isFilter) {
-                      const data = {
-                        tableName: "",
-                        columnName: "",
-                        filterCondition: "",
-                        schemaName: "",
-                        value: "",
-                      };
-                      setTablesFilter([...tablesFilter, data]);
-                    } else {
-                      const data = {
-                        mainTable: "",
-                        mainTableColumn: "",
-                        dependentTable: "",
-                        dependentTableColumn: "",
-                        relation: "equals",
-                        origin: "userInput",
-                        mainTableSchema: "",
-                        dependentTableSchema: "",
-                      };
-                      setTablesRelation([...tablesRelation, data]);
-                    }
-                    setTimeout(() => {
-                      scrollToBottom();
-                    }, 500);
-                  }}
-                >
-                  <Stack direction="row" alignItems="center" spacing={1}>
-                    <Add fontSize="small" />
-                    <Typography variant="subtitle2">
-                      {!isFilter ? "Add Mapping" : "Add Filter"}
-                    </Typography>
-                  </Stack>
-                </OutlineButton>
-              </Stack>
+                        setTimeout(() => {
+                          scrollToBottom();
+                        }, 500);
+                      }}
+                    >
+                      <Stack direction="row" alignItems="center" spacing={1}>
+                        <Add fontSize="small" />
+                        <Typography variant="subtitle2">Add Filter</Typography>
+                      </Stack>
+                    </OutlineButton>
+                  ) : (
+                    <OutlineButton
+                      style={
+                        relationDuplicateError
+                          ? {
+                              color: "#808080",
+                              height: "35px",
+                              marginRight: "5px",
+                              cursor: "not-allowed",
+                            }
+                          : { height: "35px", marginRight: "5px" }
+                      }
+                      disabled={relationDuplicateError}
+                      onClick={() => {
+                        const data = {
+                          mainTable: "",
+                          mainTableColumn: "",
+                          dependentTable: "",
+                          dependentTableColumn: "",
+                          relation: "equals",
+                          origin: "userInput",
+                          mainTableSchema: "",
+                          dependentTableSchema: "",
+                        };
+                        setTablesRelation([...tablesRelation, data]);
+
+                        setTimeout(() => {
+                          scrollToBottom();
+                        }, 500);
+                      }}
+                    >
+                      <Stack direction="row" alignItems="center" spacing={1}>
+                        <Add fontSize="small" />
+                        <Typography variant="subtitle2">Add Mapping</Typography>
+                      </Stack>
+                    </OutlineButton>
+                  )}
+                </Stack>
               <TableContainer
                   style={{
                     maxHeight: `calc(100vh - 270px)`,
