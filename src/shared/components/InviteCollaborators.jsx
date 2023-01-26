@@ -1,16 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import ChipInput from "material-ui-chip-input";
 import _ from "lodash";
+import { useHistory } from 'react-router-dom';
 
 import { isEmailValid } from "../utils";
 import Colors from "../colors";
-import { getEmailId } from "../storage";
 import Messages from "../messages";
 import { useRecoilState } from "recoil";
-import {
-  useUserProfile,
-  usePricingData,
-} from "../../AddProject/addProjectQuery";
+import routes from '../routes';
+import "./collaborators.css";
 import projectAtom from "../../AddProject/projectAtom";
 
 const InviteCollaborators = ({
@@ -41,7 +39,11 @@ const InviteCollaborators = ({
   //     }
   //   }
   // }, [pricing_data, userProfile_data]);
+  const history = useHistory();
 
+  const navigateToPricing = () => {
+    history.push(routes.pricing)
+  };
   return (
     <div className='p-4' {...rest} style={{ height: "auto", width: "100%" }}>
       <p className='text-mediumLabel mb-2'>Invite users to collaborate</p>
@@ -68,7 +70,7 @@ const InviteCollaborators = ({
             projectDetails.numberOfCollaborators - 1
           ) {
             setError(
-              "You have exhausted your collaborator limit, please upgrade"
+              "You have exhausted your collaborator limit, please "
             );
             return false;
           }
@@ -97,9 +99,9 @@ const InviteCollaborators = ({
         // disabled={addProjectMutation?.isSuccess}
       />
 
-      {error && <p className='text-overline2 text-accent-red mt-3'>{error}</p>}
+      {error && <> <p className='text-overline2 text-accent-red mt-3'>{error} <button className="button-collabmsg" onClick={navigateToPricing}> upgrade </button> </p></>}
     </div>
   );
 };
-
+//history.push(routes.pricing)
 export default InviteCollaborators;

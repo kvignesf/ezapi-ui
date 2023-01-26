@@ -37,6 +37,7 @@ import {
   useDatabaseConnection,
   useAddProject,
   useUserProfile,
+  usePricingData,
   useUploadProjectDbs,
   useUploadProjectFile,
   useUploadProjectSpecs,
@@ -90,6 +91,12 @@ const AddProject = ({ onClose, onSuccess }) => {
   const [disableAdvSpec, setDisableAdvSpec] = useState(false);
   const [disableAdvWorks, setDisableAdvWorks] = useState(false);
   const [disableMflix, setDisableMflix] = useState(false);
+  const [connectors, setConnectors] = useState({
+    ms_sql: true,
+    my_sql: true,
+    postgres: true,
+    mongo: true
+  });
 
   const hideClaims = false;
 
@@ -634,6 +641,12 @@ const AddProject = ({ onClose, onSuccess }) => {
   const isMflixChecked = () => {
     setDefaultMflix(false);
   };
+  const resetProjectApiState = () => {
+    addProjectMutation?.reset();
+    uploadSpecsMutation?.reset();
+    uploadDbMutation?.reset();
+    aiMatcherMutation?.reset();
+  };
   const debouncedSetName = useCallback(
     debounce((nextValue) => {
       // resetProjectApiState();
@@ -648,6 +661,38 @@ const AddProject = ({ onClose, onSuccess }) => {
     [] // will be created only once initially
   );
 
+  const debouncedSetNumberOfCollaborators = useCallback(
+    debounce((nextValue) => {
+      resetProjectApiState();
+
+      setProjectDetails((currProjectDetails) => {
+        return {
+          ...currProjectDetails,
+          numberOfCollaborators: nextValue,
+        };
+      });
+    }, 300),
+    [] // will be created only once initially
+  );
+  const { data: pricing_data } = usePricingData();
+  useEffect(() => {
+    if (pricing_data && userProfile_data) {
+      if (
+        userProfile_data["plan_name"] == null ||
+        userProfile_data["plan_name"] == "Basic"
+      ) {
+        debouncedSetNumberOfCollaborators(2);
+        setConnectors({ ms_sql: true, my_sql: true, postgres: true, mongodb: true });
+      } else {
+        const filtered_plan = pricing_data["products"].filter(
+          (item) => item["plan_name"] == userProfile_data["plan_name"]
+        )[0];
+        debouncedSetNumberOfCollaborators(filtered_plan["no_of_collaborators"]);
+        setConnectors(filtered_plan["connectors"]);
+      }
+    }
+  }, [pricing_data, userProfile_data]);
+  
 
   return (
     <>
@@ -844,6 +889,7 @@ const AddProject = ({ onClose, onSuccess }) => {
                         isAdvSpec={defaultAdvSpec}
                         isAdvWorks={defaultAdvWorks}
                         isMflix={defaultMflix}
+                        connectors={connectors}
                       />
                     </div>
                   ) : (
@@ -1013,7 +1059,7 @@ const AddProject = ({ onClose, onSuccess }) => {
                       }}
                       classes='flex-1 -ml-4 text-brand-secondary'
                     >
-                      Skip for now
+                      Add Later
                     </TextButton>
                   ) : null}
 

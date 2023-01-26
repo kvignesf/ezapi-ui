@@ -155,6 +155,7 @@ const Parameters = () => {
 };
 
 const ParamRow = ({ param }) => {
+
   const [{ isDragging }, drag, dragPreview] = useDrag(
     () => ({
       type: "drag_item",
@@ -241,7 +242,9 @@ const ParamRow = ({ param }) => {
               />
             </AppIcon>
             <p className='flex-1 ml-1 text-overline2'>{param?.name}</p>
-            <p className='flex-1 text-overline2'>{param?.type}</p>
+            <p className='flex-1 text-overline2'>
+            {/* {(param?.format) ? DataTypeTable[param.format].format:param.type}</p> */}
+            {param?.commonName}</p>
             <p className='flex-1 text-overline2'>
               {param.possibleValues?.reduce((acc, curr) => {
                 if (!_.isEmpty(acc)) {

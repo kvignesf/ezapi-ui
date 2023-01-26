@@ -845,13 +845,13 @@ const Project = () => {
         </Dialog>
         <Drawer
           anchor={"right"}
-          open={dialog?.show && dialog?.type == "mandatory_mapping"}
+          open={dialog?.show && dialog?.type === "mandatory_mapping"}
           onClose={handleCloseDialog}
         >
           <MappingDrawer
             newProjectDetails={newProjectDetails}
             onClose={(data) => {
-              if (data == "publish") {
+              if (data === "publish") {
                 //resetPublishMutation();
                 //verify({ projectId, newProjectDetails });
                 fetchTables({ projectId });
@@ -881,6 +881,7 @@ const Project = () => {
               } else {
                 //updateMappingData(mappedData);
                 //verifyProject({ projectId, newProjectDetails });
+                setPasswordBeforePublish(false);
                 publish({ projectId, newProjectDetails });
               }
             }}
@@ -1025,7 +1026,11 @@ const Project = () => {
                     showRepublishStatus();
                   }}
                 >
+                  {projectDetails?.projectType !== "noinput" ?
                   <p className='text-overline2 text-brand-secondary text-center'>{`${projectDetails?.publishCount} / ${projectDetails?.publishLimit}`}</p>
+                  :
+                  <p className='text-overline2 text-brand-secondary text-center'>{`${projectDetails?.publishCount} / 999`}</p>
+                  }
                 </div>
               )}
 

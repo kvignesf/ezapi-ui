@@ -52,7 +52,7 @@ export const TextButton = ({ disabled, classes, children, style, ...rest }) => {
 };
 
 export const OutlineButton = ({
-  disabled,
+  disabled = false,
   classes,
   children,
   style,
@@ -68,6 +68,7 @@ export const OutlineButton = ({
 
   return (
     <button
+      disabled={disabled}
       className={classnames}
       style={{ ...style, borderRadius: "4px", outline: "none" }}
       {...rest}

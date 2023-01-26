@@ -66,6 +66,13 @@ const App = () => {
                 />
                 <PrivateRoute exact path={routes.pricing} component={Pricing} />
                 <PrivateRoute exact path={routes.productTour} component={ProductTour} />
+                <PrivateRoute exact path={routes.docs} component={() => {
+                  //window.open('https://docs.conektto.io', '_blank') || window.location.replace('https://docs.conektto.io');
+                  window.location.replace('https://docs.conektto.io');
+                  //window.open('https://docs.conektto.io')
+                  return null;
+                }}/>
+
                 <Route
                   path={routes.payment}
                   render={(props) => {

@@ -119,7 +119,7 @@ const AddOrEditParameter = ({ parameter, onClose, stopEdit }) => {
           >
             {({ errors, touched, formik}) => (
               <Form>
-                <div onKeyUp={(e) => {
+                <div onKeyDown={(e) => {
                       // resetMutationState();
                       if(e.key === "Enter"){
                         e.preventDefault();
@@ -130,16 +130,7 @@ const AddOrEditParameter = ({ parameter, onClose, stopEdit }) => {
                           }
                       }
                     }} 
-                    onKeyDown={(e)=>{
-                      if(e.key === "Tab"){
-                        e.preventDefault();
-                        e.stopPropagation();
-                        formRef.current.submitForm();
-                        if(parameter){
-                          stopEdit(); 
-                        }
-                      }
-                    }}
+                    
                     className = 'bg-white mb-1 rounded-md flex flex-row p-1 py-1 items-center'>
                 {/* <div className='mb-4'> */}
                 <div className = "w-4"></div>
@@ -267,7 +258,16 @@ const AddOrEditParameter = ({ parameter, onClose, stopEdit }) => {
                     disabled={isAddingParameter || isEditingParameter}
                     error={touched.description && Boolean(errors.description)}
                     helperText={<ErrorMessage name='description' />}
-                    
+                    onKeyDown={(e)=>{
+                      if(e.key === "Tab"){
+                        e.preventDefault();
+                        e.stopPropagation();
+                        formRef.current.submitForm();
+                        if(parameter){
+                          stopEdit(); 
+                        }
+                      }
+                    }}
                     inputProps={{
                       style: {
                         height: "4px",

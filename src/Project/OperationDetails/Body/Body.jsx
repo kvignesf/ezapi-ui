@@ -148,10 +148,17 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
                 str = str.split(".attribute").join("");
                 clonedItem.key = str;
               }
-              if (isArray(item)) {
-                clonedItem.isArray = true;
+              
+            }
+
+            if (isArray(item)) {
+              clonedItem.isArray = true;
+              clonedItem.is_child = true;
+              if (item?.id) { 
+                clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
               }
             }
+
             if (isAttribute(item)) {
               clonedItem.required = true;
               clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
@@ -203,7 +210,7 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
             if (isStoredProcedure(item)) {
               let inputExists = false;
               item?.data?.[0]?.map((row) => {
-                if (row.type == "input") {
+                if (row.type === "input") {
                   inputExists = true;
                 }
               });
@@ -251,6 +258,7 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
 
             if (isArray(item)) {
               clonedItem.isArray = true;  
+              clonedItem.is_child = true;
               if (item?.id) { 
                 clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
               }
@@ -262,9 +270,9 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
               clonedItem.parentName = path ?? "/";
             } else if (isColumn(item)) {
               clonedItem.tableName = fetchParentName(clonedItem) ?? "global";
-            } else if (isArrayOrObjectAttribute(item) && isArray(item)) {
+            } /* else if (isArrayOrObjectAttribute(item) && isArray(item)) {
               clonedItem.tableName = fetchParentName(clonedItem) ?? "global";
-            }
+            } */
 
             if (isStoredProcedure(item)) {
               let outputExists = false;
@@ -580,7 +588,7 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
                   } else {
                   }
 
-                  return clonedRef == "wrongData" ? null : (
+                  return clonedRef === "wrongData" ? null : (
                     <DropArea onItemDropped={nestedItemDropped} state={refresh}>
                       <DraggableBodyItem state={refresh}>
                         <BodyItem
@@ -1418,8 +1426,7 @@ const BodyItem = ({
 
   if (isArray(bodyItem) && bodyItem.is_child) {
     return (
-      <DraggableBodyItem className="ml-6">
-        <ArrayOrObjectLabel
+      <ArrayOrObjectLabel
           labelItem={bodyItem}
           isArrayChecked={isArrayChecked}
           deleteItem={deleteItem}
@@ -1427,14 +1434,27 @@ const BodyItem = ({
           responseCode={responseCode}
           projectType={projectType}
         />
-      </DraggableBodyItem>
     );
   }
 
   return (
     <TreeItem
-      key={bodyItem?.payloadId ?? bodyItem?.name ?? treeIndex++}
-      nodeId={bodyItem?.payloadId ?? bodyItem?.name ?? treeIndex++}
+      /* key={bodyItem?.payloadId ?? bodyItem?.name ?? treeIndex++}
+      nodeId={bodyItem?.payloadId ?? bodyItem?.name ?? treeIndex++} */
+      key={
+        bodyItem?.payloadId
+          ? bodyItem?.payloadId + "level1"
+          : bodyItem?.name
+          ? bodyItem?.name + "level1"
+          : treeIndex++ + "level1"
+      }
+      nodeId={
+        bodyItem?.payloadId
+          ? bodyItem?.payloadId + "level1"
+          : bodyItem?.name
+          ? bodyItem?.name + "level1"
+          : treeIndex++ + "level1"
+      }
       label={
         isDatabase(bodyItem) ? (
           <DatabaseLabel
@@ -1512,8 +1532,22 @@ const BodyItem = ({
           else if (isAttribute(ref)) {
             return (
               <TreeItem
-                key={ref?.payloadId ?? ref?.name ?? treeIndex++}
-                nodeId={ref?.payloadId ?? ref?.name ?? treeIndex++}
+                /* key={ref?.payloadId ?? ref?.name ?? treeIndex++}
+                nodeId={ref?.payloadId ?? ref?.name ?? treeIndex++} */
+                key={
+                  ref?.payloadId
+                    ? ref?.payloadId + "level2"
+                    : ref?.name
+                    ? ref?.name + "level2"
+                    : treeIndex++ + "level2"
+                }
+                nodeId={
+                  ref?.payloadId
+                    ? ref?.payloadId + "level2"
+                    : ref?.name
+                    ? ref?.name + "level2"
+                    : treeIndex++ + "level2"
+                }
                 label={
                   <div className="flex flex-row p-1 justify-between items-center border-b-2 h-8">
                     <div className="flex flex-row items-center justify-start w-full">
@@ -1584,7 +1618,7 @@ const BodyItem = ({
           if (isObject(bodyItem)) {
             arrayItemRef = bodyItem.properties[arrayItem];
           } else {
-            arrayItemRef = bodyItem.items.properties[arrayItem];
+            arrayItemRef = bodyItem.items?.properties[arrayItem];
           }
 
           if (isDatabase(arrayItemRef)) {
@@ -2009,7 +2043,14 @@ const ArrayOrObjectLabel = ({
     <ReactHoverObserver>
       {({ isHovering }) => {
         return (
-          <div className="flex flex-row p-1 justify-between items-center border-b-2 h-8">
+          <div
+            className={
+              isArray(labelItem)
+                ? "ml-6 flex flex-row p-1 h-8 justify-between items-center border-b-2"
+                : "flex flex-row p-1 justify-between items-center border-b-2 h-8"
+            }
+            style={isArray(labelItem) ? { paddingTop: "12px" } : null}
+          >
             <div className="flex flex-row items-center justify-start w-full">
               <div className="w-full grid grid-cols-5 gap-2 items-center">
                 <div className="flex justify-self-start items-center">
@@ -2030,10 +2071,15 @@ const ArrayOrObjectLabel = ({
                   />
                   <p className="text-overline2">{labelItem?.name}</p>
                 </div>
-                <div className="flex  ml-1 justify-self-start"></div>
+                <div className="flex justify-self-start">
+                    {/* empty: no scheme attribute */}
+                  </div>
+                <div className="flex  ml-1 justify-self-start">
+                  <p className="text-overline2">{labelItem?.type}</p>
+                </div>
                 <div className="flex  ml-1 justify-self-start"></div>
                 {isArray(labelItem) && (
-                  <div className="flex  ml-1 justify-self-start">
+                  <div className="flex ml-3 justify-self-start">
                     <Checkbox
                       checked={array}
                       onClick={(e) => {
@@ -2086,7 +2132,7 @@ const ArrayOrObjectLabel = ({
   );
 };
 
-const ArrayLabel = ({
+/* const ArrayLabel = ({
   labelItem,
   request,
   isLoading,
@@ -2146,7 +2192,7 @@ const ArrayLabel = ({
     </ReactHoverObserver>
   );
 };
-
+ */
 const SchemaLabel = ({
   labelItem,
   request,
@@ -2155,7 +2201,7 @@ const SchemaLabel = ({
   isArrayChecked,
 }) => {
   const canEdit = useCanEdit();
-  const [isArray, setIsArray] = useState(labelItem.isArray);
+  //const [isArray, setIsArray] = useState(labelItem.isArray);
 
   return (
     <ReactHoverObserver>
@@ -2175,6 +2221,9 @@ const SchemaLabel = ({
                   <p className="text-overline2">
                     {labelItem?.schemaName ?? labelItem?.name}
                   </p>
+                </div>
+                <div className="ml-1 flex justify-self-start">
+                  <p className="text-overline2">{labelItem?.type}</p>
                 </div>
 
                 <div> {/* empty datattype */}</div>
@@ -2252,12 +2301,12 @@ const AttributeLabel = ({ labelItem, deleteItem, projectType }) => {
                 <div className=" w-full grid grid-cols-5 gap-2 items-center ">
                   {" "}
                   <div className="flex justify-self-start items-center">
-                    {labelItem?.id ?
+                    {labelItem?.id ? (
                       <BlurCircularIcon
                       className="bg-white mr-4"
                       sx={{ height: "24px", width: "24px" }}
                       color={"Primary"}/>
-                    :
+                    ) : (
                       
                      <img
                       src={AttributeIcon}
@@ -2265,7 +2314,7 @@ const AttributeLabel = ({ labelItem, deleteItem, projectType }) => {
                       className="bg-white mr-4"
                       style={{ height: "24px", width: "24px" }}
                     />
-                    }
+                    )}
                     <Tooltip
                       title={labelItem?.name}
                       open={openTooltip}
@@ -2657,7 +2706,7 @@ const ColumnLabel = ({
   if (
     columnLabelItem.auto == true &&
     request == true &&
-    operationData?.operation?.operationType?.toLowerCase() == "post"
+    operationData?.operation?.operationType?.toLowerCase() === "post"
   ) {
     deleteColumn(columnLabelItem);
   }
@@ -3208,9 +3257,9 @@ const InputOrOutputLabel = ({
                   <div className="flex justify-self-start items-center ">
                     <img
                       src={
-                        inputOrOutputLabelItem.type == "input"
+                        inputOrOutputLabelItem.type === "input"
                           ? InputIcon
-                          : inputOrOutputLabelItem.type == "output"
+                          : inputOrOutputLabelItem.type === "output"
                           ? OutputIcon
                           : null
                       }
