@@ -221,7 +221,7 @@ const ProjectRow = ({
 
 
   const onGitHubLoginSuccess = async (response) => {  
-    console.log("..response..", response)  
+    //console.log("..response..", response)  
     const { code } = response;
     if (code)	{
       pushToGithub({ code: code, projectId: project?.projectId });
@@ -229,7 +229,7 @@ const ProjectRow = ({
   };
   useEffect(()=>{
     if(isgithubLoginSuccess){
-      console.log("entered into useeffectt");
+      //console.log("entered into useeffectt");
       setGithubIcon(false);
     }
   },[isgithubLoginSuccess])
@@ -613,7 +613,7 @@ const ProjectRow = ({
                   </div>
                 </Tooltip>                
               )}
-            {(isgithubLoggingIn || project?.githubCommit === "CommitInProgress" && isgithubLoginSuccess) && (
+            {(isgithubLoggingIn || project?.githubCommit === "CommitInProgress") && (
               <Tooltip title={
                 "Commit In Progress"
               }>              
@@ -888,52 +888,56 @@ const Content = ({ showCreateProjectDialog }) => {
 
               <div className='h-full'>
                 <table className='w-full'>
-                  <tr className='mr-16 bg-neutral-gray6 w-full text-left text-neutral-gray4 text-mediumLabel'>
-                    <th className='p-2 w-1/5 rounded-tl-md rounded-bl-md'>
-                      API PROJECT
-                    </th>
-                    <th className=''>COLLABORATORS</th>
-                    <th className=''>LAST ACTIVITY</th>
-                    <th className=''>STATUS</th>
-                    <th className=''>DESIGN / TEST</th>
-                    <th className='pl-8'>DOWNLOAD</th> 
-                    <th className=''>GITHUB</th>                  
-                    <th className='rounded-tr-md rounded-br-md text-center'>
-                      {isFetchingProjectsBg ? (
-                        <CircularProgress size='20px' />
-                      ) : (
-                        <Tooltip title='Refresh list'>
-                          <ReplayIcon
-                            style={{
-                              width: "20px",
-                              height: "20px",
-                              color: Colors.brand.primary,
-                              cursor: "pointer",
-                            }}
-                            onClick={(e) => {
-                              e?.preventDefault();
-                              e?.stopPropagation();
-                              refetchProjects();
-                            }}
-                          />
-                        </Tooltip>
-                      )}
-                    </th>
-                  </tr>
-
-                  {currentItems?.map((project) => {
-                    return (
-                      <ProjectRow
-                        project={project}
-                        showMembersDialog={showMembersDialog}
-                        handleOnRename={handleOnRename}
-                        handleOnInvite={handleOnInvite}
-                        handleOnView={handleOnView}
-                        handleOnDeleteApi={handleOnDeleteApi}
-                        handlePushToGithub = {handlePushToGithub}
-                      />
-                    );
-                  })}
+                <thead>
+                    <tr className='mr-16 bg-neutral-gray6 w-full text-left text-neutral-gray4 text-mediumLabel'>
+                      <th className='p-2 w-1/5 rounded-tl-md rounded-bl-md'>
+                        API PROJECT
+                      </th>
+                      <th className=''>COLLABORATORS</th>
+                      <th className=''>LAST ACTIVITY</th>
+                      <th className=''>STATUS</th>
+                      <th className=''>DESIGN / TEST</th>
+                      <th className='pl-8'>DOWNLOAD</th>
+                      <th className=''>GITHUB</th>
+                      <th className='rounded-tr-md rounded-br-md text-center'>
+                        {isFetchingProjectsBg ? (
+                          <CircularProgress size='20px' />
+                        ) : (
+                          <Tooltip title='Refresh list'>
+                            <ReplayIcon
+                              style={{
+                                width: "20px",
+                                height: "20px",
+                                color: Colors.brand.primary,
+                                cursor: "pointer",
+                              }}
+                              onClick={(e) => {
+                                e?.preventDefault();
+                                e?.stopPropagation();
+                                refetchProjects();
+                              }}
+                            />
+                          </Tooltip>
+                        )}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {currentItems?.map((project) => {
+                      return (
+                        <ProjectRow
+                          project={project}
+                          showMembersDialog={showMembersDialog}
+                          handleOnRename={handleOnRename}
+                          handleOnInvite={handleOnInvite}
+                          handleOnView={handleOnView}
+                          handleOnDeleteApi={handleOnDeleteApi}
+                          handlePushToGithub = {handlePushToGithub}
+                          key={project?._id}
+                        />
+                      );
+                    })}
+                  </tbody>
                 </table>
               </div>
             </div>
