@@ -221,7 +221,7 @@ const ProjectRow = ({
 
 
   const onGitHubLoginSuccess = async (response) => {  
-    //console.log("..response..", response)  
+    console.log("..response..", response)  
     const { code } = response;
     if (code)	{
       pushToGithub({ code: code, projectId: project?.projectId });
@@ -549,7 +549,7 @@ const ProjectRow = ({
             {project?.status?.toLowerCase() === "complete" &&
               project?.projectType?.toLowerCase() !== "schema" && project?.isDesign &&(
                 <Tooltip title={
-                  (project?.githubCommit === "ReadyForPush" && (project?.codegen || project?.dotnetcodegen) && (!isgithubLoggingIn))
+                  (project?.githubCommit === "ReadyForPush" && (project?.codegen || project?.dotnetcodegen))
                     ? "Push to Github"
                     : (project?.githubCommit === "ReadyForView") ? "View on Github" : (project?.githubCommit === "CommitInProgress") ? "Commit In Progress" : ""
                 }>
@@ -567,7 +567,7 @@ const ProjectRow = ({
                       handlePushToGithub(project);
                     }}
                     /> */}
-                    {project?.githubCommit === "ReadyForPush" && (project?.codegen || project?.dotnetcodegen) && (!isgithubLoggingIn) &&
+                    {project?.githubCommit === "ReadyForPush" && (project?.codegen || project?.dotnetcodegen) &&
                     (
                     
                     <LoginGithub 
@@ -593,7 +593,7 @@ const ProjectRow = ({
                     </LoginGithub>)
                     }    
                     {
-                      project?.githubCommit === "ReadyForView" && (!isgithubLoggingIn) &&(
+                      project?.githubCommit === "ReadyForView" &&(
                         <div className="github-view-button mt-1">
                           <div className="github-ico-wrapper">
                             <img
@@ -613,7 +613,7 @@ const ProjectRow = ({
                   </div>
                 </Tooltip>                
               )}
-            {(isgithubLoggingIn || project?.githubCommit === "CommitInProgress") && (
+            {(project?.githubCommit === "CommitInProgress") && (
               <Tooltip title={
                 "Commit In Progress"
               }>              
