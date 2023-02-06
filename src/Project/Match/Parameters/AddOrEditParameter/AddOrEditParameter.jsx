@@ -202,7 +202,7 @@ const AddOrEditParameter = ({ parameter, onClose, stopEdit }) => {
                   <Field
                     id='possibleValues'
                     name='possibleValues'
-                    placeholder = 'possible_values'
+                    placeholder = 'value1, value2, value3'
                     fullWidth
                     color='primary'
                     variant='outlined'

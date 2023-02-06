@@ -1,13 +1,11 @@
-import axios from "axios";
 import _ from "lodash";
-import { useMutation, useQuery, useQueryClient } from "react-query";
-import { useHistory } from "react-router-dom";
+import { useMutation, useQueryClient } from "react-query";
 import Messages from "../messages";
 
 import client, { endpoint } from "../network/client";
-import { clearQueryCache, queries } from "../network/queryClient";
-import routes from "../routes";
+import { clearQueryCache } from "../network/queryClient";
 import {
+  clearLocalStorage,
   clearSession,
   getAccessToken,
   setAccessToken,
@@ -18,7 +16,7 @@ import {
 } from "../storage";
 import { getApiError } from "../utils";
 
-const login = async ({ linkedInAuthToken, redirect_uri }) => {
+const linkedIn = async ({ linkedInAuthToken, redirect_uri }) => {
   if (!linkedInAuthToken || _.isEmpty(linkedInAuthToken)) {
     throw Error(Messages.LINKEDIN_REQUIRED);
   }
@@ -69,8 +67,8 @@ const github = async ({ code, redirect_uri }) => {
   }
 };
 
-export const useLogin = () => {
-  const mutation = useMutation(login, {
+export const useLinkedInLogin = () => {
+  const mutation = useMutation(linkedIn, {
     onSuccess: (data) => {
       if (data) {
         setAccessToken(data?.jwtToken);
@@ -110,6 +108,8 @@ const logout = async () => {
    * logging out, he/she will be taken to sign in page
    */
   clearSession();
+  clearLocalStorage();
+
   if (accessToken && !_.isEmpty(accessToken)) {
     try {
       const { data } = await client.post(
@@ -129,7 +129,6 @@ const logout = async () => {
 };
 
 export const useLogout = () => {
-  const history = useHistory();
   const queryClient = useQueryClient();
 
   const mutation = useMutation(logout, {

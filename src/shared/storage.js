@@ -32,3 +32,19 @@ export const setEmailId = (value) =>
 export const getEmailId = () => sessionStorage.getItem(StorageKey.emailId);
 
 export const clearSession = () => sessionStorage.clear();
+export const clearLocalStorage = () => localStorage.clear();
+
+export const setRedirectUrl = (value) => {
+  if (value) {
+    localStorage.setItem("redirect_url", value);
+  }
+}
+
+export const getRedirectUrl = () => {
+  const pathName = localStorage.getItem("redirect_url");
+  if (pathName) {
+    localStorage.removeItem("redirect_url");
+    return pathName;
+  }
+};
+

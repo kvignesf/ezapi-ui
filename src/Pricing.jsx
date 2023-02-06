@@ -177,7 +177,7 @@ const Pricing = () => {
         CalculateTrialExpiryDate(data?.["registeredOn"].split(" ")[0], 6, "20")
       );
 
-      if (data?.["subscribed_plan"] == "") {
+      if (data?.["subscribed_plan"] === "") {
         setTrialButton("Subscribed");
       } else {
         setTrialButton("Subscribe");
@@ -199,12 +199,12 @@ const Pricing = () => {
   });
 
   const handleClick = (title, price, buttonTextType) => {
-    if (buttonTextType == "Subscribe") {
+    if (buttonTextType === "Subscribe") {
       history.push({
         pathname: routes.payment,
         state: { type: title, duration: durationMY, price: price },
       });
-    } else if (buttonTextType == "CONTACT US") {
+    } else if (buttonTextType === "CONTACT US") {
       window.open("https://www.ezapi.ai/contact");
     }
   };
@@ -213,8 +213,8 @@ const Pricing = () => {
 
   function setPlanPriceBasedOnDuration(item, index) {
     var durationMatchPlaceHolder;
-    if (durationMY == "M") durationMatchPlaceHolder = "month";
-    else if (durationMY == "Y") durationMatchPlaceHolder = "year";
+    if (durationMY === "M") durationMatchPlaceHolder = "month";
+    else if (durationMY === "Y") durationMatchPlaceHolder = "year";
 
     item?.["stripe"].map((item2, index2) => {
       if (durationMatchPlaceHolder == item2["plan_interval"]) {
@@ -377,7 +377,7 @@ const Pricing = () => {
               </div>
               <Switch
                 color="default"
-                checked={durationMY == "Y"}
+                checked={durationMY === "Y"}
                 onChange={handleSwitchChange}
               />
               <div id="yr" className="mt-1.5 text-black-500">
@@ -387,7 +387,7 @@ const Pricing = () => {
           </div>
 
           <div id="pricingTypeCards1" className="container mx-auto   p-2 ">
-            {durationMY == "Y" ? (
+            {durationMY === "Y" ? (
               <div className="grid grid-cols-11 gap-5    ">
                 <Grid className="col-start-6 col-span-2 ">
                   <div className="flex  justify-center ">
@@ -476,7 +476,7 @@ const Pricing = () => {
                         >
                           {index != 3 &&
                             index != 0 &&
-                            (durationMY == "Y" ? (
+                            (durationMY === "Y" ? (
                               <div>/yr</div>
                             ) : (
                               <div>/mo</div>
@@ -566,7 +566,7 @@ const Pricing = () => {
                         </p>
                       </CardContent>
                     )}
-                    {tier.buttonText === "Subscribed" && endSubDate == "" && (
+                    {tier.buttonText === "Subscribed" && endSubDate === "" && (
                       <CardContent className="flex flex-col">
                         <p
                           class=" text-center text-sm ..."

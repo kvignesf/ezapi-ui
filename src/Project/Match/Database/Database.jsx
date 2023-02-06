@@ -53,7 +53,7 @@ const Database = () => {
         return clonedTableState;
       });
     } else if (isObject(item) && !item.is_child) {
-      console.log("object", item);
+      //console.log("object", item);
       let newRef;
       if (tableState.ref === "") {
         newRef = `${item.tableName}.attributes.${item.name}.ezapi_object`;

@@ -28,6 +28,7 @@ const addParameter = async ({
     });
     return data;
   } catch (error) {
+    console.log("error", error)
     throw error;
   }
 };
@@ -66,8 +67,11 @@ const editParameter = async ({
         required,
       },
     });
+    //console.log("data", data)
     return data;
   } catch (error) {
+    //throw getApiError(error);
+    console.log("errorins", error)
     throw getApiError(error);
   }
 };

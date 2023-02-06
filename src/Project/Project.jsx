@@ -91,6 +91,7 @@ const Project = () => {
     data: projectDetails,
     remove: resetFetchProject,
   } = useFetchProjectDetails(projectId, { refetchOnWindowFocus: false });
+  
   const [currentTab, setCurrentTab] = useState(0);
   const [operationState, setOperationState] = useRecoilState(
     operationAtomWithMiddleware
@@ -988,7 +989,7 @@ const Project = () => {
                     e?.preventDefault();
                     e?.stopPropagation();
                     // console.log(projectDetails?.isConnectDB);
-                    console.log("githubCommit" , projectDetails?.githubCommit);                   
+                    //console.log("githubCommit" , projectDetails?.githubCommit);                   
                     /* if (projectDetails?.projectType === "db") {                        
                       fetchTables({ projectId });
                       setDisplayEntityMapping(true);

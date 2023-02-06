@@ -187,8 +187,8 @@ const NoSpecNoDb = ({ onClose, onSuccess, noSpecNoDb }) => {
       } else {
         setErrorDisplay(false);
         setSpecErrorDisplay(false);
-        console.log("isDesign", isDesign)
-        console.log("noSpecNoDb", noSpecNoDb)
+        //console.log("isDesign", isDesign)
+        //console.log("noSpecNoDb", noSpecNoDb)
         uploadProjectData({
           name: projectDetails?.name,
           invitees: projectDetails?.collaborators?.map((collaborator) => {

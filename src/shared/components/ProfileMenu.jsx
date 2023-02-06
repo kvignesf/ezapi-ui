@@ -1,19 +1,17 @@
 import React from "react";
 import { Fade, Menu, MenuItem } from "@material-ui/core";
 import Colors from "../colors";
-import { Link, useHistory } from "react-router-dom";
-import routes from "../routes";
+import { Link } from "react-router-dom";
 
 const ProfileMenu = ({
   onLogout,
   profileMenuAnchorEl,
   setProfilemenuAnchorEl,
 }) => {
-  const history = useHistory();
 
-  const navigateToContactUs = () => {
+/*   const navigateToContactUs = () => {
     history.push(routes.contact);
-  };
+  }; */
 
   return (
     <Menu

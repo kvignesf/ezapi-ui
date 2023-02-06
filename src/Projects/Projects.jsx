@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useContext, useRef } from "react";
 import { styled, Tooltip, tooltipClasses } from "@mui/material";
 import MoreVertIcon from "@material-ui/icons/MoreVert";
 import GetAppIcon from "@material-ui/icons/GetApp";
@@ -40,7 +40,8 @@ import {
   useDownloadDatabase,
   useDownloadApigee,
   usePushToGithub,
-  useVIewRepo
+  useVIewRepo,
+  useFetchProjectDetails,
 } from "./projectQueries";
 import EmptyLogo from "../static/images/empty-state.svg";
 import { PrimaryButton } from "../shared/components/AppButton";
@@ -62,6 +63,8 @@ import { useRecoilState } from "recoil";
 import projectAtom, { defaultState } from "../AddProject/projectAtom";
 import { downloadIconSts, downloadIconProj } from "../Dashboard/dwnDataGenAtom";
 import InfoIcon from "@mui/icons-material/Info";
+import {SocketContext} from '../Context/socket';
+
 
 //import { NativeEventSource, EventSourcePolyfill } from 'event-source-polyfill';
 
@@ -574,12 +577,13 @@ const ProjectRow = ({
                       clientId={process.env.REACT_APP_GITHUB_CLIENT_ID}
                       redirectUri={process.env.REACT_APP_REDIRECT_URI}
                       onSuccess={onGitHubLoginSuccess}
+                      //onSuccess={() => {console.log("onSuccess")}}
                       scope='user project repo email'
                       // onFailure={onGitHubFailure}
                       // className="github-push-button"
                       > 
                       {/* <GitHubIcon  style={{ color: "#000000", height: "18px", width: "18px" }} />     */}
-                      <div style={{width: "4px"}} >
+                      <div className ='pl-1 pr-2' style={{width: "32px"}} >
                       <div className="github-ico-wrapper">
                       
                         <img
@@ -594,7 +598,8 @@ const ProjectRow = ({
                     }    
                     {
                       project?.githubCommit === "ReadyForView" &&(
-                        <div className="github-view-button mt-1">
+                        
+                        <div className="pl-1" style={{width: "32px", align: 'left'}} >
                           <div className="github-ico-wrapper">
                             <img
                             src = {viewgithubLogo}
@@ -685,6 +690,57 @@ const ProjectRow = ({
 };
 
 const Content = ({ showCreateProjectDialog }) => {
+  //socket related code for event handling
+  const [isStatusChanged , setIsStatusChanged] = useState(false);
+  
+  //load socket from context
+  const socket = useContext(SocketContext);
+
+  useEffect(()=> {  
+    // connect to socker server and emit event
+    if(socket){
+      socket.on('connect',(userId)=>{
+        console.log("Socket connected!!!")
+        socket.emit('userConnected', { 
+          user: getUserId() 
+        });
+      });
+    }
+  },[])
+
+  useEffect(()=>{
+    // listen to events emitted by socker server (from node)
+
+    if(socket){
+      
+      let fetchProjects = (eventName)=>{
+        refetchProjects();      
+        setIsStatusChanged(!isStatusChanged)
+        //console.log(eventName+" triggered!")
+      }
+      // look for when the server emits the updated count
+      socket.on('githubEvent', (eventName)=> {
+        console.log("eventName.."+eventName);
+        fetchProjects(eventName)
+      })
+
+      socket.on('projectStatusEvent', (eventName)=> {
+        //console.log("eventName.."+eventName);
+        fetchProjects(eventName)
+      })
+
+      socket.on('codegenEvent', (eventName)=> {
+        //console.log("eventName.."+eventName);
+        fetchProjects(eventName)
+      })
+
+      socket.on('dotnetcodegenEvent', (eventName)=> {
+        //console.log("eventName.."+eventName);
+        fetchProjects(eventName)
+      })
+    }  
+  },[isStatusChanged])
+
   const {
     data: projects,
     isLoading: isFetchingProjects,
@@ -692,6 +748,7 @@ const Content = ({ showCreateProjectDialog }) => {
     isFetching: isFetchingProjectsBg,
     refetch: refetchProjects,
   } = useGetProjects();
+
   const [dialog, setDialog] = useState({
     show: false,
     type: null,
@@ -711,13 +768,14 @@ const Content = ({ showCreateProjectDialog }) => {
 
   const history = useHistory();
   const pagination = useRef();
-
-  useEffect(() => {
+  
+  //commenting code - this is handled thru socket-events
+  /* useEffect(() => {
     const projectsFetchInterval = setInterval(() => refetchProjects(), 45000);
     return () => {
       clearInterval(projectsFetchInterval);
     };
-  });
+  }); */
 
   useEffect(() => {
     // Fetch items from another resources.

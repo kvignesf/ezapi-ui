@@ -32,7 +32,8 @@ const ProjectDetails = ({
   isMflix
 }) => {
   const [projectDetails, setProjectDetails] = useRecoilState(projectAtom);
-
+  //console.log("projectDetails in projectdetailsjsx", projectDetails)
+  console.log("isClaimSpec || isAdvSpec || isAdvWorks || isMflix", isClaimSpec , isAdvSpec , isAdvWorks , isMflix)
   useEffect(() => {
     if (formRef.current && isProjectNameEmpty) {
       formRef.current.touched.name = true;
@@ -43,7 +44,7 @@ const ProjectDetails = ({
   const debouncedSetName = useCallback(
     debounce((nextValue) => {
       resetProjectApiState();
-
+      //console.log("nextValue", nextValue)
       setProjectDetails((currProjectDetails) => {
         return {
           ...currProjectDetails,
@@ -53,6 +54,8 @@ const ProjectDetails = ({
     }, 300),
     [] // will be created only once initially
   );
+
+  
 
   const resetProjectApiState = () => {
     addProjectMutation?.reset();
@@ -151,7 +154,8 @@ const ProjectDetails = ({
       <div className="mb-6">
         <Formik
           initialValues={{
-            name: projectDetails?.name ?? "",
+            //name: projectDetails?.name ?? "",
+            name: isClaimSpec || isAdvSpec || isAdvWorks || isMflix ? projectDetails?.name : projectDetails?.prevName,
           }}
           validationSchema={Yup.object().shape({
             name: apiNameSchema(Messages.NAME_REQUIRED),
@@ -168,7 +172,7 @@ const ProjectDetails = ({
             setErrors,
           }) => (
             <Form>
-              {isClaimSpec || isAdvSpec || isAdvWorks || isMflix? (
+              {isClaimSpec || isAdvSpec || isAdvWorks || isMflix ? (
                 <Field
                   id="name"
                   name="name"
@@ -188,18 +192,22 @@ const ProjectDetails = ({
                   name="name"
                   fullWidth
                   color="primary"
+                  placeholder={projectDetails?.name}
                   error={touched.name && Boolean(errors.name)}
                   helperText={<ErrorMessage name="name" />}
                   onKeyUp={(e) => {
                     const { value } = e.target;
                     debouncedSetName(value);
                   }}
+                  disabled={false}
+                  //value={projectDetails?.name}
                   variant="outlined"
                   inputProps={{ maxLength: 24 }}
                   // disabled={addProjectMutation?.isSuccess}
                   as={TextField}
                 />
               )}
+              
             </Form>
           )}
         </Formik>

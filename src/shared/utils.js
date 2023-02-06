@@ -1,9 +1,7 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState} from "react";
 import _ from "lodash";
-import {
-  useRecoilValue,
+import {  
   useGetRecoilValueInfo_UNSTABLE,
-  useRecoilTransactionObserver_UNSTABLE,
   selector,
 } from "recoil";
 
@@ -13,7 +11,7 @@ import Constants from "./constants";
 import schemaAtom from "./atom/schemaAtom";
 import tableAtom from "./atom/tableAtom";
 import operationAtom, { defaultState } from "../Project/operationAtom";
-import { UserRoleContext, useUserRole } from "../Project/UserRoleContext";
+import { useUserRole } from "../Project/UserRoleContext";
 import Messages from "./messages";
 
 export const isEmailValid = (email) => {
@@ -320,6 +318,7 @@ export const generateSyncOperationRequestRequest = (operationRequest) => {
       ) {
         return clonedItem;
       }
+      return clonedItem;
     });
   }
 
@@ -554,6 +553,7 @@ export const generateSyncOperationResponseRequest = (operationResponse) => {
         ) {
           return item;
         }
+        return item;
       });
     }
 

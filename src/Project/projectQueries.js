@@ -55,7 +55,7 @@ export const getTablesRelations = async (projectId) => {
       { projectId },
       {
         validateStatus: function (status) {
-          return status == 200 || status == 400;
+          return status === 200 || status === 400;
         },
         timeout: 300000,
       }
@@ -88,7 +88,7 @@ export const tableMappings = async (
       },
       {
         validateStatus: function (status) {
-          return status == 200 || status == 400;
+          return status === 200 || status === 400;
         },
         timeout: 120000,
       }
@@ -117,7 +117,7 @@ export const publishProject = async ({ projectId, newProjectDetails }) => {
       },
       {
         validateStatus: function (status) {
-          return status == 200 || status == 400;
+          return status === 200 || status === 400;
         },
 		
         timeout: 480000,
