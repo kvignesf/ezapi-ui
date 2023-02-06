@@ -698,12 +698,19 @@ const Content = ({ showCreateProjectDialog }) => {
 
   useEffect(()=> {  
     // connect to socker server and emit event
+    console.log("socket", socket.connected);
     if(socket){
-      socket.on('connect',(userId)=>{
+      console.log("socket in", socket.connected);
+      socket.on('connect',()=>{
         console.log("Socket connected!!!")
-        socket.emit('userConnected', { 
+        console.log("socket in2", socket.connected);
+        /* socket.emit('userConnected', { 
           user: getUserId() 
-        });
+        }); */
+      }); 
+
+      socket.emit('userConnected', { 
+        user: getUserId() 
       });
     }
   },[])
@@ -716,11 +723,11 @@ const Content = ({ showCreateProjectDialog }) => {
       let fetchProjects = (eventName)=>{
         refetchProjects();      
         setIsStatusChanged(!isStatusChanged)
-        //console.log(eventName+" triggered!")
+        console.log(eventName+" triggered!")
       }
       // look for when the server emits the updated count
       socket.on('githubEvent', (eventName)=> {
-        console.log("eventName.."+eventName);
+        //console.log("eventName.."+eventName);
         fetchProjects(eventName)
       })
 
