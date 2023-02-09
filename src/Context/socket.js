@@ -1,4 +1,4 @@
-import {socketIOClient, socketio}  from "socket.io-client";
+import {io}  from "socket.io-client";
 import React, { useEffect, useState, useRef } from "react";
 
 
@@ -12,7 +12,7 @@ if (originUrl.includes("/projects")) {
 }
 console.log("originUrl2", originUrl);
 
-export const socket = socketIOClient(process.env.REACT_APP_SOCKET_URI, {
+export const socket = io(process.env.REACT_APP_SOCKET_URI, {
     //origin: originUrl, //'http://localhost:3000',
     transports: ['websocket'],      
   });
