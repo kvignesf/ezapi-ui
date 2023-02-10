@@ -38,7 +38,7 @@ const getProjects = async () => {
   try {
     const { data } = await client.get(endpoint.project ,
       {
-        timeout: 120000,
+        timeout: 180000,
       });
     return data;
   } catch (error) {
