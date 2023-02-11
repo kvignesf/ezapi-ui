@@ -32,7 +32,7 @@ import EnterpriseAPI from "./images/EnterpriseAPI.svg";
 import APIDesignStudio from "./images/APIDesignStudio.svg";
 import APITestHarness from "./images/APITestHarness.svg";
 import HybridAPIOrchestrator from "./images/HybridAPIOrchestrator.svg";
-import io from 'socket.io-client';
+
 
 // css imports
 import "./Login.css";
@@ -56,7 +56,6 @@ const Login = () => {
   if (!isUserLogged && redirectFromPathName && redirectFromPathName !== routes.signIn) {
     setRedirectUrl(redirectFromPathName);
   }
-  let socket = null;
 
   const loginSuccessCallback = () => {
     const pathName = getRedirectUrl();
@@ -114,6 +113,7 @@ const Login = () => {
     resetGitHubLogin();
     setAccessToken(null);
   };
+  //const socket = useContext(SocketContext);
 
   useEffect(() => {
     if (isUserLogged) {

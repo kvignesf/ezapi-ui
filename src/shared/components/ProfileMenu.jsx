@@ -2,6 +2,10 @@ import React from "react";
 import { Fade, Menu, MenuItem } from "@material-ui/core";
 import Colors from "../colors";
 import { Link } from "react-router-dom";
+import { SocketContext } from "../../Context/socket";
+import { useContext } from "react";
+import { getUserId } from "../storage";
+
 
 const ProfileMenu = ({
   onLogout,
@@ -12,6 +16,9 @@ const ProfileMenu = ({
 /*   const navigateToContactUs = () => {
     history.push(routes.contact);
   }; */
+  const socket = useContext(SocketContext);
+  const userId = getUserId();
+  //console.log("userId in logout..", userId)
 
   return (
     <Menu
@@ -38,7 +45,12 @@ const ProfileMenu = ({
 
       <MenuItem
         onClick={() => {
-          setProfilemenuAnchorEl(null);
+          setProfilemenuAnchorEl(null);          
+          socket.emit('forceDisconnect', { 
+            user: userId
+          });
+          socket.disconnect();
+          console.log("socket connectio :"+socket.connected);
           onLogout();
         }}
         style={{
