@@ -1,8 +1,7 @@
-import {io}  from "socket.io-client";
+/* import {io}  from "socket.io-client";
 import React, { useEffect, useState, useRef } from "react";
 
 
-//export const socket = socketio.connect(process.env.REACT_APP_SOCKET_URI);
 let originUrl = window.location.href
 console.log("originUrl", originUrl);
 if (originUrl.includes("/projects")) {
@@ -13,7 +12,6 @@ if (originUrl.includes("/projects")) {
 console.log("originUrl2", originUrl);
 
 export const socket = io(process.env.REACT_APP_SOCKET_URI, {
-    //origin: originUrl, //'http://localhost:3000',
     transports: ['websocket'],      
   });
-export const SocketContext = React.createContext();
+export const SocketContext = React.createContext(); */
