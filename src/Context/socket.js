@@ -1,4 +1,4 @@
-/* import {io}  from "socket.io-client";
+import {io}  from "socket.io-client";
 import React, { useEffect, useState, useRef } from "react";
 
 
@@ -14,4 +14,4 @@ console.log("originUrl2", originUrl);
 export const socket = io(process.env.REACT_APP_SOCKET_URI, {
     transports: ['websocket'],      
   });
-export const SocketContext = React.createContext(); */
+export const SocketContext = React.createContext();

@@ -63,7 +63,7 @@ import { useRecoilState } from "recoil";
 import projectAtom, { defaultState } from "../AddProject/projectAtom";
 import { downloadIconSts, downloadIconProj } from "../Dashboard/dwnDataGenAtom";
 import InfoIcon from "@mui/icons-material/Info";
-//import {SocketContext} from '../Context/socket';
+import {SocketContext} from '../Context/socket';
 
 
 //import { NativeEventSource, EventSourcePolyfill } from 'event-source-polyfill';
@@ -694,7 +694,7 @@ const Content = ({ showCreateProjectDialog }) => {
   const [isStatusChanged , setIsStatusChanged] = useState(false);
   
   //load socket from context
-  /*const socket = useContext(SocketContext);
+  const socket = useContext(SocketContext);
   
   useEffect(()=> {  
     // connect to socker server and emit event
@@ -740,7 +740,7 @@ const Content = ({ showCreateProjectDialog }) => {
       })
     }  
   },[isStatusChanged])
-  */
+  
   const {
     data: projects,
     isLoading: isFetchingProjects,
@@ -770,12 +770,12 @@ const Content = ({ showCreateProjectDialog }) => {
   const pagination = useRef();
   
   //commenting code - this is handled thru socket-events
-  useEffect(() => {
+ /*  useEffect(() => {
     const projectsFetchInterval = setInterval(() => refetchProjects(), 45000);
     return () => {
       clearInterval(projectsFetchInterval);
     };
-  });
+  }); */
 
   useEffect(() => {
     // Fetch items from another resources.

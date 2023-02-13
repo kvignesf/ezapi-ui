@@ -23,7 +23,7 @@ import ProjectPayment2 from './ProjectPayment/ProjectPayment2';
 import Orders from './Orders/Orders';
 import ProductTour from './ProductTour/ProductTour';
 import ConekttoDocs from './Docs/ConekttoDocs';
-//import {SocketContext, socket} from './Context/socket';
+import {SocketContext, socket} from './Context/socket';
 
 import EzapiFooter from './shared/components/EzapiFooter';
 import Pricing from './Pricing';
@@ -43,7 +43,7 @@ const App = () => {
   const isAuthenticated = () => isUserLoggedIn();
 
   return (
-    
+    <SocketContext.Provider value={socket}>
     <RecoilRoot>
       <QueryClientProvider client={queryClient}>
         <MuiThemeProvider theme={theme}>
@@ -140,7 +140,7 @@ const App = () => {
         </MuiThemeProvider>
       </QueryClientProvider>
     </RecoilRoot>
-   
+    </SocketContext.Provider>
   );
 };
 
