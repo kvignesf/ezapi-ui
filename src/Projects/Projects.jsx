@@ -698,11 +698,11 @@ const Content = ({ showCreateProjectDialog }) => {
   
   useEffect(()=> {  
     // connect to socker server and emit event
-    console.log("socket", socket);
+    //console.log("socket", socket);
     if(socket){
       console.log("socket in", socket.connected);
       socket.on('connect',()=>{
-        console.log("Socket connected!!!")
+        //console.log("Socket connected!!!")
         console.log("socket in2", socket.connected);
       }); 
 
