@@ -116,12 +116,12 @@ const Login = () => {
   //const socket = useContext(SocketContext);
 
   useEffect(() => {
+    const queryParams = new URLSearchParams(window.location.search);
+    const code = queryParams.get("code");
     if (isUserLogged) {
       loginSuccessCallback();
       setIsLoading(false);
-    } else {
-      const queryParams = new URLSearchParams(window.location.search);
-      const code = queryParams.get("code");
+    } else if (code) {
 
       const requestOptions = {
         method: "POST",
@@ -146,7 +146,11 @@ const Login = () => {
           } else {
             setIsLoading(false);
           }
-        });
+        }).catch(() => {
+          setIsLoading(false);
+        })
+    } else {
+      setIsLoading(false);
     }
   }, [isUserLogged]);
 

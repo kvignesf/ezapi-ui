@@ -45,6 +45,7 @@ import { ConnectedFocusError } from 'focus-formik-error'
 import { useQuery } from "react-query";
 import { array } from "yup";
 import { FormHelperText } from "@mui/material";
+import ProjectDetails from "./ProjectDetails";
 
 
 const theme = createTheme({
@@ -565,7 +566,7 @@ const ConnectDatabase = ({
                   database: projectDetails?.database ?? "",
                   username: projectDetails?.username ?? "",
                   password: projectDetails?.password ?? "",
-                  toggle: false,
+                  toggle: ((projectDetails?.certificates && projectDetails?.certificates?.length>0) || (projectDetails?.keys && projectDetails?.keys?.length>0) || (projectDetails?.caCertificates && projectDetails?.caCertificates?.length>0)) ? true: false,
                 }}
                 validationSchema={Yup.object().shape({
                   // name: apiNameSchema(Messages.NAME_REQUIRED),
@@ -807,7 +808,7 @@ const ConnectDatabase = ({
                             debouncedSetPassword(value);
                           }}
                           variant="outlined"
-                          inputProps={{ maxLength: 24 }}
+                          //inputProps={{ maxLength: 24 }}
                           disabled={isClaimSpec || isAdvSpec || isAdvWorks || isMflix}
                           // disabled={addProjectMutation?.isSuccess}
                           as={TextField}

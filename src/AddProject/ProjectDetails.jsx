@@ -154,8 +154,8 @@ const ProjectDetails = ({
       <div className="mb-6">
         <Formik
           initialValues={{
-            //name: projectDetails?.name ?? "",
-            name: isClaimSpec || isAdvSpec || isAdvWorks || isMflix ? projectDetails?.name : projectDetails?.prevName,
+            name: projectDetails?.prevName ?? "",
+            //name: isClaimSpec || isAdvSpec || isAdvWorks || isMflix ? projectDetails?.name : projectDetails?.prevName,
           }}
           validationSchema={Yup.object().shape({
             name: apiNameSchema(Messages.NAME_REQUIRED),
@@ -198,6 +198,11 @@ const ProjectDetails = ({
                   onKeyUp={(e) => {
                     const { value } = e.target;
                     debouncedSetName(value);
+                    setProjectDetails(projectDetails => {
+                      const clonnedData = _.cloneDeep(projectDetails);
+                      clonnedData.prevName = value
+                      return clonnedData
+                    })
                   }}
                   disabled={false}
                   //value={projectDetails?.name}

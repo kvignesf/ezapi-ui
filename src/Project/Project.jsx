@@ -593,7 +593,9 @@ const Project = () => {
 
   useEffect(() => {
     //console.log("outisde if", newProjectDetails)
-    if (newProjectDetails?.password) {
+    if (newProjectDetails?.password || (newProjectDetails?.certificates && newProjectDetails?.certificates?.length>0 
+      && newProjectDetails?.caCertificates && newProjectDetails?.caCertificates?.length>0
+      && newProjectDetails?.keys && newProjectDetails?.keys?.length>0)) {
       //console.log("inside if", newProjectDetails)
       submitProject();
     }
