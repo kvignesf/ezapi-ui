@@ -829,7 +829,7 @@ const AddProject = ({ onClose, onSuccess }) => {
       )
       }
       {isDesign != null && !isMiddleState &&(
-        <div className='p-4' style={{ height: "600px"}}>
+        <div className='p-4' style={{ height: "auto"}}>
           <div className='flex flex-row items-center justify-between mb-3'>
             {isDesign ? (
               <h5>Create New API Project</h5>

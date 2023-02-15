@@ -533,7 +533,7 @@ const ConnectDatabase = ({
     <div className="pl-4 pr-4" style={{ height: "420px", overflowY: "scroll"}}>
       {/* <Scrollbar className="max-h-60" alwaysShowTracks={true}> */}
       <>
-        {process.env.REACT_APP_DISABLE_DDL && (
+        {process.env.REACT_APP_DISABLE_DDL !== "true" && (
         <CustomTabs
           value={activeTab}
           onChange={(_, index) => {

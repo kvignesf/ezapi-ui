@@ -102,7 +102,7 @@ const AddOrEditParameter = ({ parameter, onClose, stopEdit }) => {
           <Formik
             initialValues={{
               attribute: parameter?.name ?? "",
-              dataType: parameter?.type ?? "",
+              dataType: parameter?.commonName ?? "",
               description: parameter?.description ?? "",
               required: parameter?.required ?? false,
               possibleValues:
@@ -117,7 +117,7 @@ const AddOrEditParameter = ({ parameter, onClose, stopEdit }) => {
             innerRef={formRef}
             onSubmit={handleSubmit}
           >
-            {({ errors, touched, formik}) => (
+            {({ errors, touched, formik, setFieldValue}) => (
               <Form>
                 <div onKeyDown={(e) => {
                       // resetMutationState();
@@ -225,7 +225,7 @@ const AddOrEditParameter = ({ parameter, onClose, stopEdit }) => {
                 
                 <p className='flex-1 text-overline2 ml-5'>
                   <p className="text-center">
-                  <Field
+                  {/* <Field
                     id='required'
                     name='required'
                     type='checkbox'
@@ -242,7 +242,19 @@ const AddOrEditParameter = ({ parameter, onClose, stopEdit }) => {
                         />
                       );
                     }}
-                  />
+                  /> */}
+
+                  <Field name="required">
+                    {({ field }) => (
+                      <Checkbox
+                        onChange={(e) => {
+                          console.log("testing",e);
+                          setFieldValue("required", e.target.checked);
+                        }}
+                        checked={field.value}
+                      />
+                    )}
+                  </Field>
                   </p>
                 </p>
 
