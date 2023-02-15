@@ -45,7 +45,7 @@ const InviteCollaborators = ({
     history.push(routes.pricing)
   };
   return (
-    <div className='p-4' {...rest} style={{ height: "auto", width: "100%" }}>
+    <div className='p-4' {...rest} style={{ height: "405px", width: "100%" }}>
       <p className='text-mediumLabel mb-2'>Invite users to collaborate</p>
 
       <ChipInput

@@ -1,20 +1,10 @@
 import React, { useState, useEffect } from "react";
 import TabLabel from "../shared/components/TabLabel";
-import Colors from "../shared/colors";
-import { Tab, Tabs, makeStyles } from "@material-ui/core";
-import Box from "@mui/material/Box";
-import { withStyles } from "@material-ui/core/styles";
-import Card from "@mui/material/Card";
-import CardActions from "@mui/material/CardActions";
-import CardContent from "@mui/material/CardContent";
-import classNames from "classnames";
+import { Tab, Tabs } from "@material-ui/core";
 import Button from "@mui/material/Button";
-import { MuiThemeProvider } from "@material-ui/core/styles";
-import Typography from "@mui/material/Typography";
 import { PrimaryButton } from "../shared/components/AppButton";
 import TextField from "@mui/material/TextField";
 
-import { createTheme, ThemeProvider } from "@mui/material/styles";
 
 const styles = (theme) => ({
   root: {
@@ -58,7 +48,7 @@ const Simulate = ({ simulateData }, props) => {
     }
   }, [currentTab, simulateData]);
   useEffect(() => {
-    if (simulateData?.responseBody != responseData) {
+    if (simulateData?.responseBody !== responseData) {
       setResponseData("");
     }
   }, [simulateData]);

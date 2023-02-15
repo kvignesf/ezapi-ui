@@ -11,6 +11,8 @@ before_script:
   - 'echo \REACT_APP_GITHUB_CLIENT_ID\ = \"$TEST_GITHUB_CLIENT_ID\">> .env.test'
   - 'echo \REACT_APP_REDIRECT_URI\ = \"$TEST_APP_REDIRECT_URI\">> .env.test'
   - 'echo \REACT_APP_SAMPLE_PROJ_LIMIT\ = \"$TEST_SAMPLE_PROJ_LIMIT\">> .env.test'
+  - 'echo \REACT_APP_DISABLE_DDL\ = \"$TEST_DISABLE_DDL\">> .env.test'
+  - 'echo \REACT_APP_SOCKET_URI\ = \"$TEST_SOCKET_URI\">> .env.test'
   -  cat .env.test
   - 'echo \REACT_APP_API_URL\ = \"$SAPIURL\">> .env.stage'
   - 'echo \REACT_APP_LINKEDIN_CLIENT_ID\ = \"$SLINKEDINCLIENTID\">> .env.stage'
@@ -19,6 +21,8 @@ before_script:
   - 'echo \REACT_APP_FEATURE_CUSTOM_PARAMETER\ = \"$SREACT_APP_FEATURE_CUSTOM_PARAMETER\">> .env.stage'
   - 'echo \REACT_APP_FEATURE_STORED_PROCS\ = \"$SREACT_APP_FEATURE_STORED_PROCS\">> .env.stage'
   - 'echo \REACT_APP_AES_ENCRYPTION_KEY\ = \"$LOWER_AES_ENCRYPTION_KEY\">> .env.stage'
+  - 'echo \REACT_APP_DISABLE_DDL\ = \"$STAGE_DISABLE_DDL\">> .env.stage'
+  - 'echo \REACT_APP_SOCKET_URI\ = \"$STAGE_SOCKET_URI\">> .env.stage'
   -  cat .env.stage  
   - 'echo \REACT_APP_API_URL\ = \"$PAPIURL\">> .env.prod'
   - 'echo \REACT_APP_LINKEDIN_CLIENT_ID\ = \"$PLINKEDINCLIENTID\">> .env.prod'
@@ -31,6 +35,8 @@ before_script:
   - 'echo \REACT_APP_GITHUB_CLIENT_ID\ = \"$PROD_GITHUB_CLIENT_ID\">> .env.prod'
   - 'echo \REACT_APP_REDIRECT_URI\ = \"$PROD_APP_REDIRECT_URI\">> .env.prod'
   - 'echo \REACT_APP_SAMPLE_PROJ_LIMIT\ = \"$PROD_SAMPLE_PROJ_LIMIT\">> .env.prod'
+  - 'echo \REACT_APP_DISABLE_DDL\ = \"$PROD_DISABLE_DDL\">> .env.prod'
+  - 'echo \REACT_APP_SOCKET_URI\ = \"$PROD_SOCKET_URI\">> .env.prod'
   -  cat .env.prod
 include:
   project: 'ezapi_poc/infra_poc'

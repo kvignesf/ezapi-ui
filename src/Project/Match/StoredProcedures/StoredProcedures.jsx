@@ -126,7 +126,7 @@ const StoredProcedures = () => {
             </Snackbar>
           </div>
         )}
-        {content?.contentType == "input/output" && (
+        {content?.contentType === "input/output" && (
           <>
             {" "}
             <div className='flex-1 h-fit bg-neutral-gray7 rounded-md p-2'>

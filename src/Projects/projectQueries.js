@@ -1,17 +1,45 @@
 import _ from "lodash";
 import { useMutation, useQuery, useQueryClient } from "react-query";
-import { useHistory } from "react-router-dom";
 import { saveAs } from "file-saver";
 
 import client, { endpoint } from "../shared/network/client";
-import { clearQueryCache, queries } from "../shared/network/queryClient";
-import routes from "../shared/routes";
-import { clearSession, setAccessToken } from "../shared/storage";
+import {  queries } from "../shared/network/queryClient";
 import { getApiError, getOs } from "../shared/utils";
+
+const fetchProjectDetails = async ({ queryKey }) => {
+  const { projectId } = queryKey[1];
+
+  if (projectId) {
+    try {
+      const { data } = await client.get(`${endpoint.project}/${projectId}`);
+      return data;
+    } catch (error) {
+      if (error?.response?.status === 404) {
+        throw Error("no_access");
+      }
+      throw getApiError(error);
+    }
+  }
+};
+
+export const useFetchProjectDetails = (projectId, options = {}) => {
+  const query = useQuery(
+    [`${queries.projects}-${projectId}`, { projectId }],
+    fetchProjectDetails,
+    {
+      ...options,
+    }
+  );
+
+  return query;
+};
 
 const getProjects = async () => {
   try {
-    const { data } = await client.get(endpoint.project);
+    const { data } = await client.get(endpoint.project ,
+      {
+        timeout: 480000,
+      });
     return data;
   } catch (error) {
     throw getApiError(error);
@@ -86,7 +114,7 @@ const view_repo = async ({ projectId }) => {
 export const useVIewRepo = () => {
   const mutation = useMutation(view_repo,{
     onSuccess: (data) => {
-      console.log("view_repo_data:",data);
+      //console.log("view_repo_data:",data);
       if(data?.repo_url)
       {
         window.open(data.repo_url,"_blank");
@@ -151,7 +179,6 @@ const downloadSpecs = async ({ projectId }) => {
 };
 
 export const useDownloadSpecs = () => {
-  const queryClient = useQueryClient();
 
   const mutation = useMutation(downloadSpecs, {
     onSuccess: (data) => {
@@ -189,7 +216,6 @@ const downloadArtifacts = async ({ projectId }) => {
 };
 
 export const useDownloadArtifacts = () => {
-  const queryClient = useQueryClient();
 
   const mutation = useMutation(downloadArtifacts, {
     onSuccess: (data) => {
@@ -244,7 +270,6 @@ const downloadApigee = async ({ projectId }) => {
 };
 
 export const useDownloadDatabase = () => {
-  const queryClient = useQueryClient();
 
   const mutation = useMutation(downloadDatabase, {
     onSuccess: (data) => {
@@ -262,7 +287,6 @@ export const useDownloadDatabase = () => {
 };
 
 export const useDownloadApigee = () => {
-  const queryClient = useQueryClient();
 
   const mutation = useMutation(downloadApigee, {
     onSuccess: (data) => {
@@ -281,8 +305,6 @@ export const useDownloadApigee = () => {
 
 const downloadCodegen = async ({ projectId }) => {
   try {
-    const osName = getOs();
-
     const { data } = await client.post(
       endpoint.downloadCodegen,
       {
@@ -300,8 +322,6 @@ const downloadCodegen = async ({ projectId }) => {
 
 const downloadDotnetCodegen = async ({ projectId }) => {
   try {
-    const osName = getOs();
-
     const { data } = await client.post(
       endpoint.downloadDotNetCodegen,
       {
@@ -318,7 +338,6 @@ const downloadDotnetCodegen = async ({ projectId }) => {
 };
 
 export const useDownloadDotnetCodegen = () => {
-  const queryClient = useQueryClient();
 
   const mutation = useMutation(downloadDotnetCodegen, {
     onSuccess: (data) => {
@@ -336,7 +355,6 @@ export const useDownloadDotnetCodegen = () => {
 };
 
 export const useDownloadCodegen = () => {
-  const queryClient = useQueryClient();
 
   const mutation = useMutation(downloadCodegen, {
     onSuccess: (data) => {

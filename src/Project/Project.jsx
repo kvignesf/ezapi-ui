@@ -91,6 +91,7 @@ const Project = () => {
     data: projectDetails,
     remove: resetFetchProject,
   } = useFetchProjectDetails(projectId, { refetchOnWindowFocus: false });
+  
   const [currentTab, setCurrentTab] = useState(0);
   const [operationState, setOperationState] = useRecoilState(
     operationAtomWithMiddleware
@@ -592,7 +593,9 @@ const Project = () => {
 
   useEffect(() => {
     //console.log("outisde if", newProjectDetails)
-    if (newProjectDetails?.password) {
+    if (newProjectDetails?.password || (newProjectDetails?.certificates && newProjectDetails?.certificates?.length>0 
+      && newProjectDetails?.caCertificates && newProjectDetails?.caCertificates?.length>0
+      && newProjectDetails?.keys && newProjectDetails?.keys?.length>0)) {
       //console.log("inside if", newProjectDetails)
       submitProject();
     }
@@ -988,7 +991,7 @@ const Project = () => {
                     e?.preventDefault();
                     e?.stopPropagation();
                     // console.log(projectDetails?.isConnectDB);
-                    console.log("githubCommit" , projectDetails?.githubCommit);                   
+                    //console.log("githubCommit" , projectDetails?.githubCommit);                   
                     /* if (projectDetails?.projectType === "db") {                        
                       fetchTables({ projectId });
                       setDisplayEntityMapping(true);

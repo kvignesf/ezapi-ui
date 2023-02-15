@@ -58,6 +58,8 @@ import FormGroup from "@material-ui/core/FormGroup";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import Checkbox from "@material-ui/core/Checkbox";
 import Box from "@material-ui/core/Box";
+import { SliderValueLabelUnstyled } from "@mui/material";
+import { LocalConvenienceStoreOutlined } from "@mui/icons-material";
 
 const AddProject = ({ onClose, onSuccess }) => {
   const [currentTab, setTab] = useState(0);
@@ -99,6 +101,8 @@ const AddProject = ({ onClose, onSuccess }) => {
   });
 
   const hideClaims = false;
+
+ 
 
   const sampleProjLimit = process.env.REACT_APP_SAMPLE_PROJ_LIMIT;
 
@@ -162,18 +166,30 @@ const AddProject = ({ onClose, onSuccess }) => {
 
   const handleNext = () => {
     if (formRef.current) {
+      console.log("formRef.current.values.name...", formRef.current.values.name)
+      /* if (currentTab === 0) {
+        debouncedSetName(formRef.current.values.name);        
+      } */
       formRef.current.handleSubmit();
-      if (formRef.current.isValid || isAdvChecked) {
+      //console.log("currentTab in HNxt", currentTab, defaultAdvSpec, defaultAdvWorks, defaultMflix)
+      //console.log("projectDetails in HNxt", projectDetails)
+      if (currentTab === 0 && (defaultAdvSpec || defaultAdvWorks || defaultMflix)) {
+        setTab(currentTab + 2);
+        //console.log("mame", formRef.current.name)
+      } else if (formRef.current.isValid ) {
+        //console.log("1...")
         if (
-          (currentTab === 0 && !_.isEmpty(projectDetails?.name)) ||
+          (currentTab === 0 && (!_.isEmpty(projectDetails?.name) || projectDetails?.name !== '')) ||
           (currentTab === 1 && connectDatabaseTab === 0) ||
           (currentTab === 1 &&
             connectDatabaseTab === 1 &&
             !_.isEmpty(projectDetails?.dbType))
         ) {
+          //console.log("2...")
+          //console.log("mame", formRef.current.values.name)          
           setTab(currentTab + 1);
         }
-      }
+      } 
       // if (
       //   formRef.current.isValid &&
       //   !_.isEmpty(projectDetails?.name) &&
@@ -600,10 +616,11 @@ const AddProject = ({ onClose, onSuccess }) => {
           };
         });
       } else if (!defaultAdvSpec || !defaultAdvWorks || !defaultMflix) {
+        //console.log("useeffect-call any is true")
         setProjectDetails((currProjectDetails) => {
           return {
             ...currProjectDetails,
-            name: "",
+            name: currProjectDetails.prevName,
             specs: [],
             database: "",
             host: "",
@@ -619,7 +636,7 @@ const AddProject = ({ onClose, onSuccess }) => {
         setProjectDetails((currProjectDetails) => {
           return {
             ...currProjectDetails,
-            name: "",
+            name: currProjectDetails.prevName,
             specs: null,
             dbs: null,
           };
@@ -661,6 +678,20 @@ const AddProject = ({ onClose, onSuccess }) => {
     [] // will be created only once initially
   );
 
+  const debouncedSetPrevName = useCallback(
+    debounce((nextValue) => {
+      //resetProjectApiState();
+      //console.log("nextValue", nextValue)
+      setProjectDetails((currProjectDetails) => {
+        return {
+          ...currProjectDetails,
+          prevName: nextValue,
+        };
+      });
+    }, 300),
+    [] // will be created only once initially
+  );
+
   const debouncedSetNumberOfCollaborators = useCallback(
     debounce((nextValue) => {
       resetProjectApiState();
@@ -693,6 +724,7 @@ const AddProject = ({ onClose, onSuccess }) => {
     }
   }, [pricing_data, userProfile_data]);
   
+  //console.log("projectdetails in AddProject", projectDetails);
 
   return (
     <>
@@ -748,7 +780,8 @@ const AddProject = ({ onClose, onSuccess }) => {
                   onKeyUp={(e) => {
                     const { value } = e.target;
                     debouncedSetName(value);
-                  }}
+                    debouncedSetPrevName(value);
+                  }}                  
                   variant="outlined"
                   inputProps={{ maxLength: 24 }}
                   // disabled={addProjectMutation?.isSuccess}
@@ -796,7 +829,7 @@ const AddProject = ({ onClose, onSuccess }) => {
       )
       }
       {isDesign != null && !isMiddleState &&(
-        <div className='p-4'>
+        <div className='p-4' style={{ height: "auto"}}>
           <div className='flex flex-row items-center justify-between mb-3'>
             {isDesign ? (
               <h5>Create New API Project</h5>
@@ -874,7 +907,7 @@ const AddProject = ({ onClose, onSuccess }) => {
                       />
                     </div>
                   ) : currentTab === 1 ? (
-                    <div className='h-80'>
+                    <div className='h-95'>
                       <ConnectDatabase
                         formRef={formRef}
                         specsError={specsError}
@@ -893,7 +926,7 @@ const AddProject = ({ onClose, onSuccess }) => {
                       />
                     </div>
                   ) : (
-                    <div className='h-80'>
+                    <div className='h-180'>
                       <InviteCollaborators
                         handleChange={handleCollaboratorsChange}
                         collaborators={projectDetails?.collaborators}
@@ -914,6 +947,7 @@ const AddProject = ({ onClose, onSuccess }) => {
                       label={<Box fontSize={14}>Use default Claim Spec</Box>}
                     />
                   </FormGroup> ) }
+                 { ((!defaultAdvSpec && currentTab==0) || (!defaultAdvWorks && currentTab==0) || (!defaultClaimSpec && currentTab==0)) && 
                   <FormGroup>
                     <FormControlLabel
                       control={
@@ -962,6 +996,7 @@ const AddProject = ({ onClose, onSuccess }) => {
                     </>
                     )}
                   </FormGroup>
+                  } 
                 </div>
 
                 {showCollabsError && projectDetailsError && (
@@ -983,8 +1018,8 @@ const AddProject = ({ onClose, onSuccess }) => {
                   </p>
                 )}
 
-                {inviteCollabsErrorMssg && (
-                  <p className='text-overline2 text-accent-red my-2'>
+                {inviteCollabsErrorMssg && currentTab == 2 && projectDetails.collaborators.length === 0 && (
+                  <p className='text-overline2 text-accent-red mb-2'>
                     Please enter atleast one collaborator to create Project
                   </p>
                 )}
@@ -1125,6 +1160,7 @@ const AddProject = ({ onClose, onSuccess }) => {
                         handleDone();
                       }
                     }}
+                    
                   >
                     {currentTab === 0 || currentTab === 1
                       ? "Next"

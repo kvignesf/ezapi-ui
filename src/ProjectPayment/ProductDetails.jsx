@@ -1,18 +1,14 @@
 import React from "react";
-import { Link, useParams } from "react-router-dom";
-import { useGetOrders } from "../Orders/ordersQueries";
 import { PrimaryButton } from "../shared/components/AppButton";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
-import { useMutation, useQuery, useQueryClient } from "react-query";
-import { clearQueryCache, queries } from "../shared/network/queryClient";
+import {  useQuery } from "react-query";
+import {  queries } from "../shared/network/queryClient";
 
 import client, { endpoint } from "../shared/network/client";
 import { ReactComponent as StripeLogo } from "../static/images/stripe_purple.svg";
-import { getContainerUtilityClass } from "@mui/material";
-import { getUserId } from "../shared/storage";
 
 
 const pricingData = async () => {
@@ -42,7 +38,6 @@ const ProductDetails = ({
   disabled = false,
   onPurchaseClick,
 }) => {
-  const { projectId } = useParams();
   var defType;
   var defSub;
   switch (type) {
@@ -54,6 +49,9 @@ const ProductDetails = ({
       break;
     case "PRO":
       defType = 30;
+      break;
+    default:
+      defType = 10;
   }
   switch (duration) {
     case "mo":
@@ -62,6 +60,8 @@ const ProductDetails = ({
     case "yr":
       defSub = 20;
       break;
+    default:
+      defType = 10;
   }
 
   const { data: pricing_data } = usePricingData();
@@ -89,6 +89,9 @@ const ProductDetails = ({
         break;
       case 30:
         type = "PRO";
+        break;
+      default:
+        defType = 10;
     }
     switch (duration) {
       case 10:
@@ -97,11 +100,13 @@ const ProductDetails = ({
       case 20:
         duration = "year";
         break;
+      default:
+        defType = 10;
     }
     // console.log("inside");
     if (pricing_data?.products.length > 0) {
       pricing_data["products"].map((item, index) => {
-        if (type == item["plan_name"]) {
+        if (type === item["plan_name"]) {
           durationFinder(item, duration);
         }
       });
@@ -111,7 +116,7 @@ const ProductDetails = ({
   function durationFinder(item, duration) {
     if (item["stripe"].length > 0) {
       item["stripe"].map((item2, index2) => {
-        if (duration == item2["plan_interval"]) {
+        if (duration === item2["plan_interval"]) {
           setPrice(item2["plan_price"]);
         }
       });

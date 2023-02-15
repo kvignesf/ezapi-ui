@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useContext, useRef } from "react";
 import { styled, Tooltip, tooltipClasses } from "@mui/material";
 import MoreVertIcon from "@material-ui/icons/MoreVert";
 import GetAppIcon from "@material-ui/icons/GetApp";
@@ -40,7 +40,8 @@ import {
   useDownloadDatabase,
   useDownloadApigee,
   usePushToGithub,
-  useVIewRepo
+  useVIewRepo,
+  useFetchProjectDetails,
 } from "./projectQueries";
 import EmptyLogo from "../static/images/empty-state.svg";
 import { PrimaryButton } from "../shared/components/AppButton";
@@ -62,6 +63,8 @@ import { useRecoilState } from "recoil";
 import projectAtom, { defaultState } from "../AddProject/projectAtom";
 import { downloadIconSts, downloadIconProj } from "../Dashboard/dwnDataGenAtom";
 import InfoIcon from "@mui/icons-material/Info";
+import {SocketContext} from '../Context/socket';
+
 
 //import { NativeEventSource, EventSourcePolyfill } from 'event-source-polyfill';
 
@@ -229,7 +232,7 @@ const ProjectRow = ({
   };
   useEffect(()=>{
     if(isgithubLoginSuccess){
-      console.log("entered into useeffectt");
+      //console.log("entered into useeffectt");
       setGithubIcon(false);
     }
   },[isgithubLoginSuccess])
@@ -549,7 +552,7 @@ const ProjectRow = ({
             {project?.status?.toLowerCase() === "complete" &&
               project?.projectType?.toLowerCase() !== "schema" && project?.isDesign &&(
                 <Tooltip title={
-                  (project?.githubCommit === "ReadyForPush" && (project?.codegen || project?.dotnetcodegen) && (!isgithubLoggingIn))
+                  (project?.githubCommit === "ReadyForPush" && (project?.codegen || project?.dotnetcodegen))
                     ? "Push to Github"
                     : (project?.githubCommit === "ReadyForView") ? "View on Github" : (project?.githubCommit === "CommitInProgress") ? "Commit In Progress" : ""
                 }>
@@ -567,19 +570,20 @@ const ProjectRow = ({
                       handlePushToGithub(project);
                     }}
                     /> */}
-                    {project?.githubCommit === "ReadyForPush" && (project?.codegen || project?.dotnetcodegen) && (!isgithubLoggingIn) &&
+                    {project?.githubCommit === "ReadyForPush" && (project?.codegen || project?.dotnetcodegen) &&
                     (
                     
                     <LoginGithub 
                       clientId={process.env.REACT_APP_GITHUB_CLIENT_ID}
                       redirectUri={process.env.REACT_APP_REDIRECT_URI}
                       onSuccess={onGitHubLoginSuccess}
+                      //onSuccess={() => {console.log("onSuccess")}}
                       scope='user project repo email'
                       // onFailure={onGitHubFailure}
                       // className="github-push-button"
                       > 
                       {/* <GitHubIcon  style={{ color: "#000000", height: "18px", width: "18px" }} />     */}
-                      <div style={{width: "4px"}} >
+                      <div className ='pl-1 pr-2' style={{width: "32px"}} >
                       <div className="github-ico-wrapper">
                       
                         <img
@@ -593,8 +597,9 @@ const ProjectRow = ({
                     </LoginGithub>)
                     }    
                     {
-                      project?.githubCommit === "ReadyForView" && (!isgithubLoggingIn) &&(
-                        <div className="github-view-button mt-1">
+                      project?.githubCommit === "ReadyForView" &&(
+                        
+                        <div className="pl-1" style={{width: "32px", align: 'left'}} >
                           <div className="github-ico-wrapper">
                             <img
                             src = {viewgithubLogo}
@@ -613,7 +618,7 @@ const ProjectRow = ({
                   </div>
                 </Tooltip>                
               )}
-            {(isgithubLoggingIn || project?.githubCommit === "CommitInProgress" && isgithubLoginSuccess) && (
+            {(project?.githubCommit === "CommitInProgress") && (
               <Tooltip title={
                 "Commit In Progress"
               }>              
@@ -685,6 +690,57 @@ const ProjectRow = ({
 };
 
 const Content = ({ showCreateProjectDialog }) => {
+  //socket related code for event handling
+  const [isStatusChanged , setIsStatusChanged] = useState(false);
+  
+  //load socket from context
+  const socket = useContext(SocketContext);
+  
+  useEffect(()=> {  
+    // connect to socker server and emit event
+    //console.log("socket", socket);
+    if(socket){
+      console.log("socket in", socket.connected);
+      socket.on('connect',()=>{
+        //console.log("Socket connected!!!")
+        console.log("socket in2", socket.connected);
+      }); 
+
+      socket.emit('userConnected', { 
+        user: getUserId() 
+      });
+    }
+  },[])
+
+  useEffect(()=>{
+    // listen to events emitted by socker server (from node)
+
+    if(socket){
+      
+      let fetchProjects = (eventName)=>{
+        refetchProjects();      
+        setIsStatusChanged(!isStatusChanged)
+        console.log(eventName+" triggered!")
+      }
+      // look for when the server emits the updated count
+      socket.on('githubEvent', (eventName)=> {
+        fetchProjects(eventName)
+      })
+
+      socket.on('projectStatusEvent', (eventName)=> {
+        fetchProjects(eventName)
+      })
+
+      socket.on('codegenEvent', (eventName)=> {
+        fetchProjects(eventName)
+      })
+
+      socket.on('dotnetcodegenEvent', (eventName)=> {
+        fetchProjects(eventName)
+      })
+    }  
+  },[isStatusChanged])
+  
   const {
     data: projects,
     isLoading: isFetchingProjects,
@@ -692,6 +748,7 @@ const Content = ({ showCreateProjectDialog }) => {
     isFetching: isFetchingProjectsBg,
     refetch: refetchProjects,
   } = useGetProjects();
+
   const [dialog, setDialog] = useState({
     show: false,
     type: null,
@@ -711,13 +768,14 @@ const Content = ({ showCreateProjectDialog }) => {
 
   const history = useHistory();
   const pagination = useRef();
-
-  useEffect(() => {
+  
+  //commenting code - this is handled thru socket-events
+ /*  useEffect(() => {
     const projectsFetchInterval = setInterval(() => refetchProjects(), 45000);
     return () => {
       clearInterval(projectsFetchInterval);
     };
-  });
+  }); */
 
   useEffect(() => {
     // Fetch items from another resources.
@@ -888,52 +946,56 @@ const Content = ({ showCreateProjectDialog }) => {
 
               <div className='h-full'>
                 <table className='w-full'>
-                  <tr className='mr-16 bg-neutral-gray6 w-full text-left text-neutral-gray4 text-mediumLabel'>
-                    <th className='p-2 w-1/5 rounded-tl-md rounded-bl-md'>
-                      API PROJECT
-                    </th>
-                    <th className=''>COLLABORATORS</th>
-                    <th className=''>LAST ACTIVITY</th>
-                    <th className=''>STATUS</th>
-                    <th className=''>DESIGN / TEST</th>
-                    <th className='pl-8'>DOWNLOAD</th> 
-                    <th className=''>GITHUB</th>                  
-                    <th className='rounded-tr-md rounded-br-md text-center'>
-                      {isFetchingProjectsBg ? (
-                        <CircularProgress size='20px' />
-                      ) : (
-                        <Tooltip title='Refresh list'>
-                          <ReplayIcon
-                            style={{
-                              width: "20px",
-                              height: "20px",
-                              color: Colors.brand.primary,
-                              cursor: "pointer",
-                            }}
-                            onClick={(e) => {
-                              e?.preventDefault();
-                              e?.stopPropagation();
-                              refetchProjects();
-                            }}
-                          />
-                        </Tooltip>
-                      )}
-                    </th>
-                  </tr>
-
-                  {currentItems?.map((project) => {
-                    return (
-                      <ProjectRow
-                        project={project}
-                        showMembersDialog={showMembersDialog}
-                        handleOnRename={handleOnRename}
-                        handleOnInvite={handleOnInvite}
-                        handleOnView={handleOnView}
-                        handleOnDeleteApi={handleOnDeleteApi}
-                        handlePushToGithub = {handlePushToGithub}
-                      />
-                    );
-                  })}
+                <thead>
+                    <tr className='mr-16 bg-neutral-gray6 w-full text-left text-neutral-gray4 text-mediumLabel'>
+                      <th className='p-2 w-1/5 rounded-tl-md rounded-bl-md'>
+                        API PROJECT
+                      </th>
+                      <th className=''>COLLABORATORS</th>
+                      <th className=''>LAST ACTIVITY</th>
+                      <th className=''>STATUS</th>
+                      <th className=''>DESIGN / TEST</th>
+                      <th className='pl-8'>DOWNLOAD</th>
+                      <th className=''>GITHUB</th>
+                      <th className='rounded-tr-md rounded-br-md text-center'>
+                        {isFetchingProjectsBg ? (
+                          <CircularProgress size='20px' />
+                        ) : (
+                          <Tooltip title='Refresh list'>
+                            <ReplayIcon
+                              style={{
+                                width: "20px",
+                                height: "20px",
+                                color: Colors.brand.primary,
+                                cursor: "pointer",
+                              }}
+                              onClick={(e) => {
+                                e?.preventDefault();
+                                e?.stopPropagation();
+                                refetchProjects();
+                              }}
+                            />
+                          </Tooltip>
+                        )}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {currentItems?.map((project) => {
+                      return (
+                        <ProjectRow
+                          project={project}
+                          showMembersDialog={showMembersDialog}
+                          handleOnRename={handleOnRename}
+                          handleOnInvite={handleOnInvite}
+                          handleOnView={handleOnView}
+                          handleOnDeleteApi={handleOnDeleteApi}
+                          handlePushToGithub = {handlePushToGithub}
+                          key={project?._id}
+                        />
+                      );
+                    })}
+                  </tbody>
                 </table>
               </div>
             </div>

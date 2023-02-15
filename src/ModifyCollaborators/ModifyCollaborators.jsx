@@ -40,10 +40,14 @@ const ExistingCollaborator = ({ projectId, collab, handleDeletedCollab }) => {
 
   if (collab?.user_data?.firstName) {
     firstName = collab?.user_data?.firstName;
+  } else if (collab?.firstName) {
+    firstName = collab?.firstName;
   }
 
   if (collab?.user_data?.lastName) {
     lastName = collab?.user_data?.lastName;
+  } else if (collab?.lastName) {
+    lastName = collab?.lastName;
   }
 
   if (!firstName || _.isEmpty(firstName)) {
