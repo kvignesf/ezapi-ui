@@ -67,12 +67,12 @@ const editParameter = async ({
         required,
       },
     });
-    //console.log("data", data)
+
     return data;
   } catch (error) {
     //throw getApiError(error);
     console.log("errorins", error)
-    throw getApiError(error);
+    throw error;
   }
 };
 
