@@ -1,13 +1,11 @@
-import axios from "axios";
 import _ from "lodash";
 import { useMutation, useQueryClient } from "react-query";
-import { useHistory } from "react-router-dom";
 import Messages from "../messages";
 
 import client, { endpoint } from "../network/client";
-import { clearQueryCache, queries } from "../network/queryClient";
-import routes from "../routes";
+import { clearQueryCache } from "../network/queryClient";
 import {
+  clearLocalStorage,
   clearSession,
   getAccessToken,
   setAccessToken,
@@ -18,7 +16,7 @@ import {
 } from "../storage";
 import { getApiError } from "../utils";
 
-const login = async ({ linkedInAuthToken, redirect_uri }) => {
+const linkedIn = async ({ linkedInAuthToken, redirect_uri }) => {
   if (!linkedInAuthToken || _.isEmpty(linkedInAuthToken)) {
     throw Error(Messages.LINKEDIN_REQUIRED);
   }
@@ -34,8 +32,43 @@ const login = async ({ linkedInAuthToken, redirect_uri }) => {
   }
 };
 
-export const useLogin = () => {
-  const mutation = useMutation(login, {
+/* export const LoginWithGoogle = async ({}) => { 
+  try {
+    const { data } = await client.get(endpoint.auth_workos);
+    return data;
+  } catch (error) {
+    throw getApiError(error);
+  }
+};
+
+const googleLogin = async ({}) => { 
+  try {
+    const { data } = await client.get(endpoint.googleLogin);
+    return data;
+  } catch (error) {
+    throw getApiError(error);
+  }
+};
+
+export const useGoogleLogin = () => {
+  return useQuery([queries.googleLogin], googleLogin, {
+  });
+}; */
+
+const github = async ({ code, redirect_uri }) => {
+  try {
+    const { data } = await client.post(endpoint.github_auth, {
+      code: code,
+      redirect_uri: redirect_uri
+    });
+    return data;
+  } catch (error) {
+    throw getApiError(error);
+  }
+};
+
+export const useLinkedInLogin = () => {
+  const mutation = useMutation(linkedIn, {
     onSuccess: (data) => {
       if (data) {
         setAccessToken(data?.jwtToken);
@@ -50,15 +83,32 @@ export const useLogin = () => {
   return mutation;
 };
 
+export const useGithubLogin = () => {
+  const mutation = useMutation(github, {
+    onSuccess: (data) => {
+      //console.log("datafromnode", data);
+      if (data) {
+        setAccessToken(data?.jwtToken);
+        setFirstName(data?.userData?.firstName);
+        setLastName(data?.userData?.lastName);
+        setUserId(data?.userData?.user_id);
+        setEmailId(data?.userData?.email);
+      }
+      //window.location.reload(false);
+    },
+  });							
+  return mutation;   
+};
+
 const logout = async () => {
   const accessToken = getAccessToken();
-
   /**
    * Clearing the tokens optimistically
    * so that even if user refreshes while
    * logging out, he/she will be taken to sign in page
    */
   clearSession();
+  clearLocalStorage();
 
   if (accessToken && !_.isEmpty(accessToken)) {
     try {
@@ -79,7 +129,6 @@ const logout = async () => {
 };
 
 export const useLogout = () => {
-  const history = useHistory();
   const queryClient = useQueryClient();
 
   const mutation = useMutation(logout, {

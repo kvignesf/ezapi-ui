@@ -3,7 +3,7 @@ import { QueryClientProvider } from 'react-query';
 import { RecoilRoot, useRecoilValue } from 'recoil';
 import { BrowserRouter, Route, Switch, Redirect } from 'react-router-dom';
 import { LinkedInPopUp } from 'react-linkedin-login-oauth2';
-import { MuiThemeProvider, createMuiTheme } from '@material-ui/core';
+import { MuiThemeProvider, createTheme } from '@material-ui/core';
 import SnackbarProvider from 'react-simple-snackbar';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, ElementsConsumer } from '@stripe/react-stripe-js';
@@ -22,11 +22,14 @@ import ProjectPayment from './ProjectPayment/ProjectPayment';
 import ProjectPayment2 from './ProjectPayment/ProjectPayment2';
 import Orders from './Orders/Orders';
 import ProductTour from './ProductTour/ProductTour';
+import ConekttoDocs from './Docs/ConekttoDocs';
+import {SocketContext, socket} from './Context/socket';
+
 import EzapiFooter from './shared/components/EzapiFooter';
 import Pricing from './Pricing';
 import Billing from './BillingPage';
 
-const theme = createMuiTheme({
+const theme = createTheme({
   palette: {
     primary: {
       main: Colors.brand.primary,
@@ -40,6 +43,7 @@ const App = () => {
   const isAuthenticated = () => isUserLoggedIn();
 
   return (
+    <SocketContext.Provider value={socket}>
     <RecoilRoot>
       <QueryClientProvider client={queryClient}>
         <MuiThemeProvider theme={theme}>
@@ -49,7 +53,7 @@ const App = () => {
 
               <Switch>
                 {/* Login route */}
-                <Route exact path={routes.signIn}>
+                <Route exact path={routes.signIn} component={Login} >
                   <Login />
                   {/* {!isUserLoggedIn() ? (
                   <Login />
@@ -66,6 +70,19 @@ const App = () => {
                 />
                 <PrivateRoute exact path={routes.pricing} component={Pricing} />
                 <PrivateRoute exact path={routes.productTour} component={ProductTour} />
+                {/* <PrivateRoute exact path={routes.docs} component={() => {
+                  //window.open('https://docs.conektto.io', '_blank') || window.location.replace('https://docs.conektto.io');
+                  //window.location.replace('https://docs.conektto.io');
+                  window.open('https://docs.conektto.io', '_blank')
+                  return null;
+                }}/> */}
+
+                <PrivateRoute exact path={routes.docs} component={() => {
+                  window.location.replace('https://docs.conektto.io');
+                  return null;
+                }}/>
+
+                {/*<PrivateRoute exact path={routes.docs} component={ConekttoDocs} />*/}
                 <Route
                   path={routes.payment}
                   render={(props) => {
@@ -123,6 +140,7 @@ const App = () => {
         </MuiThemeProvider>
       </QueryClientProvider>
     </RecoilRoot>
+    </SocketContext.Provider>
   );
 };
 

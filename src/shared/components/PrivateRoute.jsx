@@ -6,7 +6,7 @@ import routes from '../routes';
 import { getLinkedInToken } from '../storage';
 import { isUserLoggedIn } from '../utils';
 
-const PrivateRoute = ({ component: Component, ...rest }) => {
+const PrivateRoute = ({ component: Component,restricted: boolean, ...rest }) => {
   const isAuthenticated = () => isUserLoggedIn();
 
   return (

@@ -11,7 +11,8 @@ const routes = Object.freeze({
   project: '/projects/:projectId',
   privacy: '/privacy',
   contact: '/contact',
-  productTour: '/producttour'
+  productTour: '/producttour',
+  docs: '/docs'
 });
 
 export const generateRoute = (route, data) => {

@@ -9,6 +9,8 @@ import {
   Tab,
   Tabs,
 } from "@material-ui/core";
+import { MuiThemeProvider, createTheme } from '@material-ui/core';
+
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 // import TabsUnstyled from '@mui/base/TabsUnstyled';
 // import TabsListUnstyled from '@mui/base/TabUnstyled';
@@ -43,6 +45,31 @@ import { ConnectedFocusError } from 'focus-formik-error'
 import { useQuery } from "react-query";
 import { array } from "yup";
 import { FormHelperText } from "@mui/material";
+import ProjectDetails from "./ProjectDetails";
+
+
+const theme = createTheme({
+  overrides: {
+    MuiFormControl: {
+      root: {
+        height: '50px',
+      },
+    },
+    MuiInputBase: {
+      root: {
+        height: '50px',
+      },
+      input: {
+        height: '50px',
+      }
+    },
+    MuiOutlinedInput: {
+      root: {
+        height: '50px',
+      },
+    },
+  },
+});
 
 const ConnectDatabase = ({
   formRef,
@@ -56,15 +83,18 @@ const ConnectDatabase = ({
   handleTabChange,
   isClaimSpec,
   isAdvSpec,
+  isAdvWorks,
+  isMflix,
+  connectors
 }) => {
   const [projectDetails, setProjectDetails] = useRecoilState(projectAtom);
   const [open, setOpen] = useState(false);
-  const [connectors, setConnectors] = useState({
+  /* const [connectors, setConnectors] = useState({
     ms_sql: true,
-    my_sql: false,
+    my_sql: true,
     postgres: false,
   });
-
+ */
   const debouncedSetDatabase = useCallback(
     debounce((nextValue) => {
       resetProjectApiState();
@@ -467,21 +497,22 @@ const ConnectDatabase = ({
     { value: "mysql", label: "MySQL", check: "my_sql" },
     { value: "mssql", label: "SQL Server", check: "ms_sql" },
     { value: "postgres", label: "Postgres", check: "postgres" },
+    { value: "mongo", label: "MongoDb", check: "mongo" },
   ];
 
-  const { data: pricing_data } = usePricingData();
-  const { data: userProfile_data } = useUserProfile();
+  //const { data: pricing_data } = usePricingData();
+  //const { data: userProfile_data } = useUserProfile();
 
-  //console.log("pricing_data:",pricing_data);
+  
 
   useEffect(() => {
-    if (pricing_data && userProfile_data) {
+    /* if (pricing_data && userProfile_data) {
       if (
         userProfile_data["plan_name"] == null ||
-        userProfile_data["plan_name"] == "Basic"
+        userProfile_data["plan_name"] === "Basic"
       ) {
         debouncedSetNumberOfCollaborators(2);
-        setConnectors({ ms_sql: true, my_sql: false, postgres: false });
+        setConnectors({ ms_sql: true, my_sql: true, postgres: true, mongodb: true });
       } else {
         const filtered_plan = pricing_data["products"].filter(
           (item) => item["plan_name"] == userProfile_data["plan_name"]
@@ -489,15 +520,20 @@ const ConnectDatabase = ({
         debouncedSetNumberOfCollaborators(filtered_plan["no_of_collaborators"]);
         setConnectors(filtered_plan["connectors"]);
       }
-    }
-    if (isClaimSpec || isAdvSpec) {
+    } */
+    if (isClaimSpec || isAdvSpec || isAdvWorks) {
       debouncedSetDbType("mssql");
+    } else if (isMflix) {
+      debouncedSetDbType("mongo");
     }
-  }, [pricing_data, userProfile_data, isClaimSpec, isAdvSpec]);
+}, [isClaimSpec, isAdvSpec, isAdvWorks, isMflix]);
+//}, [pricing_data, userProfile_data, isClaimSpec, isAdvSpec, isAdvWorks, isMflix]);
+
   return (
-    <div className="p-4" style={{ height: "300px", overflowY: "scroll" }}>
+    <div className="pl-4 pr-4" style={{ height: "420px", overflowY: "scroll"}}>
       {/* <Scrollbar className="max-h-60" alwaysShowTracks={true}> */}
       <>
+        {process.env.REACT_APP_DISABLE_DDL !== "true" && (
         <CustomTabs
           value={activeTab}
           onChange={(_, index) => {
@@ -517,7 +553,7 @@ const ConnectDatabase = ({
             style={{ outline: "none", border: "none" }}
           />
         </CustomTabs>
-
+        )}
         {/* Content */}
         <div>
           {activeTab === 0 ? (
@@ -530,7 +566,7 @@ const ConnectDatabase = ({
                   database: projectDetails?.database ?? "",
                   username: projectDetails?.username ?? "",
                   password: projectDetails?.password ?? "",
-                  toggle: false,
+                  toggle: ((projectDetails?.certificates && projectDetails?.certificates?.length>0) || (projectDetails?.keys && projectDetails?.keys?.length>0) || (projectDetails?.caCertificates && projectDetails?.caCertificates?.length>0)) ? true: false,
                 }}
                 validationSchema={Yup.object().shape({
                   // name: apiNameSchema(Messages.NAME_REQUIRED),
@@ -555,28 +591,28 @@ const ConnectDatabase = ({
                   <Form>
                     <ConnectedFocusError />
                     <Grid container spacing={2}>
-                      <Grid item xs={12}>
-                        <p className="text-mediumLabel mb-2">Server Type</p>
+                      <Grid item xs={6}>
+                        <p className="text-mediumLabel mb-2">DB Server Type</p>
                         <Field
                           id="type"
                           name="type"
-                          value={isClaimSpec || isAdvSpec ? "mssql" : values.type}
+                          value={isClaimSpec || isAdvSpec || isAdvWorks  ? "mssql" : values.type}
                           // color = "primary"
                           onChange={handleChange}
                           onBlur={(e) => {
                             debouncedSetType(values.type);
                           }}
-                          disabled={isClaimSpec || isAdvSpec}
-                          error={(!isClaimSpec || !isAdvSpec) && touched.type && Boolean(errors.type)}
+                          disabled={isClaimSpec || isAdvSpec || isAdvWorks || isMflix }
+                          error={(!isClaimSpec || !isAdvSpec || !isAdvWorks || !isMflix) && touched.type && Boolean(errors.type)}
                           helperText={
-                            (!isClaimSpec || !isAdvSpec) && (
+                            (!isClaimSpec || !isAdvSpec || isAdvWorks || isMflix) && (
                               <ErrorMessage name="type" />
                             )
                           }
                           variant="outlined"
                           style={{
                             border: "1px solid #d2d2d2",
-                            height: "60px",
+                            height: "50px",
                             borderRadius: "4px",
                             width: "100%",
                             color: "primary",
@@ -615,21 +651,60 @@ const ConnectDatabase = ({
                         )}
                       </Grid>
                       <Grid item xs={6}>
+                        <p className="text-mediumLabel mb-2">Database</p>
+                        <Field
+                          id="database"
+                          name="database"
+                          fullWidth
+                          color="primary"
+                          theme={theme}
+                          variant="outlined"
+                          InputProps={{style: { height: "50px" }}}
+                          value={
+                            isClaimSpec
+                              ? "db_claimsstaging"
+                              : isAdvSpec
+                              ? "bikestoredb"
+                              : values.database
+                          }
+                          error={
+                            (!isClaimSpec || !isAdvSpec || !isAdvWorks || !isMflix) &&
+                            touched.database &&
+                            Boolean(errors.database)
+                          }
+                          helperText={
+                            (!isClaimSpec || !isAdvSpec || !isAdvWorks || !isMflix) && (
+                              <ErrorMessage name="database" />
+                            )
+                          }
+                          onKeyUp={(e) => {
+                            const { value } = e.target;
+                            debouncedSetDatabase(value);
+                          }}
+                          //variant="outlined"
+                          inputProps={{ maxLength: 55 }}
+                          disabled={isClaimSpec || isAdvSpec || isAdvWorks || isMflix}
+                          // disabled={addProjectMutation?.isSuccess}
+                          as={TextField}
+                        />
+                      </Grid>
+                      <Grid item xs={6}>
                         <p className="text-mediumLabel mb-2">Host</p>
                         <Field
                           id="host"
                           name="host"
                           fullWidth
                           color="primary"
+                          InputProps={{style: { height: "50px" }}}
                           placeholder="127.0.0.1"
-                          value={isClaimSpec || isAdvSpec ? "3*.*.*.*" : values.host}
+                          value={isClaimSpec || isAdvSpec || isAdvWorks || isMflix ? "3*.*.*.*" : values.host}
                           error={
-                            (!isClaimSpec || !isAdvSpec) &&
+                            (!isClaimSpec || !isAdvSpec || isAdvWorks || isMflix ) &&
                             touched.host &&
                             Boolean(errors.host)
                           }
                           helperText={
-                            (!isClaimSpec || !isAdvSpec) && (
+                            (!isClaimSpec || !isAdvSpec || !isAdvWorks || !isMflix) && (
                               <ErrorMessage name="host" />
                             )
                           }
@@ -639,7 +714,7 @@ const ConnectDatabase = ({
                           }}
                           variant="outlined"
                           inputProps={{ maxLength: 55 }}
-                          disabled={isClaimSpec || isAdvSpec}
+                          disabled={isClaimSpec || isAdvSpec || isAdvWorks || isMflix}
                           // disabled={addProjectMutation?.isSuccess}
                           as={TextField}
                         />
@@ -651,15 +726,16 @@ const ConnectDatabase = ({
                           name="port"
                           fullWidth
                           color="primary"
+                          InputProps={{style: { height: "50px" }}}
                           placeholder="7744"
-                          value={isAdvSpec || isClaimSpec ? "1433" : values.port}
+                          value={isAdvSpec || isClaimSpec || isAdvWorks || isMflix ? "1433" : values.port}
                           error={
-                            (!isClaimSpec || !isAdvSpec) &&
+                            (!isClaimSpec || !isAdvSpec || !isAdvWorks || !isMflix) &&
                             touched.port &&
                             Boolean(errors.port)
                           }
                           helperText={
-                            (!isClaimSpec || !isAdvSpec) && (
+                            (!isClaimSpec || !isAdvSpec || isAdvWorks || isMflix ) && (
                               <ErrorMessage name="port" />
                             )
                           }
@@ -669,26 +745,27 @@ const ConnectDatabase = ({
                           }}
                           variant="outlined"
                           inputProps={{ maxLength: 24 }}
-                          disabled={isClaimSpec || isAdvSpec}
+                          disabled={isClaimSpec || isAdvSpec || isAdvWorks || isMflix}
                           // disabled={addProjectMutation?.isSuccess}
                           as={TextField}
                         />
                       </Grid>
-                      <Grid item xs={12}>
+                      <Grid item xs={6}>
                         <p className="text-mediumLabel mb-2">Username</p>
                         <Field
                           id="username"
                           name="username"
                           fullWidth
+                          InputProps={{style: { height: "50px" }}}
                           color="primary"
-                          value={isClaimSpec || isAdvSpec ? "sa" : values.username}
+                          value={isClaimSpec || isAdvSpec || isAdvWorks || isMflix ? "sa" : values.username}
                           error={
-                            (!isClaimSpec || !isAdvSpec) &&
+                            (!isClaimSpec || !isAdvSpec || !isAdvWorks || !isMflix) &&
                             touched.username &&
                             Boolean(errors.username)
                           }
                           helperText={
-                            (!isClaimSpec || !isAdvSpec) && (
+                            (!isClaimSpec || !isAdvSpec || isAdvWorks || isMflix) && (
                               <ErrorMessage name="username" />
                             )
                           }
@@ -698,30 +775,31 @@ const ConnectDatabase = ({
                           }}
                           variant="outlined"
                           inputProps={{ maxLength: 24 }}
-                          disabled={isClaimSpec || isAdvSpec}
+                          disabled={isClaimSpec || isAdvSpec || isAdvWorks || isMflix}
                           // disabled={addProjectMutation?.isSuccess}
                           as={TextField}
                         />
                       </Grid>
-                      <Grid item xs={12}>
+                      <Grid item xs={6}>
                         <p className="text-mediumLabel mb-2">Password</p>
                         <Field
                           id="password"
                           name="password"
                           type="password"
                           autocomplete="off"
+                          InputProps={{style: { height: "50px" }}}
                           fullWidth
                           color="primary"
                           value={
-                            isClaimSpec || isAdvSpec ? "S0mbari@2022" : values.password
+                            isClaimSpec || isAdvSpec || isAdvWorks || isMflix ? "S0mbari@2022" : values.password
                           }
                           error={
-                            (!isClaimSpec || !isAdvSpec) &&
+                            (!isClaimSpec || !isAdvSpec || !isAdvWorks || !isMflix) &&
                             touched.password &&
                             Boolean(errors.password)
                           }
                           helperText={
-                            (!isClaimSpec || !isAdvSpec) && (
+                            (!isClaimSpec || !isAdvSpec || isAdvWorks || isMflix) && (
                               <ErrorMessage name="password" />
                             )
                           }
@@ -730,61 +808,31 @@ const ConnectDatabase = ({
                             debouncedSetPassword(value);
                           }}
                           variant="outlined"
-                          inputProps={{ maxLength: 24 }}
-                          disabled={isClaimSpec || isAdvSpec}
+                          //inputProps={{ maxLength: 24 }}
+                          disabled={isClaimSpec || isAdvSpec || isAdvWorks || isMflix}
                           // disabled={addProjectMutation?.isSuccess}
                           as={TextField}
                         />
                       </Grid>
+                      
                       <Grid item xs={12}>
-                        <p className="text-mediumLabel mb-2">Database</p>
-                        <Field
-                          id="database"
-                          name="database"
-                          fullWidth
-                          color="primary"
-                          value={
-                            isClaimSpec
-                              ? "db_claimsstaging"
-                              : isAdvSpec
-                              ? "bikestoredb"
-                              : values.database
-                          }
-                          error={
-                            (!isClaimSpec || !isAdvSpec) &&
-                            touched.database &&
-                            Boolean(errors.database)
-                          }
-                          helperText={
-                            (!isClaimSpec || !isAdvSpec) && (
-                              <ErrorMessage name="database" />
-                            )
-                          }
-                          onKeyUp={(e) => {
-                            const { value } = e.target;
-                            debouncedSetDatabase(value);
-                          }}
-                          variant="outlined"
-                          inputProps={{ maxLength: 55 }}
-                          disabled={isClaimSpec || isAdvSpec}
-                          // disabled={addProjectMutation?.isSuccess}
-                          as={TextField}
-                        />
-                      </Grid>
-                      <Grid item xs={12}>
-                        <label>
+                        <label class="text-mediumLabel mb-2">
                         <Field
                             type="checkbox"
                             name="toggle"
-                            disabled={isClaimSpec || isAdvSpec}
+                            disabled={isClaimSpec || isAdvSpec || isAdvWorks || isMflix}
                           />
                           {" Over SSL"}
                         </label>
                         {values.toggle ? (
                           <>
-                            <div className="mb-6">
+                            
+                            
+                            <div className="mb-6 mt-2" >
+                              <Grid container spacing={2}>
+                              <Grid item xs={4} >                              
                               <p className="text-mediumLabel mb-2">
-                                Upload Key
+                                {/* Upload Certificate */}
                               </p>
                               <input
                                 id="keys"
@@ -792,7 +840,8 @@ const ConnectDatabase = ({
                                 accept=".key,.pem"
                                 multiple
                                 hidden
-                                disabled={isClaimSpec || isAdvSpec}
+                                className="pt-3"
+                                disabled={isClaimSpec || isAdvSpec || isAdvWorks || isMflix || !_.isEmpty(projectDetails?.keys)}
                                 onChange={(e) => {
                                   handleOnKeysPick(Array.from(e.target.files));
                                   e.target.value = "";
@@ -800,14 +849,17 @@ const ConnectDatabase = ({
                               />
                               <label
                                 for="keys"
-                                className="bg-brand-secondary rounded-md px-4 py-2 text-white text-mediumLabel hover:opacity-90"
+                                className="bg-brand-secondary rounded-md px-11 py-2 text-white text-smallLabel hover:opacity-90"                                
                               >
-                                Upload
+                                Upload Key
                               </label>
-
+                              </Grid>
+                            
                               {/* Spec list */}
+                              <Grid item xs={8}>
                               {!_.isEmpty(projectDetails?.keys) ? (
-                                <div className="mt-3">
+                                
+                                <div className="mt-1">
                                   <Scrollbar
                                     className="max-h-24"
                                     alwaysShowTracks={true}
@@ -815,9 +867,10 @@ const ConnectDatabase = ({
                                     <ul>
                                       {projectDetails?.keys?.map((file) => {
                                         return (
+                                          
                                           <li key={file.name}>
                                             <div className="rounded-md border bg-neutral-gray7 p-2 mb-2 flex flex-row items-center justify-between">
-                                              <p className="text-overline2">
+                                              <p className="text-overline3">
                                                 {file.name}{" "}
                                                 {Math.round(file.size / 1024)}{" "}
                                                 KB
@@ -836,13 +889,15 @@ const ConnectDatabase = ({
                                               </AppIcon>
                                             </div>
                                           </li>
+                                          
                                         );
                                       })}
                                     </ul>
                                   </Scrollbar>
                                 </div>
+                                
                               ) : null}
-
+                              </Grid>
                               {_.isEmpty(projectDetails?.dbs) &&
                                 _.isEmpty(projectDetails?.specs) &&
                                 !_.isEmpty(specsError) && (
@@ -850,10 +905,16 @@ const ConnectDatabase = ({
                                     {specsError}
                                   </p>
                                 )}
+                            </Grid>
                             </div>
+                            
+                            
+                            
                             <div className="mb-6">
+                              <Grid container spacing={2}>
+                              <Grid item xs={4}>
                               <p className="text-mediumLabel mb-2">
-                                Upload Certificate
+                                {/* Upload Certificate */}
                               </p>
                               <input
                                 id="certificates"
@@ -861,6 +922,7 @@ const ConnectDatabase = ({
                                 accept=".pem,.crt"
                                 multiple
                                 hidden
+                                disabled={!_.isEmpty(projectDetails?.certificates)}
                                 onChange={(e) => {
                                   handleOnCertificatesPick(
                                     Array.from(e.target.files)
@@ -870,14 +932,17 @@ const ConnectDatabase = ({
                               />
                               <label
                                 for="certificates"
-                                className="bg-brand-secondary rounded-md px-4 py-2 text-white text-mediumLabel hover:opacity-90"
+                                className="bg-brand-secondary rounded-md px-6 py-2 text-white text-smallLabel hover:opacity-90"
+                                style={{width:"100%"}}                           
                               >
-                                Upload
+                                Upload Certificate
                               </label>
+                              </Grid>
 
                               {/* Spec list */}
+                              <Grid item xs={8}>
                               {!_.isEmpty(projectDetails?.certificates) ? (
-                                <div className="mt-3">
+                                <div className="mt-1">
                                   <Scrollbar
                                     className="max-h-24"
                                     alwaysShowTracks={true}
@@ -888,7 +953,7 @@ const ConnectDatabase = ({
                                           return (
                                             <li key={file.name}>
                                               <div className="rounded-md border bg-neutral-gray7 p-2 mb-2 flex flex-row items-center justify-between">
-                                                <p className="text-overline2">
+                                                <p className="text-overline3">
                                                   {file.name}{" "}
                                                   {Math.round(file.size / 1024)}{" "}
                                                   KB
@@ -916,6 +981,7 @@ const ConnectDatabase = ({
                                   </Scrollbar>
                                 </div>
                               ) : null}
+                              </Grid>
 
                               {_.isEmpty(projectDetails?.dbs) &&
                                 _.isEmpty(projectDetails?.specs) &&
@@ -924,10 +990,15 @@ const ConnectDatabase = ({
                                     {specsError}
                                   </p>
                                 )}
+                              </Grid>
                             </div>
+                            
+                            
                             <div className="mb-6">
+                              <Grid container spacing={2}>
+                              <Grid item xs={4}>
                               <p className="text-mediumLabel mb-2">
-                                Upload CA Certificate
+                                {/* Upload CA Certificate */}
                               </p>
                               <input
                                 id="caCertificates"
@@ -935,6 +1006,7 @@ const ConnectDatabase = ({
                                 accept=".pem,.crt"
                                 multiple
                                 hidden
+                                disabled={!_.isEmpty(projectDetails?.caCertificates)}
                                 onChange={(e) => {
                                   handleOnCACertificatesPick(
                                     Array.from(e.target.files)
@@ -944,14 +1016,17 @@ const ConnectDatabase = ({
                               />
                               <label
                                 for="caCertificates"
-                                className="bg-brand-secondary rounded-md px-4 py-2 text-white text-mediumLabel hover:opacity-90"
+                                className="bg-brand-secondary rounded-md px-4 pr-3 py-2 text-white text-smallLabel hover:opacity-90"
+                                style={{width:"100%"}}
                               >
-                                Upload
+                                Upload CA Certificate
                               </label>
+                              </Grid>
 
                               {/* Spec list */}
+                              <Grid item xs={8}>
                               {!_.isEmpty(projectDetails?.caCertificates) ? (
-                                <div className="mt-3">
+                                <div className="mt-1">
                                   <Scrollbar
                                     className="max-h-24"
                                     alwaysShowTracks={true}
@@ -962,7 +1037,7 @@ const ConnectDatabase = ({
                                           return (
                                             <li key={file.name}>
                                               <div className="rounded-md border bg-neutral-gray7 p-2 mb-2 flex flex-row items-center justify-between">
-                                                <p className="text-overline2">
+                                                <p className="text-overline3">
                                                   {file.name}{" "}
                                                   {Math.round(file.size / 1024)}{" "}
                                                   KB
@@ -990,6 +1065,7 @@ const ConnectDatabase = ({
                                   </Scrollbar>
                                 </div>
                               ) : null}
+                              </Grid>
 
                               {_.isEmpty(projectDetails?.dbs) &&
                                 _.isEmpty(projectDetails?.specs) &&
@@ -998,7 +1074,10 @@ const ConnectDatabase = ({
                                     {specsError}
                                   </p>
                                 )}
+                              </Grid>
                             </div>
+                            
+                            
                           </>
                         ) : (
                           ""
@@ -1122,7 +1201,7 @@ const ConnectDatabase = ({
                                 touched.dbType && errors.dbType && "red",
                             }}
                             as="select"
-                            disabled={isClaimSpec || isAdvSpec}
+                            disabled={isClaimSpec || isAdvSpec || isAdvWorks || isMflix}
                           >
                             <option value="" label="Select db type" />
 
@@ -1172,7 +1251,7 @@ const ConnectDatabase = ({
                   // multiple
                   hidden
                   disabled={
-                    isAdvSpec || isClaimSpec || projectDetails?.dbs !== null
+                    isAdvSpec || isClaimSpec || isAdvWorks || isMflix || projectDetails?.dbs !== null
                       ? projectDetails?.dbs?.length === 0
                         ? false
                         : true
@@ -1194,7 +1273,7 @@ const ConnectDatabase = ({
                     }
                   }}
                   className={`bg-brand-secondary  ${
-                    isClaimSpec || isAdvSpec ? "opacity-40" : "hover:opacity-90"
+                    isClaimSpec || isAdvSpec || isAdvWorks || isMflix ? "opacity-40" : "hover:opacity-90"
                   }  rounded-md px-4 py-2 text-white text-mediumLabel`}
                 >
                   Upload DDL

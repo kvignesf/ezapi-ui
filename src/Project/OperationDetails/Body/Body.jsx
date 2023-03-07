@@ -10,6 +10,7 @@ import { CircularProgress } from "@material-ui/core";
 import _ from "lodash";
 import debounce from "lodash.debounce";
 import DeleteIcon from "@material-ui/icons/Delete";
+import BlurCircularIcon from "@mui/icons-material/BlurCircular";
 import classNames from "classnames";
 import TreeView from "@material-ui/lab/TreeView";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
@@ -59,11 +60,15 @@ import AppIcon from "../../../shared/components/AppIcon";
 import DragIndicatorIcon from "@material-ui/icons/DragIndicator";
 import AttributeIcon from "../../../static/images/attribute.svg";
 import SchemaIcon from "../../../static/images/schema-icon.svg";
-import ArrayIcon from "../../../static/images/array-icon.svg";
+import ObjectIcon from "../../../static/images/object-icon.svg";
+import ArrayIcon from "../../../static/images/array.svg";
+import ArrayIcon2 from "../../../static/images/array2.svg";
+import ArrayOfObjectsIcon from "../../../static/images/array-icon.svg";
 import ColumnIcon from "../../../static/images/column-icon.svg";
 import TableIcon from "../../../static/images/table-icon.svg";
 import { useGetSubSchema, useGetTableData } from "./requestBodyQueries";
 import DragAndDropMessage from "../../../shared/components/DragAndDropMessage";
+import { useGetSubTables } from "../../../shared/query/tablesQueries";
 import ChangeTableName from "./ChangeTableName";
 import ChangeColumnName from "../ChangeColumnName";
 import { useExpandedIds } from "./utils";
@@ -78,6 +83,7 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
   let [operationData, setOperationDetails] = useRecoilState(
     operationAtomWithMiddleware
   );
+  const [updatedData, setUpdateData] = useState(operationData);
   const [refresh, setRefresh] = React.useState(0);
   // operationData;
 
@@ -95,7 +101,7 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
     mutate: getSubSchema,
     reset: resetSubSchemaData,
     variables: subSchemaRequest,
-  } = useGetSubSchema();  
+  } = useGetSubSchema();
   const { height, width } = useWindowSize();
   const { getExandedIds, setExpandedIds } = useExpandedIds([]);
   const [primaryKeyRef, setPrimaryKeyRef] = useRecoilState(primaryAtom);
@@ -113,6 +119,8 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
       isAttribute(item) ||
       isColumn(item) ||
       isArrayOrObjectAttribute(item) ||
+      isArray(item) ||
+      isObject(item) ||
       isStoredProcedure(item) ||
       isInput(item) ||
       isOutput(item) ||
@@ -130,17 +138,47 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
           ) {
             const newOperationDetails = _.cloneDeep(operationDetails);
             const clonedItem = _.cloneDeep(item);
-            if (isArrayOrObjectAttribute(item)) {
+            if (isArrayOfObject(item) || isObject(item)) {
               clonedItem.required = true;
-              //clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
+              clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
               clonedItem.parentName = path ?? "/";
+              if (clonedItem.ref && clonedItem.ref !== null) {
+                let str = "";
+                str = item.ref.split(".ezapi_object").join("");
+                str = str.split(".ezapi_array").join("");
+                str = str.split(".attribute").join("");
+                clonedItem.key = str;
+              }
             }
+
+            if (isArray(item)) {
+              clonedItem.isArray = true;
+              clonedItem.is_child = true;
+              if (item?.id) {
+                clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
+              }
+            }
+
             if (isAttribute(item)) {
               clonedItem.required = true;
               clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
               clonedItem.parentName = path ?? "/";
+              if (clonedItem.ref && clonedItem.ref !== null) {
+                let str = "";
+                str = item.ref.split(".ezapi_object").join("");
+                str = str.split(".ezapi_array").join("");
+                str = str.split(".attributes").join("");
+                clonedItem.key = str;
+              }
             } else if (isColumn(item)) {
               clonedItem.tableName = fetchParentName(clonedItem) ?? "global";
+              if (clonedItem.ref && clonedItem.ref !== null) {
+                let str = "";
+                str = item.ref.split(".ezapi_object").join("");
+                str = str.split(".ezapi_array").join("");
+                str = str.split(".attributes").join("");
+                clonedItem.key = str;
+              }
             }
             if (isColumn(item)) {
               if (item?.foreign) {
@@ -172,11 +210,11 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
             if (isStoredProcedure(item)) {
               let inputExists = false;
               item?.data?.[0]?.map((row) => {
-                if (row.type == "input") {
+                if (row.type === "input") {
                   inputExists = true;
                 }
               });
-              if (item["draggedFrom"] == "input" && inputExists) {
+              if (item["draggedFrom"] === "input" && inputExists) {
                 clonedItem["inputAttributes"] = clonedItem.data[0];
                 clonedItem["required"] = true;
                 clonedItem["payloadId"] = null;
@@ -184,12 +222,13 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
                 delete clonedItem.data;
                 delete clonedItem.contentType;
               } else {
+                setUpdateData(newOperationDetails);
                 return newOperationDetails;
               }
             }
 
             newOperationDetails.operationRequest.body.push(clonedItem);
-
+            setUpdateData(newOperationDetails);
             return newOperationDetails;
           }
         } else {
@@ -204,28 +243,47 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
             const clonedOperationDetails = _.cloneDeep(operationDetails);
             const clonedResponseData = _.cloneDeep(responseData);
             const clonedItem = _.cloneDeep(item);
-            if (isArrayOrObjectAttribute(item)) {
+            if (isArrayOfObject(item) || isObject(item)) {
+              if (clonedItem.ref && clonedItem.ref !== null) {
+                let str = "";
+                str = item.ref.split(".ezapi_object").join("");
+                str = str.split(".ezapi_array").join("");
+                str = str.split(".attribute").join("");
+                clonedItem.key = str;
+              }
+
               clonedItem.required = true;
-              //clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
+              clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
               clonedItem.parentName = path ?? "/";
             }
+
+            if (isArray(item)) {
+              clonedItem.isArray = true;
+              clonedItem.is_child = true;
+              if (item?.id) {
+                clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
+              }
+            }
+
             if (isAttribute(item)) {
               clonedItem.required = true;
               clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
               clonedItem.parentName = path ?? "/";
             } else if (isColumn(item)) {
               clonedItem.tableName = fetchParentName(clonedItem) ?? "global";
-            }
+            } /* else if (isArrayOrObjectAttribute(item) && isArray(item)) {
+              clonedItem.tableName = fetchParentName(clonedItem) ?? "global";
+            } */
 
             if (isStoredProcedure(item)) {
               let outputExists = false;
               item?.data?.[1]?.map((row) => {
-                if (row.type == "output") {
+                if (row.type === "output") {
                   outputExists = true;
                 }
               });
 
-              if (item["draggedFrom"] == "output" && outputExists) {
+              if (item["draggedFrom"] === "output" && outputExists) {
                 clonedItem["outputAttributes"] = clonedItem.data[1];
                 clonedItem["required"] = true;
                 clonedItem["payloadId"] = null;
@@ -233,6 +291,7 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
                 delete clonedItem.data;
                 delete clonedItem.contentType;
               } else {
+                setUpdateData(clonedOperationDetails);
                 return clonedOperationDetails;
               }
             }
@@ -241,13 +300,16 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
 
             clonedOperationDetails.operationResponse[responseIndex] =
               clonedResponseData;
+            setUpdateData(clonedOperationDetails);
 
             return clonedOperationDetails;
           }
         }
+        setUpdateData(operationDetails);
 
         return operationDetails;
       });
+      toggleRefresh();
     }
   };
 
@@ -257,69 +319,123 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
     let itemDroppedFromTop;
 
     if (item.props) {
-      valueDropped = item.props.itemRef;
-      itemDroppedFromTop = false;
-    } else {
-      if (item[1]) {
-        valueDropped = item[1].props.columnLabelItem;
+      if (item.props.columnLabelItem) {
+        valueDropped = item.props.columnLabelItem;
         itemDroppedFromTop = false;
       } else {
-        valueDropped = item;
-        itemDroppedFromTop = true;
+        valueDropped = item.props.itemRef;
+        itemDroppedFromTop = false;
       }
+    } else {
+      valueDropped = item;
+      itemDroppedFromTop = true;
     }
 
-    // if (itemDroppedFromTop) {
-    //   deleteItem(valueDropped)
-    // }
+    console.log(data);
+    console.log(valueDropped);
 
-    if (
-      (isColumn(valueDropped) || isDatabase(valueDropped)) &&
-      isArrayOfObject(data)
-    ) {
-      setOperationDetails((operationDetails) => {
-        const newOperationDetails = _.cloneDeep(operationDetails);
-        const clonedItem = _.cloneDeep(valueDropped);
-        let requestOrResponseData = request
-          ? newOperationDetails.operationRequest
-          : newOperationDetails.operationResponse[0];
+    setOperationDetails((operationDetails) => {
+      const newOperationDetails = _.cloneDeep(updatedData);
+      const clonedItem = _.cloneDeep(valueDropped);
+      const responseIndex = getResponseIndex(updatedData);
 
-        requestOrResponseData?.body.map((bodyItem) => {
-          if (bodyItem.name === data.name) {
-            if (bodyItem.items) {
-              if (bodyItem.items.properties) {
-                bodyItem.items.properties[clonedItem.name] = clonedItem;
+      let requestOrResponseData = request
+        ? newOperationDetails.operationRequest
+        : newOperationDetails.operationResponse[responseIndex ?? 0];
+
+      const newValue = requestOrResponseData?.body.filter((bodyItem) => {
+        if (bodyItem.name === valueDropped.name) {
+          return bodyItem;
+        }
+      });
+
+      if (newValue.length > 0) {
+        valueDropped = newValue[0];
+      }
+
+      if (
+        ((isColumn(valueDropped) ||
+          isDatabase(valueDropped) ||
+          isAttribute(valueDropped)) &&
+          (isArrayOfObject(data) || isObject(data))) ||
+        ((isArray(valueDropped) ||
+          (isObject(valueDropped) &&
+            valueDropped.properties &&
+            !_.isEmpty(valueDropped.properties)) ||
+          (isArrayOfObject(valueDropped) &&
+            valueDropped.items &&
+            valueDropped.items.properties &&
+            !_.isEmpty(valueDropped.items.properties))) &&
+          isArrayOfObject(data) &&
+          data.id !== valueDropped.id) ||
+        (((isObject(valueDropped) &&
+          valueDropped.properties &&
+          !_.isEmpty(valueDropped.properties)) ||
+          isArray(valueDropped) ||
+          (isArrayOfObject(valueDropped) &&
+            valueDropped.items &&
+            valueDropped.items.properties &&
+            !_.isEmpty(valueDropped.items.properties))) &&
+          isObject(data) &&
+          data.id !== valueDropped.id)
+      ) {
+        if (isObject(data)) {
+          requestOrResponseData?.body.map((bodyItem) => {
+            if (bodyItem.name === data.name) {
+              if (bodyItem.properties) {
+                bodyItem.properties[clonedItem.name] = clonedItem;
               } else {
-                bodyItem.items.type = "object";
+                bodyItem.type = "object";
+                bodyItem.properties = {};
+                bodyItem.properties[clonedItem.name] = clonedItem;
+              }
+            }
+          });
+        } else if (isArrayOfObject(data)) {
+          requestOrResponseData?.body.map((bodyItem) => {
+            if (bodyItem.name === data.name) {
+              if (bodyItem.items) {
+                if (bodyItem.items.properties) {
+                  bodyItem.items.properties[clonedItem.name] = clonedItem;
+                } else {
+                  bodyItem.items.type = "object";
+                  bodyItem.items.properties = {};
+                  bodyItem.items.properties[clonedItem.name] = clonedItem;
+                }
+              } else {
+                bodyItem.items = {};
                 bodyItem.items.properties = {};
+                bodyItem.items.type = "object";
                 bodyItem.items.properties[clonedItem.name] = clonedItem;
               }
-            } else {
-              bodyItem.items = {};
-              bodyItem.items.properties = {};
-              bodyItem.items.type = "object";
-              bodyItem.items.properties[clonedItem.name] = clonedItem;
-            }
-          }
-        });
-
-        if (!itemDroppedFromTop) {
-          requestOrResponseData.body.map((item, index) => {
-            if (item.payloadId === clonedItem.payloadId) {
-              requestOrResponseData.body.splice(index, 1);
             }
           });
         }
+        if (!itemDroppedFromTop) {
+          requestOrResponseData.body.map((item, index) => {
+            if (item.payloadId && clonedItem.payloadId) {
+              if (item.payloadId === clonedItem.payloadId) {
+                requestOrResponseData.body.splice(index, 1);
+              }
+            } else if (item.id && clonedItem.id) {
+              if (item.id === clonedItem.id) {
+                requestOrResponseData.body.splice(index, 1);
+              }
+            }
+          });
+        }
+      }
 
-        return newOperationDetails;
-      });
-    }
+      setUpdateData(newOperationDetails);
+      return newOperationDetails;
+    });
+
     toggleRefresh();
   };
 
-  useEffect(() => {
+  /* useEffect(() => {
     //
-  }, [isLoadingSubSchema]);
+  }, [isLoadingSubSchema]); */
 
   const getResponseData = (operation) => {
     return operation?.operationResponse?.find(
@@ -327,8 +443,7 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
     );
   };
 
-  useEffect(() => {}, [refresh]);
-
+  //useEffect(() => {}, [refresh]);
 
   const getResponseIndex = (operation) => {
     return operation?.operationResponse?.findIndex(
@@ -337,55 +452,60 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
   };
 
   return (
-    <DropArea onItemDropped={itemDropped}>
-      <div className=' h-full flex flex-col'>
-        <div className=' ml-3 p-2 border-t-2 border-b-2 bg-neutral-gray8 mb-1/2'>
-          <div className=' w-full grid grid-cols-5 gap-2 '>
-            {" "}
-            {/* <p className='text-overline2 text-neutral-gray4 uppercase font-bold'>
-              {projectType === "schema" || projectType === "both"
-                ? "Schema/Attribute"
-                : projectType === "db"
-                ? "Table/Column"
-                : "-"}
-            </p> */}
+    <DropArea onItemDropped={itemDropped} state={refresh}  key={refresh}>
+      <div className=" h-full flex flex-col">
+        <div className=" ml-3 p-2 border-t-2 border-b-2 bg-neutral-gray8 mb-1/2">
+          <div className=" w-full grid grid-cols-5 gap-2 ">
             {projectType === "db" && (
               <>
                 {" "}
-                <div className='flex justify-self-start '>
+                <div className="flex justify-self-start ">
                   {" "}
-                  <p className='text-overline2 uppercase text-neutral-gray4 font-bold'>
+                  <p className="text-overline2 uppercase text-neutral-gray4 font-bold">
                     Table/Column
                   </p>
                 </div>
               </>
             )}
-            <div className='flex justify-self-start '>
-              <p className='text-overline2 uppercase text-neutral-gray4 font-bold'>
-                Schema/Attribute
-              </p>
+            {projectType === "noinput" && (
+              <>
+                {" "}
+                <div className="flex justify-self-start ">
+                  {" "}
+                  <p className="text-overline2 uppercase text-neutral-gray4 font-bold">
+                    Parameter
+                  </p>
+                </div>
+              </>
+            )}
+            <div className="flex justify-self-start ">
+              {projectType != "noinput" && (
+                <p className="text-overline2 uppercase text-neutral-gray4 font-bold">
+                  Schema/Attribute
+                </p>
+              )}
             </div>
-            <div className='flex justify-self-start '>
-              <p className='text-overline2 uppercase text-neutral-gray4 font-bold'>
+            <div className="flex justify-self-start ">
+              <p className="text-overline2 uppercase text-neutral-gray4 font-bold">
                 Data Type
               </p>
             </div>
-            <div className='flex justify-self-start '>
+            <div className="flex justify-self-start ">
               {" "}
-              <p className='text-overline2 uppercase text-neutral-gray4 font-bold'>
+              <p className="text-overline2 uppercase text-neutral-gray4 font-bold">
                 is Array
               </p>
             </div>
-            <div className='flex justify-self-start '>
-              <p className='text-overline2 uppercase text-neutral-gray4 font-bold'>
+            <div className="flex justify-self-start ">
+              <p className="text-overline2 uppercase text-neutral-gray4 font-bold">
                 Required
               </p>
             </div>
           </div>
         </div>
 
-        {request && !_.isEmpty(operationData?.operationRequest?.body) && (
-          <div className='h-full flex-1'>
+        {request && !_.isEmpty(updatedData?.operationRequest?.body) && (
+          <div className="h-full flex-1">
             <Scrollbar
               alwaysShowTracks={true}
               style={{
@@ -407,7 +527,7 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
                   setExpandedIds(nodeIds);
                 }}
               >
-                {operationData?.operationRequest?.body.map((item, index) => {
+                {updatedData?.operationRequest?.body.map((item, index) => {
                   let clonedRef;
 
                   if (isSchema(item)) {
@@ -425,13 +545,14 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
                   } else if (isStoredProcedure(item)) {
                     clonedRef = _.cloneDeep(item);
                   } else if (
-                    isArray(item) || 
+                    isArray(item) ||
                     isArrayOfObject(item) ||
-                    isObject(item)) {
+                    isObject(item)
+                  ) {
                     clonedRef = _.cloneDeep(item);
                   }
 
-                  return clonedRef == "wrongData" ? null : (
+                  return clonedRef === "wrongData" ? null : (
                     <DropArea onItemDropped={nestedItemDropped} state={refresh}>
                       <DraggableBodyItem state={refresh}>
                         <BodyItem
@@ -439,16 +560,19 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
                             setDisabledIcons(false);
                           }}
                           projectType={projectType}
-                          key={
+                          /* key={
                             index +
-                            operationData?.operationRequest?.body.length +
+                            // operationData?.operationRequest?.body.length +
                             refresh
-                          }
+                          } */
                           itemRef={clonedRef ?? item}
                           request={request}
                           responseCode={responseCode}
                           refresh={() => {
                             toggleRefresh();
+                          }}
+                          onUpdate={(data) => {
+                            setUpdateData(data);
                           }}
                         />
                       </DraggableBodyItem>
@@ -460,8 +584,8 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
           </div>
         )}
 
-        {!request && !_.isEmpty(getResponseData(operationData)?.body) && (
-          <div className='h-full flex-1'>
+        {!request && !_.isEmpty(getResponseData(updatedData)?.body) && (
+          <div className="h-full flex-1">
             <Scrollbar
               alwaysShowTracks={true}
               style={{
@@ -483,7 +607,7 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
                   setExpandedIds(nodeIds);
                 }}
               >
-                {getResponseData(operationData)?.body.map((item, index) => {
+                {getResponseData(updatedData)?.body.map((item, index) => {
                   let clonedRef;
 
                   if (isSchema(item)) {
@@ -500,26 +624,32 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
                     }
                   } else if (isStoredProcedure(item)) {
                     clonedRef = _.cloneDeep(item);
-                  } else {
+                  } else if (
+                    isArray(item) ||
+                    isArrayOfObject(item) ||
+                    isObject(item)
+                  ) {
+                    clonedRef = _.cloneDeep(item);
                   }
 
-                  
-
-                  return clonedRef == "wrongData" ? null : (
+                  return clonedRef === "wrongData" ? null : (
                     <DropArea onItemDropped={nestedItemDropped} state={refresh}>
                       <DraggableBodyItem state={refresh}>
                         <BodyItem
                           projectType={projectType}
-                          key={
+                          /* key={
                             index +
-                            getResponseData(operationData)?.body.length +
+                            // getResponseData(operationData)?.body.length +
                             refresh
-                          }
+                          } */
                           itemRef={clonedRef ?? item}
                           request={request}
                           responseCode={responseCode}
                           refresh={() => {
                             toggleRefresh();
+                          }}
+                          onUpdate={(data) => {
+                            setUpdateData(data);
                           }}
                         />
                       </DraggableBodyItem>
@@ -532,13 +662,13 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
         )}
 
         {request && _.isEmpty(operationData?.operationRequest?.body) && (
-          <div className='border-dashed p-3 bg-neutral-gray7 rounded-md border-2 m-2 flex flex-row justify-center'>
+          <div className="border-dashed p-3 bg-neutral-gray7 rounded-md border-2 m-2 flex flex-row justify-center">
             <DragAndDropMessage isSchemaAllowed isAttributeAllowed />
           </div>
         )}
 
         {!request && _.isEmpty(getResponseData(operationData)?.body) && (
-          <div className='border-dashed p-3 bg-neutral-gray7 rounded-md border-2 m-2 flex flex-row justify-center'>
+          <div className="border-dashed p-3 bg-neutral-gray7 rounded-md border-2 m-2 flex flex-row justify-center">
             <DragAndDropMessage isTableAllowed isColumnAllowed />
           </div>
         )}
@@ -556,10 +686,11 @@ const BodyItem = ({
   itemRef,
   projectType,
   disabledIcons,
+  onUpdate = () => {},
   refresh = () => {},
 }) => {
   const [bodyItem, setItem] = useState(itemRef);
-  const [arrayData, setArrayData] = useState([]);
+  const [arrayData, setArrayData] = useState(itemRef.data ?? []);
   const setOperationDetails = useSetRecoilState(operationAtomWithMiddleware);
   const { projectId } = useParams();
   const {
@@ -571,6 +702,14 @@ const BodyItem = ({
     variables: subSchemaRequest,
   } = useGetSubSchema();
   const {
+    isLoading: isLoadingSubTable,
+    error: getSubTablesError,
+    data: subTableData,
+    mutate: getSubTable,
+    reset: resetSubTableData,
+    isIdle: isGetSubTableIdle,
+  } = useGetSubTables();
+  const {
     isLoading: isLoadingTableData,
     data: tableData,
     mutate: getTable,
@@ -578,31 +717,6 @@ const BodyItem = ({
   const canEdit = useCanEdit();
   const getRecoilValueInfo = useGetRecoilValueInfo_UNSTABLE();
 
-  /*useEffect(() => {
-    if (subSchemaData) {
-      let itemsToConsider = [];
-
-      if (
-        subSchemaData?.nSchemaArray &&
-        !_.isEmpty(subSchemaData?.nSchemaArray)
-      ) {
-        itemsToConsider = subSchemaData?.nSchemaArray[0].data;
-      } else if (subSchemaData?.data && !_.isEmpty(subSchemaData?.data)) {
-        itemsToConsider = subSchemaData?.data;
-      }
-
-      if (isSchema(bodyItem) || isArray(bodyItem) || isObject(bodyItem)) {
-        for (let index = 0; index < itemsToConsider.length; index++) {
-          const element = itemsToConsider[index];
-          bodyItem.data.push(element);
-        }
-        const clonedClonedRef = _.cloneDeep(bodyItem);
-
-        setItem(clonedClonedRef);
-      }
-    }
-  }, [subSchemaData]);
-*/
   useEffect(() => {
     if (tableData) {
       setItem(tableData);
@@ -610,37 +724,123 @@ const BodyItem = ({
   }, [tableData]);
 
   useEffect(() => {
-    onItemClick();
     setItem(itemRef);
+    if ((itemRef.items && itemRef.items.properties) || itemRef.properties) {
+      getArrayData();
+    }
   }, [itemRef]);
 
-  const deleteItemFromArray = (item, array) => {
-    if (isDatabase(item) || isColumn(item)) {
+  const deleteItemsInsideNestedItems = (child, parent, root) => {
+    if (
+      isDatabase(child) ||
+      isColumn(child) ||
+      isAttribute(child) ||
+      isArray(child) ||
+      isObject(child) ||
+      isArrayOfObject(child)
+    ) {
       setOperationDetails((operationDetails) => {
         const newOperationDetails = _.cloneDeep(operationDetails);
+        const responseIndex = getResponseIndex(operationDetails);
         let data = request
           ? newOperationDetails.operationRequest
-          : newOperationDetails.operationResponse[0];
+          : newOperationDetails.operationResponse[responseIndex];
 
-        const index = data.body.findIndex((x) => x?.name === array?.name);
+        const index = data.body.findIndex((x) => x?.name === root?.name);
 
         if (index !== -1) {
-          delete data.body[index].items?.properties[item.name];
+          if (data.body[index].items && data.body[index].items?.properties) {
+            if (
+              data.body[index].items?.properties[parent.name].items?.properties
+            ) {
+              delete data.body[index].items?.properties[parent.name].items
+                ?.properties[child.name];
+            }
 
+            if (data.body[index].items?.properties[parent.name].properties) {
+              delete data.body[index].items?.properties[parent.name].properties[
+                child.name
+              ];
+            }
+          }
+          if (data.body[index].properties) {
+            if (data.body[index].properties[parent.name].items?.properties) {
+              delete data.body[index].properties[parent.name].items?.properties[
+                child.name
+              ];
+            }
+
+            if (data.body[index].properties[parent.name].properties) {
+              delete data.body[index].properties[parent.name].properties[
+                child.name
+              ];
+            }
+          }
+          onUpdate(newOperationDetails);
           return newOperationDetails;
         }
       });
     }
+    refresh();
+  };
+
+  const getResponseIndex = (operation) => {
+    return operation?.operationResponse?.findIndex(
+      (item) => item.responseCode === responseCode
+    );
+  };
+
+  const deleteNestedItems = (item, array) => {
+    if (
+      isDatabase(item) ||
+      isColumn(item) ||
+      isAttribute(item) ||
+      isArray(item) ||
+      isObject(item) ||
+      isArrayOfObject(item)
+    ) {
+      setOperationDetails((operationDetails) => {
+        const newOperationDetails = _.cloneDeep(operationDetails);
+        const responseIndex = getResponseIndex(operationDetails);
+
+        let data = request
+          ? newOperationDetails.operationRequest
+          : newOperationDetails.operationResponse[responseIndex];
+
+        const index = data.body.findIndex((x) => x?.name === array?.name);
+
+        if (index !== -1) {
+          if (data.body[index].items?.properties) {
+            delete data.body[index].items?.properties[item.name];
+            // let newData = arrayData.filter((value) => value !== item.name)
+            // setArrayData(newData)
+            // refresh()
+          }
+          if (data.body[index].properties) {
+            delete data.body[index].properties[item.name];
+            // let newData = arrayData.filter((value) => value !== item.name)
+            // setArrayData(newData)
+            // refresh()
+          }
+
+          onUpdate(newOperationDetails);
+          return newOperationDetails;
+        }
+      });
+    }
+    refresh();
   };
 
   const deleteItem = (item) => {
     if (
+      isArray(item) ||
       isSchema(item) ||
       isColumn(item) ||
       isAttribute(item) ||
       isDatabase(item) ||
       isStoredProcedure(item) ||
       isArrayOfObject(item) ||
+      isObject(item) ||
       (isArrayOrObjectAttribute(item) && canEdit())
     ) {
       setOperationDetails((operationDetails) => {
@@ -652,6 +852,8 @@ const BodyItem = ({
             const newOperationDetails = _.cloneDeep(operationDetails);
 
             newOperationDetails.operationRequest.body.splice(index, 1);
+
+            onUpdate(newOperationDetails);
 
             return newOperationDetails;
           }
@@ -677,6 +879,8 @@ const BodyItem = ({
             clonedOperationDetails.operationResponse[responseIndex] =
               clonedResponseData;
 
+            onUpdate(clonedOperationDetails);
+
             return clonedOperationDetails;
           }
         }
@@ -684,7 +888,9 @@ const BodyItem = ({
         return operationDetails;
       });
     }
+    refresh();
   };
+
   const isArrayChecked = (item, isArrayValue, reqType) => {
     setOperationDetails((operationDetails) => {
       if (request) {
@@ -702,8 +908,11 @@ const BodyItem = ({
           const clonedRequestData = _.cloneDeep(requestData);
 
           clonedRequestData.isArray = isArrayValue;
+          //clonedRequestData.type = "object"; //remove to avoid making it object
+          //clonedRequestData.format = "object"; //remove to avoid making it object
           clonedOperationDetails.operationRequest.body[requestIndex] =
             clonedRequestData;
+          onUpdate(clonedOperationDetails);
 
           return clonedOperationDetails;
         }
@@ -730,6 +939,7 @@ const BodyItem = ({
 
           clonedOperationDetails.operationResponse[responseIndex] =
             clonedResponseData;
+          onUpdate(clonedOperationDetails);
 
           return clonedOperationDetails;
         }
@@ -742,28 +952,53 @@ const BodyItem = ({
   const deleteColumnOfTable = (column, table, isObjectArray = false, ref) => {
     if (isObjectArray) {
       let array = _.cloneDeep(table);
-      table = array.items.properties[ref.name];
+      if (array.items?.properties) {
+        table = array.items.properties[ref.name];
+      } else if (array.properties) {
+        table = array.properties[ref.name];
+      }
       if (isColumn(column) && isDatabase(table)) {
         setOperationDetails((operationDetails) => {
           const newOperationDetails = _.cloneDeep(operationDetails);
-          const data = request
+          const responseIndex = getResponseIndex(operationDetails);
+          let data = request
             ? newOperationDetails.operationRequest
-            : newOperationDetails.operationResponse[0];
-          const arrayIndex = data.body.findIndex(
-            (x) => isArrayOfObject(x) && x.name === array.name
-          );
-          const columnIndex =
-            data.body[arrayIndex].items.properties[
-              ref.name
-            ].selectedColumns.findIndex(
-              (x) => isColumn(x) && x?.sourceName === column?.sourceName
-            ) ?? -1;
-
-          if (columnIndex !== -1) {
-            data.body[arrayIndex].items.properties[
-              ref.name
-            ].selectedColumns.splice(columnIndex, 1);
-          }
+            : newOperationDetails.operationResponse[responseIndex];
+            const arrayIndex = data.body.findIndex(
+              (x) => (isArrayOfObject(x)||isObject(x)) && x.name === array.name
+            );
+            if (data.body[arrayIndex]?.items?.properties) {
+              const columnIndex =
+                data.body[arrayIndex].items.properties[
+                  ref.name
+                ].selectedColumns.findIndex(
+                  (x) => isColumn(x) && x?.sourceName === column?.sourceName
+                ) ?? -1;
+  
+              if (columnIndex !== -1) {
+                data.body[arrayIndex].items.properties[
+                  ref.name
+                ].selectedColumns.splice(columnIndex, 1);
+              }
+            }
+  
+            if (data.body[arrayIndex]?.properties) {
+              const columnIndex =
+                data.body[arrayIndex].properties[
+                  ref.name
+                ].selectedColumns.findIndex(
+                  (x) => isColumn(x) && x?.sourceName === column?.sourceName
+                ) ?? -1;
+  
+              if (columnIndex !== -1) {
+                data.body[arrayIndex].properties[ref.name].selectedColumns.splice(
+                  columnIndex,
+                  1
+                );
+              }
+            }
+  
+          onUpdate(newOperationDetails);
           return newOperationDetails;
         });
       }
@@ -794,6 +1029,8 @@ const BodyItem = ({
 
               newOperationDetails.operationRequest.body[tableIndex] =
                 clonedTable;
+
+              onUpdate(newOperationDetails);
 
               return newOperationDetails;
             }
@@ -831,6 +1068,8 @@ const BodyItem = ({
               clonedOperationDetails.operationResponse[responseIndex] =
                 clonedResponseData;
 
+              onUpdate(clonedOperationDetails);
+
               return clonedOperationDetails;
             }
           }
@@ -839,8 +1078,8 @@ const BodyItem = ({
         });
       }
     }
+    refresh();
   };
-
 
   const renameColumn = (column, name) => {
     if (canEdit()) {
@@ -866,6 +1105,8 @@ const BodyItem = ({
             // Set cloned column to body
             newOperationDetails.operationRequest.body[columnIndex] =
               clonedColumn;
+
+            onUpdate(newOperationDetails);
 
             return newOperationDetails;
           }
@@ -900,6 +1141,8 @@ const BodyItem = ({
 
             clonedOperationDetails.operationResponse[responseIndex] =
               clonedResponseData;
+
+            onUpdate(clonedOperationDetails);
 
             return clonedOperationDetails;
           }
@@ -962,177 +1205,62 @@ const BodyItem = ({
     table,
     name,
     isObjectArray = false,
-    ref) => {
-      if (isObjectArray) {
-        let array = _.cloneDeep(table);
+    ref
+  ) => {
+    if (isObjectArray) {
+      let array = _.cloneDeep(table);
+      if (array.items?.properties) {
         table = array.items.properties[ref.name];
-        if (isColumn(column) && isDatabase(table) && isArrayOfObject(array)) {
-          setOperationDetails((operationDetails) => {
-            const newOperationDetails = _.cloneDeep(operationDetails);
-            const data = request
-              ? newOperationDetails.operationRequest
-              : newOperationDetails.operationResponse[0];
-            const arrayIndex = data.body.findIndex(
-              (x) => isArrayOfObject(x) && x.name === array.name
-            );
-
-            const columnIndex = data.body[arrayIndex].items.properties[ref.name].selectedColumns.findIndex(
-              (x) => isColumn(x) && x?.sourceName === column.sourceName) ?? -1;
-            
-              if (columnIndex !== -1) {
-                data.body[arrayIndex].items.properties[ref.name].selectedColumns[
-                  columnIndex
-                ].name = name;
-              }
-              return newOperationDetails;
-            });
-          }
-        } else {
-          if (canEdit()) {
-            setOperationDetails((operationDetails) => {
-              if (request) {
-                const newOperationDetails = _.cloneDeep(operationDetails);
-
-                // Get parent table index
-                const parentTableIndex =
-                  newOperationDetails.operationRequest.body.findIndex(
-                    (bodyItem) =>
-                      isDatabase(bodyItem) &&
-                      table?.sourceName === bodyItem?.sourceName
-                  );
-
-                if (parentTableIndex !== -1) {
-                  // Clone parent table
-                  const clonedParentTable = _.cloneDeep(
-                    newOperationDetails.operationRequest.body[parentTableIndex]
-                  );
-
-                  // Get column
-                  const columnIndex = clonedParentTable?.selectedColumns?.findIndex(
-                    (columnItem) => column?.sourceName === columnItem?.sourceName
-                  );
-
-                  if (columnIndex !== -1) {
-                    // Clone column
-                    const clonedColumn = _.cloneDeep(
-                      clonedParentTable.selectedColumns[columnIndex]
-                    );
-
-                    // Set updated name to column
-                    clonedColumn.name = name;
-
-                    // Set cloned column to table
-                    clonedParentTable.selectedColumns[columnIndex] = clonedColumn;
-
-                    // Set table to operations body
-                    newOperationDetails.operationRequest.body[parentTableIndex] =
-                      clonedParentTable;
-                  }
-
-                  return newOperationDetails;
-                }
-              } else {
-                const responseIndex = operationDetails?.operationResponse?.findIndex(
-                  (item) => item.responseCode === responseCode
-                );
-                if (responseIndex !== -1) {
-                  const responseData =
-                    operationDetails?.operationResponse[responseIndex];
-                  const clonedOperationDetails = _.cloneDeep(operationDetails);
-                  const clonedResponseData = _.cloneDeep(responseData);
-
-                  const tableIndex = responseData?.body?.findIndex(
-                    (body) => body?.sourceName === table?.sourceName
-                  );
-
-                  if (tableIndex !== -1) {
-                    const clonedTableData = _.cloneDeep(
-                      clonedResponseData.body[tableIndex]
-                    );
-
-                    // Get column
-                    const columnIndex = clonedTableData?.selectedColumns?.findIndex(
-                      (columnItem) => column?.sourceName === columnItem?.sourceName
-                    );
-
-                    if (columnIndex !== -1) {
-                      // Clone column
-                      const clonedColumn = _.cloneDeep(
-                        clonedTableData.selectedColumns[columnIndex]
-                      );
-
-                      // Set updated name to column
-                      clonedColumn.name = name;
-
-                      // Set cloned column to table
-                      clonedTableData.selectedColumns[columnIndex] = clonedColumn;
-
-                      // Set table to response data body
-                      clonedResponseData.body[tableIndex] = clonedTableData;
-                    }
-
-                    clonedOperationDetails.operationResponse[responseIndex] =
-                      clonedResponseData;
-                    return clonedOperationDetails;
-                  }
-                }
-              }
-
-        return operationDetails;
-      });
-    }
-  }
-    refresh();
-  };
-
-  const isColumnNameTakenOfTable = (
-    column, 
-    table, 
-    name,
-    isObjectArray = false,
-    ref) => {
-      if (isObjectArray) {
-        const { loadable: operationAtom } = getRecoilValueInfo(
-          operationAtomWithMiddleware
-        );
-        const operationDetails = operationAtom?.contents;
-  
-        let array = _.cloneDeep(table);
-        table = array.items.properties[ref.name];
-        if (isColumn(column) && isDatabase(table) && isArrayOfObject(array)) {
+      } else if (array.properties) {
+        table = array.properties[ref.name];
+      }
+      if (isColumn(column) && isDatabase(table) && (isArrayOfObject(array)||isObject(array))) {
+        setOperationDetails((operationDetails) => {
           const newOperationDetails = _.cloneDeep(operationDetails);
-          const data = request
+          const responseIndex = getResponseIndex(operationDetails);
+          let data = request
             ? newOperationDetails.operationRequest
-            : newOperationDetails.operationResponse[0];
+            : newOperationDetails.operationResponse[responseIndex];
           const arrayIndex = data.body.findIndex(
-            (x) => isArrayOfObject(x) && x.name === array.name
-                                          
+            (x) => (isArrayOfObject(x)||isObject(x)) && x.name === array.name
           );
-  
-                      
-               
-          const columnIndex =
-            data.body[arrayIndex].items.properties[
-              ref.name
-            ].selectedColumns.findIndex(
-              (x) => isColumn(x) && x?.sourceName === name
-            ) ?? -1;
-                                 
-          
-         
-  
-          if (columnIndex !== -1) {
-            return true;
-         
-          }
-        }
-      } else {
-        if (canEdit()) {
-          const { loadable: operationAtom } = getRecoilValueInfo(
-            operationAtomWithMiddleware
-          );
-          const operationDetails = operationAtom?.contents;
 
+          if (data.body[arrayIndex]?.items?.properties) {
+            const columnIndex =
+              data.body[arrayIndex].items.properties[
+                ref.name
+              ].selectedColumns.findIndex(
+                (x) => isColumn(x) && x?.sourceName === column.sourceName
+              ) ?? -1;
+
+            if (columnIndex !== -1) {
+              data.body[arrayIndex].items.properties[ref.name].selectedColumns[
+                columnIndex
+              ].name = name;
+            }
+          }
+
+          if (data.body[arrayIndex]?.properties) {
+            const columnIndex =
+              data.body[arrayIndex].properties[
+                ref.name
+              ].selectedColumns.findIndex(
+                (x) => isColumn(x) && x?.sourceName === column.sourceName
+              ) ?? -1;
+
+            if (columnIndex !== -1) {
+              data.body[arrayIndex].properties[ref.name].selectedColumns[
+                columnIndex
+              ].name = name;
+            }
+          }
+          onUpdate(newOperationDetails);
+          return newOperationDetails;
+        });
+      }
+    } else {
+      if (canEdit()) {
+        setOperationDetails((operationDetails) => {
           if (request) {
             const newOperationDetails = _.cloneDeep(operationDetails);
 
@@ -1140,55 +1268,218 @@ const BodyItem = ({
             const parentTableIndex =
               newOperationDetails.operationRequest.body.findIndex(
                 (bodyItem) =>
-                  isDatabase(bodyItem) && table?.sourceName === bodyItem?.sourceName
+                  isDatabase(bodyItem) &&
+                  table?.sourceName === bodyItem?.sourceName
               );
 
             if (parentTableIndex !== -1) {
+              // Clone parent table
+              const clonedParentTable = _.cloneDeep(
+                newOperationDetails.operationRequest.body[parentTableIndex]
+              );
+
               // Get column
-              const columnIndex = newOperationDetails.operationRequest.body[
-                parentTableIndex
-              ]?.selectedColumns?.findIndex((columnItem) => {
-                return (
-                  columnItem?.name === name &&
-                  columnItem?.sourceName !== column?.sourceName
-                );
-              });
+              const columnIndex = clonedParentTable?.selectedColumns?.findIndex(
+                (columnItem) => column?.sourceName === columnItem?.sourceName
+              );
 
               if (columnIndex !== -1) {
-                return true;
+                // Clone column
+                const clonedColumn = _.cloneDeep(
+                  clonedParentTable.selectedColumns[columnIndex]
+                );
+
+                // Set updated name to column
+                clonedColumn.name = name;
+
+                // Set cloned column to table
+                clonedParentTable.selectedColumns[columnIndex] = clonedColumn;
+
+                // Set table to operations body
+                newOperationDetails.operationRequest.body[parentTableIndex] =
+                  clonedParentTable;
               }
+              onUpdate(newOperationDetails);
+              return newOperationDetails;
             }
           } else {
-            const responseIndex = operationDetails?.operationResponse?.findIndex(
-              (item) => item.responseCode === responseCode
-            );
-
+            const responseIndex =
+              operationDetails?.operationResponse?.findIndex(
+                (item) => item.responseCode === responseCode
+              );
             if (responseIndex !== -1) {
               const responseData =
                 operationDetails?.operationResponse[responseIndex];
+              const clonedOperationDetails = _.cloneDeep(operationDetails);
+              const clonedResponseData = _.cloneDeep(responseData);
 
               const tableIndex = responseData?.body?.findIndex(
                 (body) => body?.sourceName === table?.sourceName
               );
 
               if (tableIndex !== -1) {
+                const clonedTableData = _.cloneDeep(
+                  clonedResponseData.body[tableIndex]
+                );
+
                 // Get column
-                const columnIndex = responseData.body[
-                  tableIndex
-                ]?.selectedColumns?.findIndex(
-                  (columnItem) =>
-                    columnItem?.name === name &&
-                    columnItem?.sourceName !== column?.sourceName
+                const columnIndex = clonedTableData?.selectedColumns?.findIndex(
+                  (columnItem) => column?.sourceName === columnItem?.sourceName
                 );
 
                 if (columnIndex !== -1) {
-                  return true;
+                  // Clone column
+                  const clonedColumn = _.cloneDeep(
+                    clonedTableData.selectedColumns[columnIndex]
+                  );
+
+                  // Set updated name to column
+                  clonedColumn.name = name;
+
+                  // Set cloned column to table
+                  clonedTableData.selectedColumns[columnIndex] = clonedColumn;
+
+                  // Set table to response data body
+                  clonedResponseData.body[tableIndex] = clonedTableData;
                 }
+
+                clonedOperationDetails.operationResponse[responseIndex] =
+                  clonedResponseData;
+                onUpdate(clonedOperationDetails);
+
+                return clonedOperationDetails;
+              }
+            }
+          }
+
+          return operationDetails;
+        });
+      }
+    }
+    refresh();
+  };
+
+  const isColumnNameTakenOfTable = (
+    column,
+    table,
+    name,
+    isObjectArray = false,
+    ref
+  ) => {
+    if (isObjectArray) {
+      const { loadable: operationAtom } = getRecoilValueInfo(
+        operationAtomWithMiddleware
+      );
+      const operationDetails = operationAtom?.contents;
+
+      let array = _.cloneDeep(table);
+      if (array.items?.properties) {
+        table = array.items.properties[ref.name];
+      } else if (array.properties) {
+        table = array.properties[ref.name];
+      }
+      if (isColumn(column) && isDatabase(table) && (isArrayOfObject(array)||isObject(array))) {
+        const newOperationDetails = _.cloneDeep(operationDetails);
+        const responseIndex = getResponseIndex(operationDetails);
+
+        let data = request
+          ? newOperationDetails.operationRequest
+          : newOperationDetails.operationResponse[responseIndex];
+        const arrayIndex = data.body.findIndex(
+          (x) => (isArrayOfObject(x)||isObject(x)) && x.name === array.name
+        );
+
+        if (data.body[arrayIndex]?.items?.properties) {
+          const columnIndex =
+            data.body[arrayIndex].items.properties[
+              ref.name
+            ].selectedColumns.findIndex(
+              (x) => isColumn(x) && x?.sourceName === name
+            ) ?? -1;
+
+          if (columnIndex !== -1) {
+            return true;
+          }
+        }						
+				  
+
+        if (data.body[arrayIndex]?.properties) {
+          const columnIndex =
+            data.body[arrayIndex].properties[
+              ref.name
+            ].selectedColumns.findIndex(
+              (x) => isColumn(x) && x?.sourceName === name
+            ) ?? -1;
+
+          if (columnIndex !== -1) {
+            return true;
+          }
+        }
+      }
+    } else {
+      if (canEdit()) {
+        const { loadable: operationAtom } = getRecoilValueInfo(
+          operationAtomWithMiddleware
+        );
+        const operationDetails = operationAtom?.contents;
+
+        if (request) {
+          const newOperationDetails = _.cloneDeep(operationDetails);
+
+          // Get parent table index
+          const parentTableIndex =
+            newOperationDetails.operationRequest.body.findIndex(
+              (bodyItem) =>
+                isDatabase(bodyItem) &&
+                table?.sourceName === bodyItem?.sourceName
+            );
+
+          if (parentTableIndex !== -1) {
+            // Get column
+            const columnIndex = newOperationDetails.operationRequest.body[
+              parentTableIndex
+            ]?.selectedColumns?.findIndex((columnItem) => {
+              return (
+                columnItem?.name === name &&
+                columnItem?.sourceName !== column?.sourceName
+              );
+            });
+
+            if (columnIndex !== -1) {
+              return true;
+            }
+          }
+        } else {
+          const responseIndex = operationDetails?.operationResponse?.findIndex(
+            (item) => item.responseCode === responseCode
+          );
+
+          if (responseIndex !== -1) {
+            const responseData =
+              operationDetails?.operationResponse[responseIndex];
+
+            const tableIndex = responseData?.body?.findIndex(
+              (body) => body?.sourceName === table?.sourceName
+            );
+
+            if (tableIndex !== -1) {
+              // Get column
+              const columnIndex = responseData.body[
+                tableIndex
+              ]?.selectedColumns?.findIndex(
+                (columnItem) =>
+                  columnItem?.name === name &&
+                  columnItem?.sourceName !== column?.sourceName
+              );
+
+              if (columnIndex !== -1) {
+                return true;
               }
             }
           }
         }
       }
+    }
 
     return false;
   };
@@ -1204,6 +1495,22 @@ const BodyItem = ({
     }
   };
 
+  useEffect(() => {
+    if (subTableData && subTableData.data) {
+      setArrayData(subTableData.data);
+    }
+  }, [subTableData]);
+
+  useEffect(() => {
+    if (subSchemaData) {
+      if (subSchemaData.data) {
+        setArrayData(subSchemaData?.data ?? []);
+      } else {
+        setArrayData(subSchemaData?.nSchemaArray[0]?.data ?? []);
+      }
+    }
+  }, [subSchemaData]);
+
   const getTableData = (tableRef) => {
     if (!isLoadingTableData && _.isEmpty(tableRef.selectedColumns)) {
       getTable({
@@ -1217,23 +1524,80 @@ const BodyItem = ({
     if (bodyItem.items?.properties) {
       const arr = Object.keys(bodyItem.items.properties);
       setArrayData(arr);
+    } else if (bodyItem.properties) {
+      const arr = Object.keys(bodyItem.properties);
+      setArrayData(arr);
     }
   };
 
+  const getSubTableData = (item) => {
+    let newRef = "";
+
+    if (isObject(item)) {
+      if (item.ref && item.ref !== null) {
+        newRef = `${item.ref}.${item.name}.ezapi_object`;
+      } else {
+        newRef = `${item.tableName}.attributes.${item.name}.ezapi_object`;
+      }
+    } else if (isArray(item)) {
+      if (item.ref && item.ref !== null) {
+        newRef = `${item.ref}.${item.name}.ezapi_array.ezapi_object`;
+      } else {
+        newRef = `${item.tableName}.attributes.${item.name}.ezapi_array.ezapi_object`;
+      }
+    }
+
+    getSubTable({
+      projectId,
+      name: item?.name,
+      type: item?.type,
+      ref: newRef,
+    });
+  };
 
   const onItemClick = () => {
-    if (isDatabase(bodyItem)) {
+    if (isDatabase(bodyItem) && tableData === undefined) {
       if (!bodyItem?.selectedColumns || _.isEmpty(bodyItem?.selectedColumns)) {
         getTableData(bodyItem);
       }
     } else if (isArrayOfObject(bodyItem)) {
       getArrayData();
-    } else if (isSchema(bodyItem)) {
+    } else if (isObject(bodyItem) && bodyItem.properties) {
+      getArrayData();
+    } else if (
+      (isArray(bodyItem) || isObject(bodyItem)) &&
+      bodyItem.is_child === false &&
+      projectType === "db" &&
+      subTableData === undefined
+    ) {
+      getSubTableData(bodyItem);
+    } else if (
+      (isSchema(bodyItem) ||
+        (isArray(bodyItem) && bodyItem.is_child === false)) &&
+      projectType === "both" &&
+      subSchemaData === undefined
+    ) {
       getSchemaData(bodyItem);
     }
   };
 
-  if (isAttribute(bodyItem) || isArray(bodyItem) || isObject(bodyItem)) {
+  if (isColumn(bodyItem)) {
+    return (
+      <DraggableBodyItem>
+        <ColumnLabel
+          columnLabelItem={bodyItem}
+          deleteColumn={deleteItem}
+          renameColumn={renameColumn}
+          isNameTaken={isNameTaken}
+          request={request}
+          responseCode={responseCode}
+          isPartOfTable={false}
+        />
+      </DraggableBodyItem>
+    );
+  }
+
+  if (isAttribute(bodyItem)) {
     return (
       <AttributeLabel
         labelItem={bodyItem}
@@ -1245,26 +1609,37 @@ const BodyItem = ({
     );
   }
 
-  if (isColumn(bodyItem)) {
+  if (isArray(bodyItem) && bodyItem.is_child) {
     return (
-      <DraggableBodyItem>
-      {" "}
-      <ColumnLabel
-        columnLabelItem={bodyItem}
-        deleteColumn={deleteItem}
-        renameColumn={renameColumn}
-        isNameTaken={isNameTaken}
+      <ArrayOrObjectLabel
+        labelItem={bodyItem}
+        isArrayChecked={isArrayChecked}
+        deleteItem={deleteItem}
         request={request}
         responseCode={responseCode}
+        projectType={projectType}
       />
-    </DraggableBodyItem>
     );
   }
 
   return (
     <TreeItem
-      key={bodyItem?.payloadId ?? bodyItem?.name ?? treeIndex++}
-      nodeId={bodyItem?.payloadId ?? bodyItem?.name ?? treeIndex++}
+      /* key={bodyItem?.payloadId ?? bodyItem?.name ?? treeIndex++}
+      nodeId={bodyItem?.payloadId ?? bodyItem?.name ?? treeIndex++} */
+      key={
+        bodyItem?.payloadId
+          ? bodyItem?.payloadId + "level1"
+          : bodyItem?.name
+          ? bodyItem?.name + "level1"
+          : treeIndex++ + "level1"
+      }
+      nodeId={
+        bodyItem?.payloadId
+          ? bodyItem?.payloadId + "level1"
+          : bodyItem?.name
+          ? bodyItem?.name + "level1"
+          : treeIndex++ + "level1"
+      }
       label={
         isDatabase(bodyItem) ? (
           <DatabaseLabel
@@ -1273,7 +1648,8 @@ const BodyItem = ({
             isArrayChecked={isArrayChecked}
             request={request}
             responseCode={responseCode}
-            refresh={() => {
+            onUpdate={(data) => {
+              onUpdate(data);
               refresh();
             }}
           />
@@ -1283,11 +1659,18 @@ const BodyItem = ({
             deleteItem={deleteItem}
             isArrayChecked={isArrayChecked}
             request={request}
+            onUpdate={(data) => {
+              onUpdate(data);
+              refresh();
+            }}
             responseCode={responseCode}
           />
-        ) : isArray(bodyItem) || isArrayOfObject(bodyItem) ? (
-          <ArrayLabel
+        ) : isArray(bodyItem) ||
+          isArrayOfObject(bodyItem) ||
+          isObject(bodyItem) ? (
+          <ArrayOrObjectLabel
             labelItem={bodyItem}
+            isArrayChecked={isArrayChecked}
             deleteItem={deleteItem}
             request={request}
             responseCode={responseCode}
@@ -1314,95 +1697,283 @@ const BodyItem = ({
         onItemClick();
       }}
     >
-      <div className="">
-        {isSchema(bodyItem) &&
-          bodyItem?.data?.map((ref) => {
-            // Sub schema/array/object
-            if (isSchema(ref) || isArray(ref) || isObject(ref)) {
-              const clonedRef = _.cloneDeep(ref);
+      {isSchema(bodyItem) &&
+        arrayData.map((ref) => {
+          // Sub schema/array/object
+          if (isSchema(ref) || isArray(ref) || isObject(ref)) {
+            const clonedRef = _.cloneDeep(ref);
 
-              if (!clonedRef.hasOwnProperty("data")) {
-                clonedRef["data"] = [];
-              }
-
-              if (!clonedRef.hasOwnProperty("isLoaded")) {
-                clonedRef["isLoaded"] = false;
-              }
-
-              return <BodySubTreeItems currentRef={clonedRef} />;
+            if (!clonedRef.hasOwnProperty("data")) {
+              clonedRef["data"] = [];
             }
-            //attributes within a schema
-            else if (isAttribute(ref)) {
-              return (
-                <TreeItem
-                  key={ref?.payloadId ?? ref?.name ?? treeIndex++}
-                  nodeId={ref?.payloadId ?? ref?.name ?? treeIndex++}
-                  label={
-                    <div className="flex flex-row p-1 justify-between items-center border-b-2 h-8">
-                      <div className="flex flex-row items-center justify-start w-full">
-                        <div className="w-full grid grid-cols-5 gap-2 items-center ">
-                          <div className="flex justify-self-start items-center">
-                            {" "}
-                            <img
-                              src={AttributeIcon}
-                              alt="conektto logo"
-                              className="bg-white mr-2"
-                              style={{
-                                height: "24px",
-                                width: "24px",
-                              }}
-                            />
-                            <p className="text-overline2">{ref?.name}</p>
-                          </div>
 
-                          <div className="flex-1">
-                            <p>{ref?.type}</p>
-                          </div>
-                          <div> {/* empty isarray */}</div>
-                          <div className="flex-1">{/* empty isRequired */}</div>
+            if (!clonedRef.hasOwnProperty("isLoaded")) {
+              clonedRef["isLoaded"] = false;
+            }
+
+            return (
+              <BodySubTreeItems
+                currentRef={clonedRef}
+                projectType={projectType}
+              />
+            );
+          }
+          //attributes within a schema
+          else if (isAttribute(ref)) {
+            return (
+              <TreeItem
+                /* key={ref?.payloadId ?? ref?.name ?? treeIndex++}
+                nodeId={ref?.payloadId ?? ref?.name ?? treeIndex++} */
+                key={
+                  ref?.payloadId
+                    ? ref?.payloadId + "level2"
+                    : ref?.name
+                    ? ref?.name + "level2"
+                    : treeIndex++ + "level2"
+                }
+                nodeId={
+                  ref?.payloadId
+                    ? ref?.payloadId + "level2"
+                    : ref?.name
+                    ? ref?.name + "level2"
+                    : treeIndex++ + "level2"
+                }
+                label={
+                  <div className="flex flex-row p-1 justify-between items-center border-b-2 h-8">
+                    <div className="flex flex-row items-center justify-start w-full">
+                      <div className="w-full grid grid-cols-5 gap-2 items-center ">
+                        <div className="flex justify-self-start items-center">
+                          {" "}
+                          <img
+                            src={AttributeIcon}
+                            alt="conektto logo"
+                            className="bg-white mr-2"
+                            style={{
+                              height: "24px",
+                              width: "24px",
+                            }}
+                          />
+                          <p className="text-overline2">{ref?.name}</p>
                         </div>
-														 
-																			  
+
+                        <div className="flex-1">
+                          <p>{ref?.type}</p>
+                        </div>
+                        <div> </div>
+                        <div className="flex-1"></div>
                       </div>
                     </div>
-                  }
+                  </div>
+                }
+              />
+            );
+          }
+        })}
+
+      {((isArray(bodyItem) || isObject(bodyItem)) && !bodyItem.properties) &&
+        bodyItem.is_child === false &&
+        arrayData.map((item) => {
+          const clonedRef = _.cloneDeep(item);
+
+          if (!clonedRef.hasOwnProperty("data")) {
+            clonedRef["data"] = [];
+          }
+
+          if (!clonedRef.hasOwnProperty("isLoaded")) {
+            clonedRef["isLoaded"] = false;
+          }
+
+          if (bodyItem.is_child === false) {
+            let newRef = "";
+            if (isObject(bodyItem)) {
+              newRef = `${bodyItem.tableName}.attributes.${bodyItem.name}.ezapi_object`;
+            } else if (isArray(bodyItem)) {
+              newRef = `${bodyItem.tableName}.attributes.${bodyItem.name}.ezapi_array.ezapi_object`;
+            }
+            clonedRef["ref"] = newRef;
+          }
+
+          return (
+            <BodySubTreeItems
+              currentRef={clonedRef}
+              projectType={projectType}
+            />
+          );
+        })}
+
+      {(isArrayOfObject(bodyItem) ||
+        (isObject(bodyItem) && bodyItem.properties)) &&
+        arrayData.map((arrayItem) => {
+          let arrayItemRef;
+          if (isObject(bodyItem)) {
+            arrayItemRef = bodyItem.properties[arrayItem];
+          } else if(isArrayOfObject(bodyItem)) {
+            arrayItemRef = bodyItem.items?.properties[arrayItem];
+          }
+
+          if (isDatabase(arrayItemRef)) {
+            return (
+              <TreeItem
+                key={
+                  arrayItemRef?.payloadId ?? arrayItemRef?.name ?? treeIndex++
+                }
+                nodeId={
+                  arrayItemRef?.payloadId ?? arrayItemRef?.name ?? treeIndex++
+                }
+                label={
+                  isDatabase(arrayItemRef) ? (
+                    <DatabaseLabel
+                      tableLabelItem={arrayItemRef}
+                      deleteItem={() =>
+                        deleteNestedItems(arrayItemRef, bodyItem)
+                      }
+                      array={bodyItem}
+                      isArrayChecked={isArrayChecked}
+                      request={request}
+                      responseCode={responseCode}
+                      isArrayOfObject
+                      onUpdate={(data) => {
+                        onUpdate(data);
+                        refresh();
+                      }}
+                    />
+                  ) : null
+                }
+                onLabelClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+
+                  onItemClick();
+                }}
+                onIconClick={(e) => {
+                  onItemClick();
+                }}
+              >
+                <div className="">
+                  {isDatabase(arrayItemRef) &&
+                    arrayItemRef?.selectedColumns?.map((ref) => {
+                      return (
+                        <ColumnLabel
+                          columnLabelItem={ref}
+                          request={request}
+                          renameColumn={(column, name) =>
+                            renameColumnOfTable(
+                              column,
+                              bodyItem,
+                              name,
+                              true,
+                              arrayItemRef
+                            )
+                          }
+                          isNameTaken={(column, value) => {
+                            return isColumnNameTakenOfTable(
+                              column,
+                              bodyItem,
+                              value,
+                              true,
+                              arrayItemRef
+                            );
+                          }}
+                          responseCode={responseCode}
+                          deleteColumn={(column) =>
+                            deleteColumnOfTable(
+                              column,
+                              bodyItem,
+                              true,
+                              arrayItemRef
+                            )
+                          }
+                        />
+                      );
+                    })}
+                </div>
+              </TreeItem>
+            );
+          } else if (isColumn(arrayItemRef)) {
+            return (
+              <ColumnLabel
+                columnLabelItem={arrayItemRef}
+                deleteColumn={() => deleteNestedItems(arrayItemRef, bodyItem)}
+                array={bodyItem}
+                request={request}
+                responseCode={responseCode}
+                isArrayOfObject
+                onUpdate={(data) => {
+                  onUpdate(data);
+                  refresh();
+                }}
+              />
+            );
+          } else if (isAttribute(arrayItemRef)) {
+            return (
+              <AttributeLabel
+                labelItem={arrayItemRef}
+                deleteItem={() => deleteNestedItems(arrayItemRef, bodyItem)}
+                request={request}
+                responseCode={responseCode}
+                projectType={projectType}
+              />
+            );
+          } else if (
+            isArrayOfObject(arrayItemRef) ||
+            isObject(arrayItemRef) ||
+            isArray(arrayItemRef)
+          ) {
+            if (isArray(arrayItemRef)) {
+              return (
+                <ArrayOrObjectLabel
+                  labelItem={arrayItemRef}
+                  isArrayChecked={isArrayChecked}
+                  deleteItem={() => {
+                    deleteNestedItems(arrayItemRef, bodyItem);
+                  }}
+                  request={request}
+                  responseCode={responseCode}
+                  projectType={projectType}
                 />
               );
             }
-          })}
+            let arr = [];
+            if (isObject(arrayItemRef) && arrayItemRef.properties) {
+              arr = Object.keys(arrayItemRef.properties);
+            } else if (
+              isArrayOfObject(arrayItemRef) &&
+              arrayItemRef.items?.properties
+            ) {
+              arr = Object.keys(arrayItemRef.items?.properties);
+            }
 
-        {isArrayOfObject(bodyItem) &&
-          arrayData.map((arrayItem) => {
-            let arrayItemRef = bodyItem.items.properties[arrayItem];
-
-            if (isDatabase(arrayItemRef)) {
+            if (arrayItemRef) {
               return (
                 <TreeItem
                   key={
-                    arrayItemRef?.payloadId ?? arrayItemRef?.name ?? treeIndex++
+                    arrayItemRef?.payloadId
+                      ? arrayItemRef?.payloadId + "level3"
+                      : arrayItemRef?.name
+                      ? arrayItemRef?.name + "level3"
+                      : treeIndex++ + "level3"
                   }
                   nodeId={
                     arrayItemRef?.payloadId ?? arrayItemRef?.name ?? treeIndex++
                   }
                   label={
-                    isDatabase(arrayItemRef) ? (
-                      <DatabaseLabel
-                        tableLabelItem={arrayItemRef}
-                        deleteItem={() =>
-                          deleteItemFromArray(arrayItemRef, bodyItem)
-                        }
-                        array={bodyItem}
+                    (isArrayOfObject(arrayItemRef) ||
+                      isObject(arrayItemRef)) && (
+                      <ArrayOrObjectLabel
+                        labelItem={arrayItemRef}
                         isArrayChecked={isArrayChecked}
+                        deleteItem={() => {
+                          deleteNestedItems(arrayItemRef, bodyItem);
+                        }}
                         request={request}
                         responseCode={responseCode}
-                        isArrayOfObject
+                        projectType={projectType}
                       />
-                    ) : null
+                    )
                   }
                   onLabelClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-
                     onItemClick();
                   }}
                   onIconClick={(e) => {
@@ -1410,122 +1981,169 @@ const BodyItem = ({
                   }}
                 >
                   <div className="">
-                    {isDatabase(arrayItemRef) &&
-                      arrayItemRef?.selectedColumns?.map((ref) => {
-                        return (
-                          <ColumnLabel
-                            columnLabelItem={ref}
-                            request={request}
-                            renameColumn={(column, name) =>
-                              renameColumnOfTable(
-                                column,
-                                bodyItem,
-                                name,
-                                true,
-                                arrayItemRef
-                              )
-                            }
-                            isNameTaken={(column, value) => {
-                              return isColumnNameTakenOfTable(
-                                column,
-                                bodyItem,
-                                value,
-                                true,
-                                arrayItemRef
-                              );
-                            }}
-                            responseCode={responseCode}
-                            deleteColumn={(column) =>
-                              deleteColumnOfTable(
-                                column,
-                                bodyItem,
-                                true,
-                                arrayItemRef
-                              )
-                            }
-                          />
-                        );
+                    {(isObject(arrayItemRef) ||
+                      isArrayOfObject(arrayItemRef)) &&
+                      arr?.map((ref) => {
+                        let itemRef;
+                        if (isObject(arrayItemRef)) {
+                          itemRef = arrayItemRef.properties[ref];
+                        } else {
+                          itemRef = arrayItemRef.items?.properties[ref];
+                        }
+
+                        if (isColumn(itemRef)) {
+                          return (
+                            <ColumnLabel
+                              columnLabelItem={itemRef}
+                              deleteColumn={() => {
+                                deleteItemsInsideNestedItems(
+                                  itemRef,
+                                  arrayItemRef,
+                                  bodyItem
+                                );
+                              }}
+                              root={bodyItem}
+                              array={arrayItemRef}
+                              request={request}
+                              responseCode={responseCode}
+                              isArrayOfObject
+                              onUpdate={(data) => {
+                                onUpdate(data);
+                                refresh();
+                              }}
+                            />
+                          );
+                        } else if (isAttribute(itemRef)) {
+                          return (
+                            <AttributeLabel
+                              labelItem={itemRef}
+                              deleteItem={() => {
+                                deleteItemsInsideNestedItems(
+                                  itemRef,
+                                  arrayItemRef,
+                                  bodyItem
+                                );
+                              }}
+                              request={request}
+                              responseCode={responseCode}
+                              projectType={projectType}
+                            />
+                          );
+                        } else if (
+                          isObject(itemRef) ||
+                          isArray(itemRef) ||
+                          isArrayOfObject(itemRef)
+                        ) {
+                          return (
+                            <ArrayOrObjectLabel
+                              labelItem={itemRef}
+                              // isArrayChecked={isArrayChecked}
+                              deleteItem={() => {
+                                deleteItemsInsideNestedItems(
+                                  itemRef,
+                                  arrayItemRef,
+                                  bodyItem
+                                );
+                              }}
+                              styleClass="ml-6"
+                              request={request}
+                              responseCode={responseCode}
+                              projectType={projectType}
+                            />
+                          );
+                        } else if (isDatabase(itemRef)) {
+                          return (
+                            <DatabaseLabel
+                              tableLabelItem={itemRef}
+                              deleteItem={() => {
+                                deleteItemsInsideNestedItems(
+                                  itemRef,
+                                  arrayItemRef,
+                                  bodyItem
+                                );
+                              }}
+                              root={bodyItem}
+                              array={arrayItemRef}
+                              // isArrayChecked={isArrayChecked}
+                              request={request}
+                              responseCode={responseCode}
+                              isArrayOfObject
+                              onUpdate={(data) => {
+                                onUpdate(data);
+                                refresh();
+                              }}
+                            />
+                          );
+                        }
                       })}
                   </div>
                 </TreeItem>
               );
-            } else if (isColumn(arrayItemRef)) {
-              return (
-                <ColumnLabel
-                  columnLabelItem={arrayItemRef}
-                  deleteColumn={() =>
-                    deleteItemFromArray(arrayItemRef, bodyItem)
-                  }
-                  array={bodyItem}
-                  request={request}
-                  responseCode={responseCode}
-                  isArrayOfObject
-                />
-              );
             }
-          })}
+          }
+        })}
 
-        {isDatabase(bodyItem) &&
-          bodyItem?.selectedColumns?.map((ref) => {
-            return (
-              <ColumnLabel
-                columnLabelItem={ref}
-                deleteColumn={(column) => deleteColumnOfTable(column, bodyItem)}
-                renameColumn={(column, name) =>
-                  renameColumnOfTable(column, bodyItem, name)
-                }
-                request={request}
-                isNameTaken={(column, value) => {
-                  return isColumnNameTakenOfTable(column, bodyItem, value);
-                }}
-                responseCode={responseCode}
-              />
-            );			
-          })}
+      {isDatabase(bodyItem) &&
+        bodyItem?.selectedColumns?.map((ref) => {
+          return (
+            <ColumnLabel
+              columnLabelItem={ref}
+              deleteColumn={(column) => deleteColumnOfTable(column, bodyItem)}
+              renameColumn={(column, name) => {
+                renameColumnOfTable(column, bodyItem, name);
+                refresh();
+              }}
+              request={request}
+              isNameTaken={(column, value) => {
+                return isColumnNameTakenOfTable(column, bodyItem, value);
+              }}
+              responseCode={responseCode}
+            />
+          );
+        })}
 
-        {bodyItem.inputAttributes &&
-          isStoredProcedure(bodyItem) &&
-          bodyItem?.inputAttributes?.map((ref) => {
-            return (
-              <InputOrOutputLabel
-                inputOrOutputLabelItem={ref}
-                // deleteColumn={(column) => deleteColumnOfTable(column, bodyItem)}
-                renameColumn={(column, name) =>
-                  renameColumnOfTable(column, bodyItem, name)
-                }
-                request={request}
-                isNameTaken={(column, value) => {
-                  return isColumnNameTakenOfTable(column, bodyItem, value);
-                }}
-                responseCode={responseCode}
-              />
-            );
-          })}
-        {bodyItem.outputAttributes &&
-          isStoredProcedure(bodyItem) &&
-          bodyItem?.outputAttributes?.map((ref) => {
-            return (
-              <InputOrOutputLabel
-                inputOrOutputLabelItem={ref}
-                // deleteColumn={(column) => deleteColumnOfTable(column, bodyItem)}
-                renameColumn={(column, name) =>
-                  renameColumnOfTable(column, bodyItem, name)
-                }
-                request={request}
-                isNameTaken={(column, value) => {
-                  return isColumnNameTakenOfTable(column, bodyItem, value);
-                }}
-                responseCode={responseCode}
-              />
-            );
-          })}
-      </div>
+      {bodyItem.inputAttributes &&
+        isStoredProcedure(bodyItem) &&
+        bodyItem?.inputAttributes?.map((ref) => {
+          return (
+            <InputOrOutputLabel
+              inputOrOutputLabelItem={ref}
+              // deleteColumn={(column) => deleteColumnOfTable(column, bodyItem)}
+              renameColumn={(column, name) =>
+                renameColumnOfTable(column, bodyItem, name)
+              }
+              request={request}
+              isNameTaken={(column, value) => {
+                return isColumnNameTakenOfTable(column, bodyItem, value);
+              }}
+              responseCode={responseCode}
+            />
+          );
+        })}
+      {bodyItem.outputAttributes &&
+        isStoredProcedure(bodyItem) &&
+        bodyItem?.outputAttributes?.map((ref) => {
+          return (
+            <InputOrOutputLabel
+              inputOrOutputLabelItem={ref}
+              // deleteColumn={(column) => deleteColumnOfTable(column, bodyItem)}
+              renameColumn={(column, name) =>
+                renameColumnOfTable(column, bodyItem, name)
+              }
+              request={request}
+              isNameTaken={(column, value) => {
+                return isColumnNameTakenOfTable(column, bodyItem, value);
+              }}
+              responseCode={responseCode}
+            />
+          );
+        })}
     </TreeItem>
   );
 };
 
 // This is shown only for arrays, schemas, objects of a parent schema
-const BodySubTreeItems = ({ currentRef: some }) => {
+const BodySubTreeItems = ({ currentRef: some, projectType }) => {
   const [currentRef, setCurrentRef] = useState(some);
   const { projectId } = useParams();
   const {
@@ -1536,6 +2154,16 @@ const BodySubTreeItems = ({ currentRef: some }) => {
     reset: resetSubSchemaData,
     variables: subSchemaRequest,
   } = useGetSubSchema();
+
+  const {
+    isLoading: isLoadingSubTable,
+    error: getSubTablesError,
+    data: subTableData,
+    mutate: getSubTable,
+    reset: resetSubTableData,
+    isIdle: isGetSubTableIdle,
+  } = useGetSubTables();
+
   const canEdit = useCanEdit();
 
   useEffect(() => {
@@ -1551,7 +2179,12 @@ const BodySubTreeItems = ({ currentRef: some }) => {
         itemsToConsider = subSchemaData?.data;
       }
 
-      if (isSchema(currentRef) || isArray(currentRef) || isArrayOfObject(currentRef) || isObject(currentRef)) {
+      if (
+        isSchema(currentRef) ||
+        isArray(currentRef) ||
+        isArrayOfObject(currentRef) ||
+        isObject(currentRef)
+      ) {
         currentRef.isLoaded = true;
 
         for (let index = 0; index < itemsToConsider.length; index++) {
@@ -1565,19 +2198,71 @@ const BodySubTreeItems = ({ currentRef: some }) => {
     }
   }, [subSchemaData]);
 
+  useEffect(() => {
+    if (subTableData) {
+      let itemsToConsider = [];
+
+      if (subTableData?.data && !_.isEmpty(subTableData?.data)) {
+        itemsToConsider = subTableData?.data;
+      }
+
+      if (
+        isSchema(currentRef) ||
+        isArray(currentRef) ||
+        isArrayOfObject(currentRef) ||
+        isObject(currentRef)
+      ) {
+        currentRef.isLoaded = true;
+
+        if (currentRef.data.length === 0) {
+          for (let index = 0; index < itemsToConsider.length; index++) {
+            const element = itemsToConsider[index];
+            currentRef.data.push(element);
+          }
+        }
+        const clonedClonedRef = _.cloneDeep(currentRef);
+
+        setCurrentRef(clonedClonedRef);
+      }
+    }
+  }, [subTableData]);
+
   const getSubschemaData = (subSchemaRef) => {
     if (
-      !isLoadingSubSchema &&
-      !subSchemaRef.isLoaded &&
-      _.isEmpty(subSchemaRef.data) &&
-      !subSchemaRef?.is_child
+      subSchemaRef.is_child === false &&
+      projectType === "db" &&
+      _.isEmpty(subSchemaRef.data)
     ) {
-      getSubSchema({
+      let newRef = "";
+
+      if (isObject(subSchemaRef)) {
+        newRef = `${subSchemaRef.ref}.${subSchemaRef.name}.ezapi_object`;
+      } else if (isArray(subSchemaRef)) {
+        newRef = `${subSchemaRef.ref}.${subSchemaRef.name}.ezapi_array.ezapi_object`;
+      }
+
+      getSubTable({
         projectId,
         name: subSchemaRef?.name,
         type: subSchemaRef?.type,
-        ref: subSchemaRef?.ref,
+        ref: newRef,
       });
+    }
+
+    if (subSchemaRef.is_child === false) {
+      if (
+        !isLoadingSubSchema &&
+        !subSchemaRef.isLoaded &&
+        _.isEmpty(subSchemaRef.data) &&
+        projectType === "both"
+      ) {
+        getSubSchema({
+          projectId,
+          name: subSchemaRef?.name,
+          type: subSchemaRef?.type,
+          ref: subSchemaRef?.ref,
+        });
+      }
     }
   };
 
@@ -1586,32 +2271,43 @@ const BodySubTreeItems = ({ currentRef: some }) => {
       key={currentRef?.payloadId ?? currentRef?.name ?? treeIndex++}
       nodeId={currentRef?.payloadId ?? currentRef?.name ?? treeIndex++}
       label={
-        <div className='flex flex-row p-1 justify-between border-b-2'>
-          <div className='flex flex-row items-center justify-center '>
+        <div className="flex flex-row p-1 justify-between border-b-2">
+          <div className="flex flex-row items-center justify-center ">
             <img
-              src={SchemaIcon}
-              alt='conektto logo'
-              className='bg-white mr-2'
+              src={
+                isObject(currentRef)
+                  ? ObjectIcon
+                  : isArray(currentRef) && currentRef.is_child
+                  ? ArrayIcon2
+                  : isArray(currentRef) && !currentRef.is_child
+                  ? ArrayIcon
+                  : isAttribute(currentRef)
+                  ? AttributeIcon
+                  : SchemaIcon
+              }
+              alt="conektto logo"
+              className="bg-white mr-2"
               style={{
                 height: "24px",
                 width: "24px",
               }}
             />
 
-            <div className='flex flex-row justify-between w-full items-center'>
-              <p className='text-overline2 mr-4'>
+            <div className="flex flex-row justify-between w-full items-center">
+              <p className="text-overline2 mr-4">
                 {currentRef?.schemaName ?? currentRef?.name}
                 {isArray(currentRef) && " [ ]"}
               </p>
 
-              {isLoadingSubSchema && subSchemaRequest.ref === currentRef?.ref && (
-                <CircularProgress
-                  style={{
-                    width: "1.25rem",
-                    height: "1.25rem",
-                  }}
-                />
-              )}
+              {isLoadingSubSchema &&
+                subSchemaRequest.ref === currentRef?.ref && (
+                  <CircularProgress
+                    style={{
+                      width: "1.25rem",
+                      height: "1.25rem",
+                    }}
+                  />
+                )}
             </div>
           </div>
         </div>
@@ -1637,33 +2333,47 @@ const BodySubTreeItems = ({ currentRef: some }) => {
           if (!clonedRef.hasOwnProperty("isLoaded")) {
             clonedRef["isLoaded"] = false;
           }
-          return <BodySubTreeItems currentRef={clonedRef} />;
+          if (currentRef.is_child === false) {
+            let newRef = "";
+            if (isObject(currentRef)) {
+              newRef = `${currentRef.ref}.${currentRef.name}.ezapi_object`;
+            } else if (isArray(currentRef)) {
+              newRef = `${currentRef.ref}.${currentRef.name}.ezapi_array.ezapi_object`;
+            }
+            clonedRef["ref"] = newRef;
+          }
+          return (
+            <BodySubTreeItems
+              currentRef={clonedRef}
+              projectType={projectType}
+            />
+          );
         } else if (isAttribute(ref)) {
           return (
             <TreeItem
               key={ref?.payloadId ?? ref?.name ?? treeIndex++}
               nodeId={ref?.payloadId ?? ref?.name ?? treeIndex++}
               label={
-                <div className='flex flex-row justify-between items-center p-1 border-b-2'>
-                  <div className='flex flex-row items-center justify-start flex-1'>
+                <div className="flex flex-row justify-between items-center p-1 border-b-2">
+                  <div className="flex flex-row items-center justify-start flex-1">
                     <img
                       src={AttributeIcon}
-                      alt='conektto logo'
-                      className='bg-white mr-2'
+                      alt="conektto logo"
+                      className="bg-white mr-2"
                       style={{
                         height: "24px",
                         width: "24px",
                       }}
                     />
 
-                    <p className='text-overline2 '>{ref?.name} </p>
+                    <p className="text-overline2 ">{ref?.name} </p>
                   </div>
 
-                  <div className='flex-1'>
+                  <div className="flex-1">
                     <p>{ref?.type}</p>
                   </div>
 
-                  <div className='flex-1'>
+                  <div className="flex-1">
                     {/* <Checkbox
                       checked={ref?.required}
                       // checked={true}
@@ -1683,8 +2393,115 @@ const BodySubTreeItems = ({ currentRef: some }) => {
     </TreeItem>
   );
 };
+const ArrayOrObjectLabel = ({
+  styleClass,
+  labelItem,
+  request,
+  isLoading,
+  deleteItem,
+  isArrayChecked,
+  projectType
+}) => {
+  const canEdit = useCanEdit();
+  const [array, setIsArray] = useState(labelItem.isArray ?? false);
 
-const ArrayLabel = ({
+  return (
+    <ReactHoverObserver>
+      {({ isHovering }) => {
+        return (
+          <div
+            className={
+              isArray(labelItem)
+                ? "ml-6 flex flex-row p-1 h-8 justify-between items-center border-b-2"
+                : `flex flex-row p-1 justify-between items-center border-b-2 h-8 ${styleClass}`
+            }
+            style={isArray(labelItem) ? { paddingTop: "4px" } : null}
+          >
+            <div className="flex flex-row items-center justify-start w-full">
+              <div className="w-full grid grid-cols-5 gap-2 items-center">
+                <div className="flex justify-self-start items-center">
+                  {" "}
+                  <img
+                    src={
+                      isObject(labelItem)
+                        ? ObjectIcon
+                        : isArrayOfObject(labelItem)
+                        ? ArrayOfObjectsIcon
+                        : isArray(labelItem) && labelItem.is_child
+                        ? ArrayIcon2
+                        : ArrayIcon
+                    }
+                    alt="conektto logo"
+                    className="bg-white mr-4"
+                    style={{ height: "24px", width: "24px" }}
+                  />
+                  <p className="text-overline2">{labelItem?.name}</p>
+                </div>
+
+                {(projectType === "db" || projectType === "noinput") && (
+                  <div className="flex justify-self-start">
+                    {/* empty: no scheme attribute */}
+                  </div>
+                )}
+                <div className="flex  ml-1 justify-self-start">
+                  <p className="text-overline2">{labelItem?.type}</p>
+                </div>
+                <div className="flex  ml-1 justify-self-start"></div>
+                {isArray(labelItem) && (
+                  <div className="flex ml-3 justify-self-start">
+                    <Checkbox
+                      checked={array}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (!labelItem.is_child && request) {
+                          isArrayChecked(labelItem, !array, request);
+                          setIsArray(!array);
+                        }
+                      }}
+                      style={{
+                        color: Colors.brand.secondary,
+                        padding: "0",
+                      }}
+                    />
+                  </div>
+                )}
+
+                <div> </div>
+                {isLoading && (
+                  <CircularProgress
+                    style={{
+                      marginLeft: "0.5rem",
+                      width: "20px",
+                      height: "20px",
+                    }}
+                  />
+                )}
+              </div>
+            </div>
+            <div className="w-6">
+              {" "}
+              {isHovering && canEdit() && (
+                <AppIcon
+                  onClick={(ev) => {
+                    ev?.preventDefault();
+                    ev?.stopPropagation();
+
+                    deleteItem(labelItem);
+                  }}
+                >
+                  <DeleteIcon />
+                </AppIcon>
+              )}
+            </div>
+          </div>
+        );
+      }}
+    </ReactHoverObserver>
+  );
+};
+
+/* const ArrayLabel = ({
   labelItem,
   request,
   isLoading,
@@ -1744,8 +2561,7 @@ const ArrayLabel = ({
     </ReactHoverObserver>
   );
 };
-
-
+ */
 const SchemaLabel = ({
   labelItem,
   request,
@@ -1754,32 +2570,37 @@ const SchemaLabel = ({
   isArrayChecked,
 }) => {
   const canEdit = useCanEdit();
-  const [isArray, setIsArray] = useState(labelItem.isArray);
+  //const [isArray, setIsArray] = useState(labelItem.isArray);
 
   return (
     <ReactHoverObserver>
       {({ isHovering }) => {
         return (
-          <div className='flex flex-row p-1 justify-between items-center border-b-2 h-8'>
-            <div className='flex flex-row items-center justify-start w-full'>
-              <div className='w-full grid grid-cols-5 gap-2 items-center'>
-                <div className='flex justify-self-start items-center'>
+          <div className="flex flex-row p-1 justify-between items-center border-b-2 h-8">
+            <div className="flex flex-row items-center justify-start w-full">
+              <div className="w-full grid grid-cols-5 gap-2 items-center">
+                <div className="flex justify-self-start items-center">
                   {" "}
                   <img
                     src={SchemaIcon}
-                    alt='conektto logo'
-                    className='bg-white mr-4'
+                    alt="conektto logo"
+                    className="bg-white mr-4"
                     style={{ height: "24px", width: "24px" }}
                   />
-                  <p className='text-overline2'>{labelItem?.schemaName ?? labelItem?.name}</p>
+                  <p className="text-overline2">
+                    {labelItem?.schemaName ?? labelItem?.name}
+                  </p>
+                </div>
+                <div className="ml-1 flex justify-self-start">
+                  <p className="text-overline2">{labelItem?.type}</p>
                 </div>
 
                 <div> {/* empty datattype */}</div>
-                <div className='flex  ml-1 justify-self-start'>
+                <div className="flex  ml-1 justify-self-start">
                   {labelItem.hasOwnProperty("isArray") && (
                     <Checkbox
                       checked={labelItem?.isArray}
-                      disabled={true}					  
+                      disabled={true}
                       style={{
                         color: Colors.brand.secondary,
                         padding: "0",
@@ -1799,7 +2620,7 @@ const SchemaLabel = ({
                 )}
               </div>
             </div>
-            <div className='w-6'>
+            <div className="w-6">
               {" "}
               {isHovering && canEdit() && (
                 <AppIcon
@@ -1843,27 +2664,35 @@ const AttributeLabel = ({ labelItem, deleteItem, projectType }) => {
     <ReactHoverObserver>
       {({ isHovering }) => {
         return (
-          <div className='flex flex-row p-1 h-8 justify-between items-center border-b-2 ml-6 hover:bg-neutral-gray8'>
-            <div className='flex flex-row items-center justify-start flex-1'>
-              {projectType === "db" && (
-                <div className=' w-full grid grid-cols-5 gap-2 items-center '>
+          <div className="flex flex-row p-1 h-8 justify-between items-center border-b-2 ml-6 hover:bg-neutral-gray8">
+            <div className="flex flex-row items-center justify-start flex-1">
+              {(projectType === "db" || projectType === "noinput") && (
+                <div className=" w-full grid grid-cols-5 gap-2 items-center ">
                   {" "}
-                  <div className='flex justify-self-start items-center'>
-                    <img
-                      src={AttributeIcon}
-                      alt='conektto logo'
-                      className='bg-white mr-4'
-                      style={{ height: "24px", width: "24px" }}
-                    />
+                  <div className="flex justify-self-start items-center">
+                    {labelItem?.id ? (
+                      <BlurCircularIcon
+                        className="bg-white mr-4"
+                        sx={{ height: "24px", width: "24px" }}
+                        color={"Primary"}
+                      />
+                    ) : (
+                      <img
+                        src={AttributeIcon}
+                        alt="conektto logo"
+                        className="bg-white mr-4"
+                        style={{ height: "24px", width: "24px" }}
+                      />
+                    )}
                     <Tooltip
                       title={labelItem?.name}
                       open={openTooltip}
                       onClose={handleToolTipOpen}
                       onOpen={handleToolTipOpen}
-                      placement='left-start'
+                      placement="left-start"
                     >
                       <p
-                        className='text-overline2'
+                        className="text-overline2"
                         onMouseEnter={() => {
                           setIsHover([true, labelItem?.name]);
                         }}
@@ -1876,17 +2705,17 @@ const AttributeLabel = ({ labelItem, deleteItem, projectType }) => {
                       </p>
                     </Tooltip>
                   </div>
-                  <div className='flex justify-self-start'>
+                  <div className="flex justify-self-start">
                     {/* empty: no scheme attribute */}
                   </div>
-                  <div className='ml-1 flex justify-self-start'>
-                    <p className='text-overline2'>{labelItem?.type}</p>
+                  <div className="ml-1 flex justify-self-start">
+                    <p className="text-overline2">{labelItem?.type}</p>
                   </div>
-                  <div className='flex justify-self-start'>
+                  <div className="flex justify-self-start">
                     {/* empty: no isarray Checkbox */}
                   </div>
-                  <div className='flex ml-3 justify-self-start'>
-                    <p className='text-overline2'>
+                  <div className="flex ml-3 justify-self-start">
+                    <p className="text-overline2">
                       <Checkbox
                         checked={labelItem?.required}
                         // checked={true}
@@ -1899,45 +2728,52 @@ const AttributeLabel = ({ labelItem, deleteItem, projectType }) => {
                   </div>
                 </div>
               )}
-              {projectType === "schema" ||
-                (projectType === "both" && (
-                  <div className=' w-full grid grid-cols-5 gap-2 items-center'>
-                    {" "}
-                    <div className='flex justify-self-start items-center'>
+              {(projectType === "schema" || projectType === "both") && (
+                <div className=" w-full grid grid-cols-5 gap-2 items-center">
+                  {" "}
+                  <div className="flex justify-self-start items-center">
+                    {labelItem?.id ? (
+                      <BlurCircularIcon
+                        className="bg-white mr-4"
+                        sx={{ height: "24px", width: "24px" }}
+                        color={"Primary"}
+                      />
+                    ) : (
                       <img
                         src={AttributeIcon}
-                        alt='conektto logo'
-                        className='bg-white mr-4'
+                        alt="conektto logo"
+                        className="bg-white mr-4"
                         style={{ height: "24px", width: "24px" }}
                       />
-                      <Tooltip
-                        title={labelItem?.name}
-                        open={openTooltip}
-                        onClose={handleToolTipOpen}
-                        onOpen={handleToolTipOpen}
-                        placement='left-start'
+                    )}
+                    <Tooltip
+                      title={labelItem?.name}
+                      open={openTooltip}
+                      onClose={handleToolTipOpen}
+                      onOpen={handleToolTipOpen}
+                      placement="left-start"
+                    >
+                      <p
+                        onMouseEnter={() => {
+                          setIsHover([true, labelItem?.name]);
+                        }}
+                        onMouseLeave={() => {
+                          setIsHover([false, labelItem?.name]);
+                        }}
+                        className="text-overline2"
                       >
-                        <p
-                          onMouseEnter={() => {
-                            setIsHover([true, labelItem?.name]);
-                          }}
-                          onMouseLeave={() => {
-                            setIsHover([false, labelItem?.name]);
-                          }}
-                          className='text-overline2'
-                        >
-                          {truncate(labelItem?.name, truncateLength)}
-                        </p>
-                      </Tooltip>{" "}
-                    </div>
-                    <div className='ml-1 flex justify-self-start'>
-                      <p className='text-overline2'>{labelItem?.type}</p>
-                    </div>
-                    <div className='flex justify-self-start'>
-                      {/* empty: no isarray Checkbox */}
-                    </div>
-                    <div className='flex ml-3 justify-self-start'>
-                      {/* <p className='text-overline2'>
+                        {truncate(labelItem?.name, truncateLength)}
+                      </p>
+                    </Tooltip>{" "}
+                  </div>
+                  <div className="ml-1 flex justify-self-start">
+                    <p className="text-overline2">{labelItem?.type}</p>
+                  </div>
+                  <div className="flex justify-self-start">
+                    {/* empty: no isarray Checkbox */}
+                  </div>
+                  <div className="flex ml-3 justify-self-start">
+                    {/* <p className='text-overline2'>
                         <Checkbox
                           checked={labelItem?.required}
                           // checked={true}
@@ -1947,13 +2783,13 @@ const AttributeLabel = ({ labelItem, deleteItem, projectType }) => {
                           }}
                         />
                       </p> */}
-                      {/* isRequired not needed for now */}
-                    </div>
+                    {/* isRequired not needed for now */}
                   </div>
-                ))}
+                </div>
+              )}
             </div>
 
-            <div className='w-6'>
+            <div className="w-6">
               {isHovering && canEdit() && (
                 <AppIcon
                   onClick={(ev) => {
@@ -1982,7 +2818,9 @@ const DatabaseLabel = ({
   isArrayChecked,
   isArrayOfObject = false,
   array,
-  refresh,
+  
+  root,
+  onUpdate = () => {},
 }) => {
   const [optionsMenuAnchorEl, setOptionsMenuAnchorEl] = useState(false);
   const [isArray, setIsArray] = useState(tableLabelItem.isArray);
@@ -2055,7 +2893,7 @@ const DatabaseLabel = ({
           <>
             <Dialog
               onClose={handleCloseDialog}
-              aria-labelledby='dashboard-dialog'
+              aria-labelledby="dashboard-dialog"
               open={dialog?.show ?? false}
               fullWidth
               PaperProps={{
@@ -2063,41 +2901,61 @@ const DatabaseLabel = ({
               }}
               disableBackdropClick
             >
-              {dialog?.type === "rename-table" && 
-              canEdit() && 
-              !isArrayOfObject && (
-                <ChangeTableName
-                  labelItem={tableLabelItem}
-                  request={request}
-                  responseCode={responseCode}
-                  onClose={handleCloseDialog}
-                  refresh={() => {
-                    refresh();
-                  }}
-                />
-              )}
               {dialog?.type === "rename-table" &&
                 canEdit() &&
-                isArrayOfObject && (
+                !isArrayOfObject && (
+                  <ChangeTableName
+                    labelItem={tableLabelItem}
+                    request={request}
+                    responseCode={responseCode}
+                    onClose={handleCloseDialog}
+                    onUpdate={(data) => {
+                      onUpdate(data);
+                    }}
+                  />
+                )}
+              {dialog?.type === "rename-table" &&
+                canEdit() &&
+                isArrayOfObject &&
+                root === undefined && (
                   <ChangeNameInsideArray
                     labelItem={tableLabelItem}
                     request={request}
                     responseCode={responseCode}
                     onClose={handleCloseDialog}
                     array={array}
+                    onUpdate={(data) => {
+                      onUpdate(data);
+                    }}
+                  />
+                )}
+              {dialog?.type === "rename-table" &&
+                canEdit() &&
+                isArrayOfObject &&
+                root && (
+                  <ChangeNameInsideArray
+                    root={root}
+                    labelItem={tableLabelItem}
+                    request={request}
+                    responseCode={responseCode}
+                    onClose={handleCloseDialog}
+                    array={array}
+                    onUpdate={(data) => {
+                      onUpdate(data);
+                    }}
                   />
                 )}
             </Dialog>
 
-            <div className='flex flex-row p-1 justify-between items-center border-b-2 h-8'>
-              <div className='flex flex-row items-center justify-start w-full '>
-                <div className='w-full grid grid-cols-5 gap-2 items-center '>
+            <div className="flex flex-row p-1 justify-between items-center border-b-2 h-8">
+              <div className="flex flex-row items-center justify-start w-full ">
+                <div className="w-full grid grid-cols-5 gap-2 items-center ">
                   {" "}
-                  <div className='flex justify-self-start items-center'>
+                  <div className="flex justify-self-start items-center">
                     <img
                       src={TableIcon}
-                      alt='conektto logo'
-                      className='bg-white mr-4'
+                      alt="conektto logo"
+                      className="bg-white mr-4"
                       style={{ height: "24px", width: "24px" }}
                     />
                     {tableLabelItem?.sourceName &&
@@ -2107,29 +2965,29 @@ const DatabaseLabel = ({
                         open={openTooltip}
                         onClose={handleToolTipOpen}
                         onOpen={handleToolTipOpen}
-                        placement='left-start'
+                        placement="left-start"
                       >
                         <p
-                          id='tableNameTruncate'
+                          id="tableNameTruncate"
                           onMouseEnter={() => {
                             setIsHover([true, tableLabelItem?.sourceName]);
                           }}
                           onMouseLeave={() => {
                             setIsHover([false, tableLabelItem?.sourceName]);
                           }}
-                          className='text-overline2'
+                          className="text-overline2"
                         >
                           {truncate(tableLabelItem?.sourceName, truncateLength)}
                         </p>
                       </Tooltip>
                     ) : null}
                   </div>
-                  <div className='flex -ml-4 justify-self-start'>
+                  <div className="flex -ml-4 justify-self-start">
                     {" "}
                     {tableLabelItem?.name &&
                     !_.isEmpty(tableLabelItem?.name) ? (
                       <p
-                        className='text-overline2 ml-4 select-none'
+                        className="text-overline2 ml-4 select-none"
                         ref={nameRef}
                       >
                         {tableLabelItem?.name}
@@ -2137,7 +2995,7 @@ const DatabaseLabel = ({
                     ) : null}
                   </div>
                   <div> {/* empty datattype */}</div>
-                  <div className='flex  ml-1 justify-self-start'>
+                  <div className="flex  ml-1 justify-self-start">
                     <Checkbox
                       checked={isArray}
                       onClick={(e) => {
@@ -2157,7 +3015,7 @@ const DatabaseLabel = ({
                 </div>
               </div>
 
-              <div className='w-6'>
+              <div className="w-6">
                 {isHovering && canEdit() && (
                   <>
                     <AppIcon
@@ -2172,7 +3030,7 @@ const DatabaseLabel = ({
                     </AppIcon>
 
                     <Menu
-                      id='table-menu'
+                      id="table-menu"
                       anchorEl={optionsMenuAnchorEl}
                       keepMounted
                       open={Boolean(optionsMenuAnchorEl)}
@@ -2191,7 +3049,7 @@ const DatabaseLabel = ({
                           showTableNameChangeDialog();
                         }}
                       >
-                        <p className='text-overline2'>Rename</p>
+                        <p className="text-overline2">Rename</p>
                       </MenuItem>
                       <MenuItem
                         onClick={(e) => {
@@ -2202,7 +3060,7 @@ const DatabaseLabel = ({
                           deleteItem(tableLabelItem);
                         }}
                       >
-                        <p className='text-overline2 text-accent-red'>Delete</p>
+                        <p className="text-overline2 text-accent-red">Delete</p>
                       </MenuItem>
                     </Menu>
                   </>
@@ -2226,6 +3084,9 @@ const ColumnLabel = ({
   isDeletable = true,
   isArrayOfObject = false,
   array,
+  isPartOfTable = true,
+  root,
+  onUpdate = () => {},
 }) => {
   let [operationData, setOperationDetails] = useRecoilState(
     operationAtomWithMiddleware
@@ -2238,7 +3099,7 @@ const ColumnLabel = ({
   if (
     columnLabelItem.auto == true &&
     request == true &&
-    operationData?.operation?.operationType?.toLowerCase() == "post"
+    operationData?.operation?.operationType?.toLowerCase() === "post"
   ) {
     deleteColumn(columnLabelItem);
   }
@@ -2306,7 +3167,7 @@ const ColumnLabel = ({
           <>
             <Dialog
               onClose={handleCloseDialog}
-              aria-labelledby='column-dialog'
+              aria-labelledby="column-dialog"
               open={dialog?.show ?? false}
               fullWidth
               PaperProps={{
@@ -2314,24 +3175,25 @@ const ColumnLabel = ({
               }}
               disableBackdropClick
             >
-              {dialog?.type === "rename-column" && 
-              canEdit() && 
-              !isArrayOfObject && (
-                <ChangeColumnName
-                  labelItem={columnLabelItem}
-                  request={request}
-                  responseCode={responseCode}
-                  renameColumn={(column, value) => {
-                    renameColumn(column, value);
-
-                    handleCloseDialog();
-                  }}
-                  isNameTaken={isNameTaken}
-                  onClose={handleCloseDialog}
-                />
-              )}
-            {dialog?.type === "rename-column" &&
+              {dialog?.type === "rename-column" &&
                 canEdit() &&
+                !isArrayOfObject && (
+                  <ChangeColumnName
+                    labelItem={columnLabelItem}
+                    request={request}
+                    responseCode={responseCode}
+                    renameColumn={(column, value) => {
+                      renameColumn(column, value);
+
+                      handleCloseDialog();
+                    }}
+                    isNameTaken={isNameTaken}
+                    onClose={handleCloseDialog}
+                  />
+                )}
+              {dialog?.type === "rename-column" &&
+                canEdit() &&
+                root === undefined &&
                 isArrayOfObject && (
                   <ChangeNameInsideArray
                     labelItem={columnLabelItem}
@@ -2340,27 +3202,49 @@ const ColumnLabel = ({
                     onClose={handleCloseDialog}
                     array={array}
                     isColumn
+                    onUpdate={(data) => {
+                      onUpdate(data);
+                    }}
+                  />
+                )}
+
+              {dialog?.type === "rename-column" &&
+                canEdit() &&
+                root &&
+                isArrayOfObject && (
+                  <ChangeNameInsideArray
+                    root={root}
+                    labelItem={columnLabelItem}
+                    request={request}
+                    responseCode={responseCode}
+                    onClose={handleCloseDialog}
+                    array={array}
+                    isColumn
+                    onUpdate={(data) => {
+                      onUpdate(data);
+                    }}
                   />
                 )}
             </Dialog>{" "}
-
-            <div className=' flex flex-row p-1 h-8 justify-between items-center border-b-2 ml-6 hover:bg-neutral-gray8'>
-              <div className='flex flex-row items-center justify-start flex-1'>
-                <div className=' w-full grid grid-cols-5 gap-2 items-center '>
+            <div className=" flex flex-row p-1 h-8 justify-between items-center border-b-2 ml-6 hover:bg-neutral-gray8">
+              <div className="flex flex-row items-center justify-start flex-1">
+                <div className=" w-full grid grid-cols-5 gap-2 items-center ">
                   {" "}
-                  <div className='flex justify-self-start items-center '>
-                    <AppIcon className="mr-1 opacity-50">
-                      <DragIndicatorIcon
-                        className={classNames({
-                          "cursor-move": canEdit(),
-                        })}
-                        style={{ height: "24px", width: "24px" }}
-                      />
-                    </AppIcon>
+                  <div className="flex justify-self-start items-center ">
+                    {isPartOfTable && (
+                      <AppIcon className="mr-1 opacity-50">
+                        <DragIndicatorIcon
+                          className={classNames({
+                            "cursor-move": canEdit(),
+                          })}
+                          style={{ height: "24px", width: "24px" }}
+                        />
+                      </AppIcon>
+                    )}
                     <img
                       src={ColumnIcon}
-                      alt='conektto logo'
-                      className='bg-white mr-4'
+                      alt="conektto logo"
+                      className="bg-white mr-4"
                       style={{ height: "24px", width: "24px" }}
                     />
                     <Tooltip
@@ -2368,10 +3252,10 @@ const ColumnLabel = ({
                       open={openTooltip}
                       onClose={handleToolTipOpen}
                       onOpen={handleToolTipOpen}
-                      placement='left-start'
+                      placement="left-start"
                     >
                       <p
-                        className='text-overline2'
+                        className="text-overline2"
                         onMouseEnter={() => {
                           setIsHover([true, columnLabelItem?.sourceName]);
                         }}
@@ -2384,19 +3268,19 @@ const ColumnLabel = ({
                     </Tooltip>
                   </div>
                   <div
-                    className='flex justify-self-start  cursor-pointer select-none'
+                    className="flex justify-self-start  cursor-pointer select-none"
                     ref={nameRef}
                   >
-                    <p className='text-overline2'>{columnLabelItem?.name}</p>
+                    <p className="text-overline2">{columnLabelItem?.name}</p>
                   </div>
-                  <div className='flex ml-1 justify-self-start'>
-                    <p className='text-overline2'>{columnLabelItem?.type}</p>
+                  <div className="flex ml-1 justify-self-start">
+                    <p className="text-overline2">{columnLabelItem?.type}</p>
                   </div>
-                  <div className='flex justify-self-start'>
+                  <div className="flex justify-self-start">
                     {/* empty: no isarray Checkbox */}
                   </div>
-                  <div className='flex ml-3 justify-self-start'>
-                    <p className='text-overline2'>
+                  <div className="flex ml-3 justify-self-start">
+                    <p className="text-overline2">
                       <Checkbox
                         checked={columnLabelItem?.required}
                         style={{
@@ -2409,7 +3293,7 @@ const ColumnLabel = ({
                 </div>
               </div>
 
-              <div className='w-6'>
+              <div className="w-6">
                 {isHovering && canEdit() && isDeletable && (
                   <>
                     <AppIcon
@@ -2424,7 +3308,7 @@ const ColumnLabel = ({
                     </AppIcon>
 
                     <Menu
-                      id='table-menu'
+                      id="table-menu"
                       anchorEl={optionsMenuAnchorEl}
                       keepMounted
                       open={Boolean(optionsMenuAnchorEl)}
@@ -2443,20 +3327,22 @@ const ColumnLabel = ({
                           showColumnNameChangeDialog();
                         }}
                       >
-                        <p className='text-overline2'>Rename</p>
+                        <p className="text-overline2">Rename</p>
                       </MenuItem>
                       {isDeletable && (
-                      <MenuItem
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          setOptionsMenuAnchorEl(null);
+                        <MenuItem
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setOptionsMenuAnchorEl(null);
 
-                          deleteColumn(columnLabelItem);
-                        }}
-                      >
-                        <p className='text-overline2 text-accent-red'>Delete</p>
-                      </MenuItem>
+                            deleteColumn(columnLabelItem);
+                          }}
+                        >
+                          <p className="text-overline2 text-accent-red">
+                            Delete
+                          </p>
+                        </MenuItem>
                       )}
                     </Menu>
                   </>
@@ -2476,6 +3362,7 @@ const StoredProcedureLabel = ({
   responseCode,
   deleteItem,
   isArrayChecked,
+  onUpdate = () => {},
 }) => {
   const [optionsMenuAnchorEl, setOptionsMenuAnchorEl] = useState(false);
   const [isArray, setIsArray] = useState(storedProcedureLabelItem.isArray);
@@ -2549,7 +3436,7 @@ const StoredProcedureLabel = ({
           <>
             <Dialog
               onClose={handleCloseDialog}
-              aria-labelledby='dashboard-dialog'
+              aria-labelledby="dashboard-dialog"
               open={dialog?.show ?? false}
               fullWidth
               PaperProps={{
@@ -2563,19 +3450,22 @@ const StoredProcedureLabel = ({
                   request={request}
                   responseCode={responseCode}
                   onClose={handleCloseDialog}
+                  onUpdate={(data) => {
+                    onUpdate(data);
+                  }}
                 />
               )}
             </Dialog>
 
-            <div className='flex flex-row p-1 justify-between items-center border-b-2 h-8'>
-              <div className='flex flex-row items-center justify-start w-full '>
-                <div className='w-full grid grid-cols-5 gap-2 items-center '>
+            <div className="flex flex-row p-1 justify-between items-center border-b-2 h-8">
+              <div className="flex flex-row items-center justify-start w-full ">
+                <div className="w-full grid grid-cols-5 gap-2 items-center ">
                   {" "}
-                  <div className='flex justify-self-start items-center'>
+                  <div className="flex justify-self-start items-center">
                     <img
                       src={StoredProcedureIcon}
-                      alt='conektto logo'
-                      className='bg-white mr-4'
+                      alt="conektto logo"
+                      className="bg-white mr-4"
                       style={{ height: "24px", width: "24px" }}
                     />
                     {storedProcedureLabelItem?.name &&
@@ -2585,10 +3475,10 @@ const StoredProcedureLabel = ({
                         open={openTooltip}
                         onClose={handleToolTipOpen}
                         onOpen={handleToolTipOpen}
-                        placement='left-start'
+                        placement="left-start"
                       >
                         <p
-                          id='tableNameTruncate'
+                          id="tableNameTruncate"
                           onMouseEnter={() => {
                             setIsHover([
                               true,
@@ -2601,7 +3491,7 @@ const StoredProcedureLabel = ({
                               storedProcedureLabelItem?.sourceName,
                             ]);
                           }}
-                          className='text-overline2'
+                          className="text-overline2"
                         >
                           {truncate(
                             storedProcedureLabelItem?.name,
@@ -2618,7 +3508,7 @@ const StoredProcedureLabel = ({
                 </div>
               </div>
 
-              <div className='w-6'>
+              <div className="w-6">
                 {isHovering && canEdit() && (
                   <>
                     <AppIcon
@@ -2633,7 +3523,7 @@ const StoredProcedureLabel = ({
                     </AppIcon>
 
                     <Menu
-                      id='table-menu'
+                      id="table-menu"
                       anchorEl={optionsMenuAnchorEl}
                       keepMounted
                       open={Boolean(optionsMenuAnchorEl)}
@@ -2652,7 +3542,7 @@ const StoredProcedureLabel = ({
                           showTableNameChangeDialog();
                         }}
                       >
-                        <p className='text-overline2'>Rename</p>
+                        <p className="text-overline2">Rename</p>
                       </MenuItem>
                       <MenuItem
                         onClick={(e) => {
@@ -2663,7 +3553,7 @@ const StoredProcedureLabel = ({
                           deleteItem(storedProcedureLabelItem);
                         }}
                       >
-                        <p className='text-overline2 text-accent-red'>Delete</p>
+                        <p className="text-overline2 text-accent-red">Delete</p>
                       </MenuItem>
                     </Menu>
                   </>
@@ -2781,21 +3671,21 @@ const InputOrOutputLabel = ({
               )}
             </Dialog> */}
 
-            <div className=' flex flex-row p-1 h-8 justify-between items-center border-b-2 ml-6 hover:bg-neutral-gray8'>
-              <div className='flex flex-row items-center justify-start flex-1'>
-                <div className=' w-full grid grid-cols-5 gap-2 items-center '>
+            <div className=" flex flex-row p-1 h-8 justify-between items-center border-b-2 ml-6 hover:bg-neutral-gray8">
+              <div className="flex flex-row items-center justify-start flex-1">
+                <div className=" w-full grid grid-cols-5 gap-2 items-center ">
                   {" "}
-                  <div className='flex justify-self-start items-center '>
+                  <div className="flex justify-self-start items-center ">
                     <img
                       src={
-                        inputOrOutputLabelItem.type == "input"
+                        inputOrOutputLabelItem.type === "input"
                           ? InputIcon
-                          : inputOrOutputLabelItem.type == "output"
+                          : inputOrOutputLabelItem.type === "output"
                           ? OutputIcon
                           : null
                       }
-                      alt='conektto logo'
-                      className='bg-white mr-4'
+                      alt="conektto logo"
+                      className="bg-white mr-4"
                       style={{ height: "24px", width: "24px" }}
                     />
                     <Tooltip
@@ -2803,10 +3693,10 @@ const InputOrOutputLabel = ({
                       open={openTooltip}
                       onClose={handleToolTipOpen}
                       onOpen={handleToolTipOpen}
-                      placement='left-start'
+                      placement="left-start"
                     >
                       <p
-                        className='text-overline2'
+                        className="text-overline2"
                         onMouseEnter={() => {
                           setIsHover([true, inputOrOutputLabelItem?.name]);
                         }}
@@ -2819,22 +3709,22 @@ const InputOrOutputLabel = ({
                     </Tooltip>
                   </div>
                   <div
-                    className='flex justify-self-start  cursor-pointer select-none'
+                    className="flex justify-self-start  cursor-pointer select-none"
                     ref={nameRef}
                   >
                     {/* <p className='text-overline2'>
                       {inputOrOutputLabelItem?.name}
                     </p> */}
                   </div>
-                  <div className='flex ml-1 justify-self-start'>
-                    <p className='text-overline2'>
+                  <div className="flex ml-1 justify-self-start">
+                    <p className="text-overline2">
                       {/* {inputOrOutputLabelItem?.type} */}
                     </p>
                   </div>
-                  <div className='flex justify-self-start'>
+                  <div className="flex justify-self-start">
                     {/* empty: no isarray Checkbox */}
                   </div>
-                  <div className='flex ml-3 justify-self-start'>
+                  <div className="flex ml-3 justify-self-start">
                     {/* empty: no isarray Checkbox */}
                   </div>
                 </div>

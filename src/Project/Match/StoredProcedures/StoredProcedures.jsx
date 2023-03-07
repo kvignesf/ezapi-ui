@@ -93,7 +93,7 @@ const StoredProcedures = () => {
   return (
     <div className='mx-4 py-4'>
       <div className='flex flex-row gap-x-5 justify-center'>
-        {content?.contentType == "storedProcedures" && (
+        {content?.contentType === "storedProcedures" && (
           <div className='flex-1 h-fit bg-neutral-gray7 rounded-md p-2'>
             <StoredProcedureSection
               isAddClicked={(value, name) => setAddClicked([value, name])}
@@ -126,7 +126,7 @@ const StoredProcedures = () => {
             </Snackbar>
           </div>
         )}
-        {content?.contentType == "input/output" && (
+        {content?.contentType === "input/output" && (
           <>
             {" "}
             <div className='flex-1 h-fit bg-neutral-gray7 rounded-md p-2'>

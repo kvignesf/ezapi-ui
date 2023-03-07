@@ -4,6 +4,7 @@ import aes from "crypto-js/aes";
 import client, { endpoint } from "../shared/network/client";
 import { queries } from "../shared/network/queryClient";
 import { getApiError } from "../shared/utils";
+import { uploadProjectCACertificate, uploadProjectCertificate, uploadProjectKey } from "../AddProject/addProjectQuery";
 
 const fetchProjectDetails = async ({ queryKey }) => {
   const { projectId } = queryKey[1];
@@ -40,7 +41,9 @@ const verifyProject = async ({ projectId }) => {
     });
     return data;
   } catch (error) {
+    console.log("errror", error)
     throw getApiError(error);
+    
   }
 };
 
@@ -53,7 +56,7 @@ export const getTablesRelations = async (projectId) => {
       { projectId },
       {
         validateStatus: function (status) {
-          return status == 200 || status == 400;
+          return status === 200 || status === 400;
         },
         timeout: 300000,
       }
@@ -86,7 +89,7 @@ export const tableMappings = async (
       },
       {
         validateStatus: function (status) {
-          return status == 200 || status == 400;
+          return status === 200 || status === 400;
         },
         timeout: 120000,
       }
@@ -99,6 +102,26 @@ export const tableMappings = async (
 };
 
 export const publishProject = async ({ projectId, newProjectDetails }) => {
+  
+  console.log("newProjectDetails...",newProjectDetails)
+  let keys = null
+  let certificates = null
+  let caCertificates = null
+  const userId= sessionStorage.getItem('user_id')
+
+  if (newProjectDetails.keys && newProjectDetails.keys.length > 0) {
+    keys= await uploadProjectKey({projectId, file: newProjectDetails.keys[0], userId, test: false} )
+  }
+
+  if(newProjectDetails.certificates && newProjectDetails.certificates.length > 0){
+    certificates= await uploadProjectCertificate({projectId, file: newProjectDetails.certificates[0], userId, test: false} )
+  }
+      
+  if(newProjectDetails.caCertificates && newProjectDetails.caCertificates.length > 0) {
+    caCertificates= await uploadProjectCACertificate({projectId, file: newProjectDetails.caCertificates[0], userId, test: false} )
+  }
+  console.log("keys", keys, certificates, caCertificates)
+
   var ciphertext = aes
     .encrypt(
       newProjectDetails?.password,
@@ -110,15 +133,17 @@ export const publishProject = async ({ projectId, newProjectDetails }) => {
       endpoint.publishProject,
       {
         projectId,
-												
+        keyPath: keys?keys.url:null,
+        certPath: certificates?certificates.url:null,
+        rootPath: caCertificates?caCertificates.url:null,													
         password: ciphertext,
       },
       {
         validateStatus: function (status) {
-          return status == 200 || status == 400;
+          return status === 200 || status === 400;
         },
 		
-        timeout: 120000,
+        timeout: 480000,
       }
     );
     return data;

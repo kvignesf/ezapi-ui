@@ -12,6 +12,8 @@ import AppIcon from "../../shared/components/AppIcon";
 import classNames from "classnames";
 import {
   isArray,
+  isMongoDb,
+  isObject,
   operationAtomWithMiddleware,
   useCanEdit,
 } from "../../shared/utils";
@@ -26,15 +28,22 @@ import StoredProcedures from "./StoredProcedures/StoredProcedures";
 import AddOrEditCustomParameter from "./CustomParameters/AddOrEditCustomParameter/AddOrEditCustomParameter";
 import StoredProcedure from "./StoredProcedures/StoredProcedures";
 import storedProcedureAtom from "../../shared/atom/storedProcedureAtom";
+import tablesDataAtom from "../../shared/atom/tablesDataAtom";
+import addParamAtom from "../../shared/atom/addParamAtom";
+
 
 const Match = ({ projectType, ...props }) => {
   let [operationData, setOperationDetails] = useRecoilState(
     operationAtomWithMiddleware
   );
+  const [addParamCheck, setAddParamCheck] = useRecoilState(
+    addParamAtom
+  );
   const [currentTab, setTab] = useState(null);
   const [schemaState, setSchemaState] = useRecoilState(schemaAtom);
   const resetSchemaState = useResetRecoilState(schemaAtom);
   const [tableState, setTableState] = useRecoilState(tableAtom);
+  const [tablesDataState, setTablesDataState] = useRecoilState(tablesDataAtom);
   const [storedProcedureState, setStoredProcedureState] =
     useRecoilState(storedProcedureAtom);
   const resetTableState = useResetRecoilState(tableAtom);
@@ -94,6 +103,28 @@ const Match = ({ projectType, ...props }) => {
       data: null,
     });
   };
+
+  function isString(variable) {
+    return typeof variable === "string";
+  }
+
+  function replaceLastOccurrenceInString(input, find, replaceWith) {
+    if (!isString(input) || !isString(find) || !isString(replaceWith)) {
+      // returns input on invalid arguments
+      return input;
+    }
+
+    const lastIndex = input.lastIndexOf(find);
+    if (lastIndex < 0) {
+      return input;
+    }
+
+    return (
+      input.substr(0, lastIndex) +
+      replaceWith +
+      input.substr(lastIndex + find.length)
+    );
+  }
 
   return (
     <div className='flex-1 relative w-full' {...props}>
@@ -205,7 +236,7 @@ const Match = ({ projectType, ...props }) => {
                 })}
               </div>
             </div>
-          ) : tableState?.selected ? (
+          ) : tableState?.selected && tableState?.selected.length > 0 ? (
             <div className='flex flex-row items-center ml-3 py-3'>
               <AppIcon
                 style={{ marginRight: "0.5rem" }}
@@ -213,7 +244,29 @@ const Match = ({ projectType, ...props }) => {
                   e?.preventDefault();
                   e?.stopPropagation();
 
-                  resetTableState();
+                  let updatedTableState = _.cloneDeep(tableState);
+
+                  if (updatedTableState?.selected.length > 0) {
+                    const removedData = updatedTableState?.selected?.pop();
+                    let newRef;
+                    if (isObject(removedData)) {
+                      newRef = replaceLastOccurrenceInString(
+                        updatedTableState.ref,
+                        `.${removedData.name}.ezapi_object`,
+                        ""
+                      );
+                    } else {
+                      newRef = replaceLastOccurrenceInString(
+                        updatedTableState.ref,
+                        `.${removedData.name}.ezapi_array.ezapi_object`,
+                        ""
+                      );
+                    }
+                    updatedTableState.ref = newRef;
+                    setTableState(updatedTableState);
+                  } else {
+                    resetTableState();
+                  }                  
                 }}
               >
                 <ArrowBackIcon style={{ fontSize: "1.25rem" }} />
@@ -229,22 +282,65 @@ const Match = ({ projectType, ...props }) => {
                     resetTableState();
                   }}
                 >
-                  Tables
+                  {isMongoDb(tablesDataState[0] ?? "")
+                    ? "Collections"
+                    : "Tables"}
                 </p>
 
-                {tableState?.selected && (
-                  <div className='flex flex-row items-center'>
-                    <p className='mx-1 text-neutral-gray3'> / </p>
+                {tableState?.selected.map((data, index) => {
+                  return (
+                    <div className="flex flex-row items-center">
+                      <p className="mx-1 text-neutral-gray3"> / </p>
 
-                    <p
-                      className={classNames(
-                        "text-overline3 cursor-pointer hover:opacity-70"
-                      )}
-                    >
-                      {tableState?.selected?.name}
-                    </p>
-                  </div>
-                )}
+                      <p
+                        className={classNames(
+                          "text-overline3 cursor-pointer hover:opacity-70"
+                        )}
+                        onClick={(e) => {
+                          e?.preventDefault();
+                          e?.stopPropagation();
+
+                          let updatedTableState = _.cloneDeep(tableState);
+                          let removedData = [];
+                          const data = updatedTableState.selected.filter(
+                            (item, i) => {
+                              if (i <= index) {
+                                return item;
+                              } else {
+                                removedData.push(item);
+                              }
+                            }
+                          );
+                          let refString = "";
+                          removedData.map((item) => {
+                            if (isObject(item)) {
+                              refString = refString.concat(
+                                `.${item.name}.ezapi_object`
+                              );
+                            } else {
+                              refString = refString.concat(
+                                `.${item.name}.ezapi_array.ezapi_object`
+                              );
+                            }
+                          });
+
+                          const newRef = replaceLastOccurrenceInString(
+                            updatedTableState.ref,
+                            refString,
+                            ""
+                          );
+
+                          updatedTableState.ref = newRef;
+
+                          updatedTableState.selected = data;
+                          setTableState(updatedTableState);
+                        }}
+                      >
+                        {data.name}
+                      </p>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           ) : storedProcedureState?.selected ? (
@@ -326,7 +422,8 @@ const Match = ({ projectType, ...props }) => {
                   value={"customParam"}
                 />
               )}
-              {projectType === "db" && storedProcENV === "true" &&
+              {projectType === "db" &&
+                storedProcENV === "true" &&
                 operationData?.operation?.operationType?.toLowerCase() ==
                   "post" && (
                   <Tab
@@ -341,12 +438,13 @@ const Match = ({ projectType, ...props }) => {
 
         {(currentTab === "param" || currentTab === "customParam") && canEdit() && (
           <div
-            className='flex flex-row items-center cursor-pointer hover:opacity-80 mr-8 border-1 rounded-md border-brand-secondary px-2 py-2'
+            className='flex flex-row items-center cursor-pointer hover:opacity-80 mr-16 border-1 rounded-md border-brand-secondary px-2 py-2'
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
               if (currentTab === "param") {
-                showAddParameterDialog();
+                //showAddParameterDialog();
+                setAddParamCheck(true);
               }
               if (currentTab === "customParam") {
                 showAddCustomParameterDialog();
@@ -360,7 +458,7 @@ const Match = ({ projectType, ...props }) => {
             >
               <AddIcon style={{ fontSize: "20px" }} />
             </AppIcon>
-            <p className='text-overline2 text-brand-secondary'>Add Parameter</p>
+            <p className='text-overline2 text-brand-secondary'>Save Parameter</p>
           </div>
         )}
 

@@ -20,6 +20,8 @@ import visualImg from '../static/images/visual.jpg';
 import { Avatar, CardMedia, Paper, TextField } from '@material-ui/core';
 import routes from '../shared/routes';
 import ezLogo from '../static/images/logo/connectoLogo.svg';
+import { isUserLoggedIn } from '../shared/utils';
+import { useLogout } from "../shared/query/authQueries";
 
 function Copyright() {
   return (
@@ -152,6 +154,9 @@ const footers = [
 
 export default function Landing() {
   const classes = useStyles();
+  const isUserLogged = isUserLoggedIn();
+
+  const { mutate: logout } = useLogout();
 
   return (
     <React.Fragment>
@@ -213,14 +218,27 @@ export default function Landing() {
               Pricing
             </Link>
           </nav>
-          <Button
-            href={routes.signIn}
-            color='inherit'
-            variant='outlined'
-            className={classes.link}
-          >
-            Login
-          </Button>
+          {
+            isUserLogged ? (
+              <Button
+                onClick={logout}
+                color='inherit'
+                variant='outlined'
+                className={classes.link}
+              >
+                Logout
+              </Button>
+            ) : (
+              <Button
+                href={routes.signIn}
+                color='inherit'
+                variant='outlined'
+                className={classes.link}
+              >
+                Login
+              </Button>
+            )
+          }
         </Toolbar>
       </AppBar>
       {/* Hero unit */}

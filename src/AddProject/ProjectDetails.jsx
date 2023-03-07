@@ -27,9 +27,13 @@ const ProjectDetails = ({
   aiMatcherMutation,
   isClaimSpec,
   isAdvSpec,
+  isNoSpecNoDb,
+  isAdvWorks,
+  isMflix
 }) => {
   const [projectDetails, setProjectDetails] = useRecoilState(projectAtom);
-
+  //console.log("projectDetails in projectdetailsjsx", projectDetails)
+  console.log("isClaimSpec || isAdvSpec || isAdvWorks || isMflix", isClaimSpec , isAdvSpec , isAdvWorks , isMflix)
   useEffect(() => {
     if (formRef.current && isProjectNameEmpty) {
       formRef.current.touched.name = true;
@@ -40,7 +44,7 @@ const ProjectDetails = ({
   const debouncedSetName = useCallback(
     debounce((nextValue) => {
       resetProjectApiState();
-
+      //console.log("nextValue", nextValue)
       setProjectDetails((currProjectDetails) => {
         return {
           ...currProjectDetails,
@@ -50,6 +54,8 @@ const ProjectDetails = ({
     }, 300),
     [] // will be created only once initially
   );
+
+  
 
   const resetProjectApiState = () => {
     addProjectMutation?.reset();
@@ -148,7 +154,8 @@ const ProjectDetails = ({
       <div className="mb-6">
         <Formik
           initialValues={{
-            name: projectDetails?.name ?? "",
+            name: projectDetails?.prevName ?? "",
+            //name: isClaimSpec || isAdvSpec || isAdvWorks || isMflix ? projectDetails?.name : projectDetails?.prevName,
           }}
           validationSchema={Yup.object().shape({
             name: apiNameSchema(Messages.NAME_REQUIRED),
@@ -165,13 +172,14 @@ const ProjectDetails = ({
             setErrors,
           }) => (
             <Form>
-              {isClaimSpec || isAdvSpec ? (
+              {isClaimSpec || isAdvSpec || isAdvWorks || isMflix ? (
                 <Field
                   id="name"
                   name="name"
                   fullWidth
                   color="primary"
-                  value={isAdvSpec ? "BikeStore" : "Claims"}
+                  //value={isAdvSpec ? "BikeStore" : "Claims"}
+                  value={projectDetails?.name}
                   disabled={true}
                   variant="outlined"
                   inputProps={{ maxLength: 24 }}
@@ -184,23 +192,33 @@ const ProjectDetails = ({
                   name="name"
                   fullWidth
                   color="primary"
+                  placeholder={projectDetails?.name}
                   error={touched.name && Boolean(errors.name)}
                   helperText={<ErrorMessage name="name" />}
                   onKeyUp={(e) => {
                     const { value } = e.target;
                     debouncedSetName(value);
+                    setProjectDetails(projectDetails => {
+                      const clonnedData = _.cloneDeep(projectDetails);
+                      clonnedData.prevName = value
+                      return clonnedData
+                    })
                   }}
+                  disabled={false}
+                  //value={projectDetails?.name}
                   variant="outlined"
                   inputProps={{ maxLength: 24 }}
                   // disabled={addProjectMutation?.isSuccess}
                   as={TextField}
                 />
               )}
+              
             </Form>
           )}
         </Formik>
       </div>
-
+      
+      {!isNoSpecNoDb ? (
       <div className="mb-6">
         <p className="text-mediumLabel mb-2">Upload Spec</p>
         <input
@@ -212,7 +230,7 @@ const ProjectDetails = ({
             handleOnSpecsPick(Array.from(e.target.files));
             e.target.value = "";
           }}
-          disabled={isClaimSpec || isAdvSpec}
+          disabled={isClaimSpec || isAdvSpec || isAdvWorks || isMflix}
         />
 
         <label
@@ -261,7 +279,7 @@ const ProjectDetails = ({
           !_.isEmpty(specsError) && (
             <p className="text-accent-red text-overline2 mt-2">{specsError}</p>
           )}
-      </div>
+      </div>):null}
 
       {/* <div className='mb-3'>
         <p className='text-mediumLabel mb-2'>Connect DB</p>

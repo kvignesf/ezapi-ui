@@ -143,7 +143,7 @@ const Resources = ({
   }
 
   return (
-    <div {...props}>
+    <div {...props} style={{maxHeight:"88vh", overflowY:"auto"}}>
       <Dialog
         onClose={handleCloseDialog}
         aria-labelledby='project-dialog'

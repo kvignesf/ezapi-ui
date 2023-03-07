@@ -17,6 +17,7 @@ import Confetti from "react-confetti";
 import { ReactComponent as DashboardSharpIcon } from "../static/images/dashboard_logo.svg";
 import { List, ListItem } from "@material-ui/core";
 import AddIcon from "@material-ui/icons/Add";
+import LibraryBooksIcon from "@material-ui/icons/LibraryBooks";
 
 import imageLogo from "../static/images/logo/newconnectLogoOnlyWhite.svg";
 import { ReactComponent as OrderHistoryIcon } from "../static/images/order-history.svg";
@@ -104,7 +105,13 @@ const Dashboard = ({ selectedIndex, children, pricingDefaultCheck }) => {
         history.push(routes.pricing);
       } else if (index === 4) {
         history.push(routes.productTour);
+      } else if (index === 5) {
+        history.replace({
+          pathname: routes.docs,
+          state: { allow: false },
+        });
       }
+
     }
   };
   
@@ -367,6 +374,38 @@ const Dashboard = ({ selectedIndex, children, pricingDefaultCheck }) => {
                 Product Tour
               </p>
             </ListItem>
+            <ListItem
+              button
+              selected={selectedIndex === 5}
+              onClick={() => {
+                handleSideMenuItemClick(5);
+              }}
+              style={{
+                padding: "1rem",
+              }}
+              className={selectedIndex === 5 ? styles.selectedItem : null}
+              classes={{ root: styles.root, selected: styles.selected }}
+              disableTouchRipple
+            >
+              <ListItemIcon style={{ minWidth: "0", marginRight: "1rem" }}>
+                <LibraryBooksIcon
+                  fill={
+                    selectedIndex === 5
+                      ? Colors.brand.primary
+                      : 'grey'
+                  }
+                />
+              </ListItemIcon>
+              <p
+                className={`text-overline2 ${classNames({
+                  "text-brand-primary": selectedIndex === 5,
+                  "text-neutral-gray4": selectedIndex !== 5,
+                })}`}
+              >
+                Docs
+              </p>
+            </ListItem>
+
           </List>
         </div>
 

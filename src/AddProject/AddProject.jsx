@@ -1,12 +1,18 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
   AppBar,
   IconButton,
   Tab,
   Tabs,
   MuiThemeProvider,
+  TextField,
 } from "@material-ui/core";
-import { useReward } from "react-rewards";										  
+
+import { useReward } from "react-rewards";						
+import { Field, ErrorMessage, Form, Formik } from "formik";
+import * as Yup from "yup";
+import debounce from "lodash.debounce";
+import apiNameSchema from "../shared/schemas/apiNameSchema";
 //import { ReactComponent as Logo } from "../static/images/logo/connectoLogo.svg";
 import { ReactComponent as Logo } from "../static/images/logo/newconnectoLogo.svg";
 import Button from "@mui/material/Button";
@@ -21,6 +27,7 @@ import { PrimaryButton, TextButton } from "../shared/components/AppButton";
 import LoaderWithMessage from "../shared/components/LoaderWithMessage";
 import { isEmailValid } from "../shared/utils";
 import ProjectDetails from "./ProjectDetails";
+import NoSpecNoDb from "./NoSpecNoDb";
 import ConnectDatabase from "./ConnectDatabase";
 import InviteCollaborators from "../shared/components/InviteCollaborators";
 import projectAtom from "./projectAtom";
@@ -30,6 +37,7 @@ import {
   useDatabaseConnection,
   useAddProject,
   useUserProfile,
+  usePricingData,
   useUploadProjectDbs,
   useUploadProjectFile,
   useUploadProjectSpecs,
@@ -50,6 +58,8 @@ import FormGroup from "@material-ui/core/FormGroup";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import Checkbox from "@material-ui/core/Checkbox";
 import Box from "@material-ui/core/Box";
+import { SliderValueLabelUnstyled } from "@mui/material";
+import { LocalConvenienceStoreOutlined } from "@mui/icons-material";
 
 const AddProject = ({ onClose, onSuccess }) => {
   const [currentTab, setTab] = useState(0);
@@ -57,12 +67,16 @@ const AddProject = ({ onClose, onSuccess }) => {
   const history = useHistory();
   const [open, setOpen] = useState(false);
   const [isDesign, setIsDesign] = useState(null);
+  const [isMiddleState, setIsMiddleState] = useState(false);
+
   // const [isDesign, setIsDesign] = useState(true);
   const [errorDisplay, setErrorDisplay] = useState(false);
   const [specErrorDisplay, setSpecErrorDisplay] = useState(false);
 
   const [inviteCollabsErrorMssg, setInviteCollabsErrorMssg] = useState(false);
   const [sampleProjCnt, setSampleProjCnt]  = useState(1);
+  const [sampleAdvWorksDBPCnt, setSampleAdvWorksDBCnt] = useState(1);
+  const [sampleMFlixDBCnt, setSampleMFlixDBCnt] = useState(1);
   const loggedInUserId = getUserId();
   const { reward, isAnimating } = useReward("rewardId", "confetti");
   const [specsError, setSpecsError] = useState(null);
@@ -71,7 +85,26 @@ const AddProject = ({ onClose, onSuccess }) => {
   const [projectDetails, setProjectDetails] = useRecoilState(projectAtom);
   const [defaultClaimSpec, setDefaultClaimSpec] = useState(false);
   const [defaultAdvSpec, setDefaultAdvSpec] = useState(false);
+  const [defaultFlow, setDefaultFlow] = useState(false);
+  const [noSpecNoDb, setNoSpecNoDb] = useState(false);
+  const [defaultAdvWorks, setDefaultAdvWorks] = useState(false);
+  const [defaultMflix, setDefaultMflix] = useState(false);
+
+  const [disableAdvSpec, setDisableAdvSpec] = useState(false);
+  const [disableAdvWorks, setDisableAdvWorks] = useState(false);
+  const [disableMflix, setDisableMflix] = useState(false);
+  const [connectors, setConnectors] = useState({
+    ms_sql: true,
+    my_sql: true,
+    postgres: true,
+    mongo: true
+  });
+
   const hideClaims = false;
+
+ 
+
+  const sampleProjLimit = process.env.REACT_APP_SAMPLE_PROJ_LIMIT;
 
   useEffect(() => {
     reward();
@@ -133,18 +166,30 @@ const AddProject = ({ onClose, onSuccess }) => {
 
   const handleNext = () => {
     if (formRef.current) {
+      console.log("formRef.current.values.name...", formRef.current.values.name)
+      /* if (currentTab === 0) {
+        debouncedSetName(formRef.current.values.name);        
+      } */
       formRef.current.handleSubmit();
-      if (formRef.current.isValid || isAdvChecked) {
+      //console.log("currentTab in HNxt", currentTab, defaultAdvSpec, defaultAdvWorks, defaultMflix)
+      //console.log("projectDetails in HNxt", projectDetails)
+      if (currentTab === 0 && (defaultAdvSpec || defaultAdvWorks || defaultMflix)) {
+        setTab(currentTab + 2);
+        //console.log("mame", formRef.current.name)
+      } else if (formRef.current.isValid ) {
+        //console.log("1...")
         if (
-          (currentTab === 0 && !_.isEmpty(projectDetails?.name)) ||
+          (currentTab === 0 && (!_.isEmpty(projectDetails?.name) || projectDetails?.name !== '')) ||
           (currentTab === 1 && connectDatabaseTab === 0) ||
           (currentTab === 1 &&
             connectDatabaseTab === 1 &&
             !_.isEmpty(projectDetails?.dbType))
         ) {
+          //console.log("2...")
+          //console.log("mame", formRef.current.values.name)          
           setTab(currentTab + 1);
         }
-      }
+      } 
       // if (
       //   formRef.current.isValid &&
       //   !_.isEmpty(projectDetails?.name) &&
@@ -179,21 +224,53 @@ const AddProject = ({ onClose, onSuccess }) => {
       }
 
       return;
-    } else if (
-      (!defaultClaimSpec || !defaultAdvSpec) &&
+    } else if (_.isEmpty(projectDetails?.dbs) && _.isEmpty(projectDetails?.type) && _.isEmpty(projectDetails?.specs) && isDesign ) {
+      uploadProjectData({
+        name: projectDetails?.name,
+        invitees: projectDetails?.collaborators?.map((collaborator) => {
+          return {
+            email: collaborator,
+          };
+        }),
+        isDesign: isDesign,
+        isDefaultClaimSpec: defaultClaimSpec,
+        isDefaultAdvSpec: defaultAdvSpec,
+        isDefaultAdvWorks: defaultAdvWorks,
+        isDefaultMflix: defaultMflix,
+        projectType: "noinput"
+      });
+    }  else if (
+      (!defaultClaimSpec || !defaultAdvSpec  || !defaultAdvWorks || !defaultMflix) &&
       _.isEmpty(projectDetails?.dbs) &&
       (_.isEmpty(projectDetails?.host) ||
         _.isEmpty(projectDetails?.port) ||
         _.isEmpty(projectDetails?.username) ||
         _.isEmpty(projectDetails?.password) ||
         _.isEmpty(projectDetails?.database) ||
-        _.isEmpty(projectDetails?.type))
+        _.isEmpty(projectDetails?.type)) &&
+        (_.isEmpty(projectDetails?.keys) &&
+        _.isEmpty(projectDetails?.certificates) &&
+        _.isEmpty(projectDetails?.caCertificates)) &&
+        (_.isEmpty(projectDetails?.specs) && isDesign) 
     ) {
       setErrorDisplay(true);
+      /* uploadProjectData({
+        name: projectDetails?.name,
+        invitees: projectDetails?.collaborators?.map((collaborator) => {
+          return {
+            email: collaborator,
+          };
+        }),
+        isDesign: isDesign,
+        isDefaultClaimSpec: defaultClaimSpec,
+        isDefaultAdvSpec: defaultAdvSpec,
+        projectType: "noinput"
+      }); */
     } else if (_.isEmpty(projectDetails?.specs) && !isDesign) {
       setTab(0);
       setSpecErrorDisplay(true);
-    } else {
+    } 
+    else {
       setErrorDisplay(false);
       setSpecErrorDisplay(false);
       uploadProjectData({
@@ -206,6 +283,9 @@ const AddProject = ({ onClose, onSuccess }) => {
         isDesign: isDesign,
         isDefaultClaimSpec: defaultClaimSpec,
         isDefaultAdvSpec: defaultAdvSpec,
+        isDefaultAdvWorks: defaultAdvWorks,
+        isDefaultMflix: defaultMflix,
+        projectType: "none"
       });
     }
   };
@@ -245,7 +325,7 @@ const AddProject = ({ onClose, onSuccess }) => {
         setSpecErrorDisplay(true);
       } else {
         setErrorDisplay(false);
-        setSpecErrorDisplay(false);
+        setSpecErrorDisplay(false);        
         uploadProjectData({
           name: projectDetails?.name,
           invitees: projectDetails?.collaborators?.map((collaborator) => {
@@ -390,14 +470,52 @@ const AddProject = ({ onClose, onSuccess }) => {
   };
   const handleAdvCheck = (e) => {
     setDefaultAdvSpec(e.target.checked);
+    setDisableMflix(e.target.checked);
+    setDisableAdvWorks(e.target.checked);
+  };
+  const handleDefaultFlow = (e) => {
+    setDefaultFlow(e.target.checked);
   };
 
-  
+  const handleAdvWorks = (e) => {
+    setDefaultAdvWorks(e.target.checked);
+    setDisableMflix(e.target.checked);
+    setDisableAdvSpec(e.target.checked);
+  };
+  const handleMflix = (e) => {
+    //console.log("chk status", e.target.checked)
+    setDefaultMflix(e.target.checked);
+    setDisableAdvWorks(e.target.checked);
+    setDisableAdvSpec(e.target.checked);
+  };
+
+  const handlingFlow = ()=>{
+    if (_.isEmpty(projectDetails?.name)) {
+      // setTab(0);
+      // setIsProjectNameEmpty(true);
+      if (formRef.current) {
+        formRef.current.handleSubmit();
+      }
+
+      return;
+    }
+    if(defaultFlow){
+      setNoSpecNoDb(true);
+      setIsDesign(null);
+    }
+    else{
+      setIsDesign(true);
+      setIsMiddleState(false);
+    }
+    return;
+  };
   const { data: userProfile_data } = useUserProfile();
   
   useEffect(() => {
     //console.log("userdata", userProfile_data)
     setSampleProjCnt(userProfile_data?.["sampleProjCount"]);
+    setSampleAdvWorksDBCnt(userProfile_data?.["sampleAdvWorksDBProjCnt"]);
+    setSampleMFlixDBCnt(userProfile_data?.["sampleMFlixDBProjCnt"]);
   }, [userProfile_data]);
 
   useEffect(() => {
@@ -467,11 +585,42 @@ const AddProject = ({ onClose, onSuccess }) => {
             type: "mssql",
           };
         });
-      } else if (!defaultAdvSpec) {
+      }else if(defaultAdvWorks){
         setProjectDetails((currProjectDetails) => {
           return {
             ...currProjectDetails,
-            name: "",
+            name: "AdvWorks",
+            specs: [],
+            database: "AdventureWorks2019",
+            host: "34.82.24.189",
+            port: "1433",
+            username: "sa",
+            password: "S0mbari@2022",
+            dbType: "db",
+            type: "mssql",
+          };
+        });
+      } else if(defaultMflix){
+        setProjectDetails((currProjectDetails) => {
+          return {
+            ...currProjectDetails,
+            name: "MflixDB",
+            specs: [],
+            database: "mflix",
+            host: "34.66.45.162",
+            port: "27017",
+            username: "root",
+            password: "JRVvuh9D5V0IZxCW",
+            dbType: "db",
+            type: "mongo",
+          };
+        });
+      } else if (!defaultAdvSpec || !defaultAdvWorks || !defaultMflix) {
+        //console.log("useeffect-call any is true")
+        setProjectDetails((currProjectDetails) => {
+          return {
+            ...currProjectDetails,
+            name: currProjectDetails.prevName,
             specs: [],
             database: "",
             host: "",
@@ -487,7 +636,7 @@ const AddProject = ({ onClose, onSuccess }) => {
         setProjectDetails((currProjectDetails) => {
           return {
             ...currProjectDetails,
-            name: "",
+            name: currProjectDetails.prevName,
             specs: null,
             dbs: null,
           };
@@ -495,7 +644,7 @@ const AddProject = ({ onClose, onSuccess }) => {
       }
     };
     setDefault();
-  }, [defaultClaimSpec, defaultAdvSpec, setProjectDetails]);
+  }, [defaultClaimSpec, defaultAdvSpec, defaultAdvWorks, defaultMflix, setProjectDetails]);
 
   const isClaimChecked = () => {
     setDefaultAdvSpec(false);
@@ -503,12 +652,184 @@ const AddProject = ({ onClose, onSuccess }) => {
   const isAdvChecked = () => {
     setDefaultClaimSpec(false);
   };
+  const isAdvWorksChecked = () => {
+    setDefaultAdvWorks(false);
+  };
+  const isMflixChecked = () => {
+    setDefaultMflix(false);
+  };
+  const resetProjectApiState = () => {
+    addProjectMutation?.reset();
+    uploadSpecsMutation?.reset();
+    uploadDbMutation?.reset();
+    aiMatcherMutation?.reset();
+  };
+  const debouncedSetName = useCallback(
+    debounce((nextValue) => {
+      // resetProjectApiState();
+
+      setProjectDetails((currProjectDetails) => {
+        return {
+          ...currProjectDetails,
+          name: nextValue,
+        };
+      });
+    }, 300),
+    [] // will be created only once initially
+  );
+
+  const debouncedSetPrevName = useCallback(
+    debounce((nextValue) => {
+      //resetProjectApiState();
+      //console.log("nextValue", nextValue)
+      setProjectDetails((currProjectDetails) => {
+        return {
+          ...currProjectDetails,
+          prevName: nextValue,
+        };
+      });
+    }, 300),
+    [] // will be created only once initially
+  );
+
+  const debouncedSetNumberOfCollaborators = useCallback(
+    debounce((nextValue) => {
+      resetProjectApiState();
+
+      setProjectDetails((currProjectDetails) => {
+        return {
+          ...currProjectDetails,
+          numberOfCollaborators: nextValue,
+        };
+      });
+    }, 300),
+    [] // will be created only once initially
+  );
+  const { data: pricing_data } = usePricingData();
+  useEffect(() => {
+    if (pricing_data && userProfile_data) {
+      if (
+        userProfile_data["plan_name"] == null ||
+        userProfile_data["plan_name"] == "Basic"
+      ) {
+        debouncedSetNumberOfCollaborators(2);
+        setConnectors({ ms_sql: true, my_sql: true, postgres: true, mongodb: true });
+      } else {
+        const filtered_plan = pricing_data["products"].filter(
+          (item) => item["plan_name"] == userProfile_data["plan_name"]
+        )[0];
+        debouncedSetNumberOfCollaborators(filtered_plan["no_of_collaborators"]);
+        setConnectors(filtered_plan["connectors"]);
+      }
+    }
+  }, [pricing_data, userProfile_data]);
   
+  //console.log("projectdetails in AddProject", projectDetails);
 
   return (
     <>
-      {isDesign != null && (
+    {noSpecNoDb && (<NoSpecNoDb
+              onClose={onClose}
+              onSuccess={onSuccess}
+              noSpecNoDb={noSpecNoDb}/>)}
+    {isDesign != null  && isMiddleState && (
         <div className='p-4'>
+        <div className='flex flex-row items-center justify-between mb-3'>
+          {<h5>Create API Project</h5>}
+          <div>
+            {" "}
+            <img
+              style={{ width: "150px" }}
+              src={ProductHunt}
+              alt="producthunt"
+            />
+          </div>
+          <AppIcon aria-label='close' onClick={onClose}>
+            <CloseIcon />
+          </AppIcon>
+        </div>{" "}
+        <p className="text-mediumLabel mb-2">API Name</p>
+
+      <div className="mb-6">
+        <Formik
+          initialValues={{
+            name: projectDetails?.name ?? "",
+          }}
+          validationSchema={Yup.object().shape({
+            name: apiNameSchema(Messages.NAME_REQUIRED),
+          })}
+          innerRef={formRef}
+        >
+          {({
+            errors,
+            touched,
+            values,
+            submitForm,
+            validateForm,
+            handleBlur,
+            setErrors,
+          }) => (
+            <Form>
+                <Field
+                  id="name"
+                  name="name"
+                  fullWidth
+                  color="primary"
+                  error={touched.name && Boolean(errors.name)}
+                  helperText={<ErrorMessage name="name" />}
+                  onKeyUp={(e) => {
+                    const { value } = e.target;
+                    debouncedSetName(value);
+                    debouncedSetPrevName(value);
+                  }}                  
+                  variant="outlined"
+                  inputProps={{ maxLength: 24 }}
+                  // disabled={addProjectMutation?.isSuccess}
+                  as={TextField}
+                />
+            </Form>
+          )}
+        </Formik>
+      </div>
+        <FormGroup>
+          <FormControlLabel
+            control={
+              
+              ( <Checkbox
+                size="small"
+                // disabled={(sampleProjCnt >= 3 || (currentTab==1 || currentTab ==2 ))}  
+                onChange={(e) => handleDefaultFlow(e)}
+                checked={defaultFlow}
+                // onClick={() => isAdvChecked()}
+              />
+              )
+            }
+            label={<Box fontSize={14}>Free format API Design</Box>}
+          />
+        </FormGroup>
+        <div className='border-t-2 border-neutral-gray7 flex flex-row items-center justify-end pt-4'>
+          <TextButton
+            onClick={() => {
+                onClose();
+            }}
+            classes='mr-3'
+          >
+            Cancel
+          </TextButton>
+
+          <PrimaryButton
+            onClick={() => {
+              handlingFlow();
+            }}
+          >
+            Next
+          </PrimaryButton>
+        </div>
+      </div>
+      )
+      }
+      {isDesign != null && !isMiddleState &&(
+        <div className='p-4' style={{ height: "auto"}}>
           <div className='flex flex-row items-center justify-between mb-3'>
             {isDesign ? (
               <h5>Create New API Project</h5>
@@ -580,10 +901,13 @@ const AddProject = ({ onClose, onSuccess }) => {
                         aiMatcherMutation={aiMatcherMutation}
                         isClaimSpec={defaultClaimSpec}
                         isAdvSpec={defaultAdvSpec}
+                        isNoSpecNoDb={false}
+                        isAdvWorks={defaultAdvWorks}
+                        isMflix={defaultMflix}
                       />
                     </div>
                   ) : currentTab === 1 ? (
-                    <div className='h-80'>
+                    <div className='h-95'>
                       <ConnectDatabase
                         formRef={formRef}
                         specsError={specsError}
@@ -596,10 +920,13 @@ const AddProject = ({ onClose, onSuccess }) => {
                         handleTabChange={setConnectDatabaseTab}
                         isClaimSpec={defaultClaimSpec}
                         isAdvSpec={defaultAdvSpec}
+                        isAdvWorks={defaultAdvWorks}
+                        isMflix={defaultMflix}
+                        connectors={connectors}
                       />
                     </div>
                   ) : (
-                    <div className='h-80'>
+                    <div className='h-180'>
                       <InviteCollaborators
                         handleChange={handleCollaboratorsChange}
                         collaborators={projectDetails?.collaborators}
@@ -617,25 +944,59 @@ const AddProject = ({ onClose, onSuccess }) => {
                           onClick={() => isClaimChecked()}
                         />
                       }
-                      label={<Box fontSize={14}>Use Default Claim Spec</Box>}
+                      label={<Box fontSize={14}>Use default Claim Spec</Box>}
                     />
                   </FormGroup> ) }
+                 { ((!defaultAdvSpec && currentTab==0) || (!defaultAdvWorks && currentTab==0) || (!defaultClaimSpec && currentTab==0)) && 
                   <FormGroup>
                     <FormControlLabel
                       control={
                         
                         ( <Checkbox
                           size="small"
-                          disabled={(sampleProjCnt >= 3 || (currentTab==1 || currentTab ==2 ))}  
+                          disabled={(sampleProjCnt >= sampleProjLimit || (currentTab==1 || currentTab ==2 )) || (disableAdvSpec)}  
                           onChange={(e) => handleAdvCheck(e)}
                           checked={defaultAdvSpec}
                           onClick={() => isAdvChecked()}
                         />
                         )
                       }
-                      label={(sampleProjCnt < 3) ? (<Box fontSize={14}>Use Default BikeStore Spec</Box>) : (<Box fontSize={14}>Sample Projects limit of 3 Utilized</Box>) }
+                      label={(sampleProjCnt < sampleProjLimit) ? (<Box fontSize={14}>Use default BikeStore Spec</Box>) : (<Box fontSize={14}>Sample Projects limit of {sampleProjLimit} Utilized for Bikestore Spec </Box>) }
                     />
+                    {isDesign && (
+                      <>
+                    <FormControlLabel
+                      control={
+                        
+                        ( <Checkbox
+                          size="small"
+                          disabled={(sampleAdvWorksDBPCnt >= sampleProjLimit || (currentTab==1 || currentTab ==2 )) || (disableAdvWorks)}  
+                          onChange={(e) => handleAdvWorks(e)}
+                          checked={defaultAdvWorks}
+                          onClick={() => isAdvWorksChecked()}
+                        />
+                        )
+                      }
+                      label={(sampleAdvWorksDBPCnt < sampleProjLimit) ? (<Box fontSize={14}>Use default Adventure Works DB</Box>) : (<Box fontSize={14}>Sample Projects limit of {sampleProjLimit} Utilized for Adventure Works DB</Box>) }
+                    />
+                    <FormControlLabel
+                      control={
+                        
+                        ( <Checkbox
+                          size="small"
+                          disabled={(sampleMFlixDBCnt >= sampleProjLimit || (currentTab==1 || currentTab ==2 )) || (disableMflix)}  
+                          onChange={(e) => handleMflix(e)}
+                          checked={defaultMflix}
+                          onClick={() => isMflixChecked()}
+                        />
+                        )
+                      }
+                      label={(sampleMFlixDBCnt < sampleProjLimit) ? (<Box fontSize={14}>Use default Mflix MongoDB</Box>) : (<Box fontSize={14}>Sample Projects limit of {sampleProjLimit} Utilized for Mflix MongoDB</Box>) }
+                    />
+                    </>
+                    )}
                   </FormGroup>
+                  } 
                 </div>
 
                 {showCollabsError && projectDetailsError && (
@@ -657,8 +1018,8 @@ const AddProject = ({ onClose, onSuccess }) => {
                   </p>
                 )}
 
-                {inviteCollabsErrorMssg && (
-                  <p className='text-overline2 text-accent-red my-2'>
+                {inviteCollabsErrorMssg && currentTab == 2 && projectDetails.collaborators.length === 0 && (
+                  <p className='text-overline2 text-accent-red mb-2'>
                     Please enter atleast one collaborator to create Project
                   </p>
                 )}
@@ -733,7 +1094,7 @@ const AddProject = ({ onClose, onSuccess }) => {
                       }}
                       classes='flex-1 -ml-4 text-brand-secondary'
                     >
-                      Skip for now
+                      Add Later
                     </TextButton>
                   ) : null}
 
@@ -799,6 +1160,7 @@ const AddProject = ({ onClose, onSuccess }) => {
                         handleDone();
                       }
                     }}
+                    
                   >
                     {currentTab === 0 || currentTab === 1
                       ? "Next"
@@ -879,7 +1241,8 @@ const AddProject = ({ onClose, onSuccess }) => {
           )}
         </div>
       )}
-      {isDesign == null && (
+      
+      {isDesign == null && !noSpecNoDb &&(
         <div className='p-4'>
           <div className='flex flex-row items-center justify-between mb-3'>
             {<h5>Create API Project</h5>}
@@ -903,6 +1266,7 @@ const AddProject = ({ onClose, onSuccess }) => {
 			  //disabled={isTestTeam}						
               onClick={() => {
                 setIsDesign(true);
+                setIsMiddleState(true);
               }}
               classes='flex-1 -ml-4 text-brand-secondary'
             >

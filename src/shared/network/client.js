@@ -8,6 +8,7 @@ const baseUrl = process.env.REACT_APP_API_URL;
 
 export const endpoint = Object.freeze({
   login: "/auth",
+  github_auth: "/github_auth",
   sso: "/sso_url",
   auth_workos: "/auth_workos",
   logout: "/logout",
@@ -26,13 +27,14 @@ export const endpoint = Object.freeze({
   deleteParameter: "/projectParams/delete",
   tablesLookup: "/tablesLookup",
   tablesData: "/tablesData",
+  tableSubData: "/tableSubschema",
   recommendations: "/recommendations",
   schemaRecommendations: "/schemaRecommendations",
   saveAttributeMatch: "/overrideAttrMatch",
   saveSchemaMatch: "/overrideSchemaMatch",
   publishProject: "/publish",
   tableRelations: "/getTablesRelations",
-  operationDataTables: "/getOperationDataTables",
+  //operationDataTables: "/getOperationDataTables",
   tableMappings: "/tableMappings",
   verifyProject: "/projectValidate",
   downloadSpec: "/download_spec",
@@ -47,8 +49,11 @@ export const endpoint = Object.freeze({
   editCustomParameter: "/customParameters/edit",
   deleteCustomParameter: "/customParameters/delete",
   storedProcedures: "/storedProcedures",
-  downloadDotNetCodegen:"/download_dotnet_codegen",
+  downloadDotNetCodegen: "/download_dotnet_codegen",
   mandMappingTableData: "/listAllAttributes",
+  googleLogin: "/google-signin",
+  push_to_github: "/pushToGithub",
+  view_repo: "/view_repo",
 
 
   // Payment

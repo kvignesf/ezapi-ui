@@ -162,13 +162,13 @@ const FilterItem = ({
                 color='primary'
                 variant='outlined'
                 onChange={(e) => {
-                  if (e.target.value == "Null" || e.target.value == "NotNull") {
+                  if (e.target.value === "Null" || e.target.value === "NotNull") {
                     formRef.current.values.filters[index].value =
                       e.target.value;
                   } else {
                     if (
-                      formRef.current.values.filters[index].value == "Null" ||
-                      formRef.current.values.filters[index].value == "NotNull"
+                      formRef.current.values.filters[index].value === "Null" ||
+                      formRef.current.values.filters[index].value === "NotNull"
                     ) {
                       formRef.current.values.filters[index].value = "";
                     }

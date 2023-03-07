@@ -119,3 +119,107 @@
   outline: none;
   -webkit-appearance: none;
 }
+
+
+.google-login-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;  
+  width: 260px;
+  height: 45px;
+  background-color: white;
+  border-radius: 4px;
+  color: #444;
+  font-size: 12px;
+  font-weight: 400;  
+  /*border: thin solid #888;
+  box-shadow: 1px 1px 1px grey;*/
+  white-space: nowrap;
+  text-decoration: none;
+  transition: all 0.2s;
+  cursor: pointer;
+  letter-spacing: 0.3px;
+  box-shadow: 0 3px 4px 0 rgba(0,0,0,.25);
+}
+
+.google-login-button:hover {
+  background-color: #30363d;
+  color: #fff
+}
+
+.github-login-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 260px;
+  height: 45px;
+  background-color: #24292e;
+  border-radius: 4px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 400;
+  text-decoration: none;
+  transition: all 0.2s;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.github-login-button:hover {
+  /*background-color: #30363d;*/
+  background-color: #fff;
+  color: #444;
+  box-shadow: 0 3px 4px 0 rgba(0,0,0,.25);
+}
+
+.github-login-button i {
+  margin-right: 10px;
+}
+
+.github-login-button i.fab {
+  font-size: 20px;
+}
+
+/**** test css for linkedIn ***/
+
+.linkedIn-login-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 260px;
+  height: 45px;
+  background-color: #0A66c2;
+  border-radius: 4px;
+  color: white;
+  font-size: 12px;
+  font-weight: 400; 
+  white-space: nowrap;
+  text-decoration: none;
+  transition: all 0.2s;
+  cursor: pointer;  
+  letter-spacing: 0.3px;
+  padding-left: -15px;
+  /*vertical-align: center;
+  background-color: #0B78B7;
+  font: 500 14px/40px Roboto;
+  padding-left: 58px;  
+  box-shadow: 0 0 1px 0 rgba(0, 0, 0, .12);
+  box-shadow: 0 1px 4px 0 rgba(0, 0, 0, .24);
+  overflow: hidden;*/
+}
+
+.linkedIn-ico-wrapper {
+  padding-left: -6px;
+  width: 62px;
+  height: 42px;
+  background-color: white;  
+  box-sizing: border-box;
+  border-radius: 5px;
+}
+
+.linkedIn-login-button:hover {
+  /*background-color: #30363d;*/
+  background-color: #fff;
+  color: #444;
+  box-shadow: 0 3px 4px 0 rgba(0,0,0,.25);
+}

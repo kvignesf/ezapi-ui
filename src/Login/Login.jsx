@@ -1,109 +1,137 @@
-import React, { useState, useRef, useEffect } from "react";
-import Card from "@material-ui/core/Card";
-import Snackbar from "@material-ui/core/Snackbar";
-import AppIcon from "../shared/components/AppIcon";
-import { Field, ErrorMessage, Form, Formik } from "formik";
-import CloseIcon from "@material-ui/icons/Close";
-import * as Yup from "yup";
-import "./Login.css";
-import { Select, MenuItem, OutlinedInput, Grid } from "@material-ui/core";
+import React, { useState, useEffect } from "react";
 import { LinkedIn } from "react-linkedin-login-oauth2";
-import linkedin from "./images/LinkdInLogo.svg";
-import sso from "./images/SSOLogo.svg";
-import EzapiLogo from "./images/EzapiLogo.svg";
-import EnterpriseAPI from "./images/EnterpriseAPI.svg";
-import APIDesignStudio from "./images/APIDesignStudio.svg";
-import APITestHarness from "./images/APITestHarness.svg";
-import HybridAPIOrchestrator from "./images/HybridAPIOrchestrator.svg";
 import { useHistory, useLocation } from "react-router-dom";
-import { useRecoilValue, useSetRecoilState } from "recoil";
-import { getAccessToken } from "../shared/storage";
-import { FormHelperText } from "@mui/material";
-import { TextField } from "@material-ui/core";
-import Logo from "../static/images/logo/connectoLogoWithName.svg";
+import LoginGithub from 'react-login-github';
+import { Form, Formik } from "formik";
+import { CircularProgress } from "@material-ui/core";
+import Card from "@material-ui/core/Card";
+import GitHubIcon from '@mui/icons-material/GitHub';
+import _ from "lodash";
+
 import Constants from "../shared/constants";
 import LoaderWithMessage from "../shared/components/LoaderWithMessage";
-import { Dialog } from "@material-ui/core/index";
-import { PrimaryButton } from "../shared/components/AppButton";
 import routes from "../shared/routes";
-import Colors from "../shared/colors";
-import { useLogin } from "../shared/query/authQueries";
-import EzapiFooter from "../shared/components/EzapiFooter";
+import { useGithubLogin, useLinkedInLogin } from "../shared/query/authQueries";
 import {
-  clearSession,
+  getRedirectUrl,
   setAccessToken,
   setFirstName,
   setLastName,
   setUserId,
   setEmailId,
+  setRedirectUrl,
 } from "../shared/storage";
-import client, { endpoint } from "../shared/network/client";
-import { CircularProgress } from "@material-ui/core";
-import _ from "lodash";
 import { isUserLoggedIn } from "../shared/utils";
-import { useQuery } from "react-query";
-import { border, maxHeight } from "@mui/system";
-//import GoogleLogin from "react-google-login";
-//import { Google } from "@mui/icons-material";
 
-const acc_token = getAccessToken();
+// image imports
+import linkedin from "./images/LinkdInLogo.svg";
+import sso from "./images/SSOLogo.svg";
+import googlesvgIcon from "./images/GoogleIcon.svg"
+import EzapiLogo from "./images/EzapiLogo.svg";
+import EnterpriseAPI from "./images/EnterpriseAPI.svg";
+import APIDesignStudio from "./images/APIDesignStudio.svg";
+import APITestHarness from "./images/APITestHarness.svg";
+import HybridAPIOrchestrator from "./images/HybridAPIOrchestrator.svg";
+
+
+// css imports
+import "./Login.css";
+
+// login component
 const Login = () => {
-  const formRef = useRef();
-  const [ssoLoggedIn, setSsoLoggedIn] = useState(false);
   const [dialog, setDialog] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [ssoError, setSsoError] = useState();
   const history = useHistory();
-  const redirect_uri = `${window.location.origin}/linkedin`;
-  // console.log(formValues);
-  const {
-    error: loginError,
-    isLoading: isLoggingIn,
-    isSuccess: isLoginSuccess,
-    mutate: login,
-    reset: resetLogin,
-  } = useLogin();
 
-  const handleSuccess = (data) => {
+  // basic login setup
+  const isUserLogged = isUserLoggedIn()
+
+  const location = useLocation();
+  const { state: locationState } = location;
+
+  // basic login setup
+  const redirectFromPathName = locationState?.from?.pathname;
+
+  if (!isUserLogged && redirectFromPathName && redirectFromPathName !== routes.signIn) {
+    setRedirectUrl(redirectFromPathName);
+  }
+
+  const loginSuccessCallback = () => {
+    const pathName = getRedirectUrl();
+
+    history.push({
+      pathname: pathName || routes.projects,
+      state: { allow: false },
+    });
+  }
+
+  // linkedin login setup
+  const linkedInRedirectUri = `${window.location.origin}/linkedin`;
+
+  const onLinkedInSuccess = (data) => {
     if (data?.code && !_.isEmpty(data?.code)) {
-      login({ linkedInAuthToken: data?.code, redirect_uri: redirect_uri });
+      linkedInLogin({
+        linkedInAuthToken: data?.code,
+        redirect_uri: linkedInRedirectUri,
+      });
     }
   };
 
-  useEffect(() => {
-    if (isUserLoggedIn()) {
-      history.push({
-        pathname: routes.projects,
-        state: { allow: false },
-      });
-    }
-  }, []);
+  const {
+    error: linkedInLoginError,
+    isLoading: isLinkedInLoginLoading,
+    isSuccess: isLinkedInLoginSuccess,
+    mutate: linkedInLogin,
+    reset: resetLinkedInLogin,
+  } = useLinkedInLogin();
 
-  useEffect(() => {
-    if (isUserLoggedIn()) {
-      history.push({
-        pathname: routes.projects,
-        state: { allow: false },
+  const onLinkedInFailure = (error) => {
+    resetLinkedInLogin();
+    setAccessToken(null);
+  };
+
+  // github login
+  const {
+    error: githubLoginError,
+    isLoading: isGitHubLoginLoading,
+    isSuccess: isGitHubLoginSuccess,
+    mutate: githubLogin,
+    reset: resetGitHubLogin,
+  } = useGithubLogin();
+
+  const onGitHubSuccess = async (data) => {
+    if (data?.code && !_.isEmpty(data?.code)) {
+      githubLogin({
+        code: data?.code,
+        redirect_uri: process.env.REACT_APP_REDIRECT_URI
       });
     }
-  }, [ssoLoggedIn]);
+  };
+
+  const onGitHubFailure = (error) => {
+    resetGitHubLogin();
+    setAccessToken(null);
+  };
+  //const socket = useContext(SocketContext);
 
   useEffect(() => {
     const queryParams = new URLSearchParams(window.location.search);
     const code = queryParams.get("code");
-    // const error = queryParams.get("error");
-    // console.log("error: " + error);
-    // console.log(code);
-    if (code) {
-      setIsLoading(true);
+    if (isUserLogged) {
+      loginSuccessCallback();
+      setIsLoading(false);
+    } else if (code) {
+
       const requestOptions = {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ code: code }),
       };
+
       fetch(
-        process.env.REACT_APP_API_URL + "/auth_workos",
-        // "http://localhost:7744/auth_workos",
+        //process.env.REACT_APP_API_URL + `/auth_workos?code=${code}`,
+        process.env.REACT_APP_API_URL + `/auth_workos`,
         requestOptions
       )
         .then((response) => response.json())
@@ -114,17 +142,31 @@ const Login = () => {
             setLastName(data?.userData?.lastName);
             setUserId(data?.userData?.user_id);
             setEmailId(data?.userData?.email);
-            setSsoLoggedIn(true);
             setIsLoading(false);
           } else {
             setIsLoading(false);
           }
-        });
+        }).catch(() => {
+          setIsLoading(false);
+        })
     } else {
       setIsLoading(false);
     }
-  }, []);
+  }, [isUserLogged]);
 
+  // google login
+  function GoogleoAuthLogin(data) {
+    fetch(process.env.REACT_APP_API_URL + "/google-signin", { method: 'GET' })
+    .then((response) => response.json())
+    .then(response => {
+      window.location.replace(response.url);
+    })
+    .catch(function(err) {
+        console.info(err + " url: ");
+    });
+  }
+
+  // sso login
   function SSOLogin(values) {
     setIsLoading(true);
     const requestOptions = {
@@ -136,50 +178,30 @@ const Login = () => {
     };
     fetch(
       process.env.REACT_APP_API_URL + "/sso_url",
-      // "http://localhost:7744/sso_url",
       requestOptions
     )
       .then((response) => response.json())
 
       .then((data) => {
-        // console.log(data);
         if (!data?.url && data?.error) {
-          // console.log("inside error");
-
           setSsoError(data?.error);
           setIsLoading(false);
         }
         if (data?.url) {
           setSsoError();
           window.location = data?.url;
-          // setIsLoading(false);
         }
       });
   }
 
-  const handleFailure = (error) => {
-    resetLogin();
-    setAccessToken(null);
-  };
-
-  if (isLoginSuccess && !isLoggingIn && !loginError) {
-    history.replace({
-      pathname: routes.projects,
-      state: { allow: false },
-    });
-    return null;
-  }
-  const handleCloseDialog = () => {
-    setDialog(false);
-  };
-
+  // render logic
   return (
-    <div class='login-page grid h-screen grid-cols-6'>
-      <div class='col-span-4 flex flex-col items-center justify-center'>
-        <div class='grid grid-rows-5 mt-10 w-full h-full'>
-          <div class='flex justify-center align-middle row-start-1 row-span-2'>
+    <div className='login-page grid h-screen grid-cols-6'>
+      <div className='col-span-4 flex flex-col items-center justify-center'>
+        <div className='grid grid-rows-5 mt-10 w-full h-full'>
+          <div className='flex justify-center align-middle row-start-1 row-span-2'>
             {" "}
-            <div class='flex flex-col items-center justify-center mb-8'>
+            <div className='flex flex-col items-center justify-center mb-8'>
               <img id='conekttoLogo' src={EzapiLogo} alt='conektto logo' />
               <p id='prodDes' className='mt-3'>
                 Design, build, test and deploy API in minutes!
@@ -187,38 +209,77 @@ const Login = () => {
             </div>
           </div>
 
-          <div class='flex flex-col justify-start justify-items-center items-center align-top row-start-3 row-span-2 gap-7'>
+          <div className='flex flex-col justify-start justify-items-center items-center align-top row-start-3 row-span-3 gap-7'>
             <Card
               className='flex w-3/4 max-w-sm p-3 place-items-center justify-center items-center align-middle justify-items-center'
-              style={{ minHeight: "150px", maxHeight: "230px" }}
+              style={{ minHeight: "150px", maxHeight: "400px" }}
             >
               {" "}
               {/* selection card */}
               {!isLoading && !dialog && (
                 <>
-                  {!isLoggingIn && (
-                    <div class='flex flex-col items-center justify-center gap-2 mb-6'>
+                  {!isLinkedInLoginLoading && (
+                    <div className='flex flex-col items-center justify-center gap-2 mb-6'>
                       <p className='mb-2'>Login / Sign Up to continue to Conektto</p>
                       <LinkedIn
                         className='mb-2'
                         clientId={Constants.linkedClientId}
-                        onFailure={handleFailure}
-                        onSuccess={handleSuccess}
-                        redirectUri={encodeURIComponent(redirect_uri)}
+                        onFailure={onLinkedInFailure}
+                        onSuccess={onLinkedInSuccess}
+                        redirectUri={encodeURIComponent(linkedInRedirectUri)}
                         redirectPath={"/signin"}
                         scope='r_liteprofile r_emailaddress'
+                        height='49'
                       >
                         <img
                           src={linkedin}
                           alt='Log in with Linked In'
-                          style={{ width: "260px", height: "44px" }}
+                          style={{ width: "260px", height: "45px" }}
                           className='w-full'
                         />
                       </LinkedIn>
-                      <div class='relative flex items-center justify-center align-middle'>
-                        <div class='mt-1 flex w-14 border-t border-black'></div>
-                        <span class='flex-shrink px-1'>or</span>
-                        <div class='mt-1  flex w-14 border-t border-black'></div>
+
+
+                      <div className='relative flex items-center justify-center align-middle'>
+                      </div>
+
+                      <LoginGithub
+                      clientId={process.env.REACT_APP_GITHUB_CLIENT_ID}
+                      redirectUri={process.env.REACT_APP_REDIRECT_URI}
+                      onSuccess={onGitHubSuccess}
+                      onFailure={onGitHubFailure}
+                      className="github-login-button">
+                      <div className='mt-2 flex w-4'></div>
+                      <GitHubIcon  style={{ height: "24px", width: "24px" }} />
+                      <div className='mt-2 flex w-12'></div>
+                      <div className='pr-12'>Continue with Github</div>
+                      </LoginGithub>
+
+
+                      <div className='relative flex items-center justify-center align-middle'>
+                      </div>
+
+
+                      <div className='mt-1 flex w-4'></div>
+                      <button className="google-login-button" onClick={() => GoogleoAuthLogin()}>
+                        <div className='mt-2 flex w-4'></div>
+                        <img src={googlesvgIcon}
+                        style={{ height: "24px", width: "24px" }}/>
+                        <div className='mt-2 flex w-12'></div>
+                        <div className='pr-12'>Continue with Google</div>
+                      </button>
+
+
+                      {/*
+                      below is google button using npm lib
+                      <GoogleButton onClick={() => GoogleoAuthLogin()} type='light' style={{ width: "260px", height: "46px", fontSize:"12px", align:"center"}}>
+                      </GoogleButton>
+                      */}
+
+                      <div className='relative flex items-center justify-center align-middle'>
+                        <div className='mt-2 flex w-14 border-t border-black'></div>
+                        <span className='mt-2 flex-shrink px-2'>or</span>
+                        <div className='mt-2 flex w-14 border-t border-black'></div>
                       </div>
 
                       <img
@@ -227,19 +288,19 @@ const Login = () => {
                           setDialog(true);
                         }}
                         alt='Log in with SSO'
-                        style={{ width: "260px", height: "44px" }}
+                        style={{ width: "260px", height: "45px" }}
                         className='w-full mt-2 cursor-pointer ... '
                       />
                     </div>
                   )}
-                  {isLoggingIn && (
-                    <div class='flex justify-center align-middle items-center'>
+                  {(isLinkedInLoginLoading || isGitHubLoginLoading) && (
+                    <div className='flex justify-center align-middle items-center'>
                       <CircularProgress size={20} />
                     </div>
                   )}
-                  {loginError && (
+                  {(linkedInLoginError || githubLoginError) && (
                     <p className='text-overline2 text-accent-red'>
-                      {loginError?.message}
+                      {linkedInLoginError?.message || githubLoginError?.message}
                     </p>
                   )}
                 </>
@@ -348,59 +409,59 @@ const Login = () => {
             </Card>
 
             <p className=' flex items-center justify-center text-overline3'>
-              © 2022 Conektto INC. All Rights Reserved.
+              © {new Date().getFullYear()} Conektto INC. All Rights Reserved.
             </p>
           </div>
         </div>
       </div>
-      <div class='col-span-2' style={{ backgroundColor: "#2C71C7" }}>
-        <div class='grid h-screen grid-cols-2 p-2'>
-          <div class='grid grid-rows-5 mt-5'>
+      <div className='col-span-2' style={{ backgroundColor: "#2C71C7" }}>
+        <div className='grid h-screen grid-cols-2 p-2'>
+          <div className='grid grid-rows-5 mt-5'>
             {" "}
-            <div class='flex flex-col justify-items-center align-middle row-start-1 row-span-2 '>
+            <div className='flex flex-col justify-items-center align-middle row-start-1 row-span-2 '>
               <img
-                class='justify-center align-top '
+                className='justify-center align-top '
                 src={EnterpriseAPI}
                 alt='conektto logo'
               />
-              <p class='flex mt-4 ml-7 imgDes justify-center'>
+              <p className='flex mt-4 ml-7 imgDes justify-center'>
                 Enterprise API SDLC
               </p>
             </div>
-            <div class=' flex flex-col justify-items-center align-middle row-start-3 row-span-2 '>
+            <div className=' flex flex-col justify-items-center align-middle row-start-3 row-span-2 '>
               <img
-                class='justify-center align-top '
+                className='justify-center align-top '
                 src={APITestHarness}
                 alt='conektto logo'
               />
-              <p class='flex mt-4 ml-7 imgDes justify-center'>
+              <p className='flex mt-4 ml-7 imgDes justify-center'>
                 API Test Harness
               </p>
             </div>
           </div>
-          <div class='grid grid-rows-5 mt-5'>
+          <div className='grid grid-rows-5 mt-5'>
             {" "}
-            <div class=' flex flex-col justify-items-center align-middle row-start-2 row-span-2 '>
+            <div className=' flex flex-col justify-items-center align-middle row-start-2 row-span-2 '>
               <img
-                class='justify-center align-top '
+                className='justify-center align-top '
                 src={APIDesignStudio}
                 alt='conektto logo'
               />
-              <p class='flex mt-4 ml-7 imgDes justify-center'>
+              <p className='flex mt-4 ml-7 imgDes justify-center'>
                 API Design Studio
               </p>
             </div>
-            <div class=' flex flex-col justify-items-center align-middle row-start-4 row-span-2 '>
+            <div className=' flex flex-col justify-items-center align-middle row-start-4 row-span-2 '>
               <img
-                class='justify-center align-top '
+                className='justify-center align-top '
                 src={HybridAPIOrchestrator}
                 alt='conektto logo'
               />
-              <div class='flex flex-col mt-4  imgDes justify-items-center '>
-                <p class='flex imgDe justify-center '>
+              <div className='flex flex-col mt-4  imgDes justify-items-center '>
+                <p className='flex imgDe justify-center '>
                   Hybrid API Orchestrator
                 </p>
-                <p class='flex imgDesCS justify-center mt-2'>Coming Soon</p>
+                <p className='flex imgDesCS justify-center mt-2'>Coming Soon</p>
               </div>
             </div>
           </div>

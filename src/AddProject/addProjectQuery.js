@@ -82,7 +82,7 @@ const exportDBSchema = async ({
         rootPath: rootPath,
       },
       {
-        timeout: 90000,
+        timeout: 240000,
       }
     );
     return data;
@@ -117,22 +117,49 @@ const addProject = async ({
   isDesign,
   isDefaultClaimSpec,
   isDefaultAdvSpec,
+  isDefaultAdvWorks,
+  isDefaultMflix,
+  projectType
 }) => {
   try {
-    const { data } = await client.post(
-      endpoint.project,
-      {
-        projectName: name,
-        invites: invitees,
-        isDesign: isDesign,
-        isDefaultClaimSpec: isDefaultClaimSpec,
-        isDefaultAdvSpec: isDefaultAdvSpec,
-      },
-      {
-        timeout: 90000,
-      }
-    );
-    return data;
+    if (projectType === "noinput") {
+      const { data } = await client.post(
+        endpoint.project,
+        {
+          projectName: name,
+          invites: invitees,
+          isDesign: isDesign,
+          isDefaultClaimSpec: isDefaultClaimSpec,
+          isDefaultAdvSpec: isDefaultAdvSpec,
+          isDefaultAdvWorks: isDefaultAdvWorks,
+          isDefaultMflix: isDefaultMflix,
+          projectType: projectType
+        },
+        {
+          timeout: 90000,
+        }
+      );
+      return data;
+    }
+    else {
+      const { data } = await client.post(
+        endpoint.project,
+        {
+          projectName: name,
+          invites: invitees,
+          isDesign: isDesign,
+          isDefaultClaimSpec: isDefaultClaimSpec,
+          isDefaultAdvSpec: isDefaultAdvSpec,
+          isDefaultAdvWorks: isDefaultAdvWorks,
+          isDefaultMflix: isDefaultMflix,
+        },
+        {
+          timeout: 90000,
+        }
+      );
+      return data;
+    }
+    
   } catch (error) {
     throw getApiError(error);
   }
@@ -258,7 +285,7 @@ export const useAddProject = (onSuccess) => {
   };
 };
 
-const uploadProjectKey = async ({ projectId, file, userId, test }) => {
+export const uploadProjectKey = async ({ projectId, file, userId, test }) => {
   const bodyFormData = new FormData();
   bodyFormData.append("upload", file);
   bodyFormData.append("userid", userId);
@@ -274,18 +301,19 @@ const uploadProjectKey = async ({ projectId, file, userId, test }) => {
         timeout: 480000,
       }
     );
+    //console.log("data-response-projectKey", data)
     return data;
   } catch (error) {
     throw getApiError(error);
   }
 };
 
-const uploadProjectCertificate = async ({ projectId, file, userId, test }) => {
+export const uploadProjectCertificate = async ({ projectId, file, userId, test }) => {
   const bodyFormData = new FormData();
   bodyFormData.append("upload", file);
   bodyFormData.append("userid", userId);
   bodyFormData.append("test", test);
-
+  //console.log("test-request-uploadcert", test)
   try {
     const { data } = await client.post(
       endpoint.projects + `/${projectId}/upload_To_GCP`,
@@ -297,13 +325,14 @@ const uploadProjectCertificate = async ({ projectId, file, userId, test }) => {
         timeout: 480000,
       }
     );
+    //console.log("data-response-uploadcert", data)
     return data;
   } catch (error) {
     throw getApiError(error);
   }
 };
 
-const uploadProjectCACertificate = async ({
+export const uploadProjectCACertificate = async ({
   projectId,
   file,
   userId,
@@ -363,6 +392,7 @@ export const useUploadProjectKey = (certificateMutation, onSuccess) => {
 
   const mutation = useMutation(uploadProjectKey, {
     onSuccess: (data) => {
+      //console.log("data.test", data.test)
       if (data?.url) {
         keyPath = data.url;
         if (projectDetails?.certificates) {
@@ -435,8 +465,10 @@ export const useUploadProjectCACertificate = (
 
   const mutation = useMutation(uploadProjectCACertificate, {
     onSuccess: (data) => {
+      //console.log("data.test/.", data)
       if (data?.url) {
         caCertPath = data.url;
+        
         if (data.test === true) {
           dbConnectionTestMutation.mutate({
             host: projectDetails.host,
