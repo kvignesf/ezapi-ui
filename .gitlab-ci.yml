@@ -21,6 +21,10 @@ before_script:
   - 'echo \REACT_APP_FEATURE_CUSTOM_PARAMETER\ = \"$SREACT_APP_FEATURE_CUSTOM_PARAMETER\">> .env.stage'
   - 'echo \REACT_APP_FEATURE_STORED_PROCS\ = \"$SREACT_APP_FEATURE_STORED_PROCS\">> .env.stage'
   - 'echo \REACT_APP_AES_ENCRYPTION_KEY\ = \"$LOWER_AES_ENCRYPTION_KEY\">> .env.stage'
+  - 'echo \REACT_APP_GOOGLE_CLIENT_ID\ = \"$LOWER_GOOGLE_CLIENT_ID\">> .env.stage'
+  - 'echo \REACT_APP_GITHUB_CLIENT_ID\ = \"$TEST_GITHUB_CLIENT_ID\">> .env.stage'
+  - 'echo \REACT_APP_REDIRECT_URI\ = \"$STAGE_APP_REDIRECT_URI\">> .env.stage'
+  - 'echo \REACT_APP_SAMPLE_PROJ_LIMIT\ = \"$TEST_SAMPLE_PROJ_LIMIT\">> .env.stage'
   - 'echo \REACT_APP_DISABLE_DDL\ = \"$STAGE_DISABLE_DDL\">> .env.stage'
   - 'echo \REACT_APP_SOCKET_URI\ = \"$STAGE_SOCKET_URI\">> .env.stage'
   -  cat .env.stage  
