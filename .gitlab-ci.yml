@@ -92,7 +92,7 @@ deploy-demo1:
   image: alpine  
   extends: .deploy-demo1
   only:
-    - stage
+    - feature/aggregate-apis
 deploy-instance1:
   stage: deploy-instance1
   image: alpine  
