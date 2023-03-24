@@ -59,6 +59,7 @@ import UserRoleProvider from "./UserRoleContext";
 import PublishProjectMessage from "./PublishProjectMessage";
 import VerifyProjectError from "./VerifyProjectError";
 import ProjectVerificationErrors from "./ProjectVerificationErrors";
+import ApiErrors from "./ApiErrors";
 import ModifyCollaborators from "../ModifyCollaborators/ModifyCollaborators";
 import RepublishInfo from "./RepublishInfo";
 import ProfileMenu from "../shared/components/ProfileMenu";
@@ -177,7 +178,8 @@ const Project = () => {
   const [simulateData, setSimulateData] = useState(null);
   const [autoSyncIntervalId, setAutoSync] = useState(0);
   const [showUnsavedPopup, setUnsavedPopup] = useState(true);
-  
+  const [apiError, setApiError] = useState(null);
+
 
   useEffect(() => {
     if (canEdit(userRole)) {
@@ -187,36 +189,56 @@ const Project = () => {
   }, [userRole]);
 
   useEffect(() => {
-    if (currentTab == 1) {
+    if (currentTab === 1) {
+      const requestOptions = {
+        method: "POST",
+        headers: {  "Content-Type": "application/json", Authorization: `Bearer ${acc_token}`, },
+        body: JSON.stringify({
+          projectid: projectId,
+        }),
+      };
       fetch(
-        // process.env.REACT_APP_API_URL +
-        //   "/virtualData?projectId=00d479e3-bb64-48ce-84e7-c28a4d8988c3",
-        process.env.REACT_APP_API_URL + "/virtualData?projectId=" + projectId,
-        {
-          headers: {
-            Authorization: `Bearer ${acc_token}`,
-          },
-        }
+										  
+																		   
+        process.env.REACT_APP_API_URL + "/simulation_artefacts",
+        requestOptions
+					
+												 
+			
+		 
       )
-        .then((res) => {
-          if (res.ok) {
-            return res.json();
-          } else {
-            const error = (res && res.message) || res.status;
-            return Promise.reject(error);
-          }
+        .then(response => {
+					   
+          return response.json();
+				  
+															 
+										 
+		   
         })
-        .then((result) => {
-          setSimulateVirtualData(result);
-          simulateAPI(result?.data?.[0]);
+        .then((data) => {
+          if(data?.message && data?.message === "Ok"){
+            virtualDataAPI();
+          }
+          else{
+            throw data;
+          }
         })
 
         .catch((error) => {
+          if (error?.message) {
+            console.log('Response status:', error.message);
+            }
+          setApiError(error);
+          setDialog({
+            show: true,
+            type: "api-error",
+            data: null,
+          });
           console.error("There was an error!", error);
           // throw getApiError(error);
-        });
+        });    
     }
-    if (currentTab == 0) {
+    if (currentTab === 0) {
       resetSchemaState();
     }
   }, [currentTab]);
@@ -262,8 +284,9 @@ const Project = () => {
       navigateBack();
     }
   }, [projectDetailsError]);
-
+  
   useEffect(() => {
+    
     if (verifyData && verifyData.message.length == 0) {
       
       if (projectDetails?.projectType !== "noinput") {
@@ -404,6 +427,16 @@ const Project = () => {
       data: dontSaveAction,
     });
   };
+
+  const apihandleCloseDialog = () => {
+    setDialog({
+      show: false,
+      type: null,
+      data: null,
+    });
+    setCurrentTab(0);
+
+  }
 
   const handleCloseDialog = () => {
     if (dialog?.type === "save-operation-warning") {
@@ -558,6 +591,39 @@ const Project = () => {
     });
   };
 
+  const virtualDataAPI = () => {
+    fetch(
+      process.env.REACT_APP_API_URL + "/virtualData?projectId=" + projectId,
+      {
+        headers: {
+          Authorization: `Bearer ${acc_token}`,
+        },
+      }
+    )
+      .then((res) => {
+        return res.json();
+      })
+      .then((result) => {
+        if(result?.data){
+          setSimulateVirtualData(result);
+          simulateAPI(result?.data?.[0]);
+        }
+        else{
+          throw result;
+        }
+        
+      })
+
+      .catch((error) => {
+          setApiError(error);
+          setDialog({
+            show: true,
+            type: "api-error",
+            data: null,
+          });
+      });
+  };
+
   const simulateAPI = (operation) => {
     //console.log(operation);
     fetch(process.env.REACT_APP_API_URL + "/simulate", {
@@ -574,20 +640,24 @@ const Project = () => {
         endpoint: operation.endpoint,
       }),
     })
-      .then((res) => {
-        if (res.ok) {
-          return res.json();
-        } else {
-          const error = (res && res.message) || res.status;
-          return Promise.reject(error);
-        }
+      .then((res) => {					 
+        return res.json();
       })
       .then((result) => {
-        setSimulateData(result?.data?.[0]);
+        if(result?.data){
+          setSimulateData(result?.data?.[0]);
+        }
+        else{
+          throw result;
+        }        
       })
       .catch((error) => {
-        console.error("There was an error!", error);
-        // throw getApiError(error);
+          setApiError(error);
+          setDialog({
+            show: true,
+            type: "api-error",
+            data: null,
+          });
       });
   };
 
@@ -815,7 +885,11 @@ const Project = () => {
               invitedCollaborators={memberList}
             />
           )}
-
+          {dialog?.type === "api-error" && (<ApiErrors
+                error={apiError}
+                onClose={apihandleCloseDialog}
+              />)
+          }
           {dialog?.type === "republish-status" && (
             <RepublishInfo
               project={projectDetails}

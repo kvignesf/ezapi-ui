@@ -13,6 +13,7 @@ before_script:
   - 'echo \REACT_APP_SAMPLE_PROJ_LIMIT\ = \"$TEST_SAMPLE_PROJ_LIMIT\">> .env.test'
   - 'echo \REACT_APP_DISABLE_DDL\ = \"$TEST_DISABLE_DDL\">> .env.test'
   - 'echo \REACT_APP_SOCKET_URI\ = \"$TEST_SOCKET_URI\">> .env.test'
+  - 'echo \REACT_APP_DISABLE_AGGREGATE\ = \"$TEST_DISABLE_AGGREGATE\">> .env.test'
   -  cat .env.test
   - 'echo \REACT_APP_API_URL\ = \"$SAPIURL\">> .env.stage'
   - 'echo \REACT_APP_LINKEDIN_CLIENT_ID\ = \"$SLINKEDINCLIENTID\">> .env.stage'
@@ -27,6 +28,7 @@ before_script:
   - 'echo \REACT_APP_SAMPLE_PROJ_LIMIT\ = \"$TEST_SAMPLE_PROJ_LIMIT\">> .env.stage'
   - 'echo \REACT_APP_DISABLE_DDL\ = \"$STAGE_DISABLE_DDL\">> .env.stage'
   - 'echo \REACT_APP_SOCKET_URI\ = \"$STAGE_SOCKET_URI\">> .env.stage'
+  - 'echo \REACT_APP_DISABLE_AGGREGATE\ = \"$STAGE_DISABLE_AGGREGATE\">> .env.stage'
   -  cat .env.stage  
   - 'echo \REACT_APP_API_URL\ = \"$PAPIURL\">> .env.prod'
   - 'echo \REACT_APP_LINKEDIN_CLIENT_ID\ = \"$PLINKEDINCLIENTID\">> .env.prod'
@@ -41,6 +43,7 @@ before_script:
   - 'echo \REACT_APP_SAMPLE_PROJ_LIMIT\ = \"$PROD_SAMPLE_PROJ_LIMIT\">> .env.prod'
   - 'echo \REACT_APP_DISABLE_DDL\ = \"$PROD_DISABLE_DDL\">> .env.prod'
   - 'echo \REACT_APP_SOCKET_URI\ = \"$PROD_SOCKET_URI\">> .env.prod'
+  - 'echo \REACT_APP_DISABLE_AGGREGATE\ = \"$PROD_DISABLE_AGGREGATE\">> .env.prod'
   -  cat .env.prod
 include:
   project: 'ezapi_poc/infra_poc'
@@ -70,7 +73,7 @@ build-stage:
   stage: build-stage 
   extends: .build-stage
   only:
-    - stage
+    - feature/aggregate-apis
 build-test:
   stage: build-test 
   extends: .build-test

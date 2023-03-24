@@ -164,12 +164,12 @@ const AddOrEditOperation = ({
           desc,
         });
       }
-      const { data: saveSimulateArtefactsData } = await client.post(
+      /* const { data: saveSimulateArtefactsData } = await client.post(
         `simulation_artefacts`,
         {
           projectid: projectId,
         }
-      );
+      ); */
       return;
     }
 

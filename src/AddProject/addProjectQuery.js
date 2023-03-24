@@ -141,6 +141,27 @@ const addProject = async ({
       );
       return data;
     }
+    else if(projectType === "aggregate"){
+      const { data } = await client.post(
+        endpoint.project,
+        {
+          projectName: name,
+          invites: invitees,
+          isDesign: isDesign,
+          isDefaultClaimSpec: isDefaultClaimSpec,
+          isDefaultAdvSpec: isDefaultAdvSpec,
+          isDefaultAdvWorks: isDefaultAdvWorks,
+          isDefaultMflix: isDefaultMflix,
+          projectType: projectType,
+          isAggregate: true
+        },
+        {
+          timeout: 90000,
+        }
+      );
+      return data;
+    }
+
     else {
       const { data } = await client.post(
         endpoint.project,

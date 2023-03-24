@@ -108,17 +108,17 @@ export const publishProject = async ({ projectId, newProjectDetails }) => {
   let certificates = null
   let caCertificates = null
   const userId= sessionStorage.getItem('user_id')
-
-  if (newProjectDetails.keys && newProjectDetails.keys.length > 0) {
-    keys= await uploadProjectKey({projectId, file: newProjectDetails.keys[0], userId, test: false} )
+  
+  if (newProjectDetails?.keys && newProjectDetails?.keys?.length > 0) {
+    keys= await uploadProjectKey({projectId, file: newProjectDetails?.keys[0], userId, test: false} )
   }
 
-  if(newProjectDetails.certificates && newProjectDetails.certificates.length > 0){
-    certificates= await uploadProjectCertificate({projectId, file: newProjectDetails.certificates[0], userId, test: false} )
+  if(newProjectDetails?.certificates && newProjectDetails?.certificates?.length > 0){
+    certificates= await uploadProjectCertificate({projectId, file: newProjectDetails?.certificates[0], userId, test: false} )
   }
       
-  if(newProjectDetails.caCertificates && newProjectDetails.caCertificates.length > 0) {
-    caCertificates= await uploadProjectCACertificate({projectId, file: newProjectDetails.caCertificates[0], userId, test: false} )
+  if(newProjectDetails?.caCertificates && newProjectDetails?.caCertificates?.length > 0) {
+    caCertificates= await uploadProjectCACertificate({projectId, file: newProjectDetails?.caCertificates[0], userId, test: false} )
   }
   console.log("keys", keys, certificates, caCertificates)
 
