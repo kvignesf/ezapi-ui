@@ -50,6 +50,7 @@ export const endpoint = Object.freeze({
   deleteCustomParameter: "/customParameters/delete",
   storedProcedures: "/storedProcedures",
   downloadDotNetCodegen: "/download_dotnet_codegen",
+  downloadPythonCodegen: "/download_python_codegen",
   mandMappingTableData: "/listAllAttributes",
   googleLogin: "/google-signin",
   push_to_github: "/pushToGithub",

@@ -42,7 +42,7 @@ import TabLabel from "../shared/components/TabLabel";
 
 import { getUserId } from "../shared/storage";
 
-const NoSpecNoDb = ({ onClose, onSuccess, noSpecNoDb }) => {
+const NoSpecNoDb = ({ onClose, onSuccess, noSpecNoDb, projectFlowType }) => {
   const [currentTab, setTab] = useState(1);
   const [connectDatabaseTab, setConnectDatabaseTab] = useState(0);
   const history = useHistory();
@@ -158,7 +158,7 @@ const NoSpecNoDb = ({ onClose, onSuccess, noSpecNoDb }) => {
         isDefaultAdvSpec: defaultAdvSpec,
         isDefaultAdvWorks: defaultAdvWorks,
         isDefaultMflix: defaultMflix,
-        projectType: "noinput"
+        projectType: projectFlowType
       });
     }
   };
@@ -201,7 +201,7 @@ const NoSpecNoDb = ({ onClose, onSuccess, noSpecNoDb }) => {
           isDefaultAdvSpec: defaultAdvSpec,
           isDefaultAdvWorks: defaultAdvWorks,
           isDefaultMflix: defaultMflix,
-          projectType: "noinput"
+          projectType: projectFlowType
         });
       }
     }

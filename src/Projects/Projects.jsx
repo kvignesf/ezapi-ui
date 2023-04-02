@@ -35,6 +35,7 @@ import {
   useDownloadArtifacts,
   useDownloadCodegen,
   useDownloadDotnetCodegen,
+  useDownloadPythonCodegen,
   useDownloadSpecs,
   useGetProjects,
   useDownloadDatabase,
@@ -49,6 +50,7 @@ import LoaderWithMessage from "../shared/components/LoaderWithMessage";
 import { getUserId } from "../shared/storage";
 import routes, { generateRoute } from "../shared/routes";
 import dotnetLogo from "../static/images/logo/dotnetlogo.svg";
+import pythonLogo from "../static/images/logo/pythonlogo.svg";
 import javaLogo from "../static/images/logo/java-vertical.svg";
 import githubLogo from "../static/images/logo/github-icon.svg";
 import viewgithubLogo from "../static/images/GitHubView.svg"
@@ -170,6 +172,8 @@ const ProjectRow = ({
     useDownloadCodegen();
   const { isLoading: isDownloadingDotnetCodegen, mutate: downloadDotnetCodegen} =
     useDownloadDotnetCodegen();
+    const { isLoading: isDownloadingPythonCodegen, mutate: downloadPythonCodegen} =
+    useDownloadPythonCodegen();
 
   const handleOnOptionsClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -197,6 +201,10 @@ const ProjectRow = ({
 
   const onDownloadDotnetCodegen = () => {
     downloadDotnetCodegen({ projectId: project?.projectId });
+  };
+
+  const onDownloadPythonCodegen = () => {
+    downloadPythonCodegen({ projectId: project?.projectId });
   };
 
   const onPushViewRepo = () => {
@@ -413,6 +421,46 @@ const ProjectRow = ({
                 </Tooltip>                
               )}
             {isDownloadingDotnetCodegen && (
+              <CircularProgress style={{ width: "24px", height: "24px" }} />
+            )}
+          </div>
+          {/* pythoncodegen download */}
+          <div className='w-8'>
+            {project?.status?.toLowerCase() === "complete" &&
+              project?.projectType?.toLowerCase() !== "schema" &&
+              !isDownloadingPythonCodegen && project?.isDesign && project?.projectType !== "noinput" &&(
+                <Tooltip title={
+                  project?.pythoncodegen
+                    ? "python"
+                    : "python code getting ready"
+                }>
+                  <div
+                    style={{
+                      marginTop: "1px",
+                      width: "22px",
+                      height: "22px",
+                    }}
+                  >
+                    <img
+                      src={pythonLogo}
+                      alt='conektto logo'
+                      className={classNames({
+                        "opacity-50 cursor-default": !project?.pythoncodegen,
+                        "cursor-pointer text-brand-primary": project?.pythoncodegen,
+                      })}
+                      onClick={(e) => {
+                        e?.preventDefault();
+                        e?.stopPropagation();
+
+                        if (project?.pythoncodegen) {
+                          onDownloadPythonCodegen();
+                        }
+                      }}
+                    />
+                  </div>
+                </Tooltip>                
+              )}
+            {isDownloadingPythonCodegen && (
               <CircularProgress style={{ width: "24px", height: "24px" }} />
             )}
           </div>
@@ -736,6 +784,10 @@ const Content = ({ showCreateProjectDialog }) => {
       })
 
       socket.on('dotnetcodegenEvent', (eventName)=> {
+        fetchProjects(eventName)
+      })
+
+      socket.on('pythoncodegenEvent', (eventName)=> {
         fetchProjects(eventName)
       })
     }  

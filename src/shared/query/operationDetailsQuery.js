@@ -43,7 +43,7 @@ const syncOperation = async ({
       }
     );
 
-    const { data: saveSimulateArtefactsData } = await client.post(
+    /* const { data: saveSimulateArtefactsData } = await client.post(
       `simulation_artefacts`,
       {
         projectid: projectId,
@@ -51,12 +51,12 @@ const syncOperation = async ({
       {
         timeout: 120000,
       }
-    );
+    ); */
 
     return {
       saveRequestApiData,
       saveResponseApiData,
-      saveSimulateArtefactsData,
+      //saveSimulateArtefactsData,
     };
   } catch (error) {
     throw getApiError(error);

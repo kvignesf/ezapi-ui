@@ -17,7 +17,7 @@ import apiNameSchema from "../../../shared/schemas/apiNameSchema";
 import EnterKeyCaptureInput from "../../../shared/components/EnterKeyCaptureInput";
 import Messages from "../../../shared/messages";
 
-const ChangeTableName = ({ labelItem, request, responseCode, onClose, refresh}) => {
+const ChangeTableName = ({ labelItem, request, responseCode, onClose, onUpdate=()=>{} }) => {
   const formRef = useRef(null);
   const setOperationDetails = useSetRecoilState(operationAtomWithMiddleware);
   const getRecoilValueInfo = useGetRecoilValueInfo_UNSTABLE();
@@ -75,6 +75,7 @@ const ChangeTableName = ({ labelItem, request, responseCode, onClose, refresh}) 
           clonedTableData.name = name;
           newOperationDetails.operationRequest.body[index] = clonedTableData;
 
+          onUpdate(newOperationDetails)
           return newOperationDetails;
         }
       } else {
@@ -99,14 +100,14 @@ const ChangeTableName = ({ labelItem, request, responseCode, onClose, refresh}) 
 
           clonedOperationDetails.operationResponse[responseIndex] =
             clonedResponseData;
-
+          onUpdate(clonedOperationDetails)
           return clonedOperationDetails;
         }
       }
 
       return operationDetails;
     });
-    refresh();
+    //refresh();
     onClose();
   };
 

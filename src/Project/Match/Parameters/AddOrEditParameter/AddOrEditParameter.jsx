@@ -89,6 +89,13 @@ const AddOrEditParameter = ({ parameter, onClose, stopEdit }) => {
       formRef.current.resetForm({values:''})
     }
   }, [isAddSuccess]);
+
+  useEffect(()=>{
+    if(isEditSuccess){
+      stopEdit();
+    }
+  }, [isEditSuccess]);
+
   // useEffect(() => {
   //   if(addParamError){
   //     formRef.current.resetForm({values:{attribute:""}})
@@ -125,9 +132,9 @@ const AddOrEditParameter = ({ parameter, onClose, stopEdit }) => {
                         e.preventDefault();
                         e.stopPropagation();
                         formRef.current.submitForm();
-                        if(parameter){
+                        /* if(parameter){
                           stopEdit(); 
-                          }
+                          } */
                       }
                     }} 
                     
@@ -275,9 +282,9 @@ const AddOrEditParameter = ({ parameter, onClose, stopEdit }) => {
                         e.preventDefault();
                         e.stopPropagation();
                         formRef.current.submitForm();
-                        if(parameter){
+                       /*  if(parameter){
                           stopEdit(); 
-                        }
+                        } */
                       }
                     }}
                     inputProps={{
@@ -296,7 +303,7 @@ const AddOrEditParameter = ({ parameter, onClose, stopEdit }) => {
                       e.preventDefault();
                       e.stopPropagation();
                       formRef.current.submitForm();
-                      stopEdit();    
+                      //stopEdit();    
                     }}>
                   <DoneIcon
                     className={"cursor-pointer"}
@@ -351,7 +358,8 @@ const AddOrEditParameter = ({ parameter, onClose, stopEdit }) => {
 
         {editParamError && (
           <p className='text-accent-red text-overline2'>
-            {editParamError?.error}
+            {/* {editParamError?.error} */}
+            {editParamError?.response?.data?.error}
           </p>
         )}
     </div>

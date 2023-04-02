@@ -79,7 +79,7 @@ import { SignalCellularNullSharp } from "@mui/icons-material";
 import { ChildFriendly } from "@material-ui/icons";
 import ChangeNameInsideArray from "./ChangeNameInsideArray";
 
-const Body = ({ request = true, responseCode, projectType = "schema" }) => {
+const Body = ({ request = true, responseCode, projectType = "schema", onDelete = () => {} }) => {
   let [operationData, setOperationDetails] = useRecoilState(
     operationAtomWithMiddleware
   );
@@ -452,7 +452,7 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
   };
 
   return (
-    <DropArea onItemDropped={itemDropped} state={refresh}>
+    <DropArea onItemDropped={itemDropped} state={refresh}  key={refresh}>
       <div className=" h-full flex flex-col">
         <div className=" ml-3 p-2 border-t-2 border-b-2 bg-neutral-gray8 mb-1/2">
           <div className=" w-full grid grid-cols-5 gap-2 ">
@@ -504,7 +504,7 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
           </div>
         </div>
 
-        {request && !_.isEmpty(operationData?.operationRequest?.body) && (
+        {request && !_.isEmpty(updatedData?.operationRequest?.body) && (
           <div className="h-full flex-1">
             <Scrollbar
               alwaysShowTracks={true}
@@ -527,7 +527,7 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
                   setExpandedIds(nodeIds);
                 }}
               >
-                {operationData?.operationRequest?.body.map((item, index) => {
+                {updatedData?.operationRequest?.body.map((item, index) => {
                   let clonedRef;
 
                   if (isSchema(item)) {
@@ -560,19 +560,22 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
                             setDisabledIcons(false);
                           }}
                           projectType={projectType}
-                          key={
+                          /* key={
                             index +
                             // operationData?.operationRequest?.body.length +
                             refresh
-                          }
+                          } */
                           itemRef={clonedRef ?? item}
                           request={request}
                           responseCode={responseCode}
                           refresh={() => {
                             toggleRefresh();
                           }}
-                          onDelete={(data) => {
+                          onUpdate={(data) => {
                             setUpdateData(data);
+                          }}
+                          onDelete={() => {
+                            onDelete();
                           }}
                         />
                       </DraggableBodyItem>
@@ -584,7 +587,7 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
           </div>
         )}
 
-        {!request && !_.isEmpty(getResponseData(operationData)?.body) && (
+        {!request && !_.isEmpty(getResponseData(updatedData)?.body) && (
           <div className="h-full flex-1">
             <Scrollbar
               alwaysShowTracks={true}
@@ -607,7 +610,7 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
                   setExpandedIds(nodeIds);
                 }}
               >
-                {getResponseData(operationData)?.body.map((item, index) => {
+                {getResponseData(updatedData)?.body.map((item, index) => {
                   let clonedRef;
 
                   if (isSchema(item)) {
@@ -637,19 +640,22 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
                       <DraggableBodyItem state={refresh}>
                         <BodyItem
                           projectType={projectType}
-                          key={
+                          /* key={
                             index +
                             // getResponseData(operationData)?.body.length +
                             refresh
-                          }
+                          } */
                           itemRef={clonedRef ?? item}
                           request={request}
                           responseCode={responseCode}
                           refresh={() => {
                             toggleRefresh();
                           }}
-                          onDelete={(data) => {
+                          onUpdate={(data) => {
                             setUpdateData(data);
+                          }}
+                          onDelete={() => {
+                            onDelete();
                           }}
                         />
                       </DraggableBodyItem>
@@ -686,8 +692,9 @@ const BodyItem = ({
   itemRef,
   projectType,
   disabledIcons,
-  onDelete = () => {},
+  onUpdate = () => {},
   refresh = () => {},
+  onDelete = () => {},
 }) => {
   const [bodyItem, setItem] = useState(itemRef);
   const [arrayData, setArrayData] = useState(itemRef.data ?? []);
@@ -730,7 +737,7 @@ const BodyItem = ({
     }
   }, [itemRef]);
 
-  const deleteItemsInsideNestedItems = (child, parent, grandParent) => {
+  const deleteItemsInsideNestedItems = (child, parent, root) => {
     if (
       isDatabase(child) ||
       isColumn(child) ||
@@ -739,47 +746,55 @@ const BodyItem = ({
       isObject(child) ||
       isArrayOfObject(child)
     ) {
-      setOperationDetails((operationDetails) => {
-        const newOperationDetails = _.cloneDeep(operationDetails);
-        const responseIndex = getResponseIndex(operationDetails);
-        let data = request
-          ? newOperationDetails.operationRequest
-          : newOperationDetails.operationResponse[responseIndex];
+      if (
+        (isObject(parent) && Object.keys(parent.properties).length === 1) ||
+        (isArrayOfObject(parent) &&
+          Object.keys(parent.items?.properties).length === 1)
+      ) {
+        onDelete();
+      } else {
+        setOperationDetails((operationDetails) => {
+          const newOperationDetails = _.cloneDeep(operationDetails);
+          const responseIndex = getResponseIndex(operationDetails);
+          let data = request
+            ? newOperationDetails.operationRequest
+            : newOperationDetails.operationResponse[responseIndex];
 
-        const index = data.body.findIndex((x) => x?.name === grandParent?.name);
+          const index = data.body.findIndex((x) => x?.name === root?.name);
 
-        if (index !== -1) {
-          if (data.body[index].items?.properties) {
-            if (
-              data.body[index].items?.properties[parent.name].items?.properties
-            ) {
-              delete data.body[index].items?.properties[parent.name].items
-                ?.properties[child.name];
+          if (index !== -1) {
+            if (data.body[index].items && data.body[index].items?.properties) {
+              if (
+                data.body[index].items?.properties[parent.name].items?.properties
+              ) {
+                delete data.body[index].items?.properties[parent.name].items
+                  ?.properties[child.name];
+              }
+
+              if (data.body[index].items?.properties[parent.name].properties) {
+                delete data.body[index].items?.properties[parent.name].properties[
+                  child.name
+                ];
+              }
             }
+            if (data.body[index].properties) {
+              if (data.body[index].properties[parent.name].items?.properties) {
+                delete data.body[index].properties[parent.name].items?.properties[
+                  child.name
+                ];
+              }
 
-            if (data.body[index].items?.properties[parent.name].properties) {
-              delete data.body[index].items?.properties[parent.name].properties[
-                child.name
-              ];
+              if (data.body[index].properties[parent.name].properties) {
+                delete data.body[index].properties[parent.name].properties[
+                  child.name
+                ];
+              }
             }
+            onUpdate(newOperationDetails);
+            return newOperationDetails;
           }
-          if (data.body[index].properties) {
-            if (data.body[index].properties[parent.name].items?.properties) {
-              delete data.body[index].properties[parent.name].items?.properties[
-                child.name
-              ];
-            }
-
-            if (data.body[index].properties[parent.name].properties) {
-              delete data.body[index].properties[parent.name].properties[
-                child.name
-              ];
-            }
-          }
-          onDelete(newOperationDetails);
-          return newOperationDetails;
-        }
-      });
+        });
+      }
     }
     refresh();
   };
@@ -823,7 +838,7 @@ const BodyItem = ({
             // refresh()
           }
 
-          onDelete(newOperationDetails);
+          onUpdate(newOperationDetails);
           return newOperationDetails;
         }
       });
@@ -853,6 +868,8 @@ const BodyItem = ({
 
             newOperationDetails.operationRequest.body.splice(index, 1);
 
+            onUpdate(newOperationDetails);
+
             return newOperationDetails;
           }
         } else {
@@ -876,6 +893,8 @@ const BodyItem = ({
 
             clonedOperationDetails.operationResponse[responseIndex] =
               clonedResponseData;
+
+            onUpdate(clonedOperationDetails);
 
             return clonedOperationDetails;
           }
@@ -908,6 +927,7 @@ const BodyItem = ({
           //clonedRequestData.format = "object"; //remove to avoid making it object
           clonedOperationDetails.operationRequest.body[requestIndex] =
             clonedRequestData;
+          onUpdate(clonedOperationDetails);
 
           return clonedOperationDetails;
         }
@@ -934,6 +954,7 @@ const BodyItem = ({
 
           clonedOperationDetails.operationResponse[responseIndex] =
             clonedResponseData;
+          onUpdate(clonedOperationDetails);
 
           return clonedOperationDetails;
         }
@@ -946,28 +967,53 @@ const BodyItem = ({
   const deleteColumnOfTable = (column, table, isObjectArray = false, ref) => {
     if (isObjectArray) {
       let array = _.cloneDeep(table);
-      table = array.items.properties[ref.name];
+      if (array.items?.properties) {
+        table = array.items.properties[ref.name];
+      } else if (array.properties) {
+        table = array.properties[ref.name];
+      }
       if (isColumn(column) && isDatabase(table)) {
         setOperationDetails((operationDetails) => {
           const newOperationDetails = _.cloneDeep(operationDetails);
-          const data = request
+          const responseIndex = getResponseIndex(operationDetails);
+          let data = request
             ? newOperationDetails.operationRequest
-            : newOperationDetails.operationResponse[0];
-          const arrayIndex = data.body.findIndex(
-            (x) => isArrayOfObject(x) && x.name === array.name
-          );
-          const columnIndex =
-            data.body[arrayIndex].items.properties[
-              ref.name
-            ].selectedColumns.findIndex(
-              (x) => isColumn(x) && x?.sourceName === column?.sourceName
-            ) ?? -1;
-
-          if (columnIndex !== -1) {
-            data.body[arrayIndex].items.properties[
-              ref.name
-            ].selectedColumns.splice(columnIndex, 1);
-          }
+            : newOperationDetails.operationResponse[responseIndex];
+            const arrayIndex = data.body.findIndex(
+              (x) => (isArrayOfObject(x)||isObject(x)) && x.name === array.name
+            );
+            if (data.body[arrayIndex]?.items?.properties) {
+              const columnIndex =
+                data.body[arrayIndex].items.properties[
+                  ref.name
+                ].selectedColumns.findIndex(
+                  (x) => isColumn(x) && x?.sourceName === column?.sourceName
+                ) ?? -1;
+  
+              if (columnIndex !== -1) {
+                data.body[arrayIndex].items.properties[
+                  ref.name
+                ].selectedColumns.splice(columnIndex, 1);
+              }
+            }
+  
+            if (data.body[arrayIndex]?.properties) {
+              const columnIndex =
+                data.body[arrayIndex].properties[
+                  ref.name
+                ].selectedColumns.findIndex(
+                  (x) => isColumn(x) && x?.sourceName === column?.sourceName
+                ) ?? -1;
+  
+              if (columnIndex !== -1) {
+                data.body[arrayIndex].properties[ref.name].selectedColumns.splice(
+                  columnIndex,
+                  1
+                );
+              }
+            }
+  
+          onUpdate(newOperationDetails);
           return newOperationDetails;
         });
       }
@@ -998,6 +1044,8 @@ const BodyItem = ({
 
               newOperationDetails.operationRequest.body[tableIndex] =
                 clonedTable;
+
+              onUpdate(newOperationDetails);
 
               return newOperationDetails;
             }
@@ -1035,6 +1083,8 @@ const BodyItem = ({
               clonedOperationDetails.operationResponse[responseIndex] =
                 clonedResponseData;
 
+              onUpdate(clonedOperationDetails);
+
               return clonedOperationDetails;
             }
           }
@@ -1043,6 +1093,7 @@ const BodyItem = ({
         });
       }
     }
+    refresh();
   };
 
   const renameColumn = (column, name) => {
@@ -1069,6 +1120,8 @@ const BodyItem = ({
             // Set cloned column to body
             newOperationDetails.operationRequest.body[columnIndex] =
               clonedColumn;
+
+            onUpdate(newOperationDetails);
 
             return newOperationDetails;
           }
@@ -1103,6 +1156,8 @@ const BodyItem = ({
 
             clonedOperationDetails.operationResponse[responseIndex] =
               clonedResponseData;
+
+            onUpdate(clonedOperationDetails);
 
             return clonedOperationDetails;
           }
@@ -1169,29 +1224,52 @@ const BodyItem = ({
   ) => {
     if (isObjectArray) {
       let array = _.cloneDeep(table);
-      table = array.items.properties[ref.name];
-      if (isColumn(column) && isDatabase(table) && isArrayOfObject(array)) {
+      if (array.items?.properties) {
+        table = array.items.properties[ref.name];
+      } else if (array.properties) {
+        table = array.properties[ref.name];
+      }
+      if (isColumn(column) && isDatabase(table) && (isArrayOfObject(array)||isObject(array))) {
         setOperationDetails((operationDetails) => {
           const newOperationDetails = _.cloneDeep(operationDetails);
-          const data = request
+          const responseIndex = getResponseIndex(operationDetails);
+          let data = request
             ? newOperationDetails.operationRequest
-            : newOperationDetails.operationResponse[0];
+            : newOperationDetails.operationResponse[responseIndex];
           const arrayIndex = data.body.findIndex(
-            (x) => isArrayOfObject(x) && x.name === array.name
+            (x) => (isArrayOfObject(x)||isObject(x)) && x.name === array.name
           );
 
-          const columnIndex =
-            data.body[arrayIndex].items.properties[
-              ref.name
-            ].selectedColumns.findIndex(
-              (x) => isColumn(x) && x?.sourceName === column.sourceName
-            ) ?? -1;
+          if (data.body[arrayIndex]?.items?.properties) {
+            const columnIndex =
+              data.body[arrayIndex].items.properties[
+                ref.name
+              ].selectedColumns.findIndex(
+                (x) => isColumn(x) && x?.sourceName === column.sourceName
+              ) ?? -1;
 
-          if (columnIndex !== -1) {
-            data.body[arrayIndex].items.properties[ref.name].selectedColumns[
-              columnIndex
-            ].name = name;
+            if (columnIndex !== -1) {
+              data.body[arrayIndex].items.properties[ref.name].selectedColumns[
+                columnIndex
+              ].name = name;
+            }
           }
+
+          if (data.body[arrayIndex]?.properties) {
+            const columnIndex =
+              data.body[arrayIndex].properties[
+                ref.name
+              ].selectedColumns.findIndex(
+                (x) => isColumn(x) && x?.sourceName === column.sourceName
+              ) ?? -1;
+
+            if (columnIndex !== -1) {
+              data.body[arrayIndex].properties[ref.name].selectedColumns[
+                columnIndex
+              ].name = name;
+            }
+          }
+          onUpdate(newOperationDetails);
           return newOperationDetails;
         });
       }
@@ -1236,7 +1314,7 @@ const BodyItem = ({
                 newOperationDetails.operationRequest.body[parentTableIndex] =
                   clonedParentTable;
               }
-
+              onUpdate(newOperationDetails);
               return newOperationDetails;
             }
           } else {
@@ -1282,6 +1360,8 @@ const BodyItem = ({
 
                 clonedOperationDetails.operationResponse[responseIndex] =
                   clonedResponseData;
+                onUpdate(clonedOperationDetails);
+
                 return clonedOperationDetails;
               }
             }
@@ -1308,25 +1388,47 @@ const BodyItem = ({
       const operationDetails = operationAtom?.contents;
 
       let array = _.cloneDeep(table);
-      table = array.items.properties[ref.name];
-      if (isColumn(column) && isDatabase(table) && isArrayOfObject(array)) {
+      if (array.items?.properties) {
+        table = array.items.properties[ref.name];
+      } else if (array.properties) {
+        table = array.properties[ref.name];
+      }
+      if (isColumn(column) && isDatabase(table) && (isArrayOfObject(array)||isObject(array))) {
         const newOperationDetails = _.cloneDeep(operationDetails);
-        const data = request
+        const responseIndex = getResponseIndex(operationDetails);
+
+        let data = request
           ? newOperationDetails.operationRequest
-          : newOperationDetails.operationResponse[0];
+          : newOperationDetails.operationResponse[responseIndex];
         const arrayIndex = data.body.findIndex(
-          (x) => isArrayOfObject(x) && x.name === array.name
+          (x) => (isArrayOfObject(x)||isObject(x)) && x.name === array.name
         );
 
-        const columnIndex =
-          data.body[arrayIndex].items.properties[
-            ref.name
-          ].selectedColumns.findIndex(
-            (x) => isColumn(x) && x?.sourceName === name
-          ) ?? -1;
+        if (data.body[arrayIndex]?.items?.properties) {
+          const columnIndex =
+            data.body[arrayIndex].items.properties[
+              ref.name
+            ].selectedColumns.findIndex(
+              (x) => isColumn(x) && x?.sourceName === name
+            ) ?? -1;
 
-        if (columnIndex !== -1) {
-          return true;
+          if (columnIndex !== -1) {
+            return true;
+          }
+        }						
+				  
+
+        if (data.body[arrayIndex]?.properties) {
+          const columnIndex =
+            data.body[arrayIndex].properties[
+              ref.name
+            ].selectedColumns.findIndex(
+              (x) => isColumn(x) && x?.sourceName === name
+            ) ?? -1;
+
+          if (columnIndex !== -1) {
+            return true;
+          }
         }
       }
     } else {
@@ -1561,7 +1663,8 @@ const BodyItem = ({
             isArrayChecked={isArrayChecked}
             request={request}
             responseCode={responseCode}
-            refresh={() => {
+            onUpdate={(data) => {
+              onUpdate(data);
               refresh();
             }}
           />
@@ -1571,6 +1674,10 @@ const BodyItem = ({
             deleteItem={deleteItem}
             isArrayChecked={isArrayChecked}
             request={request}
+            onUpdate={(data) => {
+              onUpdate(data);
+              refresh();
+            }}
             responseCode={responseCode}
           />
         ) : isArray(bodyItem) ||
@@ -1678,7 +1785,7 @@ const BodyItem = ({
           }
         })}
 
-      {(isArray(bodyItem) || isObject(bodyItem && !bodyItem.properties)) &&
+      {((isArray(bodyItem) || isObject(bodyItem)) && !bodyItem.properties) &&
         bodyItem.is_child === false &&
         arrayData.map((item) => {
           const clonedRef = _.cloneDeep(item);
@@ -1740,6 +1847,10 @@ const BodyItem = ({
                       request={request}
                       responseCode={responseCode}
                       isArrayOfObject
+                      onUpdate={(data) => {
+                        onUpdate(data);
+                        refresh();
+                      }}
                     />
                   ) : null
                 }
@@ -1797,11 +1908,15 @@ const BodyItem = ({
             return (
               <ColumnLabel
                 columnLabelItem={arrayItemRef}
-                deleteItem={() => deleteNestedItems(arrayItemRef, bodyItem)}
+                deleteColumn={() => deleteNestedItems(arrayItemRef, bodyItem)}
                 array={bodyItem}
                 request={request}
                 responseCode={responseCode}
                 isArrayOfObject
+                onUpdate={(data) => {
+                  onUpdate(data);
+                  refresh();
+                }}
               />
             );
           } else if (isAttribute(arrayItemRef)) {
@@ -1895,17 +2010,22 @@ const BodyItem = ({
                           return (
                             <ColumnLabel
                               columnLabelItem={itemRef}
-                              deleteItem={() => {
+                              deleteColumn={() => {
                                 deleteItemsInsideNestedItems(
                                   itemRef,
                                   arrayItemRef,
                                   bodyItem
                                 );
                               }}
+                              root={bodyItem}
                               array={arrayItemRef}
                               request={request}
                               responseCode={responseCode}
                               isArrayOfObject
+                              onUpdate={(data) => {
+                                onUpdate(data);
+                                refresh();
+                              }}
                             />
                           );
                         } else if (isAttribute(itemRef)) {
@@ -1930,21 +2050,21 @@ const BodyItem = ({
                           isArrayOfObject(itemRef)
                         ) {
                           return (
-                              <ArrayOrObjectLabel
-                                labelItem={itemRef}
-                                // isArrayChecked={isArrayChecked}
-                                deleteItem={() => {
-                                  deleteItemsInsideNestedItems(
-                                    itemRef,
-                                    arrayItemRef,
-                                    bodyItem
-                                  );
-                                }}
-                                styleClass="ml-6"
-                                request={request}
-                                responseCode={responseCode}
-                                projectType={projectType}
-                              />
+                            <ArrayOrObjectLabel
+                              labelItem={itemRef}
+                              // isArrayChecked={isArrayChecked}
+                              deleteItem={() => {
+                                deleteItemsInsideNestedItems(
+                                  itemRef,
+                                  arrayItemRef,
+                                  bodyItem
+                                );
+                              }}
+                              styleClass="ml-6"
+                              request={request}
+                              responseCode={responseCode}
+                              projectType={projectType}
+                            />
                           );
                         } else if (isDatabase(itemRef)) {
                           return (
@@ -1957,11 +2077,16 @@ const BodyItem = ({
                                   bodyItem
                                 );
                               }}
+                              root={bodyItem}
                               array={arrayItemRef}
                               // isArrayChecked={isArrayChecked}
                               request={request}
                               responseCode={responseCode}
-                              // isArrayOfObject
+                              isArrayOfObject
+                              onUpdate={(data) => {
+                                onUpdate(data);
+                                refresh();
+                              }}
                             />
                           );
                         }
@@ -1979,9 +2104,10 @@ const BodyItem = ({
             <ColumnLabel
               columnLabelItem={ref}
               deleteColumn={(column) => deleteColumnOfTable(column, bodyItem)}
-              renameColumn={(column, name) =>
-                renameColumnOfTable(column, bodyItem, name)
-              }
+              renameColumn={(column, name) => {
+                renameColumnOfTable(column, bodyItem, name);
+                refresh();
+              }}
               request={request}
               isNameTaken={(column, value) => {
                 return isColumnNameTakenOfTable(column, bodyItem, value);
@@ -2707,7 +2833,9 @@ const DatabaseLabel = ({
   isArrayChecked,
   isArrayOfObject = false,
   array,
-  refresh,
+  
+  root,
+  onUpdate = () => {},
 }) => {
   const [optionsMenuAnchorEl, setOptionsMenuAnchorEl] = useState(false);
   const [isArray, setIsArray] = useState(tableLabelItem.isArray);
@@ -2796,20 +2924,40 @@ const DatabaseLabel = ({
                     request={request}
                     responseCode={responseCode}
                     onClose={handleCloseDialog}
-                    refresh={() => {
-                      refresh();
+                    onUpdate={(data) => {
+                      onUpdate(data);
                     }}
                   />
                 )}
               {dialog?.type === "rename-table" &&
                 canEdit() &&
-                isArrayOfObject && (
+                isArrayOfObject &&
+                root === undefined && (
                   <ChangeNameInsideArray
                     labelItem={tableLabelItem}
                     request={request}
                     responseCode={responseCode}
                     onClose={handleCloseDialog}
                     array={array}
+                    onUpdate={(data) => {
+                      onUpdate(data);
+                    }}
+                  />
+                )}
+              {dialog?.type === "rename-table" &&
+                canEdit() &&
+                isArrayOfObject &&
+                root && (
+                  <ChangeNameInsideArray
+                    root={root}
+                    labelItem={tableLabelItem}
+                    request={request}
+                    responseCode={responseCode}
+                    onClose={handleCloseDialog}
+                    array={array}
+                    onUpdate={(data) => {
+                      onUpdate(data);
+                    }}
                   />
                 )}
             </Dialog>
@@ -2952,6 +3100,8 @@ const ColumnLabel = ({
   isArrayOfObject = false,
   array,
   isPartOfTable = true,
+  root,
+  onUpdate = () => {},
 }) => {
   let [operationData, setOperationDetails] = useRecoilState(
     operationAtomWithMiddleware
@@ -3058,6 +3208,7 @@ const ColumnLabel = ({
                 )}
               {dialog?.type === "rename-column" &&
                 canEdit() &&
+                root === undefined &&
                 isArrayOfObject && (
                   <ChangeNameInsideArray
                     labelItem={columnLabelItem}
@@ -3066,6 +3217,27 @@ const ColumnLabel = ({
                     onClose={handleCloseDialog}
                     array={array}
                     isColumn
+                    onUpdate={(data) => {
+                      onUpdate(data);
+                    }}
+                  />
+                )}
+
+              {dialog?.type === "rename-column" &&
+                canEdit() &&
+                root &&
+                isArrayOfObject && (
+                  <ChangeNameInsideArray
+                    root={root}
+                    labelItem={columnLabelItem}
+                    request={request}
+                    responseCode={responseCode}
+                    onClose={handleCloseDialog}
+                    array={array}
+                    isColumn
+                    onUpdate={(data) => {
+                      onUpdate(data);
+                    }}
                   />
                 )}
             </Dialog>{" "}
@@ -3205,6 +3377,7 @@ const StoredProcedureLabel = ({
   responseCode,
   deleteItem,
   isArrayChecked,
+  onUpdate = () => {},
 }) => {
   const [optionsMenuAnchorEl, setOptionsMenuAnchorEl] = useState(false);
   const [isArray, setIsArray] = useState(storedProcedureLabelItem.isArray);
@@ -3292,6 +3465,9 @@ const StoredProcedureLabel = ({
                   request={request}
                   responseCode={responseCode}
                   onClose={handleCloseDialog}
+                  onUpdate={(data) => {
+                    onUpdate(data);
+                  }}
                 />
               )}
             </Dialog>

@@ -61,6 +61,11 @@ import Box from "@material-ui/core/Box";
 import { SliderValueLabelUnstyled } from "@mui/material";
 import { LocalConvenienceStoreOutlined } from "@mui/icons-material";
 
+import Radio from '@mui/material/Radio';
+import RadioGroup from '@mui/material/RadioGroup';
+import FormControl from '@mui/material/FormControl';
+import FormLabel from '@mui/material/FormLabel';
+
 const AddProject = ({ onClose, onSuccess }) => {
   const [currentTab, setTab] = useState(0);
   const [connectDatabaseTab, setConnectDatabaseTab] = useState(0);
@@ -72,6 +77,7 @@ const AddProject = ({ onClose, onSuccess }) => {
   // const [isDesign, setIsDesign] = useState(true);
   const [errorDisplay, setErrorDisplay] = useState(false);
   const [specErrorDisplay, setSpecErrorDisplay] = useState(false);
+  const [value, setValue] = useState("dataprovider");
 
   const [inviteCollabsErrorMssg, setInviteCollabsErrorMssg] = useState(false);
   const [sampleProjCnt, setSampleProjCnt]  = useState(1);
@@ -86,6 +92,8 @@ const AddProject = ({ onClose, onSuccess }) => {
   const [defaultClaimSpec, setDefaultClaimSpec] = useState(false);
   const [defaultAdvSpec, setDefaultAdvSpec] = useState(false);
   const [defaultFlow, setDefaultFlow] = useState(false);
+  const [aggregateFlow, setAggregateFlow] = useState(false);
+  const [projectFlowType, setProjectFlowType] = useState("noinput");
   const [noSpecNoDb, setNoSpecNoDb] = useState(false);
   const [defaultAdvWorks, setDefaultAdvWorks] = useState(false);
   const [defaultMflix, setDefaultMflix] = useState(false);
@@ -105,6 +113,7 @@ const AddProject = ({ onClose, onSuccess }) => {
  
 
   const sampleProjLimit = process.env.REACT_APP_SAMPLE_PROJ_LIMIT;
+  const displayAggAPI = process.env.REACT_APP_DISABLE_AGGREGATE;
 
   useEffect(() => {
     reward();
@@ -237,7 +246,7 @@ const AddProject = ({ onClose, onSuccess }) => {
         isDefaultAdvSpec: defaultAdvSpec,
         isDefaultAdvWorks: defaultAdvWorks,
         isDefaultMflix: defaultMflix,
-        projectType: "noinput"
+        projectType: projectFlowType
       });
     }  else if (
       (!defaultClaimSpec || !defaultAdvSpec  || !defaultAdvWorks || !defaultMflix) &&
@@ -473,8 +482,28 @@ const AddProject = ({ onClose, onSuccess }) => {
     setDisableMflix(e.target.checked);
     setDisableAdvWorks(e.target.checked);
   };
-  const handleDefaultFlow = (e) => {
-    setDefaultFlow(e.target.checked);
+  const handleDefaultFlow = () => {
+    setDefaultFlow(true);
+    setAggregateFlow(false);
+    setProjectFlowType("noinput");
+  };
+  const handleAggregateFlow = () => {
+    setAggregateFlow(true);
+    setDefaultFlow(false);
+    setProjectFlowType("aggregate");
+  };
+  const handleChange = (event) => {
+    if(event.target.value === "noinput"){
+      handleDefaultFlow();
+    }
+    else if(event.target.value === "aggregate"){
+      handleAggregateFlow();
+    }
+    else if(event.target.value === "dataprovider"){
+      setAggregateFlow(false);
+      setDefaultFlow(false);
+    }
+    setValue(event.target.value);
   };
 
   const handleAdvWorks = (e) => {
@@ -499,7 +528,7 @@ const AddProject = ({ onClose, onSuccess }) => {
 
       return;
     }
-    if(defaultFlow){
+    if(defaultFlow || aggregateFlow){
       setNoSpecNoDb(true);
       setIsDesign(null);
     }
@@ -731,11 +760,12 @@ const AddProject = ({ onClose, onSuccess }) => {
     {noSpecNoDb && (<NoSpecNoDb
               onClose={onClose}
               onSuccess={onSuccess}
-              noSpecNoDb={noSpecNoDb}/>)}
+              noSpecNoDb={noSpecNoDb}
+              projectFlowType = {projectFlowType}/>)}
     {isDesign != null  && isMiddleState && (
         <div className='p-4'>
         <div className='flex flex-row items-center justify-between mb-3'>
-          {<h5>Create API Project</h5>}
+          {<h5>Create API</h5>}
           <div>
             {" "}
             <img
@@ -750,7 +780,7 @@ const AddProject = ({ onClose, onSuccess }) => {
         </div>{" "}
         <p className="text-mediumLabel mb-2">API Name</p>
 
-      <div className="mb-6">
+      <div className="mb-4">
         <Formik
           initialValues={{
             name: projectDetails?.name ?? "",
@@ -791,22 +821,58 @@ const AddProject = ({ onClose, onSuccess }) => {
           )}
         </Formik>
       </div>
-        <FormGroup>
-          <FormControlLabel
-            control={
-              
-              ( <Checkbox
-                size="small"
-                // disabled={(sampleProjCnt >= 3 || (currentTab==1 || currentTab ==2 ))}  
-                onChange={(e) => handleDefaultFlow(e)}
-                checked={defaultFlow}
-                // onClick={() => isAdvChecked()}
-              />
-              )
-            }
-            label={<Box fontSize={14}>Free format API Design</Box>}
-          />
-        </FormGroup>
+      <FormControl>
+        <RadioGroup
+          aria-labelledby="demo-row-radio-buttons-group-label"
+          row
+          name="radio-buttons-group"
+          defaultValue = "dataprovider"
+          value={value}
+          onChange={handleChange}
+          
+        >
+          <FormControlLabel className = "pr-12" value="noinput" control={<Radio />} label={<Box fontSize={14}>Free format API</Box>} />
+          <FormControlLabel className = "pr-12" value="dataprovider" control={<Radio />} label={<Box fontSize={14}>Data API</Box>} />          
+          {displayAggAPI !== "true" ? 
+          <FormControlLabel  value="aggregate" control={<Radio />} label={<Box fontSize={14}>Aggregate API </Box>} />
+          : ""}
+          
+        </RadioGroup>
+     </FormControl>
+        {/* <FormGroup> */}
+        
+          {/* <div className='flex flex-row'>
+            <div className = "mr-6">
+            <FormControlLabel
+              control={
+                
+                ( <Checkbox
+                  size="small"
+                  // disabled={(sampleProjCnt >= 3 || (currentTab==1 || currentTab ==2 ))}  
+                  onChange={(e) => handleDefaultFlow(e)}
+                  checked={defaultFlow}
+                  // onClick={() => isAdvChecked()}
+                />
+                )
+              }
+              label={<Box fontSize={14}>Free format API Design</Box>}
+            />
+            </div>
+            <div>
+            <FormControlLabel
+              control={ 
+                ( <Checkbox
+                  size="small"
+                  onChange={(e) => handleAggregateFlow(e)}
+                  checked={aggregateFlow}
+                />
+                )
+              }
+              label={<Box fontSize={14}>Aggregate API Design</Box>}
+            />
+            </div>
+          </div> */}
+        {/* </FormGroup> */}
         <div className='border-t-2 border-neutral-gray7 flex flex-row items-center justify-end pt-4'>
           <TextButton
             onClick={() => {
@@ -1245,7 +1311,7 @@ const AddProject = ({ onClose, onSuccess }) => {
       {isDesign == null && !noSpecNoDb &&(
         <div className='p-4'>
           <div className='flex flex-row items-center justify-between mb-3'>
-            {<h5>Create API Project</h5>}
+            {<h5>Create API</h5>}
             <div>
               {" "}
               <img

@@ -31,6 +31,7 @@ import LoaderWithMessage from "../../../shared/components/LoaderWithMessage";
 
 const Request = ({
   getDetailsMutation: { isLoading: isLoadingOperationRequest },
+  onDelete = () => {},
   projectType = "schema",
   ...props
 }) => {
@@ -268,7 +269,15 @@ const Request = ({
         <PathParams canEdit={props.canEdit} request={true} />
       )}
       {currentTab === 4 && <QueryParams request={true} />}
-      {currentTab === 5 && <Body request={true} projectType={projectType} />}
+      {currentTab === 5 && (
+        <Body
+          request={true}
+          projectType={projectType}
+          onDelete={() => {
+            onDelete();
+          }}
+        />
+      )}
     </div>
   );
 };

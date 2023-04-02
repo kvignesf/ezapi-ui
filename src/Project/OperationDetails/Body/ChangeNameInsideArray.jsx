@@ -23,6 +23,8 @@ const ChangeNameInsideArray = ({
   onClose,
   array,
   isColumn = false,
+  root,
+  onUpdate=()=>{}
 }) => {
   const formRef = useRef(null);
   const setOperationDetails = useSetRecoilState(operationAtomWithMiddleware);
@@ -36,26 +38,86 @@ const ChangeNameInsideArray = ({
 
     const operationDetails = operationAtom?.contents;
     let nameExists = false;
-    const newOperationDetails = _.cloneDeep(operationDetails);
-    let data = request
-      ? newOperationDetails.operationRequest
-      : newOperationDetails.operationResponse;
+    let obj={} 
 
-    let responseData;
-    if (request) {
-      responseData = data;
+    if (root) {
+      setOperationDetails((operationDetails) => {
+        const newOperationDetails = _.cloneDeep(operationDetails);
+        let data = request
+        ? newOperationDetails.operationRequest
+        : newOperationDetails.operationResponse;
+
+      let responseData;
+      if (request) {
+        responseData = data;
+      } else {
+        const responseIndex = data?.findIndex(
+          (item) => item.responseCode === responseCode
+        );
+        responseData = data[responseIndex];
+      }
+  
+        const index = responseData.body.findIndex((x) => x?.name === root?.name);
+  
+        if (index !== -1) {
+          if (responseData.body[index].items && responseData.body[index].items?.properties) {
+            if (
+              responseData.body[index].items?.properties[array.name].items?.properties
+            ) {
+              obj = responseData.body[index].items?.properties[array.name].items
+                ?.properties
+            }
+            
+  
+            if (responseData.body[index].items?.properties[array.name].properties) {
+              obj= responseData.body[index].items?.properties[array.name].properties
+            }
+          }
+  
+          if (responseData.body[index].properties) {
+            if (responseData.body[index].properties[array.name].items?.properties) {
+              obj= responseData.body[index].properties[array.name].items?.properties
+            }
+  
+            if (responseData.body[index].properties[array.name].properties) {
+              obj= responseData.body[index].properties[array.name].properties
+            }
+          }
+          // onUpdate(newOperationDetails);
+          return newOperationDetails;
+        }
+      });
     } else {
-      const responseIndex = data?.findIndex(
-        (item) => item.responseCode === responseCode
+      const newOperationDetails = _.cloneDeep(operationDetails);
+      let data = request
+        ? newOperationDetails.operationRequest
+        : newOperationDetails.operationResponse;
+  
+      let responseData;
+      if (request) {
+        responseData = data;
+      } else {
+        const responseIndex = data?.findIndex(
+          (item) => item.responseCode === responseCode
+        );
+        responseData = data[responseIndex];
+      }
+  
+      const arrayIndex = responseData?.body?.findIndex(
+        (body) => body.name === array.name
       );
-      responseData = data[responseIndex];
+  
+  
+      if (responseData.body[arrayIndex].items?.properties) {
+         obj = responseData.body[arrayIndex].items?.properties;
+      }
+  
+      if (responseData.body[arrayIndex].properties) {
+         obj = responseData.body[arrayIndex].properties;
+      }
+      
     }
-
-    const arrayIndex = responseData?.body?.findIndex(
-      (body) => body.name === array.name
-    );
-
-    const obj = responseData.body[arrayIndex].items?.properties;
+    
     let size = Object.keys(obj).length;
 
     for (let i = 0; i < size; i++) {
@@ -73,33 +135,94 @@ const ChangeNameInsideArray = ({
       return;
     }
 
-    setOperationDetails((operationDetails) => {
-      const newOperationDetails = _.cloneDeep(operationDetails);
-      let data = request
+    if (root) {
+      setOperationDetails((operationDetails) => {
+        const newOperationDetails = _.cloneDeep(operationDetails);
+        let data = request
         ? newOperationDetails.operationRequest
         : newOperationDetails.operationResponse;
 
-      let responseData;
-      if (request) {
-        responseData = data;
-      } else {
-        const responseIndex = data?.findIndex(
-          (item) => item.responseCode === responseCode
+        let responseData;
+        if (request) {
+          responseData = data;
+        } else {
+          const responseIndex = data?.findIndex(
+            (item) => item.responseCode === responseCode
+          );
+          responseData = data[responseIndex];
+        }
+        const index = responseData.body.findIndex((x) => x?.name === root?.name);
+        const clonedTableData = _.cloneDeep(labelItem);
+        clonedTableData.name = name;        
+  
+        if (index !== -1) {
+          if (responseData.body[index].items && responseData.body[index].items?.properties) {
+            if (responseData.body[index].items?.properties[array.name].items?.properties) {
+               responseData.body[index].items.properties[array.name].items.properties[name]=clonedTableData
+               delete responseData.body[index].items?.properties[array.name].items?.properties[labelItem.name]
+            }
+            
+  
+            if (responseData.body[index].items?.properties[array.name].properties) {
+               responseData.body[index].items.properties[array.name].properties[name]=clonedTableData
+               delete responseData.body[index].items?.properties[array.name].properties[labelItem.name]
+            }
+          }
+  
+          if (responseData.body[index].properties) {
+            if (responseData.body[index].properties[array.name].items?.properties) {
+               responseData.body[index].properties[array.name].items.properties[name]=clonedTableData
+               delete responseData.body[index].properties[array.name].items?.properties[labelItem.name]
+            }
+  
+            if (responseData.body[index].properties[array.name].properties) {
+               responseData.body[index].properties[array.name].properties[name]=clonedTableData
+               delete responseData.body[index].properties[array.name].properties[labelItem.name]
+            }
+          }
+          onUpdate(newOperationDetails);
+          return newOperationDetails;
+        }
+      });
+    } else {
+      
+      setOperationDetails((operationDetails) => {
+        const newOperationDetails = _.cloneDeep(operationDetails);
+        let data = request
+          ? newOperationDetails.operationRequest
+          : newOperationDetails.operationResponse;
+  
+        let responseData;
+        if (request) {
+          responseData = data;
+        } else {
+          const responseIndex = data?.findIndex(
+            (item) => item.responseCode === responseCode
+          );
+          responseData = data[responseIndex];
+        }
+  
+        const arrayIndex = responseData?.body?.findIndex(
+          (body) => body.name === array.name
         );
-        responseData = data[responseIndex];
-      }
-
-      const arrayIndex = responseData?.body?.findIndex(
-        (body) => body.name === array.name
-      );
-
-      const clonedTableData = _.cloneDeep(labelItem);
-      clonedTableData.name = name;
-
-      responseData.body[arrayIndex].items.properties[name] = clonedTableData;
-      delete responseData.body[arrayIndex].items.properties[labelItem.name];
-      return newOperationDetails;
-    });
+  
+        const clonedTableData = _.cloneDeep(labelItem);
+        clonedTableData.name = name;
+  
+  
+        if (responseData.body[arrayIndex].items?.properties) {
+          responseData.body[arrayIndex].items.properties[name] = clonedTableData;
+          delete responseData.body[arrayIndex].items.properties[labelItem.name];
+        }else if (responseData.body[arrayIndex].properties) {
+          responseData.body[arrayIndex].properties[name] = clonedTableData;
+          delete responseData.body[arrayIndex].properties[labelItem.name];
+        }
+        
+        onUpdate(newOperationDetails);
+       
+        return newOperationDetails;
+      });
+    }
     onClose();
   };
 
