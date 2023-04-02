@@ -60,6 +60,7 @@ import PublishProjectMessage from "./PublishProjectMessage";
 import VerifyProjectError from "./VerifyProjectError";
 import ProjectVerificationErrors from "./ProjectVerificationErrors";
 import ApiErrors from "./ApiErrors";
+import ErrorDrawer from "./ErrorDrawer";
 import ModifyCollaborators from "../ModifyCollaborators/ModifyCollaborators";
 import RepublishInfo from "./RepublishInfo";
 import ProfileMenu from "../shared/components/ProfileMenu";
@@ -68,6 +69,7 @@ import EzapiFooter from "../shared/components/EzapiFooter";
 import { getAccessToken } from "../shared/storage";
 import CredentialsBeforePublish from "./CredentialsBeforePublish";
 import DBMappingDrawer from "./DBMappingDrawer";
+import ErrorWithMessage from "../shared/components/ErrorWithMessage";
 
 const Project = () => {
   const acc_token = getAccessToken();
@@ -172,7 +174,7 @@ const Project = () => {
   });
   const getRecoilValueInfo = useGetRecoilValueInfo_UNSTABLE();
   const [userRole, setRole] = useState(null);
-
+  const [isDeleteError, setIsDeleteError] = useState(false);
   const [passwordBeforePublish, setPasswordBeforePublish] = useState(null);
   const [simulateVirtualData, setSimulateVirtualData] = useState(null);
   const [simulateData, setSimulateData] = useState(null);
@@ -624,6 +626,10 @@ const Project = () => {
       });
   };
 
+  const ErrorMessageClose = () => {
+    setIsDeleteError(false);
+  };
+
   const simulateAPI = (operation) => {
     //console.log(operation);
     fetch(process.env.REACT_APP_API_URL + "/simulate", {
@@ -677,8 +683,10 @@ const Project = () => {
         <Dialog
           aria-labelledby='save-operation-dialog'
           open={
+            
             isPublishingProject ||
             //isVerifyingProject ||
+            isDeleteError ||
             isVerifying ||
             inProgress ||
             publishProjectData ||
@@ -698,6 +706,7 @@ const Project = () => {
             inProgress ||
             //isVerifyingProject ||
             isVerifying ||
+            isDeleteError ||
             entityMappingError ||
             //verifyProjectError ||
             publishProjectData ||
@@ -784,6 +793,16 @@ const Project = () => {
                 error={verifyData}
                 onClose={resetVerify}
               />
+          )}
+
+          {isDeleteError && (
+            <ErrorDrawer
+              message={
+                "Object Cannot be empty inside another Object or Array"
+              }
+              title={"Delete Failure"}
+              onClose={ErrorMessageClose}
+            />
           )}
 
           {(mandMappingErr || publishProjectData || publishProjectError) && (
@@ -1211,6 +1230,9 @@ const Project = () => {
                         <OperationDetails
                           projectType={projectDetails?.projectType}
                           canEdit={canEdit(userRole)}
+                          onDelete={() => {
+                            setIsDeleteError(true);
+                          }}
                         />
                       </div>
                     )}

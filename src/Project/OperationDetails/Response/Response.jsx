@@ -28,6 +28,7 @@ const Response = ({
     data: operationData,
     mutate: getOperationDetails,
   },
+  onDelete=()=>{},
   projectType = "schema",
 }) => {
   const operationState = useRecoilValue(operationAtomWithMiddleware);
@@ -90,6 +91,9 @@ const Response = ({
       <ResponseContent
         selectedCode={selectedResponseCode}
         projectType={projectType}
+        onDelete={() => {
+          onDelete()
+        }}
       />
     </div>
   );
@@ -154,7 +158,7 @@ const Description = ({ value, selectedResponseCode }) => {
   );
 };
 
-const ResponseContent = ({ selectedCode, projectType }) => {
+const ResponseContent = ({ selectedCode, projectType,  onDelete=()=>{} }) => {
   const [currentTab, setTab] = useState(0);
   const [operationState, setOperationState] = useRecoilState(
     operationAtomWithMiddleware
@@ -213,6 +217,9 @@ const ResponseContent = ({ selectedCode, projectType }) => {
           request={false}
           responseCode={selectedCode}
           projectType={projectType}
+          onDelete={() => {
+            onDelete()
+          }}
         />
       )}
     </div>

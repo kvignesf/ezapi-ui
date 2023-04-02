@@ -79,7 +79,7 @@ import { SignalCellularNullSharp } from "@mui/icons-material";
 import { ChildFriendly } from "@material-ui/icons";
 import ChangeNameInsideArray from "./ChangeNameInsideArray";
 
-const Body = ({ request = true, responseCode, projectType = "schema" }) => {
+const Body = ({ request = true, responseCode, projectType = "schema", onDelete = () => {} }) => {
   let [operationData, setOperationDetails] = useRecoilState(
     operationAtomWithMiddleware
   );
@@ -574,6 +574,9 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
                           onUpdate={(data) => {
                             setUpdateData(data);
                           }}
+                          onDelete={() => {
+                            onDelete();
+                          }}
                         />
                       </DraggableBodyItem>
                     </DropArea>
@@ -651,6 +654,9 @@ const Body = ({ request = true, responseCode, projectType = "schema" }) => {
                           onUpdate={(data) => {
                             setUpdateData(data);
                           }}
+                          onDelete={() => {
+                            onDelete();
+                          }}
                         />
                       </DraggableBodyItem>
                     </DropArea>
@@ -688,6 +694,7 @@ const BodyItem = ({
   disabledIcons,
   onUpdate = () => {},
   refresh = () => {},
+  onDelete = () => {},
 }) => {
   const [bodyItem, setItem] = useState(itemRef);
   const [arrayData, setArrayData] = useState(itemRef.data ?? []);
@@ -739,47 +746,55 @@ const BodyItem = ({
       isObject(child) ||
       isArrayOfObject(child)
     ) {
-      setOperationDetails((operationDetails) => {
-        const newOperationDetails = _.cloneDeep(operationDetails);
-        const responseIndex = getResponseIndex(operationDetails);
-        let data = request
-          ? newOperationDetails.operationRequest
-          : newOperationDetails.operationResponse[responseIndex];
+      if (
+        (isObject(parent) && Object.keys(parent.properties).length === 1) ||
+        (isArrayOfObject(parent) &&
+          Object.keys(parent.items?.properties).length === 1)
+      ) {
+        onDelete();
+      } else {
+        setOperationDetails((operationDetails) => {
+          const newOperationDetails = _.cloneDeep(operationDetails);
+          const responseIndex = getResponseIndex(operationDetails);
+          let data = request
+            ? newOperationDetails.operationRequest
+            : newOperationDetails.operationResponse[responseIndex];
 
-        const index = data.body.findIndex((x) => x?.name === root?.name);
+          const index = data.body.findIndex((x) => x?.name === root?.name);
 
-        if (index !== -1) {
-          if (data.body[index].items && data.body[index].items?.properties) {
-            if (
-              data.body[index].items?.properties[parent.name].items?.properties
-            ) {
-              delete data.body[index].items?.properties[parent.name].items
-                ?.properties[child.name];
+          if (index !== -1) {
+            if (data.body[index].items && data.body[index].items?.properties) {
+              if (
+                data.body[index].items?.properties[parent.name].items?.properties
+              ) {
+                delete data.body[index].items?.properties[parent.name].items
+                  ?.properties[child.name];
+              }
+
+              if (data.body[index].items?.properties[parent.name].properties) {
+                delete data.body[index].items?.properties[parent.name].properties[
+                  child.name
+                ];
+              }
             }
+            if (data.body[index].properties) {
+              if (data.body[index].properties[parent.name].items?.properties) {
+                delete data.body[index].properties[parent.name].items?.properties[
+                  child.name
+                ];
+              }
 
-            if (data.body[index].items?.properties[parent.name].properties) {
-              delete data.body[index].items?.properties[parent.name].properties[
-                child.name
-              ];
+              if (data.body[index].properties[parent.name].properties) {
+                delete data.body[index].properties[parent.name].properties[
+                  child.name
+                ];
+              }
             }
+            onUpdate(newOperationDetails);
+            return newOperationDetails;
           }
-          if (data.body[index].properties) {
-            if (data.body[index].properties[parent.name].items?.properties) {
-              delete data.body[index].properties[parent.name].items?.properties[
-                child.name
-              ];
-            }
-
-            if (data.body[index].properties[parent.name].properties) {
-              delete data.body[index].properties[parent.name].properties[
-                child.name
-              ];
-            }
-          }
-          onUpdate(newOperationDetails);
-          return newOperationDetails;
-        }
-      });
+        });
+      }
     }
     refresh();
   };

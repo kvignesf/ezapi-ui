@@ -40,6 +40,7 @@ const OperationDetails = ({
   operation,
   className,
   projectType,
+  onDelete=()=>{},
   ...props
 }) => {
   // console.log(props.canEdit);
@@ -128,6 +129,9 @@ const OperationDetails = ({
                   canEdit={props.canEdit}
                   getDetailsMutation={getOperationMutation}
                   projectType={projectType}
+                  onDelete={()=>{
+                    onDelete()
+                  }}
                 />
               </div>
             ) : (
@@ -135,6 +139,9 @@ const OperationDetails = ({
                 <Response
                   getDetailsMutation={getOperationMutation}
                   projectType={projectType}
+                  onDelete={()=>{
+                    onDelete()
+                  }}
                 />
               </div>
             )}
