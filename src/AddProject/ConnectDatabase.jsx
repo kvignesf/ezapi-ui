@@ -572,7 +572,10 @@ const ConnectDatabase = ({
                   // name: apiNameSchema(Messages.NAME_REQUIRED),
                   type: Yup.string().required("  Database type is required."),
                   host: Yup.string().required("host is required."),
-                  port: Yup.string().required("port is required."),
+                  port: Yup.string().when('type', 
+                  { is:(type)=>{ return type !=='mongo';},
+                    then: Yup.string().required("port is required.") 
+                  }),
                   database: Yup.string().required("database is required."),
                   username: Yup.string().required("username is required."),
                 })}
@@ -820,7 +823,15 @@ const ConnectDatabase = ({
                         <Field
                             type="checkbox"
                             name="toggle"
-                            disabled={isClaimSpec || isAdvSpec || isAdvWorks || isMflix}
+                            disabled={isClaimSpec || isAdvSpec || isAdvWorks || isMflix || !_.isEmpty(projectDetails?.password)}
+                            onClick={(e) => {                              
+                              setProjectDetails((currProjectDetails) => {                                
+                                return {
+                                  ...currProjectDetails,
+                                  overssl: e.target.value,
+                                };
+                              });
+                            }}
                           />
                           {" Over SSL"}
                         </label>

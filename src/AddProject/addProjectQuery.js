@@ -188,6 +188,7 @@ const addProject = async ({
 
 const databaseConnectionTest = async (formData) => {
   try {
+    
     const { data } = await client.post(endpoint.testDBConnection, formData);
     return data;
   } catch (error) {
@@ -254,7 +255,7 @@ export const useAddProject = (onSuccess) => {
           });
         } else if (
           !_.isEmpty(projectDetails?.host) ||
-          !_.isEmpty(projectDetails?.port) ||
+          //!_.isEmpty(projectDetails?.port) ||
           !_.isEmpty(projectDetails?.username) ||
           !_.isEmpty(projectDetails?.database) ||
           !_.isEmpty(projectDetails?.type)
