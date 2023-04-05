@@ -254,7 +254,7 @@ const AddProject = ({ onClose, onSuccess }) => {
       (_.isEmpty(projectDetails?.host) ||
       (_.isEmpty(projectDetails?.port) && projectDetails?.type !== 'mongo') ||
         _.isEmpty(projectDetails?.username) ||
-        _.isEmpty(projectDetails?.password) ||
+        (_.isEmpty(projectDetails?.password) && !projectDetails?.overssl) ||
         _.isEmpty(projectDetails?.database) ||
         _.isEmpty(projectDetails?.type)) ||
         ((projectDetails?.overssl) && (
@@ -327,7 +327,7 @@ const AddProject = ({ onClose, onSuccess }) => {
         (_.isEmpty(projectDetails?.host) ||
           (_.isEmpty(projectDetails?.port) && projectDetails?.type !== 'mongo') ||
           _.isEmpty(projectDetails?.username) ||
-          _.isEmpty(projectDetails?.password) ||
+          (_.isEmpty(projectDetails?.password) && !projectDetails?.overssl) ||
           _.isEmpty(projectDetails?.database) ||
           _.isEmpty(projectDetails?.type)) || 
           ((projectDetails?.overssl) &&
@@ -335,7 +335,7 @@ const AddProject = ({ onClose, onSuccess }) => {
         _.isEmpty(projectDetails?.certificates) ||
         _.isEmpty(projectDetails?.caCertificates)))
       ) {
-        console.log("..done error here..")
+        //console.log("..done error here..")
         setErrorDisplay(true);
       } else if (_.isEmpty(projectDetails?.specs) && !isDesign) {
         setSpecErrorDisplay(true);

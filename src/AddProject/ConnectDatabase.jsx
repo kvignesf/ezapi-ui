@@ -823,10 +823,9 @@ const ConnectDatabase = ({
                         <Field
                             type="checkbox"
                             name="toggle"
-                            disabled={isClaimSpec || isAdvSpec || isAdvWorks || isMflix}
-                            onClick={(e) => {
-                              
-                              setProjectDetails((currProjectDetails) => {
+                            disabled={isClaimSpec || isAdvSpec || isAdvWorks || isMflix || !_.isEmpty(projectDetails?.password)}
+                            onClick={(e) => {                              
+                              setProjectDetails((currProjectDetails) => {                                
                                 return {
                                   ...currProjectDetails,
                                   overssl: e.target.value,
