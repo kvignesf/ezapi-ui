@@ -252,16 +252,18 @@ const AddProject = ({ onClose, onSuccess }) => {
       (!defaultClaimSpec || !defaultAdvSpec  || !defaultAdvWorks || !defaultMflix) &&
       _.isEmpty(projectDetails?.dbs) &&
       (_.isEmpty(projectDetails?.host) ||
-        _.isEmpty(projectDetails?.port) ||
+      (_.isEmpty(projectDetails?.port) && projectDetails?.type !== 'mongo') ||
         _.isEmpty(projectDetails?.username) ||
         _.isEmpty(projectDetails?.password) ||
         _.isEmpty(projectDetails?.database) ||
-        _.isEmpty(projectDetails?.type)) &&
-        (_.isEmpty(projectDetails?.keys) &&
-        _.isEmpty(projectDetails?.certificates) &&
-        _.isEmpty(projectDetails?.caCertificates)) &&
+        _.isEmpty(projectDetails?.type)) ||
+        ((projectDetails?.overssl) && (
+        _.isEmpty(projectDetails?.keys) ||
+        _.isEmpty(projectDetails?.certificates) ||
+        _.isEmpty(projectDetails?.caCertificates))) &&
         (_.isEmpty(projectDetails?.specs) && isDesign) 
     ) {
+      console.log(". add later.. error", projectDetails?.type )
       setErrorDisplay(true);
       /* uploadProjectData({
         name: projectDetails?.name,
@@ -323,12 +325,17 @@ const AddProject = ({ onClose, onSuccess }) => {
       } else if (
         _.isEmpty(projectDetails?.dbs) &&
         (_.isEmpty(projectDetails?.host) ||
-          _.isEmpty(projectDetails?.port) ||
+          (_.isEmpty(projectDetails?.port) && projectDetails?.type !== 'mongo') ||
           _.isEmpty(projectDetails?.username) ||
           _.isEmpty(projectDetails?.password) ||
           _.isEmpty(projectDetails?.database) ||
-          _.isEmpty(projectDetails?.type))
+          _.isEmpty(projectDetails?.type)) || 
+          ((projectDetails?.overssl) &&
+        (_.isEmpty(projectDetails?.keys) ||
+        _.isEmpty(projectDetails?.certificates) ||
+        _.isEmpty(projectDetails?.caCertificates)))
       ) {
+        console.log("..done error here..")
         setErrorDisplay(true);
       } else if (_.isEmpty(projectDetails?.specs) && !isDesign) {
         setSpecErrorDisplay(true);
@@ -1070,11 +1077,10 @@ const AddProject = ({ onClose, onSuccess }) => {
                     {projectDetailsError?.response?.data?.message}
                   </p>
                 )}
-
+                {/* Please upload atleast one of the following - ddl file or dbconnection */}
                 {errorDisplay && currentTab === 2 && (
                   <p className='text-overline2 text-accent-red my-2'>
-                    Please upload atleast one of the following - ddl file or
-                    dbconnection
+                    Please enter values for all the fields in the dbconnection                    
                   </p>
                 )}
 
@@ -1178,7 +1184,7 @@ const AddProject = ({ onClose, onSuccess }) => {
                           if (
                             formRef.current.isValid &&
                             !_.isEmpty(projectDetails?.host) &&
-                            !_.isEmpty(projectDetails?.port) &&
+                           // !_.isEmpty(projectDetails?.port) &&
                             !_.isEmpty(projectDetails?.username) &&
                             !_.isEmpty(projectDetails?.database) &&
                             !_.isEmpty(projectDetails?.type)
