@@ -384,7 +384,7 @@ const CredentialsBeforePublish = ({
                           fullWidth
                           color="primary"
                           InputProps={{style: { height: "50px", background: "#E0E0E0" }}}
-                          placeholder="7744"
+                          placeholder="    "
                           value={newProjectDetails.portNo}
                           variant="outlined"
                           inputProps={{ maxLength: 24 }}

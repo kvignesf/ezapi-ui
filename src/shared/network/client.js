@@ -76,6 +76,10 @@ export const endpoint = Object.freeze({
 
   //ProductTour
   productVideos: "/productVideos",
+
+  //API Governance
+  apiSprawl: "/apiSprawl",
+  //dataLineage: "/dataLineage",
 });
 
 const client = axios.create({
