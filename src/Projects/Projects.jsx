@@ -493,7 +493,7 @@ const ProjectRow = ({
                       src={nodeLogo}
                       alt='conektto logo'
                       className={classNames({
-                        "opacity-50 cursor-default": !project?.nodecodegen,
+                        "opacity-40 cursor-default": !project?.nodecodegen,
                         "cursor-pointer text-brand-primary": project?.nodecodegen,
                       })}
                       onClick={(e) => {

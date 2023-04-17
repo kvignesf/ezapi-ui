@@ -47,6 +47,7 @@ import { array } from "yup";
 import { FormHelperText } from "@mui/material";
 import ProjectDetails from "./ProjectDetails";
 
+const displayOracleDB = process.env.REACT_APP_DISABLE_ORACLEDB;
 
 const theme = createTheme({
   overrides: {
@@ -493,12 +494,21 @@ const ConnectDatabase = ({
     },
   })(Tabs);
 
-  const databaseTypes = [
+  let databaseTypes = [
     { value: "mysql", label: "MySQL", check: "my_sql" },
     { value: "mssql", label: "SQL Server", check: "ms_sql" },
     { value: "postgres", label: "Postgres", check: "postgres" },
     { value: "mongo", label: "MongoDb", check: "mongo" },
+    { value: "oracle", label: "Oracle", check: "oracle" },
   ];
+  if (displayOracleDB == "true") {
+    databaseTypes = [
+      { value: "mysql", label: "MySQL", check: "my_sql" },
+      { value: "mssql", label: "SQL Server", check: "ms_sql" },
+      { value: "postgres", label: "Postgres", check: "postgres" },
+      { value: "mongo", label: "MongoDb", check: "mongo" },      
+    ];
+  }
 
   //const { data: pricing_data } = usePricingData();
   //const { data: userProfile_data } = useUserProfile();
