@@ -22,6 +22,7 @@ import ProjectPayment from './ProjectPayment/ProjectPayment';
 import ProjectPayment2 from './ProjectPayment/ProjectPayment2';
 import Orders from './Orders/Orders';
 import ProductTour from './ProductTour/ProductTour';
+import ApiGovernance from "./ApiGovernance/ApiGovernance";
 import ConekttoDocs from './Docs/ConekttoDocs';
 import {SocketContext, socket} from './Context/socket';
 
@@ -82,6 +83,11 @@ const App = () => {
                   return null;
                 }}/>
 
+                <PrivateRoute
+                    exact
+                    path={routes.apiGovernance}
+                    component={ApiGovernance}
+                />
                 {/*<PrivateRoute exact path={routes.docs} component={ConekttoDocs} />*/}
                 <Route
                   path={routes.payment}

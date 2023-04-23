@@ -12,6 +12,7 @@ import client, { endpoint } from "../shared/network/client";
 import { getAccessToken } from "../shared/storage";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
+import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
 import Confetti from "react-confetti";									  
 // import DashboardSharpIcon from "@material-ui/icons/DashboardSharp";
 import { ReactComponent as DashboardSharpIcon } from "../static/images/dashboard_logo.svg";
@@ -29,6 +30,7 @@ import routes, { generateRoute } from "../shared/routes";
 import { useMutation, useQuery } from "react-query";
 import AppIcon from "../shared/components/AppIcon";
 import AddProject from "../AddProject";
+import ApiGovernance from "../ApiGovernance/ApiGovernance";
 import projectAtom, { defaultState } from "../AddProject/projectAtom";
 import InitialsAvatar from "../shared/components/InitialsAvatar";
 import { useLogout } from "../shared/query/authQueries";
@@ -47,6 +49,9 @@ import _ from "lodash";
 
 const acc_token = getAccessToken();
 const baseUrl = process.env.REACT_APP_API_URL;
+const displayAPIGov = process.env.REACT_APP_DISABLE_APIGOV
+    ? process.env.REACT_APP_DISABLE_APIGOV
+    : "true";
 
 const useStyles = makeStyles({
   selectedItem: {
@@ -110,6 +115,9 @@ const Dashboard = ({ selectedIndex, children, pricingDefaultCheck }) => {
           pathname: routes.docs,
           state: { allow: false },
         });
+      } else if (index === 6) {
+        history.push(routes.apiGovernance);
+        window.location.reload();
       }
 
     }
@@ -405,6 +413,40 @@ const Dashboard = ({ selectedIndex, children, pricingDefaultCheck }) => {
                 Docs
               </p>
             </ListItem>
+            {displayAPIGov == "true" && (
+            <ListItem
+              button
+              selected={selectedIndex === 6}
+              onClick={() => {
+                handleSideMenuItemClick(6);
+              }}
+              style={{
+                padding: "1rem",
+              }}
+              className={selectedIndex === 6 ? styles.selectedItem : null}
+              classes={{ root: styles.root, selected: styles.selected }}
+              disableTouchRipple
+            >
+              <ListItemIcon style={{ minWidth: "0", marginRight: "1rem" }}>
+                <AccountBalanceIcon
+                  //fill={selectedIndex === 6 ? Colors.brand.primary : "grey"}
+                  style={
+                    selectedIndex === 6
+                      ? { color: "#C72C71" }
+                      : { color: "grey" }
+                  }
+                />
+              </ListItemIcon>
+              <p
+                className={`text-overline2 ${classNames({
+                  "text-brand-primary": selectedIndex === 6,
+                  "text-neutral-gray4": selectedIndex !== 6,
+                })}`}
+              >
+                API Governance
+              </p>
+            </ListItem>
+            )}
 
           </List>
         </div>

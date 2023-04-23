@@ -105,13 +105,11 @@ const AddProject = ({ onClose, onSuccess }) => {
     ms_sql: true,
     my_sql: true,
     postgres: true,
-    mongo: true
+    mongo: true,
+    oracle: true
   });
 
   const hideClaims = false;
-
- 
-
   const sampleProjLimit = process.env.REACT_APP_SAMPLE_PROJ_LIMIT;
   const displayAggAPI = process.env.REACT_APP_DISABLE_AGGREGATE;
 
@@ -749,7 +747,7 @@ const AddProject = ({ onClose, onSuccess }) => {
         userProfile_data["plan_name"] == "Basic"
       ) {
         debouncedSetNumberOfCollaborators(2);
-        setConnectors({ ms_sql: true, my_sql: true, postgres: true, mongodb: true });
+        setConnectors({ ms_sql: true, my_sql: true, postgres: true, mongodb: true, oracle: true });
       } else {
         const filtered_plan = pricing_data["products"].filter(
           (item) => item["plan_name"] == userProfile_data["plan_name"]

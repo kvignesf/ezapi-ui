@@ -36,6 +36,7 @@ import {
   useDownloadCodegen,
   useDownloadDotnetCodegen,
   useDownloadPythonCodegen,
+  useDownloadNodeCodegen,
   useDownloadSpecs,
   useGetProjects,
   useDownloadDatabase,
@@ -51,6 +52,7 @@ import { getUserId } from "../shared/storage";
 import routes, { generateRoute } from "../shared/routes";
 import dotnetLogo from "../static/images/logo/dotnetlogo.svg";
 import pythonLogo from "../static/images/logo/pythonlogo.svg";
+import nodeLogo from "../static/images/logo/nodejs.svg";
 import javaLogo from "../static/images/logo/java-vertical.svg";
 import githubLogo from "../static/images/logo/github-icon.svg";
 import viewgithubLogo from "../static/images/GitHubView.svg"
@@ -172,8 +174,10 @@ const ProjectRow = ({
     useDownloadCodegen();
   const { isLoading: isDownloadingDotnetCodegen, mutate: downloadDotnetCodegen} =
     useDownloadDotnetCodegen();
-    const { isLoading: isDownloadingPythonCodegen, mutate: downloadPythonCodegen} =
-    useDownloadPythonCodegen();
+  const { isLoading: isDownloadingPythonCodegen, mutate: downloadPythonCodegen} =
+  useDownloadPythonCodegen();
+  const { isLoading: isDownloadingNodeCodegen, mutate: downloadNodeCodegen} =
+  useDownloadNodeCodegen();
 
   const handleOnOptionsClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -205,6 +209,10 @@ const ProjectRow = ({
 
   const onDownloadPythonCodegen = () => {
     downloadPythonCodegen({ projectId: project?.projectId });
+  };
+
+  const onDownloadNodeCodegen = () => {
+    downloadNodeCodegen({ projectId: project?.projectId });
   };
 
   const onPushViewRepo = () => {
@@ -464,6 +472,46 @@ const ProjectRow = ({
               <CircularProgress style={{ width: "24px", height: "24px" }} />
             )}
           </div>
+          {/* nodecodegen download */}
+          <div className='w-8'>
+            {project?.status?.toLowerCase() === "complete" &&
+              project?.projectType?.toLowerCase() !== "schema" &&
+              !isDownloadingNodeCodegen && project?.isDesign && project?.projectType !== "noinput" &&(
+                <Tooltip title={
+                  project?.nodecodegen
+                    ? "node"
+                    : "node code getting ready"
+                }>
+                  <div
+                    style={{
+                      marginTop: "1px",
+                      width: "22px",
+                      height: "22px",
+                    }}
+                  >
+                    <img
+                      src={nodeLogo}
+                      alt='conektto logo'
+                      className={classNames({
+                        "opacity-40 cursor-default": !project?.nodecodegen,
+                        "cursor-pointer text-brand-primary": project?.nodecodegen,
+                      })}
+                      onClick={(e) => {
+                        e?.preventDefault();
+                        e?.stopPropagation();
+
+                        if (project?.nodecodegen) {
+                          onDownloadNodeCodegen();
+                        }
+                      }}
+                    />
+                  </div>
+                </Tooltip>                
+              )}
+            {isDownloadingNodeCodegen && (
+              <CircularProgress style={{ width: "24px", height: "24px" }} />
+            )}
+          </div>
           {/* Spec download */}
           <div className='w-8'>
             {" "}
@@ -600,7 +648,7 @@ const ProjectRow = ({
             {project?.status?.toLowerCase() === "complete" &&
               project?.projectType?.toLowerCase() !== "schema" && project?.isDesign &&(
                 <Tooltip title={
-                  (project?.githubCommit === "ReadyForPush" && (project?.codegen || project?.dotnetcodegen))
+                  (project?.githubCommit === "ReadyForPush" && (project?.codegen || project?.dotnetcodegen || project?.pythoncodegen))
                     ? "Push to Github"
                     : (project?.githubCommit === "ReadyForView") ? "View on Github" : (project?.githubCommit === "CommitInProgress") ? "Commit In Progress" : ""
                 }>
@@ -618,7 +666,7 @@ const ProjectRow = ({
                       handlePushToGithub(project);
                     }}
                     /> */}
-                    {project?.githubCommit === "ReadyForPush" && (project?.codegen || project?.dotnetcodegen) &&
+                    {project?.githubCommit === "ReadyForPush" && (project?.codegen || project?.dotnetcodegen || project?.pythoncodegen) &&
                     (
                     
                     <LoginGithub 
@@ -788,6 +836,10 @@ const Content = ({ showCreateProjectDialog }) => {
       })
 
       socket.on('pythoncodegenEvent', (eventName)=> {
+        fetchProjects(eventName)
+      })
+
+      socket.on('nodecodegenEvent', (eventName)=> {
         fetchProjects(eventName)
       })
     }  

@@ -320,6 +320,23 @@ const downloadCodegen = async ({ projectId }) => {
   }
 };
 
+const downloadNodeCodegen = async ({ projectId }) => {
+  try {
+    const { data } = await client.post(
+      endpoint.downloadNodeCodegen,
+      {
+        projectId,
+      },
+      {
+        timeout: 480000,
+      }
+    );
+    return data;
+  } catch (error) {
+    throw getApiError(error);
+  }
+};
+
 const downloadPythonCodegen = async ({ projectId }) => {
   try {
     const { data } = await client.post(
@@ -352,6 +369,23 @@ const downloadDotnetCodegen = async ({ projectId }) => {
   } catch (error) {
     throw getApiError(error);
   }
+};
+
+export const useDownloadNodeCodegen = () => {
+
+  const mutation = useMutation(downloadNodeCodegen, {
+    onSuccess: (data) => {
+      if (data?.downloadUrl && !_.isEmpty(data?.downloadUrl)) {
+        const link = data?.downloadUrl;
+
+        // const filename = link.substring(link.lastIndexOf("/") + 1);
+        const filename = "project_codegen_node";
+        saveAs(link, filename);
+      }
+    },
+  });
+
+  return mutation;
 };
 
 export const useDownloadPythonCodegen = () => {
