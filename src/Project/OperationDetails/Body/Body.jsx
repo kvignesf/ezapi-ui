@@ -335,9 +335,29 @@ const Body = ({ request = true, responseCode, projectType = "schema", onDelete =
     console.log(valueDropped);
 
     setOperationDetails((operationDetails) => {
+      const path = fetchFullPath(valueDropped);
+
       const newOperationDetails = _.cloneDeep(updatedData);
       const clonedItem = _.cloneDeep(valueDropped);
       const responseIndex = getResponseIndex(updatedData);
+
+      if (isArray(valueDropped)) {
+        clonedItem.isArray = true;
+        clonedItem.is_child = true;
+        if (valueDropped?.id) {
+          clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
+        }
+      }
+
+      if (isAttribute(valueDropped)) {
+        clonedItem.required = true;
+        clonedItem.schemaName = fetchParentName(clonedItem) ?? "global";
+        clonedItem.parentName = path ?? "/";
+      } else if (isColumn(valueDropped)) {
+        clonedItem.tableName = fetchParentName(clonedItem) ?? "global";
+      } /* else if (isArrayOrObjectAttribute(item) && isArray(item)) {
+        clonedItem.tableName = fetchParentName(clonedItem) ?? "global";
+      } */
 
       let requestOrResponseData = request
         ? newOperationDetails.operationRequest

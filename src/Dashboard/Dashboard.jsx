@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
+import { Resizable } from "react-resizable";
 import classNames from "classnames";
 import { useHistory } from "react-router-dom";
 import {
+  AppBar,
   Dialog,
-  Fade,
+  Drawer,
   makeStyles,
   Menu,
   MenuItem,
@@ -19,6 +21,7 @@ import { ReactComponent as DashboardSharpIcon } from "../static/images/dashboard
 import { List, ListItem } from "@material-ui/core";
 import AddIcon from "@material-ui/icons/Add";
 import LibraryBooksIcon from "@material-ui/icons/LibraryBooks";
+import InventoryIcon from "@mui/icons-material/Inventory";
 
 import imageLogo from "../static/images/logo/newconnectLogoOnlyWhite.svg";
 import { ReactComponent as OrderHistoryIcon } from "../static/images/order-history.svg";
@@ -43,7 +46,7 @@ import ProfileMenuWithIcon from "../shared/components/ProfileMenuWithIcon";
 import EzapiFooter from "../shared/components/EzapiFooter";
 import { fetchEventSource } from "@microsoft/fetch-event-source";
 import { useRecoilState } from "recoil";
-import { downloadIconSts, downloadIconProj } from "./dwnDataGenAtom";
+import { downloadIconSts, downloadIconProj, sideWidth } from "./dwnDataGenAtom";
 
 import _ from "lodash";
 
@@ -52,6 +55,8 @@ const baseUrl = process.env.REACT_APP_API_URL;
 const displayAPIGov = process.env.REACT_APP_DISABLE_APIGOV
     ? process.env.REACT_APP_DISABLE_APIGOV
     : "true";
+
+const displayCollections = process.env.REACT_APP_DISPLAY_COLLECTIONS ? process.env.REACT_APP_DISPLAY_COLLECTIONS : "true";
 
 const useStyles = makeStyles({
   selectedItem: {
@@ -71,6 +76,9 @@ const useStyles = makeStyles({
   },
   selected: {},
 });
+
+const drawerWidth = 55;
+const maxSidebarWidth = 190;
 
 const Dashboard = ({ selectedIndex, children, pricingDefaultCheck }) => {
   // console.log(acc_token);
@@ -118,6 +126,8 @@ const Dashboard = ({ selectedIndex, children, pricingDefaultCheck }) => {
       } else if (index === 6) {
         history.push(routes.apiGovernance);
         window.location.reload();
+      } else if (index === 7) {
+        history.push(routes.collections);
       }
 
     }
@@ -152,6 +162,59 @@ const Dashboard = ({ selectedIndex, children, pricingDefaultCheck }) => {
   };
   const [enableIcon, setEnableIcon] = useRecoilState(downloadIconSts);
   const [projectIden, setProjectIden] = useRecoilState(downloadIconProj);
+
+  const [sidebarWidth, setSidebarWidth] = useRecoilState(sideWidth);
+  const useSidebarStyles = makeStyles((theme) => ({
+    root: {
+      display: "flex",
+    },
+    appBar: {
+      zIndex: theme.zIndex.drawer + 1,
+    },
+    content: {
+      flexGrow: 1,
+    },
+    drawer: {
+      width: sidebarWidth,
+      flexShrink: 0,
+    },
+    drawerPaper: {
+      width: sidebarWidth,
+      borderRight: "none",
+    },
+    drawerContainer: {
+      overflow: "auto",
+    },
+    resizable: {
+      position: "relative",
+      "& .react-resizable-handle": {
+        position: "absolute",
+        top: 0,
+        right: 0,
+        width: "2px",
+        height: "100%",
+        cursor: "col-resize",
+        zIndex: 1,
+        backgroundColor: "#E6E7E5",
+        transition: "background-color 0.2s ease-in-out",
+      },
+      "& .react-resizable-handle:hover": {
+        width: "5px",
+        backgroundColor: "gray4",
+      },
+      "&::-webkit-scrollbar-thumb": {
+        backgroundColor: "gray4",
+      },
+    },
+  }));
+  const classes = useSidebarStyles();
+
+  const handleResize = (e, { size }) => {
+    if (size.width <= maxSidebarWidth) {
+      setSidebarWidth(size.width);
+    }
+  };
+
 
   return (
     <div className='flex flex-col h-screen'>
@@ -445,6 +508,39 @@ const Dashboard = ({ selectedIndex, children, pricingDefaultCheck }) => {
               >
                 API Governance
               </p>
+            </ListItem>
+            )}
+
+            {displayCollections == "true" && (
+              <ListItem
+              button
+              selected={selectedIndex === 7}
+              onClick={() => {
+                handleSideMenuItemClick(7);
+              }}
+              style={{
+                padding: "1rem",
+                height: "3.5rem",
+                width: "200px",
+              }}
+              title={sidebarWidth < 120 ? "Collections" : null}
+              className={selectedIndex === 7 ? styles.selectedItem : null}
+              classes={{ root: styles.root, selected: styles.selected }}
+              disableTouchRipple
+            >
+              <ListItemIcon style={{ minWidth: "0", marginRight: "1rem" }}>
+                <InventoryIcon fill={selectedIndex === 7 ? Colors.brand.primary : Colors.neutral.gray4} />
+              </ListItemIcon>
+              {sidebarWidth !== drawerWidth ? (
+                <p
+                  className={`text-overline2 ${classNames({
+                    "text-brand-primary": selectedIndex === 7,
+                    "text-neutral-gray4": selectedIndex !== 7,
+                  })}`}
+                >
+                  Collections
+                </p>
+              ) : null}
             </ListItem>
             )}
 

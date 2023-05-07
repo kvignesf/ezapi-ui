@@ -142,7 +142,7 @@ const Match = ({ projectType, ...props }) => {
           <AddOrEditParameter onClose={handleCloseDialog} />
         )}
         {dialog?.type === "add-custom-parameter" && canEdit() && (
-          <AddOrEditCustomParameter onClose={handleCloseDialog} />
+          <AddOrEditCustomParameter projectType = {projectType} onClose={handleCloseDialog} />
         )}
       </Dialog>
 
@@ -469,7 +469,7 @@ const Match = ({ projectType, ...props }) => {
         {currentTab === "schema" ? (
           <Schema />
         ) : currentTab === "param" ? (
-          <Parameters />
+          <Parameters projectType = {projectType} />
         ) : currentTab === "db" ? (
           <Database />
         ) : currentTab === "customParam" ? (

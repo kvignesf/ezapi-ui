@@ -26,7 +26,7 @@ import DeleteParameter from "./DeleteParameter/DeleteParameter";
 import { useDrag } from "react-dnd";
 import { operationAtomWithMiddleware } from "../../../shared/utils";
 
-const Parameters = () => {
+const Parameters = ({projectType}) => {
   const { projectId } = useParams();
   const {
     isLoading: isFetchingParameters,
@@ -65,7 +65,7 @@ const Parameters = () => {
         disableBackdropClick
       >
         {dialog?.type === "add-parameter" && canEdit() && (
-          <AddOrEditParameter onClose={handleCloseDialog} />
+          <AddOrEditParameter projectType = {projectType} onClose={handleCloseDialog} />
         )}
       </Dialog>
 
@@ -127,9 +127,9 @@ const Parameters = () => {
             >
               {parameters?.data?.map((param) => {
                 //console.log("eachParam:",param);
-                return <ParamRow param={param} />;
+                return <ParamRow projectType = {projectType} param={param} />;
               })}
-              <AddOrEditParameter onClose={handleCloseDialog} />
+              <AddOrEditParameter projectType = {projectType} onClose={handleCloseDialog} />
             </Scrollbar>):(
               <Scrollbar
               style={{
@@ -141,7 +141,7 @@ const Parameters = () => {
                   : null,
               }}
             >
-              <AddOrEditParameter onClose={handleCloseDialog} />
+              <AddOrEditParameter projectType = {projectType} onClose={handleCloseDialog} />
             </Scrollbar>
             )}
 
@@ -154,7 +154,7 @@ const Parameters = () => {
   );
 };
 
-const ParamRow = ({ param }) => {
+const ParamRow = ({ projectType, param }) => {
 
   const [{ isDragging }, drag, dragPreview] = useDrag(
     () => ({
@@ -229,7 +229,7 @@ const ParamRow = ({ param }) => {
           )}
         </Dialog>
         {(editParameter && canEdit())?(
-          <AddOrEditParameter stopEdit = {handleEditParameter} onClose={handleCloseDialog} parameter={param}/>
+          <AddOrEditParameter projectType = {projectType} stopEdit = {handleEditParameter} onClose={handleCloseDialog} parameter={param}/>
         ):(
           <div
             key={param.name}

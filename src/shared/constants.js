@@ -27,6 +27,7 @@ const Constants = {
     "dateTime",
     "password",
   ],
+  customizedParameterDataTypes: ["integer","string","arrayOfObjects","array","boolean", "object"],
   customParameterDataTypes: ["integer", "array", "DateTime"],
   // customParameterDataTypes: ["integer", "array"],
 

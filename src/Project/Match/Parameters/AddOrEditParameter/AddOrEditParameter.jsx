@@ -22,7 +22,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import addParamAtom from "../../../../shared/atom/addParamAtom";
 import { useRecoilState } from "recoil";
 
-const AddOrEditParameter = ({ parameter, onClose, stopEdit }) => {
+const AddOrEditParameter = ({ projectType, parameter, onClose, stopEdit }) => {
   const formRef = useRef(null);
   const { projectId } = useParams();
   const [addParamCheck, setAddParamCheck] = useRecoilState(
@@ -190,7 +190,13 @@ const AddOrEditParameter = ({ parameter, onClose, stopEdit }) => {
                     as = "select"
                   >
                     <option value="">Select your datatype</option>
-                    {Constants.parameterDataTypes.map((type) => {
+                    {(projectType === "noinput" || projectType === "aggregate") ? Constants.parameterDataTypes.map((type) => {
+                      var upCaseType =
+                        type.charAt(0).toUpperCase() + type.slice(1);
+                      return (
+                        <option value={type}>{upCaseType}</option>
+                      );
+                    }) : Constants.customizedParameterDataTypes.map((type) => {
                       var upCaseType =
                         type.charAt(0).toUpperCase() + type.slice(1);
                       return (

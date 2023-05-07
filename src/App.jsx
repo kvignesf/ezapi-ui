@@ -24,8 +24,9 @@ import Orders from './Orders/Orders';
 import ProductTour from './ProductTour/ProductTour';
 import ApiGovernance from "./ApiGovernance/ApiGovernance";
 import ConekttoDocs from './Docs/ConekttoDocs';
+import Collections from "./Collections/Collections";
 import {SocketContext, socket} from './Context/socket';
-
+import Response from "./Collections/CollectionTabs/ApiCall/ResponseWorkspace/ResponsePanel";
 import EzapiFooter from './shared/components/EzapiFooter';
 import Pricing from './Pricing';
 import Billing from './BillingPage';
@@ -88,6 +89,8 @@ const App = () => {
                     path={routes.apiGovernance}
                     component={ApiGovernance}
                 />
+                <PrivateRoute exact path={routes.collections} component={Collections} />
+                <PrivateRoute exact path={routes.responseTab} component={Response} />
                 {/*<PrivateRoute exact path={routes.docs} component={ConekttoDocs} />*/}
                 <Route
                   path={routes.payment}

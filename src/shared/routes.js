@@ -14,6 +14,8 @@ const routes = Object.freeze({
   productTour: '/producttour',
   docs: '/docs',
   apiGovernance: "/apigovernance",
+  collections: "/collections",
+  responseTab: "/response",
 });
 
 export const generateRoute = (route, data) => {

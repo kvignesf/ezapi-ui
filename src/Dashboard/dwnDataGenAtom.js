@@ -10,3 +10,8 @@ export const downloadIconSts = atom({
 export const downloadIconProj = atom({
   key: 'projectId'
 });
+
+export const sideWidth = atom({
+  key: "sidebarWidth",
+  default: 190,
+});

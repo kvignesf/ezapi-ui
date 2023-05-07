@@ -81,6 +81,10 @@ export const endpoint = Object.freeze({
   //API Governance
   apiSprawl: "/apiSprawl",
   //dataLineage: "/dataLineage",
+
+  //Collections
+  collectionDirectory: "/collectionDirectory",
+  collectionsRequest: "/collectionsRequest",
 });
 
 const client = axios.create({
