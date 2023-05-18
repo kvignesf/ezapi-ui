@@ -15,6 +15,8 @@ const isProduction = process.env.NODE_ENV === 'prod';
 const isStage = process.env.NODE_ENV === 'stage';
 const isDev = process.env.NODE_ENV === 'dev';
 
+const port = isDev ? 3003 : 3004;
+
 const minimize = isProduction || isStage || process.argv.indexOf('--optimize-minimize') !== -1;
 
 const babelLoaderConfiguration = {
@@ -72,7 +74,7 @@ const config = {
     devServer: {
         // https: true,
         host: '127.0.0.1',
-        port: '3000',
+        port: port,
         historyApiFallback: true,
         hot: true,
         allowedHosts: ['127.0.0.1', 'localhost'],

@@ -93,7 +93,7 @@
     "start:prod": "set NODE_OPTIONS=--openssl-legacy-provider && ./node_modules/.bin/webpack serve --mode production --node-env prod",
     "test": "jest --passWithNoTests",
     "build": "./node_modules/.bin/webpack --node-env dev",
-    "build:dev": "set NODE_OPTIONS=--openssl-legacy-provider && ./node_modules/.bin/webpack --port 3003 --node-env dev",
+    "build:dev": "set NODE_OPTIONS=--openssl-legacy-provider && ./node_modules/.bin/webpack --node-env dev",
     "build:test": "set NODE_OPTIONS=--openssl-legacy-provider && ./node_modules/.bin/webpack --node-env test",
     "build:stage": "set NODE_OPTIONS=--openssl-legacy-provider && ./node_modules/.bin/webpack --node-env stage",
     "build:prod": "set NODE_OPTIONS=--openssl-legacy-provider && ./node_modules/.bin/webpack  --mode production --node-env prod",
