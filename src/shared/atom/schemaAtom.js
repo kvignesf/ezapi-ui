@@ -1,12 +1,12 @@
-import { atom } from "recoil";
+import { atom } from 'recoil';
 
 export const defaultState = {
-  selected: [],
+    selected: [],
 };
 
 const schemaAtom = atom({
-  key: "schema",
-  default: defaultState,
+    key: 'schema',
+    default: defaultState,
 });
 
 export default schemaAtom;

@@ -1,3 +1,3 @@
-import AddOrEditOperation from "./AddOrEditOperation";
+import AddOrEditOperation from './AddOrEditOperation';
 
 export default AddOrEditOperation;

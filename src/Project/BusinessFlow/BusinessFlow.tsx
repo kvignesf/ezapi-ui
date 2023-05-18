@@ -1,0 +1,478 @@
+import { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { useParams } from 'react-router';
+import ReactFlow, {
+    Background,
+    BackgroundVariant,
+    Controls,
+    DefaultEdgeOptions,
+    FitViewOptions,
+    OnConnectEnd,
+    OnConnectStart,
+    OnConnectStartParams,
+    ReactFlowProvider,
+    useReactFlow,
+    useStoreApi,
+    Viewport,
+    XYPosition,
+} from 'reactflow';
+import 'reactflow/dist/style.css';
+import { shallow } from 'zustand/shallow';
+
+import {
+    BranchNode,
+    ExternalAPINode,
+    FilterNode,
+    LoopNode,
+    MainNode,
+    NodeTypeSectionNode,
+    PayloadNode,
+    StartNode,
+} from './Node';
+import createStore, { getInputNodeIdsFromNode, MyReactFlowState } from './store';
+
+import { operationAtomWithMiddleware } from '@/shared/utils';
+import { useRecoilState } from 'recoil';
+
+import { Drawer } from '@mui/material';
+import { AggregateMapping } from './Node/Components/AggregateMapping';
+
+import selectedNodeAtom from '@/shared/atom/selectedNodeAtom';
+import axios, { CancelTokenSource } from 'axios';
+import { BusinessFlowContext } from './BusinessFlowContext';
+import { NODE_TYPES } from './constants';
+import { DEFAULT_BUSINESS_FLOW_STATE } from './defaults';
+
+import branchQueryAtom from '@/shared/atom/branchQueryAtom';
+
+import drawerCardAtom from '@/shared/atom/drawerCardAtom';
+import responseMapperAtom from '@/shared/atom/reponseMapperAtom';
+import './index.css';
+import { IBusinessFlow, Node } from './interfaces';
+import { NewAggregateCard } from './interfaces/aggregate-cards';
+import { BranchQuerySelector } from './Node/Components/BranchQuerySelector';
+import { ExternalAPIDrawer } from './Node/ExternalAPIDrawer';
+import { createAggregateCard, fetchAggregateMetaData, fetchNodeFromServer } from './services';
+import { prepareNodeFromAggregateCard } from './transformers';
+
+const canvasBackgroundColor = '#1A192B';
+const edgeStrokeColor = '#fff';
+const connectionLineStrokeColor = '#fff';
+
+const nodeTypes = {
+    [NODE_TYPES.PAYLOAD_BUILDER_NODE]: PayloadNode,
+    [NODE_TYPES.FILTER_NODE]: FilterNode,
+    [NODE_TYPES.BRANCH_NODE]: BranchNode,
+    [NODE_TYPES.LOOP_NODE]: LoopNode,
+    [NODE_TYPES.START_NODE]: StartNode,
+    [NODE_TYPES.SELECTION_NODE]: NodeTypeSectionNode,
+    [NODE_TYPES.EXTERNAL_API_NODE]: ExternalAPINode,
+    [NODE_TYPES.MAIN_NODE]: MainNode,
+};
+
+const fitViewOptions: FitViewOptions = {
+    padding: 0.2,
+};
+
+const connectionLineStyle = {
+    stroke: connectionLineStrokeColor,
+};
+
+const defaultViewPort: Viewport = {
+    x: 200,
+    y: 200,
+    zoom: 1,
+};
+
+const defaultEdgeOptions: DefaultEdgeOptions = {
+    animated: true,
+    style: {
+        strokeWidth: 2,
+        stroke: edgeStrokeColor,
+    },
+};
+
+const selector = (state: MyReactFlowState) => ({
+    nodes: state.nodes,
+    edges: state.edges,
+    history: state.history,
+    updateHistory: state.updateHistory,
+    currentIndex: state.currentIndex,
+    setCurrentIndex: state.setCurrentIndex,
+    setElements: state.setElements,
+    updateElementsAndCurrentIndex: state.updateElementsAndCurrentIndex,
+    onNodesChange: state.onNodesChange,
+    onNodesDelete: state.onNodesDelete,
+    onEdgesChange: state.onEdgesChange,
+    onConnect: state.onConnect,
+    updateNodeData: state.updateNodeData,
+    addChildNode: state.addChildNode,
+    setNodeType: state.setNodeType,
+});
+
+const Flow = () => {
+    const { initialNodes, initialEdges, useStore, projectId, operationId } = useContext(BusinessFlowContext);
+    const [openMappingDrawer, setOpenMappingDrawer] = useState(false);
+    const [selectBranchQuery, setSelectBranchQuery] = useState(false);
+    const [showAPIDrawer, setShowAPIDrawer] = useState(false);
+    const [selectedNode, setSelectedNode] = useRecoilState(selectedNodeAtom);
+    const [selectedBranchCondition, setSelectedBranchCondition] = useRecoilState(branchQueryAtom);
+    const [selectedCard, setSelectedCard] = useRecoilState(drawerCardAtom);
+    const [showResponseMapping, setShowResponseMapping] = useRecoilState(responseMapperAtom);
+
+    const {
+        nodes,
+        edges,
+        setCurrentIndex,
+        setElements,
+        history,
+        currentIndex,
+        onNodesChange,
+        onNodesDelete,
+        onEdgesChange,
+        onConnect,
+        addChildNode,
+        updateNodeData,
+    }: MyReactFlowState = useStore(selector, shallow);
+
+    const [newNodeInfo, setNewNodeInfo] = useState<{ parentNode: Node | undefined; position: XYPosition } | null>(null);
+
+    const undo = () => {
+        const newCurrentIndex = currentIndex - 1;
+
+        if (newCurrentIndex < 0) {
+            setElements(initialNodes, initialEdges);
+            setCurrentIndex(-1);
+        } else {
+            const { nodes: newNodes, edges: newEdges } = history[newCurrentIndex];
+            setElements(newNodes, newEdges);
+            setCurrentIndex(newCurrentIndex);
+        }
+    };
+
+    const redo = () => {
+        if (currentIndex === history.length - 1) {
+            return;
+        }
+        const newCurrentIndex = currentIndex + 1;
+
+        const { nodes: newNodes, edges: newEdges } = history[newCurrentIndex];
+        setElements(newNodes, newEdges);
+        setCurrentIndex(newCurrentIndex);
+    };
+
+    const onKeyDown = (event: KeyboardEvent) => {
+        const ctrl = event.ctrlKey ? 'Control-' : '';
+        const alt = event.altKey ? 'Alt-' : '';
+        const meta = event.metaKey ? 'Meta-' : '';
+        const shift = event.shiftKey ? 'Shift-' : '';
+        const key = `${ctrl}${alt}${shift}${meta}${event.key}`;
+        if (key === 'Meta-z') undo();
+        if (key === 'Shift-Meta-z') redo();
+    };
+
+    useEffect(() => {
+        if (selectedNode !== '' && selectedBranchCondition === '') {
+            setOpenMappingDrawer(true);
+        }
+    }, [selectedNode]);
+
+    useEffect(() => {
+        if (selectedBranchCondition !== '' && selectedNode !== '') {
+            setSelectBranchQuery(true);
+        }
+    }, [selectedBranchCondition]);
+
+    useEffect(() => {
+        if (selectedCard !== '') {
+            setShowAPIDrawer(true);
+        }
+    }, [selectedCard]);
+
+    useEffect(() => {
+        document.addEventListener('keydown', onKeyDown);
+        return () => document.removeEventListener('keydown', onKeyDown);
+    });
+
+    const reactFlowWrapper = useRef<HTMLInputElement>(null);
+    const connectionStartParams = useRef<OnConnectStartParams | null>(null);
+
+    const store = useStoreApi();
+    const { project, fitView } = useReactFlow();
+
+    const onLoad = () => {
+        fitView(fitViewOptions);
+    };
+
+    useEffect(() => {
+        const source: CancelTokenSource = axios.CancelToken.source();
+
+        const createNewAggregateCard = async (parentNode: Node | undefined, position: XYPosition) => {
+            let inputNodeIds: string[] = [];
+            if (parentNode?.id) {
+                const parentInputNodeIds = getInputNodeIdsFromNode(parentNode.id, edges);
+                inputNodeIds = [parentNode.id, ...parentInputNodeIds];
+            }
+            const newAggregateCard: NewAggregateCard = {
+                projectId,
+                operationId,
+                type: 'selectionNode',
+                name: `New Node ${nodes.length}`,
+                parentNode: parentNode?.id || '',
+                inputNodeIds: inputNodeIds,
+                runData: {},
+                branchData: {
+                    conditions: [],
+                },
+                mainData: {},
+            };
+            const createdAggregateCard = await createAggregateCard(newAggregateCard, source);
+            const newNode = prepareNodeFromAggregateCard(createdAggregateCard, position);
+
+            addChildNode({
+                newNode: newNode,
+                handleId: connectionStartParams.current?.handleId || null,
+                handleType: connectionStartParams.current?.handleType || null,
+            });
+        };
+
+        if (newNodeInfo?.position) {
+            createNewAggregateCard(newNodeInfo?.parentNode, newNodeInfo.position);
+        }
+
+        return () => {
+            source.cancel('Cancelled previous request to create a node on server');
+        };
+    }, [newNodeInfo]);
+
+    const getChildNodePosition = (event: MouseEvent, parentNode?: Node) => {
+        const { domNode } = store.getState();
+
+        if (
+            !domNode ||
+            // we need to check if these properites exist, because when a node is not initialized yet,
+            // it doesn't have a positionAbsolute nor a width or height
+            !parentNode?.positionAbsolute ||
+            !parentNode?.width ||
+            !parentNode?.height
+        ) {
+            return;
+        }
+
+        const { top, left } = domNode.getBoundingClientRect();
+
+        // we need to remove the wrapper bounds, in order to get the correct mouse position
+        const panePosition = project({
+            x: event.clientX - left,
+            y: event.clientY - top,
+        });
+
+        // we are calculating with positionAbsolute here because child nodes are positioned relative to their parent
+        return {
+            x: panePosition.x,
+            y: panePosition.y,
+        };
+    };
+
+    const onConnectStart: OnConnectStart = useCallback((_, params: OnConnectStartParams) => {
+        connectionStartParams.current = params;
+    }, []);
+
+    const onConnectEnd: OnConnectEnd = useCallback(
+        (event: MouseEvent) => {
+            const { nodeInternals } = store.getState();
+            const targetIsPane = (event.target as Element).classList.contains('react-flow__pane');
+
+            if (targetIsPane && connectionStartParams.current) {
+                const parentNode: any = nodeInternals.get(connectionStartParams.current.nodeId as string);
+                if (!parentNode) {
+                    return;
+                }
+                const childNodePosition = getChildNodePosition(event, parentNode);
+                if (childNodePosition) {
+                    setNewNodeInfo({ parentNode, position: childNodePosition });
+                }
+            }
+        },
+        [getChildNodePosition, project],
+    );
+
+    return (
+        <div className="wrapper" ref={reactFlowWrapper}>
+            <Drawer
+                anchor={'right'}
+                open={openMappingDrawer || showResponseMapping}
+                onClose={() => {
+                    if (showResponseMapping) {
+                        setShowResponseMapping(false);
+                    } else {
+                        setOpenMappingDrawer(false);
+                        setSelectedNode('');
+                    }
+                }}
+                PaperProps={{
+                    style: {
+                        height: '100%',
+                        width: '100%',
+                        position: 'absolute',
+                    },
+                }}
+            >
+                <AggregateMapping
+                    isResponse={showResponseMapping}
+                    nodeId={selectedNode}
+                    operationId={operationId}
+                    projectId={projectId}
+                    inputNodeIds={
+                        nodes.find((node: Node) => node.id === selectedNode)?.data.commonData.inputNodeIds || []
+                    }
+                    onClose={async () => {
+                        const node = nodes.find((node: Node) => node.id === selectedNode);
+                        if (showResponseMapping) {
+                            setShowResponseMapping(false);
+                        } else {
+                            setOpenMappingDrawer(false);
+                            setSelectedNode('');
+                        }
+                        if (node) {
+                            const getNodeData = {
+                                projectId,
+                                operationId,
+                                nodeId: node.id,
+                            };
+                            const latestNodeInfo = await fetchNodeFromServer(getNodeData);
+                            updateNodeData(node.id, latestNodeInfo.data);
+                        }
+                    }}
+                />
+            </Drawer>
+            <Drawer
+                anchor={'right'}
+                open={selectBranchQuery}
+                onClose={() => {
+                    setSelectBranchQuery(false);
+                    setSelectedBranchCondition('');
+                    setSelectedNode('');
+                }}
+                PaperProps={{
+                    style: {
+                        height: '100%',
+                        width: '85%',
+                        position: 'absolute',
+                    },
+                }}
+            >
+                <BranchQuerySelector
+                    conditionId={selectedBranchCondition}
+                    nodeId={selectedNode}
+                    inputNodeIds={
+                        nodes.find((node: Node) => node.id === selectedNode)?.data.commonData.inputNodeIds || []
+                    }
+                    operationId={operationId}
+                    projectId={projectId}
+                    onClose={async () => {
+                        setSelectBranchQuery(false);
+                        setSelectedBranchCondition('');
+                        setSelectedNode('');
+                    }}
+                />
+            </Drawer>
+            <Drawer
+                anchor={'right'}
+                open={showAPIDrawer}
+                onClose={() => {
+                    setShowAPIDrawer(false);
+                    setSelectedCard('');
+                }}
+            >
+                <ExternalAPIDrawer cardId={selectedCard} />
+            </Drawer>
+            <ReactFlow
+                onLoad={onLoad}
+                nodes={nodes}
+                edges={edges}
+                onNodesChange={onNodesChange}
+                onNodesDelete={onNodesDelete}
+                onEdgesChange={onEdgesChange}
+                onConnect={onConnect}
+                onConnectStart={onConnectStart}
+                onConnectEnd={onConnectEnd}
+                defaultEdgeOptions={defaultEdgeOptions}
+                defaultViewport={defaultViewPort}
+                fitViewOptions={fitViewOptions}
+                nodeTypes={nodeTypes}
+                connectionLineStyle={connectionLineStyle}
+                style={{ background: canvasBackgroundColor }}
+                proOptions={{ hideAttribution: true }}
+            >
+                <Background color={canvasBackgroundColor} variant={BackgroundVariant.Dots} />
+                <Controls />
+            </ReactFlow>
+        </div>
+    );
+};
+
+function BusinessFlow() {
+    const [initialState, setInitialState] = useState<IBusinessFlow>({ ...DEFAULT_BUSINESS_FLOW_STATE });
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+
+    const { projectId = '' }: { projectId: string } = useParams();
+    const [operationData, _] = useRecoilState(operationAtomWithMiddleware);
+    const operationId = operationData?.operation?.operationId;
+
+    useEffect(() => {
+        setIsLoading(true);
+
+        const source: CancelTokenSource = axios.CancelToken.source();
+
+        const loadFlowStateFromServer = async () => {
+            const response = await fetchAggregateMetaData(
+                {
+                    projectId,
+                    operationId,
+                },
+                source,
+            );
+
+            const initialNodes = response?.nodes && response?.nodes.length ? response.nodes : [];
+            const initialEdges = response?.edges && response?.edges.length ? response.edges : [];
+
+            const newInitialStoreState = {
+                projectId,
+                operationId,
+                initialNodes,
+                initialEdges,
+                isInitialStateLoaded: true,
+            };
+            const useStore = createStore({
+                ...newInitialStoreState,
+            });
+            setInitialState({
+                ...newInitialStoreState,
+                useStore,
+            });
+            setIsLoading(false);
+        };
+
+        loadFlowStateFromServer();
+
+        return () => {
+            source.cancel('Cancelled previous request to load business flow state from server');
+        };
+    }, [projectId, operationId]);
+
+    return (
+        <div className="flex-1 relative w-full h-full">
+            {!isLoading && initialState.isInitialStateLoaded && projectId && operationId ? (
+                <BusinessFlowContext.Provider value={{ ...initialState }}>
+                    <ReactFlowProvider>
+                        <Flow />
+                    </ReactFlowProvider>
+                </BusinessFlowContext.Provider>
+            ) : (
+                <p>{'Loading...'}</p>
+            )}
+        </div>
+    );
+}
+
+export default BusinessFlow;

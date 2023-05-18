@@ -1,17 +1,15 @@
 import { atom } from 'recoil';
 
-
 export const downloadIconSts = atom({
-  key: 'IconEnable',
-  default: false,
+    key: 'IconEnable',
+    default: false,
 });
 
-
 export const downloadIconProj = atom({
-  key: 'projectId'
+    key: 'projectId',
 });
 
 export const sideWidth = atom({
-  key: "sidebarWidth",
-  default: 190,
+    key: 'sidebarWidth',
+    default: 190,
 });

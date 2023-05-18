@@ -1,3 +1,3 @@
-import AddOrEditResource from "./AddOrEditResource";
+import AddOrEditResource from './AddOrEditResource';
 
 export default AddOrEditResource;
