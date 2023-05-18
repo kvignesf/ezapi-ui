@@ -79,17 +79,21 @@ include:
     - 'reactuicitest.yml'
     - 'reactuicistage.yaml'
     - 'reactuiciprod.yaml'
+    - 'reactuicitestNew.yaml'
     - 'deploy-react-test-1.yaml'
     - 'deploy-reactui-demo-1.yaml'
     - 'deploy-reactui-instance-1.yaml'
+    - 'deploy-reactui-testNew.yaml'
 stages:
   #- Sast-Whitesource
   - build-test
   - build-stage
   - build-prod
+  - build-testNew
   - deploy-test1
   - deploy-demo1
   - deploy-instance1
+  - deploy-testNew
 # Sast-Whitesource:
 #   stage: Sast-Whitesource
 #   image: ubuntu:18.04
@@ -112,6 +116,12 @@ build-prod:
   extends: .build-prod
   only:
     - master
+build-testNew:
+  tags: [ saas-linux-medium-amd64 ]
+  stage: build-testNew
+  extends: .build-testNew
+  only:
+    - test-new
 deploy-test1:
   stage: deploy-test1
   image: alpine
@@ -130,3 +140,9 @@ deploy-instance1:
   extends: .deploy-instance1
   only:
     - master
+deploy-testNew:
+  stage: deploy-testNew
+  image: alpine
+  extends: .deploy-testNew
+  only:
+    - test-new
