@@ -16,7 +16,19 @@ export async function saveAggregateMetaData({ projectId, operationId, nodes, edg
         const { data } = await client.post(url, requestData);
         return data;
     } catch (error) {
-        throw getApiError(error);
+        console.log('------------------------------------');
+        console.log('error.response', error.response);
+        console.log('error.response.data', error.response.data);
+        console.log('------------------------------------');
+
+        if (
+            error.response?.status === 400 &&
+            (error.response?.data?.message).startsWith('No matching document found for id')
+        ) {
+            console.log('error.response.data.message', error.response.data.message);
+        } else {
+            throw getApiError(error);
+        }
     }
 }
 

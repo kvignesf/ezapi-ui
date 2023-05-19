@@ -27,6 +27,8 @@ export interface AddChildNodeParams {
     newNode: Node;
     handleId: string | null;
     handleType: HandleType | null;
+    triggerUpdateHistory?: boolean;
+    triggerSaveFlowState?: boolean;
 }
 
 export type MyReactFlowState = {
@@ -122,6 +124,7 @@ const createStore = ({ projectId, operationId, initialNodes, initialEdges }: Ini
         },
 
         saveFlowState: () => {
+            console.log('saving...');
             const { projectId, operationId, nodes, edges } = get();
             const props = prepareAggregateMetaData(projectId, operationId, nodes, edges);
             saveAggregateMetaData(props);
@@ -135,6 +138,7 @@ const createStore = ({ projectId, operationId, initialNodes, initialEdges }: Ini
             }
 
             const newDeferredSaveId = setTimeout(() => {
+                console.log('deferred saving.....');
                 saveFlowState();
             }, 5000);
 
@@ -154,6 +158,7 @@ const createStore = ({ projectId, operationId, initialNodes, initialEdges }: Ini
                 setElements(updatedNodes, edges);
             }
             if (parsedChanges.length && parsedChanges[0].type !== 'remove') {
+                console.log('deferred saving in OnNodeChanges');
                 deferredSave();
             }
         },
@@ -161,14 +166,16 @@ const createStore = ({ projectId, operationId, initialNodes, initialEdges }: Ini
         onNodesDelete: async (deletedNodes: Node[]) => {
             const { nodes, edges, setElements, resetHistory } = get();
 
-            deletedNodes = deletedNodes.filter(
-                (deletedNode: Node) =>
+            deletedNodes = deletedNodes.filter((deletedNode: Node) => {
+                return (
                     deletedNode.selected === true &&
                     !(
                         NON_DELETABLE_NODE_IDS.includes(deletedNode.id) ||
+                        NON_DELETABLE_NODE_IDS.includes(deletedNode.type ?? '') ||
                         deletedNode.data.commonData.nonDeletable === true
-                    ),
-            );
+                    )
+                );
+            });
 
             const deletedNodeIds = deletedNodes.map((deletedNode: Node) => deletedNode.id);
 
@@ -228,6 +235,7 @@ const createStore = ({ projectId, operationId, initialNodes, initialEdges }: Ini
 
             if (parsedChanges.length) {
                 updateHistory();
+                console.log('saving in OnEdgesChange');
                 saveFlowState();
             }
         },
@@ -250,10 +258,17 @@ const createStore = ({ projectId, operationId, initialNodes, initialEdges }: Ini
 
             setElements(updatedNodes, updatedEdges);
             updateHistory();
+            console.log('saving in OnConnect');
             saveFlowState();
         },
 
-        addChildNode: ({ newNode, handleId, handleType }: AddChildNodeParams) => {
+        addChildNode: ({
+            newNode,
+            handleId,
+            handleType,
+            triggerSaveFlowState = true,
+            triggerUpdateHistory = true,
+        }: AddChildNodeParams) => {
             const { nodes, edges, setElements, updateHistory, saveFlowState } = get();
 
             const newEdge: Edge = {
@@ -268,12 +283,17 @@ const createStore = ({ projectId, operationId, initialNodes, initialEdges }: Ini
             const updatedEdges = [...edges, newEdge];
 
             setElements(updatedNodes, updatedEdges);
-            updateHistory();
-            saveFlowState();
+            if (triggerUpdateHistory) {
+                updateHistory();
+            }
+            if (triggerSaveFlowState) {
+                console.log('saving in addChildNode');
+                saveFlowState();
+            }
         },
 
         updateNodeData: (nodeId: string, data: any) => {
-            const { nodes, edges, setElements, saveFlowState } = get();
+            const { nodes, edges, setElements, saveFlowState, deferredSave } = get();
 
             const updatedNodes = nodes.map((node: any) => {
                 if (node.id === nodeId) {
@@ -285,7 +305,9 @@ const createStore = ({ projectId, operationId, initialNodes, initialEdges }: Ini
             });
 
             setElements(updatedNodes, edges);
-            saveFlowState();
+            console.log('saving in updateNodeData');
+            //saveFlowState();
+            deferredSave();
         },
 
         setNodeType: async (nodeId: string, type: string, data: any) => {
@@ -302,6 +324,7 @@ const createStore = ({ projectId, operationId, initialNodes, initialEdges }: Ini
 
             setElements(updatedNodes, edges);
             updateHistory();
+            console.log('saving in setNodeType');
             saveFlowState();
         },
     }));

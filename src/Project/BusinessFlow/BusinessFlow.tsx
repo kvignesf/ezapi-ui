@@ -5,7 +5,9 @@ import ReactFlow, {
     BackgroundVariant,
     Controls,
     DefaultEdgeOptions,
+    Edge,
     FitViewOptions,
+    Node,
     OnConnectEnd,
     OnConnectStart,
     OnConnectStartParams,
@@ -45,11 +47,14 @@ import { DEFAULT_BUSINESS_FLOW_STATE } from './defaults';
 import branchQueryAtom from '@/shared/atom/branchQueryAtom';
 
 import drawerCardAtom from '@/shared/atom/drawerCardAtom';
+import filterAtom from '@/shared/atom/filterAtom';
+
 import responseMapperAtom from '@/shared/atom/reponseMapperAtom';
 import './index.css';
-import { IBusinessFlow, Node } from './interfaces';
+import { IBusinessFlow } from './interfaces';
 import { NewAggregateCard } from './interfaces/aggregate-cards';
 import { BranchQuerySelector } from './Node/Components/BranchQuerySelector';
+import { FilterDrawer } from './Node/Components/FilterDrawer';
 import { ExternalAPIDrawer } from './Node/ExternalAPIDrawer';
 import { createAggregateCard, fetchAggregateMetaData, fetchNodeFromServer } from './services';
 import { prepareNodeFromAggregateCard } from './transformers';
@@ -109,15 +114,109 @@ const selector = (state: MyReactFlowState) => ({
     setNodeType: state.setNodeType,
 });
 
+interface GetChildNodePositionProps {
+    event: MouseEvent;
+    parentNode?: Node;
+    store: any;
+    project: (position: XYPosition) => XYPosition;
+}
+
+const getChildNodePosition = ({ event, store, project, parentNode }: GetChildNodePositionProps) => {
+    const { domNode } = store.getState();
+
+    if (
+        !domNode ||
+        // we need to check if these properites exist, because when a node is not initialized yet,
+        // it doesn't have a positionAbsolute nor a width or height
+        !parentNode?.positionAbsolute ||
+        !parentNode?.width ||
+        !parentNode?.height
+    ) {
+        return;
+    }
+
+    const { top, left } = domNode.getBoundingClientRect();
+
+    // we need to remove the wrapper bounds, in order to get the correct mouse position
+    const panePosition = project({
+        x: event.clientX - left,
+        y: event.clientY - top,
+    });
+
+    // we are calculating with positionAbsolute here because child nodes are positioned relative to their parent
+    return {
+        x: panePosition.x,
+        y: panePosition.y,
+    };
+};
+
+interface CreateNewAggregateCardProps {
+    projectId: string;
+    operationId: string;
+    parentNode: Node | undefined;
+    position: XYPosition;
+    nodes: Node[];
+    edges: Edge[];
+    addChildNode: Function;
+    source?: CancelTokenSource;
+    handleId: string | null;
+    handleType: string | null;
+}
+
+const createNewAggregateCard = async ({
+    projectId,
+    operationId,
+    parentNode,
+    position,
+    nodes,
+    edges,
+    source,
+    addChildNode,
+    handleId,
+    handleType,
+}: CreateNewAggregateCardProps) => {
+    let inputNodeIds: string[] = [];
+    if (parentNode?.id) {
+        const parentInputNodeIds = getInputNodeIdsFromNode(parentNode.id, edges);
+        inputNodeIds = [parentNode.id, ...parentInputNodeIds];
+    }
+    const newAggregateCard: NewAggregateCard = {
+        projectId,
+        operationId,
+        type: 'selectionNode',
+        name: `New Node ${nodes.length}`,
+        parentNode: parentNode?.id || '',
+        inputNodeIds: inputNodeIds,
+        runData: {},
+        branchData: {
+            conditions: [],
+        },
+        mainData: {},
+    };
+    const createdAggregateCard = await createAggregateCard(newAggregateCard, source);
+    const newNode = prepareNodeFromAggregateCard(createdAggregateCard, position);
+
+    addChildNode({
+        newNode: newNode,
+        handleId: handleId,
+        handleType: handleType,
+    });
+};
+
 const Flow = () => {
     const { initialNodes, initialEdges, useStore, projectId, operationId } = useContext(BusinessFlowContext);
     const [openMappingDrawer, setOpenMappingDrawer] = useState(false);
+    const [openFilterDrawer, setOpenFilterDrawer] = useState(false);
     const [selectBranchQuery, setSelectBranchQuery] = useState(false);
     const [showAPIDrawer, setShowAPIDrawer] = useState(false);
     const [selectedNode, setSelectedNode] = useRecoilState(selectedNodeAtom);
     const [selectedBranchCondition, setSelectedBranchCondition] = useRecoilState(branchQueryAtom);
     const [selectedCard, setSelectedCard] = useRecoilState(drawerCardAtom);
     const [showResponseMapping, setShowResponseMapping] = useRecoilState(responseMapperAtom);
+    const [filterType, setFilterType] = useRecoilState(filterAtom);
+    const { project, fitView } = useReactFlow();
+    const reactFlowWrapper = useRef<HTMLInputElement>(null);
+    const connectionStartParams = useRef<OnConnectStartParams | null>(null);
 
     const {
         nodes,
@@ -171,16 +270,22 @@ const Flow = () => {
     };
 
     useEffect(() => {
-        if (selectedNode !== '' && selectedBranchCondition === '') {
+        if (selectedNode !== '' && selectedBranchCondition === '' && filterType === '') {
             setOpenMappingDrawer(true);
         }
     }, [selectedNode]);
 
     useEffect(() => {
-        if (selectedBranchCondition !== '' && selectedNode !== '') {
+        if (selectedBranchCondition !== '' && selectedNode !== '' && filterType === '') {
             setSelectBranchQuery(true);
         }
     }, [selectedBranchCondition]);
+
+    useEffect(() => {
+        if (filterType !== '' && selectedNode !== '' && selectedBranchCondition === '') {
+            setOpenFilterDrawer(true);
+        }
+    }, [filterType]);
 
     useEffect(() => {
         if (selectedCard !== '') {
@@ -193,11 +298,7 @@ const Flow = () => {
         return () => document.removeEventListener('keydown', onKeyDown);
     });
 
-    const reactFlowWrapper = useRef<HTMLInputElement>(null);
-    const connectionStartParams = useRef<OnConnectStartParams | null>(null);
-
     const store = useStoreApi();
-    const { project, fitView } = useReactFlow();
 
     const onLoad = () => {
         fitView(fitViewOptions);
@@ -206,72 +307,25 @@ const Flow = () => {
     useEffect(() => {
         const source: CancelTokenSource = axios.CancelToken.source();
 
-        const createNewAggregateCard = async (parentNode: Node | undefined, position: XYPosition) => {
-            let inputNodeIds: string[] = [];
-            if (parentNode?.id) {
-                const parentInputNodeIds = getInputNodeIdsFromNode(parentNode.id, edges);
-                inputNodeIds = [parentNode.id, ...parentInputNodeIds];
-            }
-            const newAggregateCard: NewAggregateCard = {
+        if (newNodeInfo?.position) {
+            createNewAggregateCard({
                 projectId,
                 operationId,
-                type: 'selectionNode',
-                name: `New Node ${nodes.length}`,
-                parentNode: parentNode?.id || '',
-                inputNodeIds: inputNodeIds,
-                runData: {},
-                branchData: {
-                    conditions: [],
-                },
-                mainData: {},
-            };
-            const createdAggregateCard = await createAggregateCard(newAggregateCard, source);
-            const newNode = prepareNodeFromAggregateCard(createdAggregateCard, position);
-
-            addChildNode({
-                newNode: newNode,
+                parentNode: newNodeInfo?.parentNode,
+                position: newNodeInfo?.position,
+                nodes,
+                edges,
+                addChildNode,
+                source,
                 handleId: connectionStartParams.current?.handleId || null,
                 handleType: connectionStartParams.current?.handleType || null,
             });
-        };
-
-        if (newNodeInfo?.position) {
-            createNewAggregateCard(newNodeInfo?.parentNode, newNodeInfo.position);
         }
 
         return () => {
             source.cancel('Cancelled previous request to create a node on server');
         };
     }, [newNodeInfo]);
-
-    const getChildNodePosition = (event: MouseEvent, parentNode?: Node) => {
-        const { domNode } = store.getState();
-
-        if (
-            !domNode ||
-            // we need to check if these properites exist, because when a node is not initialized yet,
-            // it doesn't have a positionAbsolute nor a width or height
-            !parentNode?.positionAbsolute ||
-            !parentNode?.width ||
-            !parentNode?.height
-        ) {
-            return;
-        }
-
-        const { top, left } = domNode.getBoundingClientRect();
-
-        // we need to remove the wrapper bounds, in order to get the correct mouse position
-        const panePosition = project({
-            x: event.clientX - left,
-            y: event.clientY - top,
-        });
-
-        // we are calculating with positionAbsolute here because child nodes are positioned relative to their parent
-        return {
-            x: panePosition.x,
-            y: panePosition.y,
-        };
-    };
 
     const onConnectStart: OnConnectStart = useCallback((_, params: OnConnectStartParams) => {
         connectionStartParams.current = params;
@@ -287,7 +341,12 @@ const Flow = () => {
                 if (!parentNode) {
                     return;
                 }
-                const childNodePosition = getChildNodePosition(event, parentNode);
+                const childNodePosition = getChildNodePosition({
+                    event,
+                    parentNode,
+                    store,
+                    project,
+                });
                 if (childNodePosition) {
                     setNewNodeInfo({ parentNode, position: childNodePosition });
                 }
@@ -342,6 +401,37 @@ const Flow = () => {
                             const latestNodeInfo = await fetchNodeFromServer(getNodeData);
                             updateNodeData(node.id, latestNodeInfo.data);
                         }
+                    }}
+                />
+            </Drawer>
+            <Drawer
+                anchor={'right'}
+                open={openFilterDrawer}
+                onClose={() => {
+                    setOpenFilterDrawer(false);
+                    setSelectedNode('');
+                    setFilterType('');
+                }}
+                PaperProps={{
+                    style: {
+                        height: '100%',
+                        width: '50%',
+                        position: 'absolute',
+                    },
+                }}
+            >
+                <FilterDrawer
+                    type={filterType}
+                    nodeId={selectedNode}
+                    operationId={operationId}
+                    projectId={projectId}
+                    inputNodeIds={
+                        nodes.find((node: Node) => node.id === selectedNode)?.data.commonData.inputNodeIds || []
+                    }
+                    onClose={() => {
+                        setOpenFilterDrawer(false);
+                        setSelectedNode('');
+                        setFilterType('');
                     }}
                 />
             </Drawer>

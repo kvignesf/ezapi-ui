@@ -13,7 +13,7 @@ export const prepareAggregateCard = (responseData: any): AggregateCard => {
         runData: prepareExternalAPIData(responseData.runData),
         branchData: prepareBranchData(responseData.branchData),
         mainData: prepareMainData(responseData.mainData),
-        filterData: prepareFilterData(responseData.mainData),
+        filterData: prepareFilterData(responseData.filterData),
         // systemApi: node.systemApi,
     };
     return aggregateCard;

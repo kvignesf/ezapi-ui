@@ -140,7 +140,7 @@ const Database = () => {
     }, [tablesData, tableState?.selected.length]);
 
     if (isLoadingSubTable || isFetchingTables) {
-        return <LoaderWithMessage message="Loading data" className="h-full" contained />;
+        return <LoaderWithMessage message="Loading data" className="h-full" contained={true} />;
     }
 
     if (!content || _.isEmpty(content)) {

@@ -7,7 +7,6 @@ import { useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } fro
 import { Edge, Handle, NodeProps, Position, useNodeId } from 'reactflow';
 import { useRecoilState } from 'recoil';
 import { v4 as uuidv4 } from 'uuid';
-
 import BranchIcon from '../../../icons/branch.svg';
 import Collapse from '../../../icons/collapse.svg';
 import DialogIcon from '../../../icons/dialogIcon.svg';
@@ -24,6 +23,7 @@ import { ResponseTab } from './Components/ResponseTab';
 interface BranchNodeProps extends NodeProps {}
 
 const BranchNode = (props: BranchNodeProps) => {
+    const [branchConditions, setBranchConditions] = useState<BranchCondition[]>([]);
     const cardId: string = useNodeId() || '';
     const { useStore } = useContext(BusinessFlowContext);
 
@@ -32,7 +32,6 @@ const BranchNode = (props: BranchNodeProps) => {
 
     const nodeRef: any = useRef();
 
-    const [branchConditions, setBranchConditions] = useState<BranchCondition[]>([]);
     const [disableAdd, setDisableAdd] = useState(false);
     const [showResponse, setShowResponse] = useState(false);
     const [collapse, setCollapse] = useState(true);
@@ -269,7 +268,7 @@ const BranchNode = (props: BranchNodeProps) => {
                                     };
                                     setBranchConditions([...branchConditions, newBranchCondition]);
 
-                                    triggerDelayedNodeSaveOnServer();
+                                    setTriggerNodeSaveOnServer(true);
                                 }}
                                 startIcon={<Add />}
                                 disabled={disableAdd}

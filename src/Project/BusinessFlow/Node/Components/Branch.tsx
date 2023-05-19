@@ -57,7 +57,7 @@ export const Branch = ({
             return _branchCondition;
         });
         setBranchConditions(updatedBranchConditions);
-        triggerDelayedNodeSaveOnServer();
+        setTriggerNodeSaveOnServer(true);
     }
 
     return (

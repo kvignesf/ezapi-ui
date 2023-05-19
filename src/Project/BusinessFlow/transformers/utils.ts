@@ -7,7 +7,7 @@ import {
     MAIN_DATA_CONDITON_FIELDS,
 } from '../constants';
 import { ExternalAPI } from '../interfaces';
-import { BranchCondition, BranchData, MainData } from '../interfaces/aggregate-cards';
+import { BranchCondition, BranchData, FilterData, MainData } from '../interfaces/aggregate-cards';
 
 export const prepareExternalAPIData = (nodeData: any): ExternalAPI => {
     const data: any = {};
@@ -54,7 +54,7 @@ export const prepareMainData = (nodeData: any): MainData => {
     return data as MainData;
 };
 
-export const prepareFilterData = (nodeData: any): MainData => {
+export const prepareFilterData = (nodeData: any): FilterData => {
     const data: any = {};
     if (_.isObject(nodeData) && !_.isEmpty(nodeData)) {
         FILTER_DATA_CONDITON_FIELDS.forEach((dataField: string) => {
@@ -63,5 +63,5 @@ export const prepareFilterData = (nodeData: any): MainData => {
             }
         });
     }
-    return data as MainData;
+    return data as FilterData;
 };

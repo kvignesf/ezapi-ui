@@ -32,6 +32,15 @@ export interface AggregateMappingProps {
     inputNodeIds: string[];
 }
 
+export interface FilterDrawerProps {
+    onClose: Function;
+    nodeId: string;
+    operationId: string;
+    projectId: string;
+    type: string;
+    inputNodeIds: string[];
+}
+
 export interface AggregateMappingDataProps {
     projectId: string;
     operationId: string;

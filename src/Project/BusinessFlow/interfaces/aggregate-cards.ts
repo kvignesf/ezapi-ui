@@ -20,8 +20,19 @@ export interface MainData {
     body?: any;
 }
 
-export interface FilterData {}
+export interface FilterRowData {
+    attributeRef: string;
+    attributeDataType: string;
+    attributeName: string;
+}
 
+export interface FilterData {
+    filterType?: string; // exclude or replace
+    sourceNodeId?: string;
+    targetNodeId?: string;
+    replacedFields?: FilterRowData[];
+    excludedFields?: FilterRowData[];
+}
 export interface NewAggregateCard {
     projectId: string;
     operationId: string;

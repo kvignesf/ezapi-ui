@@ -41,8 +41,13 @@ export const BRANCH_DATA_CONDITON_FIELDS: string[] = [
 ];
 export const MAIN_DATA_CONDITON_FIELDS: string[] = ['headers', 'queryParams', 'pathParams', 'body'];
 
-export const FILTER_DATA_CONDITON_FIELDS: string[] = [];
-
+export const FILTER_DATA_CONDITON_FIELDS: string[] = [
+    'filtertype',
+    'sourceNodeId',
+    'targetNodeId',
+    'replacedFields',
+    'excludedFields',
+];
 /*
     url?: string;
     method?: Method;
@@ -77,6 +82,6 @@ const MAIN_NODE_ID = 'main-node';
 const START_NODE_ID = 'start-node';
 const END_NODE_ID = 'end-node';
 
-export const NON_DELETABLE_NODE_IDS = [MAIN_NODE_ID, START_NODE_ID, END_NODE_ID];
+export const NON_DELETABLE_NODE_IDS = [MAIN_NODE_ID, START_NODE_ID, END_NODE_ID, MAIN_NODE];
 
 export const MAXIMUM_BRANCH_CONDITIONS = 5;

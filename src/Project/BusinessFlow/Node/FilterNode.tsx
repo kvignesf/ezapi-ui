@@ -1,17 +1,67 @@
+import filterAtom from '@/shared/atom/filterAtom';
+import selectedNodeAtom from '@/shared/atom/selectedNodeAtom';
 import { Card, Stack, TextField, Typography } from '@mui/material';
-import { useState } from 'react';
-import { Handle, NodeProps, Position } from 'reactflow';
-
+import _ from 'lodash';
+import { useEffect, useState } from 'react';
+import { Handle, NodeProps, Position, useNodeId } from 'reactflow';
+import { useRecoilState } from 'recoil';
 import Collapse from '../../../icons/collapse.svg';
 import DialogIcon from '../../../icons/dialogIcon.svg';
 import FilterIcon from '../../../icons/filter.svg';
 import RunIcon from '../../../icons/runIcon.svg';
+import useNodeHook from '../hooks/useNodeHook';
+import { FilterRowData } from '../interfaces/aggregate-cards';
 
 interface FilterNodeProps extends NodeProps {}
 
 const FilterNode = (props: FilterNodeProps) => {
     const [collapse, setCollapse] = useState(true);
+    const cardId: string = useNodeId() || '';
+    const [selectedNode, setSelectedNode] = useRecoilState(selectedNodeAtom);
+    const [filterType, setFilterType] = useRecoilState(filterAtom);
+    const [replacedValue, setReplacedValue] = useState('');
+    const [excludedValue, setExcludedValue] = useState('');
 
+    const { node, loadNodeDataFromServer, isNodeDataLoaded, isLoading } = useNodeHook({
+        nodeId: cardId,
+        getUpdatedNodeData: () => {},
+        collapse: collapse,
+    });
+
+    const prepareData = () => {
+        const filterData = _.isEmpty(props?.data?.filterData) ? node?.data.filterData : props.data.filterData;
+        if (filterData) {
+            let replacedString = '';
+            let excludedString = '';
+            if (filterData.replacedFields) {
+                filterData.replacedFields.map((field: FilterRowData) => {
+                    if (replacedString === '') {
+                        replacedString = field.attributeName;
+                    } else {
+                        replacedString = replacedString + ', ' + field.attributeName;
+                    }
+                });
+                setReplacedValue(replacedString);
+            }
+
+            if (filterData.excludedFields) {
+                filterData.excludedFields.map((field: FilterRowData) => {
+                    if (excludedString === '') {
+                        excludedString = field.attributeName;
+                    } else {
+                        excludedString = excludedString + ', ' + field.attributeName;
+                    }
+                });
+                setExcludedValue(excludedString);
+            }
+        }
+    };
+
+    useEffect(() => {
+        if (isNodeDataLoaded) {
+            prepareData();
+        }
+    }, [collapse, isNodeDataLoaded, isLoading, node, props]);
     return (
         <>
             <Handle
@@ -78,7 +128,11 @@ const FilterNode = (props: FilterNodeProps) => {
                             <TextField
                                 required={true}
                                 variant="outlined"
-                                onChange={() => {}}
+                                onClick={() => {
+                                    setSelectedNode(cardId);
+                                    setFilterType('replace');
+                                }}
+                                value={replacedValue}
                                 sx={{
                                     width: '480px',
                                 }}
@@ -92,7 +146,11 @@ const FilterNode = (props: FilterNodeProps) => {
                             <TextField
                                 required={true}
                                 variant="outlined"
-                                onChange={() => {}}
+                                onClick={() => {
+                                    setSelectedNode(cardId);
+                                    setFilterType('exclude');
+                                }}
+                                value={excludedValue}
                                 sx={{
                                     width: '480px',
                                 }}

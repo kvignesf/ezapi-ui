@@ -1,26 +1,25 @@
-import { Handle, Node, Position, useNodeId } from 'reactflow';
-
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Stack from '@mui/material/Stack';
-
 import axios, { CancelTokenSource } from 'axios';
 import { useContext, useEffect, useState } from 'react';
+import { Handle, HandleType, Node, Position, useNodeId, XYPosition } from 'reactflow';
 import ApiIcon from '../../../icons/ApiIcon.svg';
+import BranchIcon from '../../../icons/branch.svg';
+import FilterIcon from '../../../icons/filter.svg';
 import FunctionIcon from '../../../icons/FunctionIcon.svg';
 import Json from '../../../icons/Json.svg';
 import LoopIcon from '../../../icons/LoopIcon.svg';
-import BranchIcon from '../../../icons/branch.svg';
-import FilterIcon from '../../../icons/filter.svg';
 import { BusinessFlowContext } from '../BusinessFlowContext';
 import { NODE_TYPES } from '../constants';
 import { NodeProps, UpdateNodeAPIProps } from '../interfaces';
-import { updateNodeOnServer } from '../services';
+import { NewAggregateCard } from '../interfaces/aggregate-cards';
+import { createAggregateCard, updateNodeOnServer } from '../services';
 import { MyReactFlowState } from '../store';
-import { prepareAggregateCardFromNode } from '../transformers';
+import { prepareAggregateCardFromNode, prepareNodeFromAggregateCard } from '../transformers';
 
 interface NodeTypeSelectionState {
     type: string;
@@ -30,11 +29,15 @@ interface NodeTypeSelectionState {
 function NodeTypeSectionNode(props: NodeProps) {
     const nodeId: string = useNodeId() || '';
     const { useStore, projectId, operationId } = useContext(BusinessFlowContext);
+    const { xPos, yPos } = props;
+
+    //const store = useStoreApi();
 
     const setNodeType = useStore((state: MyReactFlowState) => state.setNodeType);
+    const addChildNode = useStore((state: MyReactFlowState) => state.addChildNode);
 
     const nodes = useStore((state: MyReactFlowState) => state.nodes);
-
+    const numberOfNodes = (nodeType: string) => nodes.filter((node: Node) => node.type === nodeType).length;
     const [updateNodeDataProps, setUpdateNodeDataProps] = useState<NodeTypeSelectionState | null>();
 
     useEffect(() => {
@@ -66,7 +69,47 @@ function NodeTypeSectionNode(props: NodeProps) {
         };
     }, [updateNodeDataProps]);
 
-    const handleNodeType = (type: string) => {
+    const attachNewExternalNodeToFilterNode = async () => {
+        const newAggregateCardPosition: XYPosition = {
+            x: xPos + 600,
+            y: yPos,
+        };
+
+        const newAggregateCard: NewAggregateCard = {
+            projectId,
+            operationId,
+            type: NODE_TYPES.EXTERNAL_API_NODE,
+            name: `New Node ${nodes.length}`,
+            parentNode: nodeId,
+            inputNodeIds: [nodeId],
+            runData: {
+                method: 'post',
+                url: '',
+                headers: [],
+                body: {
+                    data: {},
+                },
+            },
+            branchData: {
+                conditions: [],
+            },
+            mainData: {},
+        };
+        const createdAggregateCard = await createAggregateCard(newAggregateCard);
+        const newNode = prepareNodeFromAggregateCard(createdAggregateCard, newAggregateCardPosition);
+
+        addChildNode({
+            newNode: newNode,
+            handleId: nodeId,
+            handleType: 'source' as HandleType,
+            triggerSaveFlowState: false,
+            triggerUpdateHistory: false,
+        });
+
+        return newNode;
+    };
+
+    const handleNodeType = async (type: string) => {
         switch (type) {
             case 'API':
                 setUpdateNodeDataProps({
@@ -96,7 +139,27 @@ function NodeTypeSectionNode(props: NodeProps) {
                 setNodeType(nodeId, NODE_TYPES.LOOP_NODE, {});
                 break;
             case 'FILTER':
-                setNodeType(nodeId, NODE_TYPES.FILTER_NODE, {});
+                console.log('FILTER.props.data', props.data);
+                const newNode = await attachNewExternalNodeToFilterNode();
+                setUpdateNodeDataProps({
+                    type: NODE_TYPES.FILTER_NODE,
+                    data: {
+                        commonData: {
+                            ...props.data.commonData,
+                            name: `New Filter ${numberOfNodes(NODE_TYPES.FILTER_NODE) + 1}`,
+                        },
+                        runData: {},
+                        mainData: {},
+                        filterData: {
+                            ...(props.data.filterData || {}),
+                            filterType: 'filter exclude and replace',
+                            sourceNodeId: props.data.commonData.parentNode || '',
+                            targetNodeId: newNode.id,
+                            replacedFields: [],
+                            excludedFields: [],
+                        },
+                    },
+                });
                 break;
             case 'PAYLOAD_BUILDER':
                 setNodeType(nodeId, NODE_TYPES.PAYLOAD_BUILDER_NODE, {});
