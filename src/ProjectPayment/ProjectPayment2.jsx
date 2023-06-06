@@ -137,7 +137,7 @@ const ProjectPayment = (props) => {
         setCurrentPlan(data?.['subscribed_price']);
     });
     useEffect(() => {
-        var selectedPlanType;
+        let selectedPlanType;
         console.log(location.state?.['duration']);
         if (location.state?.['duration'] === 'M') {
             selectedPlanType = 'mo';
@@ -309,7 +309,7 @@ const ProjectPayment = (props) => {
     // console.log(acc_token);
 
     const { data: pricing_data } = usePricingData();
-    var priceIDData = '';
+    let priceIDData = '';
     function priceIDFinder(type, duration) {
         if (!_.isEmpty(pricing_data?.products)) {
             pricing_data['products'].map((item, index) => {

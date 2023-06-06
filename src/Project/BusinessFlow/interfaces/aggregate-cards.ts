@@ -21,9 +21,13 @@ export interface MainData {
 }
 
 export interface FilterRowData {
+    index?: number;
     attributeRef: string;
     attributeDataType: string;
     attributeName: string;
+    originalAttributeRef?: string;
+    newAttributeRef?: string;
+    iterateThroughArray?: boolean;
 }
 
 export interface FilterData {

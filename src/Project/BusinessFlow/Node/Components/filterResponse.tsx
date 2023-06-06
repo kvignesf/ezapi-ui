@@ -7,12 +7,14 @@ interface FilterResponseProps {
     data: FilterRowData[];
     onAdd: Function;
     onDelete: Function;
+    onCheckbox?: Function;
 }
 
 export const FilterResponse = ({
     data = [],
     onAdd = () => {},
     onDelete = () => {},
+    onCheckbox = () => {},
 }: FilterResponseProps): React.ReactElement => {
     return (
         <Stack
@@ -30,8 +32,9 @@ export const FilterResponse = ({
                     data?.map((item: FilterRowData, index: number) => {
                         return (
                             <FilterResponseRow
-                                key={`${index}-${item.attributeRef}`}
+                                key={`${index}-${item.attributeName}`}
                                 data={item}
+                                onCheckbox={onCheckbox}
                                 onDelete={() => {
                                     const updatedData = data.filter((value, index2) => value && index !== index2);
                                     onDelete(updatedData);

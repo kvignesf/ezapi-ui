@@ -1,5 +1,5 @@
-import { Delete } from '@mui/icons-material';
-import { Stack, TextField } from '@mui/material';
+import { Delete, InfoOutlined } from '@mui/icons-material';
+import { IconButton, InputAdornment, Stack, TextField, Tooltip } from '@mui/material';
 import { MappingData } from '../../interfaces';
 
 interface MappingResponseRowProps {
@@ -18,6 +18,17 @@ export const MappingResponseRow = ({ data, onDelete = () => {} }: MappingRespons
                         maxWidth: '100%',
                     }}
                     inputProps={{ style: { height: '15px' } }}
+                    InputProps={{
+                        endAdornment: (
+                            <InputAdornment position="end">
+                                <Tooltip title={data.ref}>
+                                    <IconButton size="small">
+                                        <InfoOutlined fontSize="inherit" />
+                                    </IconButton>
+                                </Tooltip>
+                            </InputAdornment>
+                        ),
+                    }}
                     value={data.name}
                 />
             </Stack>
@@ -39,6 +50,17 @@ export const MappingResponseRow = ({ data, onDelete = () => {} }: MappingRespons
                         maxWidth: '100%',
                     }}
                     inputProps={{ style: { height: '15px' } }}
+                    InputProps={{
+                        endAdornment: (
+                            <InputAdornment position="end">
+                                <Tooltip title={data.relationRef}>
+                                    <IconButton size="small">
+                                        <InfoOutlined fontSize="inherit" />
+                                    </IconButton>
+                                </Tooltip>
+                            </InputAdornment>
+                        ),
+                    }}
                     value={data.relationName}
                 />
             </Stack>

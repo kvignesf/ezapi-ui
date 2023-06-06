@@ -58,6 +58,7 @@ const MainNode = (props: MainNodeProps) => {
     const nodes = useStore((state: MyReactFlowState) => state.nodes);
     const operationState = useRecoilValue(operationAtomWithMiddleware);
     const [isJsonValid, setIsJsonValid] = useState(true);
+    const [simulateFailed, setSimulateFailed] = useState(false);
     const [savedNodeRB, setSavedNodeRB] = useState<Record<string, any> | undefined>({});
     const [requestBodyData, setRequestBodyData] = useState<Record<string, any> | undefined>({});
     const [mainData, setMainData] = useState<ExternalAPI>(initialMainData);
@@ -72,10 +73,11 @@ const MainNode = (props: MainNodeProps) => {
     } = useNodeHook({
         nodeId: cardId,
         getUpdatedNodeData: getUpdatedNodeDataFn,
+        collapse: true,
     });
-    useEffect(() => {
+    /* useEffect(() => {
         console.log('cardid=>', cardId);
-    }, [cardId]);
+    }, [cardId]); */
     function getUpdatedNodeDataFn() {
         const newNodeData = (_.isEmpty(props.data) ? {} : props.data) as NodeData;
         console.log('requestBodyData..', requestBodyData);
@@ -231,7 +233,7 @@ const MainNode = (props: MainNodeProps) => {
                 .then((response) => {
                     if (response.message == 'Ok') {
                         simulateAPI().then((response) => {
-                            console.log('response=>', response);
+                            //console.log('response=>', response);
                             setRequestBodyData(transformObject(response));
                             triggerDelayedNodeSaveOnServer(saveDelay);
                         });
@@ -239,6 +241,7 @@ const MainNode = (props: MainNodeProps) => {
                 })
                 .catch((error) => {
                     console.log('Error occurred in simulate_artefact_API: ', error);
+                    setSimulateFailed(true);
                 });
         }
     }, []);
@@ -290,7 +293,12 @@ const MainNode = (props: MainNodeProps) => {
     }, []);
 
     useEffect(() => {
+        /* if (simulateFailed) {
+            setRequestBodyData(savedNodeRB);
+            return;
+        } */
         if (
+            //simulateFailed ||
             stopTrigger ||
             !requestBodyData ||
             !savedNodeRB ||

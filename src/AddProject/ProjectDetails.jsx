@@ -7,7 +7,6 @@ import { useCallback, useEffect } from 'react';
 import Scrollbar from 'react-smooth-scrollbar';
 import { useRecoilState } from 'recoil';
 import * as Yup from 'yup';
-
 import AppIcon from '../shared/components/AppIcon';
 import Messages from '../shared/messages';
 import apiNameSchema from '../shared/schemas/apiNameSchema';

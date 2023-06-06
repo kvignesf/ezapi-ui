@@ -41,13 +41,18 @@ const BranchNode = (props: BranchNodeProps) => {
 
     const [dimensions, setDimensions] = useState({ width: 20, height: 100 });
 
-    const { node, setNode, isNodeDataLoaded, setTriggerNodeSaveOnServer, triggerDelayedNodeSaveOnServer } = useNodeHook(
-        {
-            nodeId: cardId,
-            getUpdatedNodeData: getUpdatedNodeDataFn,
-            collapse: collapse,
-        },
-    );
+    const {
+        node,
+        setNode,
+        isNodeDataLoaded,
+        setTriggerNodeSaveOnServer,
+        loadNodeDataFromServer,
+        triggerDelayedNodeSaveOnServer,
+    } = useNodeHook({
+        nodeId: cardId,
+        getUpdatedNodeData: getUpdatedNodeDataFn,
+        collapse: collapse,
+    });
 
     function getUpdatedNodeDataFn() {
         const newNodeData = (_.isEmpty(props.data) ? {} : props.data) as NodeData;
@@ -55,7 +60,7 @@ const BranchNode = (props: BranchNodeProps) => {
     }
 
     useEffect(() => {
-        if (isNodeDataLoaded && node && props.data.branchData) {
+        if (isNodeDataLoaded && node && props.data.branchData && props.data.branchData.conditions) {
             const conditions = props.data.branchData.conditions || [];
             setNode({
                 ...node,
@@ -83,6 +88,8 @@ const BranchNode = (props: BranchNodeProps) => {
             } else {
                 setDisableAdd(false);
             }
+        } else {
+            setDisableAdd(false);
         }
     }, [branchConditions]);
 
@@ -94,17 +101,6 @@ const BranchNode = (props: BranchNodeProps) => {
             });
         }
     }, []);
-
-    // const positionHandle = (index: number) => {
-    //     if (index === 1 || index === 2) {
-    //         return (dimensions.height / 3) * index;
-    //     } else if (index === 3) {
-    //         return 0;
-    //     } else if (index === 4) {
-    //         return dimensions.height;
-    //     }
-    //     return (dimensions.height / 3) * index;
-    // };
 
     const positionHandle = (_index: number) => {
         if (collapse) {
@@ -140,6 +136,12 @@ const BranchNode = (props: BranchNodeProps) => {
         });
     }, [outEdges]);
 
+    useEffect(() => {
+        if (!collapse) {
+            loadNodeDataFromServer();
+        }
+    }, [collapse]);
+
     const renderBranchHandles = useMemo(() => {
         return branchConditions.map((branchCondition: BranchCondition, index: number) => (
             <Handle
@@ -165,7 +167,6 @@ const BranchNode = (props: BranchNodeProps) => {
                         }
                     }}
                     branchCondition={branchCondition}
-                    index={index}
                     positionHandle={positionHandle}
                     isConnectable={props.isConnectable}
                     branchConditions={branchConditions}

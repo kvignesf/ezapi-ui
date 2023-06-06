@@ -126,6 +126,42 @@ export const FilterDrawer = ({ onClose, nodeId, operationId, projectId, type, in
         prepareData();
     }, []);
 
+    useEffect(() => {
+        let tempArr = JSON.parse(JSON.stringify(excludedFields));
+        tempArr.forEach((item: any) => {
+            if (!item.originalAttributeRef) item.originalAttributeRef = item.attributeRef;
+            const re = /(.*)\.(\d+)\.(.*)/;
+            if (item.iterateThroughArray) {
+                item.newAttributeRef = item.attributeRef.replace(re, `$1[].$3`);
+
+                item.attributeRef = item.newAttributeRef;
+            } else {
+                item.attributeRef = item.originalAttributeRef;
+            }
+        });
+        if (!_.isEqual(excludedFields, tempArr)) {
+            setExcludedFields(tempArr);
+        }
+    }, [triggerUpdate, excludedFields]);
+
+    useEffect(() => {
+        let tempArr = JSON.parse(JSON.stringify(replacedFields));
+        tempArr.forEach((item: any) => {
+            if (!item.originalAttributeRef) item.originalAttributeRef = item.attributeRef;
+            const re = /(.*)\.(\d+)\.(.*)/;
+            if (item.iterateThroughArray) {
+                item.newAttributeRef = item.attributeRef.replace(re, `$1[].$3`);
+
+                item.attributeRef = item.newAttributeRef;
+            } else {
+                item.attributeRef = item.originalAttributeRef;
+            }
+        });
+        if (!_.isEqual(replacedFields, tempArr)) {
+            setReplacedFields(tempArr);
+        }
+    }, [triggerUpdate, replacedFields]);
+
     return (
         <div
             style={{ height: '100%', width: '100%', display: 'flex', flexDirection: 'column' }}
@@ -189,7 +225,7 @@ export const FilterDrawer = ({ onClose, nodeId, operationId, projectId, type, in
                     {type === 'replace' ? (
                         <>
                             <p className="text-neutral-gray2 mb-4" style={{ marginRight: '12px', fontWeight: 600 }}>
-                                Replaced Expressions
+                                Replaced Fields
                             </p>
                             <FilterResponse
                                 key={`filter`}
@@ -197,12 +233,16 @@ export const FilterDrawer = ({ onClose, nodeId, operationId, projectId, type, in
                                 onDelete={(dataAfterDelete: FilterRowData[]) => {
                                     setReplacedFields(dataAfterDelete);
                                 }}
+                                onCheckbox={() => {
+                                    setTriggerUpdate(!triggerUpdate);
+                                }}
                                 onAdd={() => {
                                     const newData = replacedFields;
                                     newData.push({
                                         attributeRef: '',
                                         attributeDataType: '',
                                         attributeName: '',
+                                        iterateThroughArray: false,
                                     });
                                     setReplacedFields(newData);
                                     setTriggerUpdate(!triggerUpdate);
@@ -212,7 +252,7 @@ export const FilterDrawer = ({ onClose, nodeId, operationId, projectId, type, in
                     ) : (
                         <>
                             <p className="text-neutral-gray2 mb-4" style={{ marginRight: '12px', fontWeight: 600 }}>
-                                Excluded Expressions
+                                Excluded Fields
                             </p>
                             <FilterResponse
                                 key={`filter`}
@@ -220,12 +260,16 @@ export const FilterDrawer = ({ onClose, nodeId, operationId, projectId, type, in
                                 onDelete={(dataAfterDelete: FilterRowData[]) => {
                                     setExcludedFields(dataAfterDelete);
                                 }}
+                                onCheckbox={() => {
+                                    setTriggerUpdate(!triggerUpdate);
+                                }}
                                 onAdd={() => {
                                     const newData = excludedFields;
                                     newData.push({
                                         attributeRef: '',
                                         attributeDataType: '',
                                         attributeName: '',
+                                        iterateThroughArray: false,
                                     });
                                     setExcludedFields(newData);
                                     setTriggerUpdate(!triggerUpdate);

@@ -1,14 +1,10 @@
 // @ts-ignore
 // @ts-nocheck
 import drawerCardAtom from '@/shared/atom/drawerCardAtom';
-import CloudUploadIcon from '@material-ui/icons/CloudUpload';
-
 import selectedNodeAtom from '@/shared/atom/selectedNodeAtom';
 import { CircularProgress, Tooltip } from '@material-ui/core';
 import { Add } from '@material-ui/icons';
-import _, { debounce, isEqual } from 'lodash';
-import useNodeHook from '../hooks/useNodeHook';
-
+import CloudUploadIcon from '@material-ui/icons/CloudUpload';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import {
     Autocomplete,
@@ -23,6 +19,7 @@ import {
     Typography,
 } from '@mui/material';
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse, Method } from 'axios';
+import _, { debounce, isEqual } from 'lodash';
 import Qs from 'qs';
 import { SyntheticEvent, useContext, useEffect, useState } from 'react';
 import { useRecoilState } from 'recoil';
@@ -31,6 +28,7 @@ import RunIcon from '../../../icons/runIcon.svg';
 import { BusinessFlowContext } from '../BusinessFlowContext';
 import { checkValidJson, convertObjectToFormData, formDataToObject } from '../businessFlowHelper';
 import { DEFAULT_API_RESPONSE } from '../defaults';
+import useNodeHook from '../hooks/useNodeHook';
 import { ExternalAPI, KeyValueProps } from '../interfaces';
 import { CommonNodeData, NodeData } from '../interfaces/flow';
 import { MyReactFlowState } from '../store';
@@ -448,7 +446,7 @@ export const ExternalAPIDrawer = ({ cardId }: ExternalAPIDrawerProps) => {
                     }}
                     value={apiType}
                 >
-                    <Stack direction={'row'} justifyContent={'space-between'}>
+                    <Stack direction={'row'}>
                         <FormControlLabel value="api_call" control={<Radio />} label={'API Call'} />
                         <FormControlLabel value="system" control={<Radio />} label={'Conektto API'} disabled />
                         <FormControlLabel
@@ -474,7 +472,7 @@ export const ExternalAPIDrawer = ({ cardId }: ExternalAPIDrawerProps) => {
                                 setApiName(e.target.value);
                             }}
                             sx={{
-                                width: '480px',
+                                width: '620px',
                             }}
                             inputProps={{ style: { height: '15px' } }}
                         />
@@ -500,7 +498,7 @@ export const ExternalAPIDrawer = ({ cardId }: ExternalAPIDrawerProps) => {
                             openOnFocus={true}
                             fullWidth={true}
                             style={{
-                                width: '155px',
+                                width: '205px',
                             }}
                         />
                     </Stack>
@@ -520,7 +518,7 @@ export const ExternalAPIDrawer = ({ cardId }: ExternalAPIDrawerProps) => {
                                 setUrl(event.target.value as string);
                             }}
                             sx={{
-                                width: '301px',
+                                width: '720px',
                             }}
                             inputProps={{ style: { height: '15px' } }}
                         />
@@ -574,6 +572,7 @@ export const ExternalAPIDrawer = ({ cardId }: ExternalAPIDrawerProps) => {
 
                                 setHeadersData(headers);
                             }}
+                            cardType={'drawer'}
                         />
                     </TabPanel>
                     <TabPanel
@@ -587,6 +586,7 @@ export const ExternalAPIDrawer = ({ cardId }: ExternalAPIDrawerProps) => {
                         <ValueCard
                             value={queryParams}
                             disabled={apiType === 'system' ? true : false}
+                            cardType={'drawer'}
                             onChange={(newQueryParams: KeyValueProps[]) => {
                                 if (isEqual(queryParams, newQueryParams)) return;
                                 if (!displayedUrlValue || !isValidUrl(displayedUrlValue)) {
@@ -621,6 +621,7 @@ export const ExternalAPIDrawer = ({ cardId }: ExternalAPIDrawerProps) => {
                             disableDelete={true}
                             value={pathParams}
                             disabled={apiType === 'system' ? true : false}
+                            cardType={'drawer'}
                             onChange={(newPathParams: KeyValueProps[]) => {
                                 if (isEqual(pathParams, newPathParams)) return;
                                 if (
@@ -691,7 +692,7 @@ export const ExternalAPIDrawer = ({ cardId }: ExternalAPIDrawerProps) => {
     );
 
     return (
-        <Stack sx={{ width: '513px' }}>
+        <Stack sx={{ height: '100%', width: '100%', display: 'flex', flexDirection: 'column' }}>
             <Stack
                 direction={'row'}
                 sx={{ borderBottom: '1px solid #C0CCDA', height: '52px', padding: '24px 16px' }}

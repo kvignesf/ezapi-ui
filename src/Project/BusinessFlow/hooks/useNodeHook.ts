@@ -1,7 +1,6 @@
 import axios, { CancelTokenSource } from 'axios';
 import _ from 'lodash';
 import { useContext, useEffect, useState } from 'react';
-
 import { BusinessFlowContext } from '../BusinessFlowContext';
 import { GetNodeAPIProps, Node, UpdateNodeAPIProps } from '../interfaces';
 import { fetchNodeFromServer, updateNodeOnServer } from '../services';
@@ -14,7 +13,7 @@ interface NodeHookProps {
     collapse?: boolean;
 }
 
-const useNodeHook = ({ nodeId, getUpdatedNodeData, collapse = true }: NodeHookProps) => {
+const useNodeHook = ({ nodeId, getUpdatedNodeData, collapse = false }: NodeHookProps) => {
     const { projectId, operationId, useStore } = useContext(BusinessFlowContext);
     const updateNodeData = useStore((state: MyReactFlowState) => state.updateNodeData);
 

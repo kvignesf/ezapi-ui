@@ -1,3 +1,5 @@
+import { selectedExternalNodeType } from '@/shared/atom/selectedNodeAtom';
+import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
@@ -6,13 +8,14 @@ import ListItemText from '@mui/material/ListItemText';
 import Stack from '@mui/material/Stack';
 import axios, { CancelTokenSource } from 'axios';
 import { useContext, useEffect, useState } from 'react';
-import { Handle, HandleType, Node, Position, useNodeId, XYPosition } from 'reactflow';
+import { Handle, HandleType, Node, Position, XYPosition, useNodeId } from 'reactflow';
+import { useRecoilState } from 'recoil';
 import ApiIcon from '../../../icons/ApiIcon.svg';
-import BranchIcon from '../../../icons/branch.svg';
-import FilterIcon from '../../../icons/filter.svg';
 import FunctionIcon from '../../../icons/FunctionIcon.svg';
 import Json from '../../../icons/Json.svg';
 import LoopIcon from '../../../icons/LoopIcon.svg';
+import BranchIcon from '../../../icons/branch.svg';
+import FilterIcon from '../../../icons/filter.svg';
 import { BusinessFlowContext } from '../BusinessFlowContext';
 import { NODE_TYPES } from '../constants';
 import { NodeProps, UpdateNodeAPIProps } from '../interfaces';
@@ -27,6 +30,8 @@ interface NodeTypeSelectionState {
 }
 
 function NodeTypeSectionNode(props: NodeProps) {
+    const [selectedNodeCardType, setSelectedNodeCardType] = useRecoilState(selectedExternalNodeType);
+
     const nodeId: string = useNodeId() || '';
     const { useStore, projectId, operationId } = useContext(BusinessFlowContext);
     const { xPos, yPos } = props;
@@ -35,6 +40,7 @@ function NodeTypeSectionNode(props: NodeProps) {
 
     const setNodeType = useStore((state: MyReactFlowState) => state.setNodeType);
     const addChildNode = useStore((state: MyReactFlowState) => state.addChildNode);
+    const [selectedMenu, setSelectedMenu] = useState('');
 
     const nodes = useStore((state: MyReactFlowState) => state.nodes);
     const numberOfNodes = (nodeType: string) => nodes.filter((node: Node) => node.type === nodeType).length;
@@ -169,6 +175,62 @@ function NodeTypeSectionNode(props: NodeProps) {
         }
     };
 
+    const handleSubNodeType = async (type: string) => {
+        console.log('handlingSubNodeclick', type);
+        switch (type) {
+            case 'LOOP':
+                setSelectedNodeCardType('loop');
+                setUpdateNodeDataProps({
+                    type: NODE_TYPES.EXTERNAL_API_NODE,
+                    data: {
+                        commonData: {
+                            ...props.data.commonData,
+                        },
+                        runData: {
+                            ...(props.data.runData || {}),
+                            method: 'GET',
+                            url: '',
+                            headers: [],
+                            body: {
+                                data: {},
+                            },
+                        },
+                    },
+                });
+                break;
+            // case 'BRANCH':
+            //     setNodeType(nodeId, NODE_TYPES.BRANCH_NODE, {
+            //         conditions: [],
+            //     });
+            //     break;
+            // case 'FILTER':
+            //     const newNode = await attachNewExternalNodeToFilterNode();
+            //     setUpdateNodeDataProps({
+            //         type: NODE_TYPES.FILTER_NODE,
+            //         data: {
+            //             commonData: {
+            //                 ...props.data.commonData,
+            //                 name: `New Filter ${numberOfNodes(NODE_TYPES.FILTER_NODE) + 1}`,
+            //             },
+            //             runData: {},
+            //             mainData: {},
+            //             filterData: {
+            //                 ...(props.data.filterData || {}),
+            //                 filterType: 'filter exclude and replace',
+            //                 sourceNodeId: props.data.commonData.parentNode || '',
+            //                 targetNodeId: newNode.id,
+            //                 replacedFields: [],
+            //                 excludedFields: [],
+            //             },
+            //         },
+            //     });
+            //     break;
+
+            default:
+                break;
+        }
+    };
+
     return (
         <>
             <Handle
@@ -200,7 +262,7 @@ function NodeTypeSectionNode(props: NodeProps) {
                                 <ListItemText primary="Branch" />
                             </ListItemButton>
                         </ListItem>
-                        <ListItem sx={{ padding: '0' }} onClick={() => handleNodeType('LOOP')}>
+                        {/* <ListItem sx={{ padding: '0' }} onClick={() => handleNodeType('LOOP')}>
                             <ListItemButton disableGutters>
                                 <ListItemIcon sx={{ minWidth: '35px', marginLeft: '14px' }}>
                                     <img
@@ -210,7 +272,109 @@ function NodeTypeSectionNode(props: NodeProps) {
                                 </ListItemIcon>
                                 <ListItemText primary="Loop" />
                             </ListItemButton>
-                        </ListItem>
+                        </ListItem> */}
+                        <div style={{ display: 'flex' }}>
+                            <Stack sx={{ width: '182px' }}>
+                                <ListItem
+                                    sx={{ padding: '0' }}
+                                    onMouseEnter={() => setSelectedMenu('LOOP')}
+                                    onMouseLeave={() => setSelectedMenu('')}
+                                >
+                                    <ListItemButton disableGutters>
+                                        <ListItemIcon sx={{ minWidth: '35px', marginLeft: '14px' }}>
+                                            <img
+                                                src={LoopIcon}
+                                                style={{ width: '24px', height: '24px', alignSelf: 'center' }}
+                                            />
+                                        </ListItemIcon>
+                                        <ListItemText primary="Loop" />
+                                        {selectedMenu !== 'LOOP' && (
+                                            <ListItemIcon style={{ minWidth: 'auto', marginRight: '14px' }}>
+                                                <KeyboardArrowRightIcon />
+                                            </ListItemIcon>
+                                        )}
+                                    </ListItemButton>
+                                </ListItem>
+                            </Stack>
+
+                            {selectedMenu === 'LOOP' && (
+                                <Stack
+                                    sx={{
+                                        position: 'absolute',
+                                        top: 0,
+                                        left: '182px',
+
+                                        width: '200px',
+                                        bgcolor: 'background.paper',
+                                        border: '1px solid #C0CCDA',
+                                    }}
+                                    onMouseEnter={() => setSelectedMenu('LOOP')}
+                                    onMouseLeave={() => setSelectedMenu('')}
+                                >
+                                    <nav>
+                                        <List disablePadding>
+                                            <ListItem
+                                                sx={{ padding: '0' }}
+                                                button
+                                                onClick={() => handleSubNodeType('LOOP')}
+                                            >
+                                                <ListItemButton disableGutters>
+                                                    <ListItemIcon sx={{ minWidth: '35px', marginLeft: '14px' }}>
+                                                        <img
+                                                            src={LoopIcon}
+                                                            style={{
+                                                                width: '24px',
+                                                                height: '24px',
+                                                                alignSelf: 'center',
+                                                            }}
+                                                        />
+                                                    </ListItemIcon>
+                                                    <ListItemText primary="API call In a Loop" />
+                                                </ListItemButton>
+                                            </ListItem>
+                                            <ListItem
+                                                sx={{ padding: '0' }}
+                                                button
+                                                onClick={() => handleSubNodeType('BRANCH')}
+                                            >
+                                                <ListItemButton disableGutters>
+                                                    <ListItemIcon sx={{ minWidth: '35px', marginLeft: '14px' }}>
+                                                        <img
+                                                            src={LoopIcon}
+                                                            style={{
+                                                                width: '24px',
+                                                                height: '24px',
+                                                                alignSelf: 'center',
+                                                            }}
+                                                        />
+                                                    </ListItemIcon>
+                                                    <ListItemText primary="Loop with Branch" />
+                                                </ListItemButton>
+                                            </ListItem>
+                                            <ListItem
+                                                sx={{ padding: '0' }}
+                                                button
+                                                onClick={() => handleSubNodeType('FILTER')}
+                                            >
+                                                <ListItemButton disableGutters>
+                                                    <ListItemIcon sx={{ minWidth: '35px', marginLeft: '14px' }}>
+                                                        <img
+                                                            src={LoopIcon}
+                                                            style={{
+                                                                width: '24px',
+                                                                height: '24px',
+                                                                alignSelf: 'center',
+                                                            }}
+                                                        />
+                                                    </ListItemIcon>
+                                                    <ListItemText primary="Loop with Filter" />
+                                                </ListItemButton>
+                                            </ListItem>
+                                        </List>
+                                    </nav>
+                                </Stack>
+                            )}
+                        </div>
                         <ListItem sx={{ padding: '0' }} onClick={() => handleNodeType('FILTER')}>
                             <ListItemButton disableGutters>
                                 <ListItemIcon sx={{ minWidth: '35px', marginLeft: '14px' }}>

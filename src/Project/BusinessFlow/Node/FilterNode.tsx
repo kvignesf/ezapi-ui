@@ -15,7 +15,7 @@ import { FilterRowData } from '../interfaces/aggregate-cards';
 interface FilterNodeProps extends NodeProps {}
 
 const FilterNode = (props: FilterNodeProps) => {
-    const [collapse, setCollapse] = useState(true);
+    const [collapse, setCollapse] = useState(false);
     const cardId: string = useNodeId() || '';
     const [selectedNode, setSelectedNode] = useRecoilState(selectedNodeAtom);
     const [filterType, setFilterType] = useRecoilState(filterAtom);
@@ -116,7 +116,7 @@ const FilterNode = (props: FilterNodeProps) => {
                         />
                     </Stack>
                 </Stack>
-                {!collapse && (
+                {collapse && (
                     <>
                         <Stack
                             justifyContent={'space-around'}

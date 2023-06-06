@@ -16,7 +16,8 @@ import { create } from 'zustand';
 
 import { v4 as uuidv4 } from 'uuid';
 
-import { NODE_TYPES, NON_DELETABLE_NODE_IDS } from './constants';
+import { NODE_TYPES, NON_DELETABLE_NODE_IDS, NON_DELETABLE_NODE_TYPES } from './constants';
+
 import defaultEdges from './edges';
 import { ElementsType, Node, UpdateNodeAPIProps } from './interfaces';
 import defaultNodes from './nodes';
@@ -163,21 +164,53 @@ const createStore = ({ projectId, operationId, initialNodes, initialEdges }: Ini
             }
         },
 
-        onNodesDelete: async (deletedNodes: Node[]) => {
+        onNodesDelete: async (rfDeletedNodes: Node[]) => {
             const { nodes, edges, setElements, resetHistory } = get();
-
-            deletedNodes = deletedNodes.filter((deletedNode: Node) => {
+            // remove non deletable nodes from the list of deleted nodes
+            rfDeletedNodes = rfDeletedNodes.filter((deletedNode: Node) => {
                 return (
                     deletedNode.selected === true &&
                     !(
                         NON_DELETABLE_NODE_IDS.includes(deletedNode.id) ||
-                        NON_DELETABLE_NODE_IDS.includes(deletedNode.type ?? '') ||
+                        NON_DELETABLE_NODE_TYPES.includes(deletedNode.type ?? '') ||
                         deletedNode.data.commonData.nonDeletable === true
                     )
                 );
             });
+            // check if deletedNodes has a filter node or a filter node's external api node. if it is, then delete both as well
+            const nonFilteredDeletedNodeIds = rfDeletedNodes.map((deletedNode: Node) => deletedNode.id);
 
-            const deletedNodeIds = deletedNodes.map((deletedNode: Node) => deletedNode.id);
+            const deletedNodeIds: string[] = [];
+
+            nodes.forEach((node: Node) => {
+                const isNodeInDeletedNodes = nonFilteredDeletedNodeIds.includes(node.id);
+
+                if (node.type === NODE_TYPES.FILTER_NODE && isNodeInDeletedNodes) {
+                    let targetNodeId = edges.find((edge: Edge) => edge.source === node.id)?.target;
+                    const targetNode = nodes.find((node: Node) => node.id === targetNodeId);
+                    if (targetNode && targetNode.type === NODE_TYPES.EXTERNAL_API_NODE) {
+                        deletedNodeIds.push(targetNodeId);
+                    }
+                } else if (node.type === NODE_TYPES.EXTERNAL_API_NODE && isNodeInDeletedNodes) {
+                    let parentNode = nodes.find((node: Node) => node.id === node.parentNode);
+                    if (!parentNode) {
+                        const parentNodeId = edges.find((edge: Edge) => edge.target === node.id)?.source;
+                        if (parentNodeId) {
+                            parentNode = nodes.find((node: Node) => node.id === parentNodeId);
+                        }
+                    }
+                    if (parentNode && parentNode.type === NODE_TYPES.FILTER_NODE) {
+                        deletedNodeIds.push(parentNode.id);
+                    }
+                }
+                if (isNodeInDeletedNodes) {
+                    deletedNodeIds.push(node.id);
+                }
+            });
+
+            const deletedNodes = deletedNodeIds.map((deletedNodeId: string) =>
+                nodes.find((node: Node) => node.id === deletedNodeId),
+            );
 
             if (deletedNodes.length) {
                 const updatedNodes = nodes.filter((node: Node) => !deletedNodeIds.includes(node.id));
@@ -306,8 +339,8 @@ const createStore = ({ projectId, operationId, initialNodes, initialEdges }: Ini
 
             setElements(updatedNodes, edges);
             console.log('saving in updateNodeData');
-            //saveFlowState();
-            deferredSave();
+            saveFlowState();
+            //deferredSave();
         },
 
         setNodeType: async (nodeId: string, type: string, data: any) => {

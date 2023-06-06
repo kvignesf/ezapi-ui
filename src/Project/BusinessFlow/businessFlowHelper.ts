@@ -36,21 +36,47 @@ export const convertObjectToFormData = (data: string | object) => {
     }
     return keyValuePairs;
 };
-
-export const structureBodyForMapping = (data: any, parentName: string, oldRef: string) => {
+// Structures body into the required TreeNode structure
+export const structureBodyForMapping = (data: any, parentName: string, oldRef: string, selectedNodeCardType?: any) => {
+    // id counter to help create unique id for each node
     let id = 1;
 
+    // recursively transforms input data into the required TreeNode structure
     function convertData(data: any, name = parentName, prevRef = oldRef): TreeNode {
+        // handle special case when name is 'n'(loop node check)
+        let newRef = '';
+        if (name === 'n') {
+            newRef = prevRef + '[' + name + ']';
+        } else {
+            newRef = prevRef + '.' + name;
+        }
+
+        // Create a new node
         const result: TreeNode = {
             id: parentName + id.toString(),
             name,
             children: [],
-            ref: prevRef + '.' + name,
+            //ref: prevRef + '.' + name,
+            ref: newRef,
         };
 
         id++;
-
-        if (typeof data === 'object') {
+        // Check if data is an array
+        if (Array.isArray(data) && selectedNodeCardType === 'loop') {
+            // If the array has at least one element, and it is an object (but not an array)
+            if (data.length > 0 && typeof data[0] === 'object' && !Array.isArray(data[0])) {
+                // create 'n' node using the 0th element of the array
+                const nodeN = convertData(data[0], 'n', result.ref);
+                result.children.push(nodeN);
+            }
+            // For each element in the array, recursively transform it to TreeNode and add it as a child
+            data.forEach((value: any, index: number) => {
+                const child = convertData(value, index.toString(), result.ref);
+                result.children.push(child);
+            });
+            // If data is an object (but not an array)
+        } else if (typeof data === 'object') {
+            // For each key-value pair in the object, recursively transform it to TreeNode and add it as a child
             for (const key in data) {
                 const child = convertData(data[key], key, result.ref);
                 result.children.push(child);
@@ -58,7 +84,7 @@ export const structureBodyForMapping = (data: any, parentName: string, oldRef: s
         }
         return result;
     }
-
+    // Parse the input data (which is in JSON string format) into an object
     const updatedData = convertData(JSON.parse(data), parentName);
 
     return updatedData;

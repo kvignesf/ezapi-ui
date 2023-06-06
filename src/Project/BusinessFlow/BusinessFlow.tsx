@@ -1,3 +1,12 @@
+import { SocketContext } from '@/Context/socket';
+import branchQueryAtom from '@/shared/atom/branchQueryAtom';
+import drawerCardAtom from '@/shared/atom/drawerCardAtom';
+import filterAtom from '@/shared/atom/filterAtom';
+import responseMapperAtom from '@/shared/atom/reponseMapperAtom';
+import selectedNodeAtom from '@/shared/atom/selectedNodeAtom';
+import { operationAtomWithMiddleware } from '@/shared/utils';
+import { Drawer } from '@mui/material';
+import axios, { CancelTokenSource } from 'axios';
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router';
 import ReactFlow, {
@@ -12,14 +21,15 @@ import ReactFlow, {
     OnConnectStart,
     OnConnectStartParams,
     ReactFlowProvider,
-    useReactFlow,
-    useStoreApi,
     Viewport,
     XYPosition,
+    useReactFlow,
+    useStoreApi,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
+import { useRecoilState } from 'recoil';
 import { shallow } from 'zustand/shallow';
-
+import { BusinessFlowContext } from './BusinessFlowContext';
 import {
     BranchNode,
     ExternalAPINode,
@@ -30,34 +40,18 @@ import {
     PayloadNode,
     StartNode,
 } from './Node';
-import createStore, { getInputNodeIdsFromNode, MyReactFlowState } from './store';
-
-import { operationAtomWithMiddleware } from '@/shared/utils';
-import { useRecoilState } from 'recoil';
-
-import { Drawer } from '@mui/material';
 import { AggregateMapping } from './Node/Components/AggregateMapping';
-
-import selectedNodeAtom from '@/shared/atom/selectedNodeAtom';
-import axios, { CancelTokenSource } from 'axios';
-import { BusinessFlowContext } from './BusinessFlowContext';
-import { NODE_TYPES } from './constants';
-import { DEFAULT_BUSINESS_FLOW_STATE } from './defaults';
-
-import branchQueryAtom from '@/shared/atom/branchQueryAtom';
-
-import drawerCardAtom from '@/shared/atom/drawerCardAtom';
-import filterAtom from '@/shared/atom/filterAtom';
-
-import responseMapperAtom from '@/shared/atom/reponseMapperAtom';
-import './index.css';
-import { IBusinessFlow } from './interfaces';
-import { NewAggregateCard } from './interfaces/aggregate-cards';
 import { BranchQuerySelector } from './Node/Components/BranchQuerySelector';
 import { FilterDrawer } from './Node/Components/FilterDrawer';
 import { ExternalAPIDrawer } from './Node/ExternalAPIDrawer';
+import { NODE_TYPES } from './constants';
+import { DEFAULT_BUSINESS_FLOW_STATE } from './defaults';
+import './index.css';
+import { IBusinessFlow } from './interfaces';
+import { NewAggregateCard } from './interfaces/aggregate-cards';
 import { createAggregateCard, fetchAggregateMetaData, fetchNodeFromServer } from './services';
-import { prepareNodeFromAggregateCard } from './transformers';
+import createStore, { MyReactFlowState, getInputNodeIdsFromNode } from './store';
+import { prepareNodeFromAggregateCard, prepareNodeFromAggregateCardResponse } from './transformers';
 
 const canvasBackgroundColor = '#1A192B';
 const edgeStrokeColor = '#fff';
@@ -218,6 +212,7 @@ const Flow = () => {
     const reactFlowWrapper = useRef<HTMLInputElement>(null);
     const connectionStartParams = useRef<OnConnectStartParams | null>(null);
 
+    const store = useStoreApi();
     const {
         nodes,
         edges,
@@ -232,6 +227,25 @@ const Flow = () => {
         addChildNode,
         updateNodeData,
     }: MyReactFlowState = useStore(selector, shallow);
+
+    const socket = useContext(SocketContext);
+
+    useEffect(() => {
+        if (socket) {
+            console.log(socket);
+            console.log(socket.connected);
+            socket.on('filterUpdateDone', (data: any) => {
+                if (data && data.cards) {
+                    console.log(data);
+                    const targetIds = Object.keys(data.cards);
+                    targetIds.map((id) => {
+                        const node = prepareNodeFromAggregateCardResponse(data.cards[`${id}`]);
+                        updateNodeData(id, node.data);
+                    });
+                }
+            });
+        }
+    }, []);
 
     const [newNodeInfo, setNewNodeInfo] = useState<{ parentNode: Node | undefined; position: XYPosition } | null>(null);
 
@@ -298,10 +312,11 @@ const Flow = () => {
         return () => document.removeEventListener('keydown', onKeyDown);
     });
 
-    const store = useStoreApi();
-
     const onLoad = () => {
-        fitView(fitViewOptions);
+        const selectionNode = nodes.find((node) => node.type === 'selectionNode');
+        if (!selectionNode) {
+            fitView(fitViewOptions);
+        }
     };
 
     useEffect(() => {
@@ -415,7 +430,7 @@ const Flow = () => {
                 PaperProps={{
                     style: {
                         height: '100%',
-                        width: '50%',
+                        width: '80%',
                         position: 'absolute',
                     },
                 }}
@@ -428,7 +443,22 @@ const Flow = () => {
                     inputNodeIds={
                         nodes.find((node: Node) => node.id === selectedNode)?.data.commonData.inputNodeIds || []
                     }
-                    onClose={() => {
+                    onClose={async () => {
+                        const node = nodes.find((node: Node) => node.id === selectedNode);
+                        let targetNode: Node | undefined = undefined;
+                        if (node && node.type === NODE_TYPES.FILTER_NODE && node.data.filterData?.targetNodeId) {
+                            targetNode = nodes.find((node: Node) => node.id === node.data.filterData?.targetNodeId);
+                        }
+                        if (targetNode) {
+                            const getNodeData = {
+                                projectId,
+                                operationId,
+                                nodeId: targetNode.id,
+                            };
+                            const latestNodeInfo = await fetchNodeFromServer(getNodeData);
+                            updateNodeData(targetNode.id, latestNodeInfo.data);
+                        }
+
                         setOpenFilterDrawer(false);
                         setSelectedNode('');
                         setFilterType('');
@@ -473,6 +503,13 @@ const Flow = () => {
                     setShowAPIDrawer(false);
                     setSelectedCard('');
                 }}
+                PaperProps={{
+                    style: {
+                        height: '100%',
+                        width: '80%',
+                        position: 'absolute',
+                    },
+                }}
             >
                 <ExternalAPIDrawer cardId={selectedCard} />
             </Drawer>
@@ -508,6 +545,7 @@ function BusinessFlow() {
     const { projectId = '' }: { projectId: string } = useParams();
     const [operationData, _] = useRecoilState(operationAtomWithMiddleware);
     const operationId = operationData?.operation?.operationId;
+    const { useStore } = useContext(BusinessFlowContext);
 
     useEffect(() => {
         setIsLoading(true);

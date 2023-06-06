@@ -1,6 +1,6 @@
 import { Delete } from '@mui/icons-material';
 import DoneIcon from '@mui/icons-material/Done';
-import { Stack, TextField } from '@mui/material';
+import { Autocomplete, Stack, TextField } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { ValueCardRowProps } from '../../interfaces';
 export const ValueCardRow = (props: ValueCardRowProps) => {
@@ -8,8 +8,10 @@ export const ValueCardRow = (props: ValueCardRowProps) => {
         data,
         onDelete,
         onDone,
+        isHeader = false,
         disabled = false,
         nodeType = '',
+        cardType = 'node',
         disableDelete = false,
         iconSelector = 'delete',
         onChange = () => {},
@@ -28,37 +30,56 @@ export const ValueCardRow = (props: ValueCardRowProps) => {
     return (
         <Stack direction={'row'} justifyContent={'space-between'} sx={{ marginBottom: '12px' }}>
             <Stack>
-                <TextField
-                    required={true}
-                    variant="outlined"
-                    value={dataKey}
-                    disabled={disabled || nodeType === 'main'}
-                    onChange={(e) => {
-                        setDataKey(e.target.value);
-                    }}
-                    onBlur={() => {
-                        setRender(!render);
-                    }}
-                    sx={{
-                        width: '140px',
-                    }}
-                    inputProps={{ style: { height: '15px' } }}
-                />
+                {isHeader ? (
+                    <Autocomplete
+                        options={['Authorization']}
+                        freeSolo
+                        clearIcon={null}
+                        inputValue={data.key}
+                        onInputChange={(event, newInputValue) => {
+                            console.log(event);
+                            onChange({ key: newInputValue, value: data.value });
+                        }}
+                        renderInput={(params) => (
+                            <TextField
+                                {...params}
+                                required
+                                variant="outlined"
+                                disabled={disabled || nodeType === 'main'}
+                                sx={{ width: cardType === 'node' ? '140px' : '520px' }}
+                                inputProps={{ ...params.inputProps, style: { height: '15px' } }}
+                            />
+                        )}
+                    />
+                ) : (
+                    <TextField
+                        required={true}
+                        variant="outlined"
+                        value={data.key}
+                        disabled={disabled || nodeType === 'main'}
+                        onChange={(e) => {
+                            onChange({ key: e.target.value, value: data.value });
+                        }}
+                        sx={{ width: cardType === 'node' ? '140px' : '420px' }}
+                        inputProps={{ style: { height: '15px' } }}
+                    />
+                )}
             </Stack>
+
             <Stack>
                 <TextField
                     required={true}
-                    value={dataValue}
+                    value={data.value}
                     disabled={disabled}
                     variant="outlined"
                     onChange={(e) => {
-                        setDataValue(e.target.value);
+                        onChange({ key: data.key, value: e.target.value });
                     }}
                     onBlur={() => {
                         setRender(!render);
                     }}
                     sx={{
-                        width: '230px',
+                        width: cardType === 'node' ? '230px' : '690px',
                     }}
                     inputProps={{ style: { height: '15px' } }}
                 />

@@ -5,7 +5,6 @@ import { BranchCondition } from '../../interfaces/aggregate-cards';
 // import { Handle, Position } from 'reactflow';
 
 interface BranchProps {
-    index: number;
     branchCondition: BranchCondition;
     positionHandle: Function;
     isConnectable: boolean;
@@ -18,7 +17,7 @@ interface BranchProps {
 
 export const Branch = ({
     branchCondition,
-    index,
+
     onClick,
     // positionHandle,
     // isConnectable,
@@ -28,11 +27,13 @@ export const Branch = ({
     triggerDelayedNodeSaveOnServer,
 }: BranchProps) => {
     const handleDelete = () => {
-        setBranchConditions(
-            branchConditions.filter(
-                (_branchCondition: BranchCondition) => _branchCondition.conditionId !== branchCondition.conditionId,
-            ),
-        );
+        if (branchCondition.conditionType !== 'if') {
+            setBranchConditions(
+                branchConditions.filter(
+                    (_branchCondition: BranchCondition) => _branchCondition.conditionId !== branchCondition.conditionId,
+                ),
+            );
+        }
         setTriggerNodeSaveOnServer(true);
     };
 
@@ -142,7 +143,7 @@ export const Branch = ({
                         inputProps={{ style: { height: '15px' } }}
                     />
                 )}
-                <Delete color={index !== 0 ? 'error' : 'disabled'} onClick={handleDelete} />
+                <Delete color={branchCondition.conditionType === 'if' ? 'disabled' : 'error'} onClick={handleDelete} />
             </Stack>
         </Stack>
     );

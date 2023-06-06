@@ -1,17 +1,24 @@
 import { IconButton, Tab, Tabs, TextField } from '@material-ui/core';
-import React, { useState, useRef, useEffect, useCallback } from 'react';
-
 import { ErrorMessage, Field, Form, Formik } from 'formik';
 import debounce from 'lodash.debounce';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useReward } from 'react-rewards';
 import * as Yup from 'yup';
-
 import apiNameSchema from '../shared/schemas/apiNameSchema';
 //import { ReactComponent as Logo } from "../static/images/logo/connectoLogo.svg";
 import CloseIcon from '@material-ui/icons/Close';
 import Button from '@mui/material/Button';
 import { ReactComponent as Logo } from '../static/images/logo/newconnectoLogo.svg';
 //import InfoIcon from '@mui/icons-material/Info';
+import Box from '@material-ui/core/Box';
+import Checkbox from '@material-ui/core/Checkbox';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import FormGroup from '@material-ui/core/FormGroup';
+import Snackbar from '@material-ui/core/Snackbar';
+import MuiAlert from '@material-ui/lab/Alert';
+import FormControl from '@mui/material/FormControl';
+import Radio from '@mui/material/Radio';
+import RadioGroup from '@mui/material/RadioGroup';
 import aes from 'crypto-js/aes';
 import _ from 'lodash';
 import { useHistory } from 'react-router-dom';
@@ -23,25 +30,14 @@ import LoaderWithMessage from '../shared/components/LoaderWithMessage';
 import TabLabel from '../shared/components/TabLabel';
 import Messages from '../shared/messages';
 import routes from '../shared/routes';
+import { getUserId } from '../shared/storage';
 import { isEmailValid } from '../shared/utils';
 import ProductHunt from '../static/images/ProductHunt.jpg';
-import { useAddProject, useUserProfile, usePricingData } from './addProjectQuery';
+import { useAddProject, usePricingData, useUserProfile } from './addProjectQuery';
 import ConnectDatabase from './ConnectDatabase';
 import NoSpecNoDb from './NoSpecNoDb';
 import projectAtom from './projectAtom';
 import ProjectDetails from './ProjectDetails';
-
-import Box from '@material-ui/core/Box';
-import Checkbox from '@material-ui/core/Checkbox';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import FormGroup from '@material-ui/core/FormGroup';
-import Snackbar from '@material-ui/core/Snackbar';
-import MuiAlert from '@material-ui/lab/Alert';
-import { getUserId } from '../shared/storage';
-
-import FormControl from '@mui/material/FormControl';
-import Radio from '@mui/material/Radio';
-import RadioGroup from '@mui/material/RadioGroup';
 
 const AddProject = ({ onClose, onSuccess }) => {
     const [currentTab, setTab] = useState(0);
@@ -152,7 +148,7 @@ const AddProject = ({ onClose, onSuccess }) => {
         if (formRef.current) {
             console.log('formRef.current.values.name...', formRef.current.values.name);
             /* if (currentTab === 0) {
-        debouncedSetName(formRef.current.values.name);        
+        debouncedSetName(formRef.current.values.name);
       } */
             formRef.current.handleSubmit();
             //console.log("currentTab in HNxt", currentTab, defaultAdvSpec, defaultAdvWorks, defaultMflix)
@@ -808,10 +804,10 @@ const AddProject = ({ onClose, onSuccess }) => {
             <div className = "mr-6">
             <FormControlLabel
               control={
-                
+
                 ( <Checkbox
                   size="small"
-                  // disabled={(sampleProjCnt >= 3 || (currentTab==1 || currentTab ==2 ))}  
+                  // disabled={(sampleProjCnt >= 3 || (currentTab==1 || currentTab ==2 ))}
                   onChange={(e) => handleDefaultFlow(e)}
                   checked={defaultFlow}
                   // onClick={() => isAdvChecked()}
@@ -823,7 +819,7 @@ const AddProject = ({ onClose, onSuccess }) => {
             </div>
             <div>
             <FormControlLabel
-              control={ 
+              control={
                 ( <Checkbox
                   size="small"
                   onChange={(e) => handleAggregateFlow(e)}

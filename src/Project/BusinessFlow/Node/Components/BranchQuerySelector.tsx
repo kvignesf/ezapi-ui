@@ -167,12 +167,14 @@ export const BranchQuerySelector = ({
             if (start === 1) {
                 structure.operator = unitData;
             } else if (start === 2) {
+                structure.ref = unitData;
                 const unitAtom = unitData.split('.');
                 structure.id = unitAtom[0];
                 structure.name = unitAtom[unitAtom.length - 1];
             } else if (start === 3) {
                 structure.conditionKey = unitData;
             } else if (start === 4) {
+                structure.relationRef = unitData;
                 const unitAtom = unitData.split('.');
                 if (unitAtom.length === 1) {
                     structure.value = unitData;

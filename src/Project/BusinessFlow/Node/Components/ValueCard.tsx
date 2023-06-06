@@ -11,11 +11,13 @@ export const ValueCard = (props: ValueCardProps): React.ReactElement => {
         onChange = () => {},
         onDone,
         onDelete,
+        isHeader = false,
         isDrawer = false,
         disableAdd = false,
         onSubmit = () => {},
         disableDelete = false,
         iconSelector = 'delete',
+        cardType = 'node',
         nodeType = '',
     } = props;
 
@@ -30,7 +32,7 @@ export const ValueCard = (props: ValueCardProps): React.ReactElement => {
             sx={{
                 border: '1px solid #C0CCDA',
                 borderRadius: '2.5%',
-                width: '460px',
+                width: cardType === 'node' ? '460px' : '100%',
                 height: isDrawer ? '320px' : '200px',
                 overflow: 'auto',
                 padding: '12px 18px',
@@ -43,7 +45,7 @@ export const ValueCard = (props: ValueCardProps): React.ReactElement => {
                     <div className="flex flex-row justify-start bg-neutral-gray6 rounded-md p-1 py-2 mb-2">
                         <p
                             className="flex-1 text-smallLabel ml-7 text-neutral-gray2 uppercase"
-                            style={{ width: '130px' }}
+                            style={{ width: cardType === 'node' ? '130px' : '390px' }}
                         >
                             Key
                         </p>
@@ -60,6 +62,8 @@ export const ValueCard = (props: ValueCardProps): React.ReactElement => {
                             nodeType={nodeType}
                             data={item}
                             onDone={onDone}
+                            isHeader={isHeader}
+                            cardType={cardType}
                             onDelete={() => {
                                 const updatedData = data.filter((value, index2) => value && index !== index2);
                                 onChange(updatedData);

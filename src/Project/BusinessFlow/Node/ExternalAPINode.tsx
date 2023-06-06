@@ -14,22 +14,21 @@ import {
     TextField,
     Typography,
 } from '@mui/material';
-import LoaderWithMessage from '../../../shared/components/LoaderWithMessage';
-
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse, Method } from 'axios';
 import _ from 'lodash';
 import Qs from 'qs';
-import { SyntheticEvent, useEffect, useState } from 'react';
+import { SyntheticEvent, useContext, useEffect, useState } from 'react';
 import { Handle, Position, useNodeId } from 'reactflow';
-
+import LoaderWithMessage from '../../../shared/components/LoaderWithMessage';
 // @ts-ignore
-import buildURL from 'axios/lib/helpers/buildURL';
-
+import { SocketContext } from '@/Context/socket';
 import drawerCardAtom from '@/shared/atom/drawerCardAtom';
 import selectedNodeAtom from '@/shared/atom/selectedNodeAtom';
 import ErrorWithMessage from '@/shared/components/ErrorWithMessage';
 import { Add } from '@material-ui/icons';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
+// @ts-ignore
+import buildURL from 'axios/lib/helpers/buildURL';
 import { useRecoilState } from 'recoil';
 import ApiIcon from '../../../icons/ApiIcon.svg';
 import Collapse from '../../../icons/collapse.svg';
@@ -43,7 +42,6 @@ import { CommonNodeData, NodeData } from '../interfaces/flow';
 import { ResponseTab } from './Components/ResponseTab';
 import { TreeDropDown } from './Components/TreeDropDown';
 import { ValueCard } from './Components/ValueCard';
-
 const NON_PROXY_HOST_NAMES = ['localhost', '127.0.0.1'];
 
 function getExternalAPIRequestAxiosOptions(
@@ -126,6 +124,19 @@ function getExternalAPIRequestAxiosOptions(
 const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
     const cardId: string = useNodeId() || '';
 
+    const socket = useContext(SocketContext);
+
+    /* useEffect(() => {
+        if (socket) {
+
+            console.log("socket..", socket);
+            console.log("socket connected...", socket.connected);
+            socket.on('filterUpdateDone', (data: any) => {
+                console.log("filterupdateDoneData....", data);
+            });
+        }
+    }, []); */
+
     const initialCommonData: CommonNodeData = {
         name: props.data.commonData.name,
         parentNode: props.data.commonData.parentNode,
@@ -192,6 +203,7 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
     } = useNodeHook({
         nodeId: cardId,
         getUpdatedNodeData: getUpdatedNodeDataFn,
+        collapse: collapse,
     });
     const isError = [undefined, 0].includes(props.data.runData?.output?.status)
         ? undefined
@@ -221,6 +233,10 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
     const handleResponseChange = (_event: React.SyntheticEvent, newValue: string) => {
         setResponseValue(newValue);
     };
+
+    /* useEffect(() => {
+        console.log(executionNumber, 'numbr');
+    }, [executionNumber]); */
 
     function getUpdatedNodeDataFn() {
         const newNodeData = (_.isEmpty(props.data) ? {} : props.data) as NodeData;
@@ -409,7 +425,7 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
     }, [node]);
 
     useEffect(() => {
-        if (!_selectedNode) {
+        if (!_selectedNode && collapse) {
             loadNodeDataFromServer();
         }
     }, [_selectedNode]);
@@ -430,15 +446,10 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                 setShowResponse(hasResponse);
                 setResponseValue('1');
             }
-            setExecutionNumber(executionNumber + 1);
+            //setExecutionNumber(executionNumber + 1);
+            setRequestBodyData(props.data.runData?.body?.data);
         }
     }, [props]);
-    /*  useEffect(() => {
-        setHeaders(runData.headers ?? []);
-        if (displayedUrlValue == '') setDisplayedUrlValue(runData.url ?? '');
-        // if (queryParams?.length == 0) setQueryParams(runData.queryParams ?? []);
-        // if (pathParams?.length == 0) setPathParams(runData.pathParams ?? []);
-    }, [runData]); */
 
     useEffect(() => {
         if (!displayedUrlValue || !isValidUrl(displayedUrlValue) || !isFocused) return;
@@ -631,6 +642,7 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                         </Stack>
                         <TabPanel value={'0'}>
                             <ValueCard
+                                isHeader={true}
                                 value={headers}
                                 disabled={apiType === 'system' ? true : false}
                                 /* onSubmit={() => {

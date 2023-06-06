@@ -13,12 +13,11 @@ import InviteCollaborators from '../shared/components/InviteCollaborators';
 import LoaderWithMessage from '../shared/components/LoaderWithMessage';
 import TabLabel from '../shared/components/TabLabel';
 import routes from '../shared/routes';
+import { getUserId } from '../shared/storage';
 import { isEmailValid } from '../shared/utils';
 import { useAddProject, useUserProfile } from './addProjectQuery';
 import projectAtom from './projectAtom';
 import ProjectDetails from './ProjectDetails';
-
-import { getUserId } from '../shared/storage';
 
 const NoSpecNoDb = ({ onClose, onSuccess, noSpecNoDb, projectFlowType }) => {
     const [currentTab, setTab] = useState(1);

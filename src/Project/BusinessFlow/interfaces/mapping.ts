@@ -21,6 +21,7 @@ export interface StructuredMappingData {
     mappedAttributeAPI: string;
     mappedAttributeDataType: string;
     mappedAttributeRef: string;
+    bearer?: boolean;
 }
 
 export interface AggregateMappingProps {
@@ -76,6 +77,7 @@ export interface MappingData {
     relationName: string;
     relationNode: string;
     relationParent: string;
+    bearer?: boolean;
 }
 
 export interface BranchQueryData {
@@ -91,22 +93,26 @@ export interface BranchQueryData {
 }
 
 export interface ValueCardRowProps {
+    cardType?: string;
     data: KeyValueProps;
     nodeType?: string;
     disableDelete?: boolean;
     onDelete: Function;
+    isHeader?: boolean;
     disabled?: boolean;
     onChange: Function;
     iconSelector?: string;
     onDone?: Function;
 }
 export interface ValueCardProps {
+    cardType?: string;
     disableAdd?: boolean;
     disableDelete?: boolean;
     iconSelector?: string;
     onDone?: Function;
     onDelete?: Function;
     onSubmit?: Function;
+    isHeader?: boolean;
     value?: KeyValueProps[];
     nodeType?: string;
     disabled?: boolean;

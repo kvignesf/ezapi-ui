@@ -1,10 +1,12 @@
+import { selectedExternalNodeType } from '@/shared/atom/selectedNodeAtom';
 import { PrimaryButton, TextButton } from '@/shared/components/AppButton';
 import AppIcon from '@/shared/components/AppIcon';
 import { operationAtomWithMiddleware } from '@/shared/utils';
 import CloseIcon from '@material-ui/icons/Close';
+import { Box, Checkbox, FormControlLabel } from '@mui/material';
 import _ from 'lodash';
 import { useEffect, useState } from 'react';
-import { useRecoilValue } from 'recoil';
+import { useRecoilState, useRecoilValue } from 'recoil';
 import { ConvertResponseData, structureBodyForMapping, structureFormData } from '../../businessFlowHelper';
 import {
     getMappingData,
@@ -31,7 +33,7 @@ const getNodeId = (ref: string, index: number = 0) => {
     return refArray[index];
 };
 
-const prepareTreeNode = (card?: AggregateCard) => {
+const prepareTreeNode = (card?: AggregateCard, selectedNodeCardType?: any) => {
     let currentNode: TreeNode = {
         id: '',
         name: 'parent',
@@ -63,7 +65,12 @@ const prepareTreeNode = (card?: AggregateCard) => {
         }
 
         if (card.runData?.body && card.runData?.body.data) {
-            const structuredBody = structureBodyForMapping(JSON.stringify(card.runData?.body?.data), 'body', card.id);
+            const structuredBody = structureBodyForMapping(
+                selectedNodeCardType,
+                JSON.stringify(card.runData?.body?.data),
+                'body',
+                card.id,
+            );
             currentNode.children.push(structuredBody);
         }
     }
@@ -83,9 +90,12 @@ export const AggregateMapping = ({
     const [currentNodeData, setCurrentNodeData] = useState<TreeNode>();
     const [parentNodeData, setParentNodeData] = useState<TreeNode[]>();
     const [selectedNode, setSelectedNode] = useState<TreeNode>();
+    const [selectedNodeCardType, setSelectedNodeCardType] = useRecoilState(selectedExternalNodeType);
     const [selectedParent, setSelectedParent] = useState<TreeNode>();
     const [selectedData, setSelectedData] = useState<MappingData[]>([]);
     const [triggerUpdate, setTriggerUpdate] = useState(true);
+    const [isCheckedBearer, setIsCheckedBearer] = useState(false);
+
     const operationState = useRecoilValue(operationAtomWithMiddleware);
 
     useEffect(() => {
@@ -204,6 +214,7 @@ export const AggregateMapping = ({
 
                 if (card.runData?.output && card.runData?.output.data) {
                     const structuredOutput = structureBodyForMapping(
+                        selectedNodeCardType,
                         JSON.stringify(card.runData?.output?.data),
                         'output',
                         card.id,
@@ -303,6 +314,8 @@ export const AggregateMapping = ({
                         itemData.parent = item.attributeType ?? '';
                         itemData.name = item.attributeName ?? '';
                         itemData.relationRef = item.mappedAttributeRef ?? '';
+                        itemData.bearer = item.bearer ?? false;
+                        setIsCheckedBearer(item.bearer ?? false);
                         itemData.ref = item.attributeRef ?? '';
                         itemData.relationId = item.mappedAttributeAPI ?? '';
                         itemData.relationName = item.mappedAttributeName ?? '';
@@ -344,15 +357,16 @@ export const AggregateMapping = ({
             }
 
             // set left hand side tree
-            setCurrentNodeData(prepareTreeNode(currentAggregateCard));
+            setCurrentNodeData(prepareTreeNode(currentAggregateCard, selectedNodeCardType));
 
             // set right hand side tree
             filteredAggregateCards.forEach((aggregateCard: any) => {
-                const currentNode = prepareTreeNode(aggregateCard);
+                const currentNode = prepareTreeNode(aggregateCard, selectedNodeCardType);
 
                 if (aggregateCard.id !== nodeId) {
                     if (aggregateCard?.runData?.output && aggregateCard?.runData?.output.data) {
                         const structuredOutput = structureBodyForMapping(
+                            selectedNodeCardType,
                             JSON.stringify(aggregateCard?.runData?.output?.data),
                             'output',
                             aggregateCard.id,
@@ -485,7 +499,7 @@ export const AggregateMapping = ({
                     </p>
                     {parentNodeData && (
                         <MappingTree
-                            key={`${selectedData.length} + ${triggerUpdate}`}
+                            //key={`${selectedData.length} + ${triggerUpdate}`}
                             disable={selectedData.length === 0}
                             data={parentNodeData}
                             isCurrentNode={false}
@@ -507,6 +521,37 @@ export const AggregateMapping = ({
                 >
                     Cancel
                 </TextButton>
+
+                {selectedData.some((item) => item.name === 'Authorization') && (
+                    <Box display="flex" alignItems="center" style={{ marginTop: '20px' }}>
+                        <label style={{ fontWeight: 'bold', marginRight: '20px' }}>
+                            Add Bearer prefix to Authorization value
+                        </label>
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    checked={isCheckedBearer}
+                                    onChange={(event) => {
+                                        const checked = event.target.checked;
+                                        setIsCheckedBearer(checked);
+                                        setSelectedData(
+                                            selectedData.map((item) => {
+                                                if (item.name === 'Authorization') {
+                                                    return {
+                                                        ...item,
+                                                        bearer: checked,
+                                                    };
+                                                }
+                                                return item;
+                                            }),
+                                        );
+                                    }}
+                                />
+                            }
+                            label=""
+                        />
+                    </Box>
+                )}
 
                 {/*@ts-ignore */}
 
@@ -547,6 +592,7 @@ export const AggregateMapping = ({
                                             : 'string',
                                         mappedAttributeName: unitData.relationName,
                                         mappedAttributeType: unitData.relationParent,
+                                        bearer: unitData.bearer,
                                         mappedAttributeRef: unitData.relationRef,
                                         mappedAttributeAPI: unitData.relationId,
                                         mappedAttributeDataType: 'string',
@@ -582,6 +628,7 @@ export const AggregateMapping = ({
                                         mappedAttributeName: unitData.relationName,
                                         mappedAttributeType: unitData.relationParent,
                                         mappedAttributeAPI: unitData.relationId,
+                                        bearer: unitData.bearer,
                                         mappedAttributeDataType: 'string',
                                     };
 

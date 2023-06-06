@@ -90,6 +90,7 @@
     "lint": "eslint --cache \"src/**/*.{js,jsx,ts,tsx}\"",
     "lint:fix": "eslint --cache --fix \"src/**/*.{js,jsx,ts,tsx}\"",
     "start": ".\\node_modules\\.bin\\webpack serve --port 3003 --node-env dev",
+    "start-win":"webpack serve --node-env dev",
     "start:prod": "set NODE_OPTIONS=--openssl-legacy-provider && ./node_modules/.bin/webpack serve --mode production --node-env prod",
     "test": "jest --passWithNoTests",
     "build": "./node_modules/.bin/webpack --node-env dev",
