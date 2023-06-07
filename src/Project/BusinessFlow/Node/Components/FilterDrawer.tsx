@@ -11,8 +11,8 @@ import { NodeData } from '../../interfaces/flow';
 import { FilterDrawerProps } from '../../interfaces/mapping';
 import { fetchAllAggregateCards } from '../../services';
 import { prepareNodeFromAggregateCardResponse } from '../../transformers';
-import { FilterResponse } from './filterResponse';
 import { MappingTree } from './MappingTree';
+import { FilterResponse } from './filterResponse';
 
 /* const getNodeId = (ref: string, index: number = 0) => {
     const refArray = ref.split('.');
@@ -117,6 +117,7 @@ export const FilterDrawer = ({ onClose, nodeId, operationId, projectId, type, in
                 JSON.stringify(previousAggregateCard?.runData?.output?.data),
                 'output',
                 previousAggregateCard.id,
+                'filter',
             );
             setCurrentNodeData(structuredOutput);
         }

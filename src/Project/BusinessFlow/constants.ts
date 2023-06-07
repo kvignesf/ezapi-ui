@@ -40,6 +40,7 @@ export const BRANCH_DATA_CONDITON_FIELDS: string[] = [
     'targetNodeIds',
 ];
 export const MAIN_DATA_CONDITON_FIELDS: string[] = ['headers', 'queryParams', 'pathParams', 'body'];
+export const RESPONSE_PAYLOAD_FIELDS: string[] = ['selectedCard'];
 
 export const FILTER_DATA_CONDITON_FIELDS: string[] = [
     'filtertype',
@@ -66,6 +67,7 @@ const START_NODE = 'startNode';
 const SELECTION_NODE = 'selectionNode';
 const EXTERNAL_API_NODE = 'externalAPINode';
 const MAIN_NODE = 'mainNode';
+const RESPONSE_PAYLOAD_NODE = 'responsePayloadNode';
 
 export const NODE_TYPES = {
     PAYLOAD_BUILDER_NODE,
@@ -76,6 +78,7 @@ export const NODE_TYPES = {
     SELECTION_NODE,
     EXTERNAL_API_NODE,
     MAIN_NODE,
+    RESPONSE_PAYLOAD_NODE,
 };
 
 const MAIN_NODE_ID = 'main-node';

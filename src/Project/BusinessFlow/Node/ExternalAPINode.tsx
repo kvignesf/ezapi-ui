@@ -209,6 +209,10 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
         ? undefined
         : props.data.runData?.output?.success === false;
 
+    /* const isError = [undefined, 200, 201].includes(props.data.runData?.output?.status)
+        ? false
+        : true */
+
     const handleChange = (_event: React.SyntheticEvent, newValue: string) => {
         nullChecker();
         /* if (newValue === '1') {
@@ -431,6 +435,7 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
     }, [_selectedNode]);
 
     useEffect(() => {
+        console.log('output.status', props.data.runData?.output?.status);
         if (props && !_.isEmpty(props.data.commonData)) {
             setCommonData({
                 ...props.data.commonData,
@@ -940,7 +945,7 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                                     >
                                         <ResponseTab
                                             message={''}
-                                            isError={isError}
+                                            isError={runData?.output?.status != 200}
                                             value={runData?.output?.data}
                                             disabled={apiType === 'system' ? true : false}
                                         />
@@ -969,7 +974,7 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                             <Stack width="100%" key={`response-${runData?.output?.status || 0}-${executionNumber}`}>
                                 <ResponseTab
                                     message={''}
-                                    isError={isError}
+                                    isError={runData?.output?.status != 200}
                                     isResponse={true}
                                     value={runData?.output?.data}
                                     disabled={apiType === 'system' ? true : false}

@@ -2,26 +2,16 @@
 import responseMapperAtom from '@/shared/atom/reponseMapperAtom';
 import { operationAtomWithMiddleware } from '@/shared/utils';
 import { Button } from '@material-ui/core';
-import {
-    Card,
-    FormControl,
-    FormControlLabel,
-    InputLabel,
-    MenuItem,
-    Radio,
-    RadioGroup,
-    Select,
-    Stack,
-    Typography,
-} from '@mui/material';
-import React, { useEffect, useState } from 'react';
+import { Card, FormControlLabel, Radio, RadioGroup, Stack, Typography } from '@mui/material';
+import Autocomplete from '@mui/material/Autocomplete';
+import TextField from '@mui/material/TextField';
+import React, { SyntheticEvent, useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 import { NodeProps } from 'reactflow';
-
 import { useRecoilState } from 'recoil';
+import Json from '../../../icons/Json.svg';
 import Collapse from '../../../icons/collapse.svg';
 import DialogIcon from '../../../icons/dialogIcon.svg';
-import Json from '../../../icons/Json.svg';
 import { NODE_TYPES } from '../constants';
 import { AggregateCard } from '../interfaces';
 import { fetchAllAggregateCards } from '../services';
@@ -37,14 +27,14 @@ const PayloadNode = (props: PayloadNodeProps): React.ReactElement => {
         data: { isCollapseByDefault = false },
     } = props;
 
-    const [collapse, setCollapse] = useState(isCollapseByDefault);
+    const [collapse, setCollapse] = useState(false);
     const [isFullMapping, setIsFullMapping] = useState(true);
     const [showResponseMapping, setShowResponseMapping] = useRecoilState(responseMapperAtom);
     const { projectId = '' }: { projectId: string } = useParams();
     const [operationData, _] = useRecoilState(operationAtomWithMiddleware);
     const operationId = operationData?.operation?.operationId;
     const [dropDownData, setDropDownData] = useState<DropDownProps[]>([]);
-    const [selectedItem, setSelectedItem] = useState('');
+    const [selectedItem, setSelectedItem] = useState<DropDownProps | null>(null);
 
     const prepareData = async () => {
         const allCardsDataFromServer = await fetchAllAggregateCards({ operationId, projectId });
@@ -60,8 +50,8 @@ const PayloadNode = (props: PayloadNodeProps): React.ReactElement => {
     };
 
     useEffect(() => {
-        prepareData();
-    }, []);
+        if (collapse) prepareData();
+    }, [collapse]);
 
     return (
         <Card sx={{ width: '390px' }}>
@@ -97,7 +87,7 @@ const PayloadNode = (props: PayloadNodeProps): React.ReactElement => {
                     <img src={DialogIcon} style={{ width: '24px', height: '24px', alignSelf: 'center' }} />
                 </Stack>
             </Stack>
-            {!collapse && (
+            {collapse && (
                 <Stack justifyContent={'space-between'} sx={{ padding: '12px 16px 24px 16px', height: '188px' }}>
                     <RadioGroup
                         aria-labelledby="controlled-radio-buttons-group"
@@ -113,48 +103,41 @@ const PayloadNode = (props: PayloadNodeProps): React.ReactElement => {
                         </Stack>
                     </RadioGroup>
 
-                    <FormControl disabled={!isFullMapping}>
-                        <InputLabel id="choose-from-label">Choose from...</InputLabel>
-                        <Select
-                            required={true}
+                    {isFullMapping && (
+                        <Autocomplete
                             value={selectedItem}
-                            variant="outlined"
-                            labelId="choose-from-label"
-                            label="Choose from..."
-                            onChange={(e) => {
-                                setSelectedItem(e.target.value);
+                            options={dropDownData}
+                            getOptionLabel={(option) => option.name}
+                            onChange={(_event: SyntheticEvent, newValue) => {
+                                setSelectedItem(newValue);
                             }}
-                            style={{
-                                height: '48px',
-                            }}
-                            disabled={!isFullMapping}
-                        >
-                            {dropDownData.map((value) => {
-                                return (
-                                    <MenuItem value={value.id}>
-                                        <p className="text-overline2">{value.name}</p>
-                                    </MenuItem>
-                                );
-                            })}
-                        </Select>
-                    </FormControl>
+                            clearIcon={null}
+                            openOnFocus={true}
+                            fullWidth={true}
+                            style={{ width: '300px' }}
+                            renderInput={(params) => <TextField {...params} label="Select a Card..." />}
+                        />
+                    )}
                     <Stack width={'100%'} direction={'row-reverse'} paddingTop={'24px'}>
                         {isFullMapping ? (
                             <Button
                                 style={{ width: '100px', background: '#1565C0', color: '#FFF' }}
                                 variant="contained"
+                                onClick={() => {
+                                    // setShowResponseMapping(true);
+                                }}
                             >
                                 SAVE
                             </Button>
                         ) : (
                             <Button
-                                style={{ width: '100px', background: '#1565C0', color: '#FFF' }}
+                                style={{ width: '200px', background: '#1565C0', color: '#FFF' }}
                                 variant="contained"
                                 onClick={() => {
                                     setShowResponseMapping(true);
                                 }}
                             >
-                                PROCEED
+                                Add Response Mapping
                             </Button>
                         )}
                     </Stack>

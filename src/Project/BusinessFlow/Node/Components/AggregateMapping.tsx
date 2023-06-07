@@ -66,10 +66,10 @@ const prepareTreeNode = (card?: AggregateCard, selectedNodeCardType?: any) => {
 
         if (card.runData?.body && card.runData?.body.data) {
             const structuredBody = structureBodyForMapping(
-                selectedNodeCardType,
                 JSON.stringify(card.runData?.body?.data),
                 'body',
                 card.id,
+                selectedNodeCardType,
             );
             currentNode.children.push(structuredBody);
         }
@@ -214,10 +214,10 @@ export const AggregateMapping = ({
 
                 if (card.runData?.output && card.runData?.output.data) {
                     const structuredOutput = structureBodyForMapping(
-                        selectedNodeCardType,
                         JSON.stringify(card.runData?.output?.data),
                         'output',
                         card.id,
+                        selectedNodeCardType,
                     );
                     currentNode.children.push(structuredOutput);
                 }
@@ -366,10 +366,10 @@ export const AggregateMapping = ({
                 if (aggregateCard.id !== nodeId) {
                     if (aggregateCard?.runData?.output && aggregateCard?.runData?.output.data) {
                         const structuredOutput = structureBodyForMapping(
-                            selectedNodeCardType,
                             JSON.stringify(aggregateCard?.runData?.output?.data),
                             'output',
                             aggregateCard.id,
+                            selectedNodeCardType,
                         );
                         currentNode.children.push(structuredOutput);
                     }

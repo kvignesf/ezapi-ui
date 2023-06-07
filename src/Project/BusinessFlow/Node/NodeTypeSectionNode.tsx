@@ -169,6 +169,19 @@ function NodeTypeSectionNode(props: NodeProps) {
                 break;
             case 'PAYLOAD_BUILDER':
                 setNodeType(nodeId, NODE_TYPES.PAYLOAD_BUILDER_NODE, {});
+                setUpdateNodeDataProps({
+                    type: NODE_TYPES.PAYLOAD_BUILDER_NODE,
+                    data: {
+                        commonData: {
+                            ...props.data.commonData,
+                            name: `Payload Response ${numberOfNodes(NODE_TYPES.FILTER_NODE) + 1}`,
+                        },
+                        runData: {},
+                        mainData: {},
+                        filterData: {},
+                        responsePayloadData: {},
+                    },
+                });
                 break;
             default:
                 break;

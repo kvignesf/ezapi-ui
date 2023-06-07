@@ -40,12 +40,6 @@ import DBMappingDrawer from './DBMappingDrawer';
 import ErrorDrawer from './ErrorDrawer';
 import Match from './Match';
 import OperationDetails from './OperationDetails';
-import {
-    useFetchProjectDetails,
-    useGetMandMappingTableData,
-    useSubmitProject,
-    useVerifyProject,
-} from './projectQueries';
 import ProjectVerificationErrors from './ProjectVerificationErrors';
 import PublishProjectMessage from './PublishProjectMessage';
 import RepublishInfo from './RepublishInfo';
@@ -53,6 +47,12 @@ import Resources from './Resources/Resources';
 import SaveOperationWarning from './SaveOperationWarning';
 import Simulate from './Simulate.jsx';
 import UserRoleProvider from './UserRoleContext';
+import {
+    useFetchProjectDetails,
+    useGetMandMappingTableData,
+    useSubmitProject,
+    useVerifyProject,
+} from './projectQueries';
 
 const Project = () => {
     const acc_token = getAccessToken();
@@ -251,8 +251,10 @@ const Project = () => {
     }, [projectDetailsError]);
 
     useEffect(() => {
+        console.log('projectDetails', projectDetails?.projectType);
+
         if (verifyData && verifyData.message.length == 0) {
-            if (projectDetails?.projectType !== 'noinput') {
+            if (projectDetails?.projectType !== 'noinput' || projectDetails?.projectType !== 'aggregate') {
                 fetchTables({ projectId });
                 setDisplayEntityMapping(true);
             } else {
@@ -1009,8 +1011,12 @@ const Project = () => {
                         console.log("without password");
                         submitProject();
                       }
-                    } */
-                                        verifyProject({ projectId, newProjectDetails });
+                    } */ console.log('projectDetails2', projectDetails?.projectType);
+                                        if (projectDetails?.projectType !== 'aggregate') {
+                                            verifyProject({ projectId, newProjectDetails });
+                                        } else {
+                                            publish({ projectId, projectDetails });
+                                        }
                                     }}
                                 >
                                     {getPublishButtonText()}

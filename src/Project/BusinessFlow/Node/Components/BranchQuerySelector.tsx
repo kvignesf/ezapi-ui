@@ -237,6 +237,7 @@ export const BranchQuerySelector = ({
                         JSON.stringify(aggregateCard?.runData?.output?.data),
                         'output',
                         aggregateCard.id,
+                        'branch',
                     );
                     currentNode.children.push(structuredOutput);
                 }

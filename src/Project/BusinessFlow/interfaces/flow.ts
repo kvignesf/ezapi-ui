@@ -1,5 +1,5 @@
 import { Edge, Node as RFNode, NodeProps as RFNodeProps } from 'reactflow';
-import { BranchData, FilterData, MainData } from './aggregate-cards';
+import { BranchData, FilterData, MainData, ResponsePayloadData } from './aggregate-cards';
 import { ExternalAPI } from './external-api';
 
 /** Node & Edges Level */
@@ -16,6 +16,7 @@ export interface NodeData {
     runData?: ExternalAPI;
     branchData?: BranchData;
     mainData?: MainData;
+    responsePayloadData?: ResponsePayloadData;
     filterData?: FilterData;
 }
 

@@ -4,8 +4,13 @@ import { Edge, XYPosition } from 'reactflow';
 import { NODE_TYPES } from '../constants';
 import { AggregateCard, Node } from '../interfaces';
 import { NodeData } from '../interfaces/flow';
-import { prepareBranchData, prepareExternalAPIData, prepareFilterData, prepareMainData } from './utils';
-
+import {
+    prepareBranchData,
+    prepareExternalAPIData,
+    prepareFilterData,
+    prepareMainData,
+    prepareResponsePayloadData,
+} from './utils';
 // eslint-disable-next-line no-underscore-dangle
 const _prepareBaseNodeAttributes = (responseData: any): any => {
     const nodeData: NodeData = {
@@ -31,6 +36,10 @@ const _prepareBaseNodeAttributes = (responseData: any): any => {
         filterData:
             responseData.type === NODE_TYPES.FILTER_NODE && !_.isEmpty(responseData.filterData)
                 ? prepareFilterData(responseData.filterData)
+                : {},
+        responsePayloadData:
+            responseData.type === NODE_TYPES.RESPONSE_PAYLOAD_NODE && !_.isEmpty(responseData.responsePayloadData)
+                ? prepareResponsePayloadData(responseData.responsePayloadData)
                 : {},
     };
 

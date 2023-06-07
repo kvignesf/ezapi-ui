@@ -5,9 +5,10 @@ import {
     EXTERNAL_API_NODE_DATA_FIELDS,
     FILTER_DATA_CONDITON_FIELDS,
     MAIN_DATA_CONDITON_FIELDS,
+    RESPONSE_PAYLOAD_FIELDS,
 } from '../constants';
 import { ExternalAPI } from '../interfaces';
-import { BranchCondition, BranchData, FilterData, MainData } from '../interfaces/aggregate-cards';
+import { BranchCondition, BranchData, FilterData, MainData, ResponsePayloadData } from '../interfaces/aggregate-cards';
 
 export const prepareExternalAPIData = (nodeData: any): ExternalAPI => {
     const data: any = {};
@@ -52,6 +53,18 @@ export const prepareMainData = (nodeData: any): MainData => {
         });
     }
     return data as MainData;
+};
+
+export const prepareResponsePayloadData = (nodeData: any): ResponsePayloadData => {
+    const data: any = {};
+    if (_.isObject(nodeData) && !_.isEmpty(nodeData)) {
+        RESPONSE_PAYLOAD_FIELDS.forEach((dataField: string) => {
+            if (dataField in nodeData) {
+                data[dataField] = (nodeData as any)[dataField];
+            }
+        });
+    }
+    return data as ResponsePayloadData;
 };
 
 export const prepareFilterData = (nodeData: any): FilterData => {

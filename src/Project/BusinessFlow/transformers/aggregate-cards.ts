@@ -1,6 +1,11 @@
 import { AggregateCard, Node } from '../interfaces';
-import { prepareBranchData, prepareExternalAPIData, prepareFilterData, prepareMainData } from './utils';
-
+import {
+    prepareBranchData,
+    prepareExternalAPIData,
+    prepareFilterData,
+    prepareMainData,
+    prepareResponsePayloadData,
+} from './utils';
 export const prepareAggregateCard = (responseData: any): AggregateCard => {
     const aggregateCard: AggregateCard = {
         id: responseData['_id'],
@@ -13,6 +18,7 @@ export const prepareAggregateCard = (responseData: any): AggregateCard => {
         runData: prepareExternalAPIData(responseData.runData),
         branchData: prepareBranchData(responseData.branchData),
         mainData: prepareMainData(responseData.mainData),
+        responsePayloadData: prepareResponsePayloadData(responseData.responsePayloadData),
         filterData: prepareFilterData(responseData.filterData),
         // systemApi: node.systemApi,
     };

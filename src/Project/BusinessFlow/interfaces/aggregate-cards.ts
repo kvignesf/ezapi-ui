@@ -20,6 +20,10 @@ export interface MainData {
     body?: any;
 }
 
+export interface ResponsePayloadData {
+    selectedCard?: KeyValueProps[];
+}
+
 export interface FilterRowData {
     index?: number;
     attributeRef: string;
@@ -47,6 +51,7 @@ export interface NewAggregateCard {
     runData?: ExternalAPI;
     branchData?: BranchData;
     mainData?: MainData;
+    responsePayloadData?: ResponsePayloadData;
     filterData?: FilterData;
     systemApi?: {
         operationDataId: {

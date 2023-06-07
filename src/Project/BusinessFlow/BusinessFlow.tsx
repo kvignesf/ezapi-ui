@@ -186,6 +186,7 @@ const createNewAggregateCard = async ({
             conditions: [],
         },
         mainData: {},
+        responsePayloadData: {},
     };
     const createdAggregateCard = await createAggregateCard(newAggregateCard, source);
     const newNode = prepareNodeFromAggregateCard(createdAggregateCard, position);
