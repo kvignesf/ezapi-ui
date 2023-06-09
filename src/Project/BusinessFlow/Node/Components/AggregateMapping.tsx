@@ -91,6 +91,7 @@ export const AggregateMapping = ({
     const [parentNodeData, setParentNodeData] = useState<TreeNode[]>();
     const [selectedNode, setSelectedNode] = useState<TreeNode>();
     const [selectedNodeCardType, setSelectedNodeCardType] = useRecoilState(selectedExternalNodeType);
+
     const [selectedParent, setSelectedParent] = useState<TreeNode>();
     const [selectedData, setSelectedData] = useState<MappingData[]>([]);
     const [triggerUpdate, setTriggerUpdate] = useState(true);
@@ -122,7 +123,6 @@ export const AggregateMapping = ({
             }
 
             selectedData[size - 1] = data;
-
             setSelectedData(selectedData);
             setTriggerUpdate(!triggerUpdate);
             setSelectedNode(undefined);
@@ -201,7 +201,8 @@ export const AggregateMapping = ({
             const parentNode: TreeNode[] = [];
 
             const filteredAggregateCards = allCardsDataFromServer?.filter(
-                (card: AggregateCard) => card.type === NODE_TYPES.EXTERNAL_API_NODE,
+                (card: AggregateCard) =>
+                    card.type === NODE_TYPES.EXTERNAL_API_NODE || card.type === NODE_TYPES.EXTERNAL_API_NODE_LOOP,
             );
             setAllCards(filteredAggregateCards);
             filteredAggregateCards.forEach((card: AggregateCard) => {
@@ -353,6 +354,7 @@ export const AggregateMapping = ({
                         mappingResponseData.push(itemData);
                     });
                 }
+
                 setSelectedData(mappingResponseData);
             }
 
@@ -499,7 +501,7 @@ export const AggregateMapping = ({
                     </p>
                     {parentNodeData && (
                         <MappingTree
-                            //key={`${selectedData.length} + ${triggerUpdate}`}
+                            // key={`${selectedData.length} + ${triggerUpdate}`}
                             disable={selectedData.length === 0}
                             data={parentNodeData}
                             isCurrentNode={false}
@@ -521,7 +523,6 @@ export const AggregateMapping = ({
                 >
                     Cancel
                 </TextButton>
-
                 {selectedData.some((item) => item.name === 'Authorization') && (
                     <Box display="flex" alignItems="center" style={{ marginTop: '20px' }}>
                         <label style={{ fontWeight: 'bold', marginRight: '20px' }}>
@@ -593,6 +594,7 @@ export const AggregateMapping = ({
                                         mappedAttributeName: unitData.relationName,
                                         mappedAttributeType: unitData.relationParent,
                                         bearer: unitData.bearer,
+
                                         mappedAttributeRef: unitData.relationRef,
                                         mappedAttributeAPI: unitData.relationId,
                                         mappedAttributeDataType: 'string',

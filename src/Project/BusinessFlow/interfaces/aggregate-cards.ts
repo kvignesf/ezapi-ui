@@ -21,7 +21,9 @@ export interface MainData {
 }
 
 export interface ResponsePayloadData {
-    selectedCard?: KeyValueProps[];
+    customMapping?: boolean;
+    cardId?: string;
+    data?: any;
 }
 
 export interface FilterRowData {
@@ -41,6 +43,7 @@ export interface FilterData {
     replacedFields?: FilterRowData[];
     excludedFields?: FilterRowData[];
 }
+
 export interface NewAggregateCard {
     projectId: string;
     operationId: string;

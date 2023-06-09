@@ -6,6 +6,7 @@ import {
     prepareMainData,
     prepareResponsePayloadData,
 } from './utils';
+
 export const prepareAggregateCard = (responseData: any): AggregateCard => {
     const aggregateCard: AggregateCard = {
         id: responseData['_id'],
@@ -42,6 +43,7 @@ export const prepareAggregateCardFromNode = (node: Node, projectId: string, oper
         branchData: prepareBranchData(node.data.branchData),
         mainData: prepareMainData(node.data.mainData),
         filterData: prepareFilterData(node.data.filterData),
+        responsePayloadData: prepareResponsePayloadData(node.data.responsePayloadData),
         // systemApi: node.systemApi,
     };
     return aggregateCard;

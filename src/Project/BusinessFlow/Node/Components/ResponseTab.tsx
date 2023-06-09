@@ -10,6 +10,7 @@ interface ResponseTabProps {
     message?: string;
     isError?: boolean | undefined;
     onChange?: Function;
+    editable?: boolean;
 }
 
 export const ResponseTab = ({
@@ -18,6 +19,7 @@ export const ResponseTab = ({
     displayTitle = false,
     disabled = false,
     message = '',
+    editable = true,
     isError = undefined,
     onChange = () => {},
 }: ResponseTabProps): React.ReactElement => {
@@ -59,7 +61,7 @@ export const ResponseTab = ({
                         padding: ' 2px 16px',
                     }}
                 >
-                    {displayTitle ? 'Request Body' : ''}
+                    {displayTitle ? 'Request Body' : 'Response Body'}
                 </Stack>
             )}
             <Stack sx={{ padding: '8px' }}>
@@ -76,6 +78,9 @@ export const ResponseTab = ({
                         height="300px"
                         defaultLanguage="json"
                         // defaultValue={displayValue}
+                        options={{
+                            readOnly: !editable,
+                        }}
                         value={displayValue}
                         onChange={(event) => {
                             handleEditorChange(event);

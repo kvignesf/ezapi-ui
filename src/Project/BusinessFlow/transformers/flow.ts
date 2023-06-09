@@ -11,6 +11,7 @@ import {
     prepareMainData,
     prepareResponsePayloadData,
 } from './utils';
+
 // eslint-disable-next-line no-underscore-dangle
 const _prepareBaseNodeAttributes = (responseData: any): any => {
     const nodeData: NodeData = {
@@ -22,6 +23,7 @@ const _prepareBaseNodeAttributes = (responseData: any): any => {
         },
         runData:
             responseData.type === NODE_TYPES.EXTERNAL_API_NODE ||
+            responseData.type === NODE_TYPES.EXTERNAL_API_NODE_LOOP ||
             (NODE_TYPES.MAIN_NODE && !_.isEmpty(responseData.runData))
                 ? prepareExternalAPIData(responseData.runData)
                 : {},
@@ -29,10 +31,6 @@ const _prepareBaseNodeAttributes = (responseData: any): any => {
             responseData.type === NODE_TYPES.BRANCH_NODE && !_.isEmpty(responseData.branchData)
                 ? prepareBranchData(responseData.branchData)
                 : { conditions: [] },
-        mainData:
-            responseData.type === NODE_TYPES.MAIN_NODE && !_.isEmpty(responseData.mainData)
-                ? prepareMainData(responseData.mainData)
-                : {},
         filterData:
             responseData.type === NODE_TYPES.FILTER_NODE && !_.isEmpty(responseData.filterData)
                 ? prepareFilterData(responseData.filterData)
@@ -40,6 +38,10 @@ const _prepareBaseNodeAttributes = (responseData: any): any => {
         responsePayloadData:
             responseData.type === NODE_TYPES.RESPONSE_PAYLOAD_NODE && !_.isEmpty(responseData.responsePayloadData)
                 ? prepareResponsePayloadData(responseData.responsePayloadData)
+                : {},
+        mainData:
+            responseData.type === NODE_TYPES.MAIN_NODE && !_.isEmpty(responseData.mainData)
+                ? prepareMainData(responseData.mainData)
                 : {},
     };
 
@@ -120,6 +122,7 @@ export const prepareNodeFromAggregateCard = (card: AggregateCard, position: XYPo
         branchData: prepareBranchData(card.branchData),
         mainData: prepareMainData(card.mainData),
         filterData: prepareFilterData(card.filterData),
+        responsePayloadData: prepareResponsePayloadData(card.responsePayloadData),
     };
 
     const node: Node = {

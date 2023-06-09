@@ -42,6 +42,7 @@ import { CommonNodeData, NodeData } from '../interfaces/flow';
 import { ResponseTab } from './Components/ResponseTab';
 import { TreeDropDown } from './Components/TreeDropDown';
 import { ValueCard } from './Components/ValueCard';
+
 const NON_PROXY_HOST_NAMES = ['localhost', '127.0.0.1'];
 
 function getExternalAPIRequestAxiosOptions(
@@ -75,7 +76,6 @@ function getExternalAPIRequestAxiosOptions(
 
     const paramsSerializer = (params: any) => Qs.stringify(params, { arrayFormat: 'repeat' });
     let url = buildURL(displayedUrlValue, queryParamsValues, paramsSerializer);
-
     Object.keys(pathParamsValues).forEach((key) => {
         url = url.replace(`:${key}`, pathParamsValues[key]);
     });
@@ -93,9 +93,8 @@ function getExternalAPIRequestAxiosOptions(
                 ? requestBodyData
                 : formDataToObject(convertObjectToFormData(requestBodyData))
             : {},
-        //params: paramsSerializer(queryParamsValues),
+        // params: paramsSerializer(queryParamsValues),
     };
-
     let isValidProxyRequest = true;
 
     if (
@@ -126,17 +125,6 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
 
     const socket = useContext(SocketContext);
 
-    /* useEffect(() => {
-        if (socket) {
-
-            console.log("socket..", socket);
-            console.log("socket connected...", socket.connected);
-            socket.on('filterUpdateDone', (data: any) => {
-                console.log("filterupdateDoneData....", data);
-            });
-        }
-    }, []); */
-
     const initialCommonData: CommonNodeData = {
         name: props.data.commonData.name,
         parentNode: props.data.commonData.parentNode,
@@ -161,7 +149,6 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
     const [commonData, setCommonData] = useState<CommonNodeData>(initialCommonData);
     const [runData, setRunData] = useState<ExternalAPI>(initialRunData);
 
-    //const [urlValue, setUrlValue] = useState<string>('');
     const [displayedUrlValue, setDisplayedUrlValue] = useState(initialRunData.url ?? '');
     const [isFocused, setIsFocused] = useState(false);
 
@@ -209,18 +196,9 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
         ? undefined
         : props.data.runData?.output?.success === false;
 
-    /* const isError = [undefined, 200, 201].includes(props.data.runData?.output?.status)
-        ? false
-        : true */
-
     const handleChange = (_event: React.SyntheticEvent, newValue: string) => {
         nullChecker();
-        /* if (newValue === '1') {
-            updateQueryParamsFromUrl();
-        }
-        if (newValue === '2') {
-            updatePathParamsFromUrl();
-        } */
+
         setValue(newValue);
     };
     const nullChecker = () => {
@@ -228,19 +206,12 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
             setHeaders([]);
         }
         if (queryParams?.length == 1 && queryParams[0].key === '' && queryParams[0].value === '') {
-            //const currentUrl = new URL(displayedUrlValue ?? '');
-            //currentUrl.search = new URLSearchParams({}).toString();
-            //setDisplayedUrlValue(currentUrl.toString());
             setQueryParams([]);
         }
     };
     const handleResponseChange = (_event: React.SyntheticEvent, newValue: string) => {
         setResponseValue(newValue);
     };
-
-    /* useEffect(() => {
-        console.log(executionNumber, 'numbr');
-    }, [executionNumber]); */
 
     function getUpdatedNodeDataFn() {
         const newNodeData = (_.isEmpty(props.data) ? {} : props.data) as NodeData;
@@ -270,7 +241,6 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
             return true;
         } catch (err) {
             setPathParams([]);
-            //setQueryParams([]);
             return false;
         }
     }
@@ -286,46 +256,6 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
             triggerDelayedNodeSaveOnServer(delayTimeSet);
         }
     }
-
-    /* function setUrl(newUrl: string) {
-        setRunData({
-            ...runData,
-            url: newUrl,
-            headers: headers,
-            queryParams: queryParams,
-            pathParams: pathParams,
-            body: {
-                data:
-                    typeof requestBodyData === 'object'
-                        ? requestBodyData
-                        : formDataToObject(convertObjectToFormData(requestBodyData)),
-            },
-            output: { ...DEFAULT_API_RESPONSE },
-        });
-        //nullChecker();
-
-        triggerDelayedNodeSaveOnServer(delayTimeSet);
-    }
-
-    function setHeadersData(newHeaders: KeyValueProps[]) {
-        if (newHeaders) {
-            setRunData({ ...runData, headers: newHeaders, output: { ...DEFAULT_API_RESPONSE } });
-            triggerDelayedNodeSaveOnServer(delayTimeSet);
-        }
-    } */
-
-    /* function setRequestData(newRequestData: string | object) {
-        if (newRequestData) {
-            setRunData({
-                ...runData,
-                body: {
-                    data: formDataToObject(convertObjectToFormData(newRequestData)),
-                },
-                output: { ...DEFAULT_API_RESPONSE },
-            });
-            triggerDelayedNodeSaveOnServer(delayTimeSet);
-        }
-    } */
 
     function toggleCollapse() {
         setCollapse(!collapse);
@@ -359,6 +289,7 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                         statusText: response.statusText,
                     },
                 };
+
                 setRunData(newNodeData);
                 triggerDelayedNodeSaveOnServer(delayTimeSet);
             })
@@ -415,7 +346,6 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
             setDisplayedUrlValue(node.data.runData.url ?? '');
             setHeaders(node.data.runData.headers ?? []);
             setQueryParams(node.data.runData.queryParams ?? []);
-            console.log('setting initial values=> ', node.data.runData.pathParams);
             setPathParams(node.data.runData.pathParams ?? []);
             setRequestBodyData(node.data.runData.body?.data ?? {});
             const outputInfo = node.data.runData?.output;
@@ -435,7 +365,6 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
     }, [_selectedNode]);
 
     useEffect(() => {
-        console.log('output.status', props.data.runData?.output?.status);
         if (props && !_.isEmpty(props.data.commonData)) {
             setCommonData({
                 ...props.data.commonData,
@@ -451,7 +380,6 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                 setShowResponse(hasResponse);
                 setResponseValue('1');
             }
-            //setExecutionNumber(executionNumber + 1);
             setRequestBodyData(props.data.runData?.body?.data);
         }
     }, [props]);
@@ -479,25 +407,11 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                 .filter((item): item is { key: string; value: string } => item !== null);
 
             const uniquePathParam = Array.from(new Map(clonePathParam.map((item) => [item.key, item])).values());
-            console.log('setting the new path params=> ', uniquePathParam);
             setPathParams(uniquePathParam);
         } else {
             setPathParams([]);
         }
     }, [displayedUrlValue]);
-
-    /*const handleUrlChange = () => {
-        setUrlValue(displayedUrlValue);
-    }
-
-    useEffect(() => {
-        if (displayedUrlValue && isValidUrl(displayedUrlValue)) {
-            handleUrlChange();
-        } else {
-            setPathParams([]);
-            setQueryParams([]);
-        }
-    }, [displayedUrlValue]);*/
 
     const renderAPINodeBody = () => (
         <>
@@ -552,7 +466,6 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                         <Autocomplete
                             key={runData.method}
                             onChange={(_event: SyntheticEvent, newValue: string) => {
-                                console.log(newValue);
                                 if (newValue === 'GET') setResponseValue('0');
                                 setActionType(newValue);
                             }}
@@ -581,8 +494,6 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                             value={displayedUrlValue}
                             disabled={apiType === 'system' ? true : false}
                             onChange={(event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
-                                //const inputValue = event.target.value as string;
-                                //setDisplayedUrlValue(inputValue);
                                 setDisplayedUrlValue(event.target.value as string);
                                 triggerDelayedNodeSaveOnServer(delayTimeSet);
                             }}
@@ -650,9 +561,6 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                                 isHeader={true}
                                 value={headers}
                                 disabled={apiType === 'system' ? true : false}
-                                /* onSubmit={() => {
-                                    if (headers) setHeadersData(headers);
-                                }} */
                                 onChange={(headers: KeyValueProps[]) => {
                                     if (!headers) return;
                                     setHeaders(headers);
@@ -671,19 +579,6 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                             <ValueCard
                                 value={queryParams}
                                 disabled={apiType === 'system' ? true : false}
-                                /* onSubmit={() => {
-                                    const currentUrl = new URL(displayedUrlValue ?? '');
-                                    const queryParamObject: Record<string, string> = queryParams.reduce(
-                                        (acc, param) => {
-                                            acc[param.key] = param.value;
-                                            return acc;
-                                        },
-                                        {} as Record<string, string>,
-                                    );
-                                    currentUrl.search = new URLSearchParams(queryParamObject).toString();
-                                    setUrl(currentUrl.toString());
-                                    setDisplayedUrlValue(currentUrl.toString());
-                                }} */
                                 onChange={(newQueryParams: KeyValueProps[]) => {
                                     if (!newQueryParams) return;
                                     setQueryParams(newQueryParams);
@@ -700,29 +595,10 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                             }
                         >
                             <ValueCard
-                                //disableAdd={true}
-                                //disableDelete={true}
+                                // disableAdd={true}
+                                // disableDelete={true}
                                 value={pathParams}
                                 disabled={apiType === 'system' ? true : false}
-                                /* onSubmit={() => {
-                                    if (!displayedUrlValue || !isValidUrl(displayedUrlValue)) {
-                                        return;
-                                    } else {
-                                        const currentUrl = new URL(displayedUrlValue ?? '');
-                                        if (
-                                            pathParams?.length == 1 &&
-                                            pathParams[0].key === '' &&
-                                            pathParams[0].value === ''
-                                        ) {
-                                            currentUrl.pathname = '';
-                                        } else {
-                                            const newPath = pathParams.map((param) => `/:${param.key}`).join('');
-                                            currentUrl.pathname = newPath;
-                                        }
-                                        setUrl(currentUrl.toString());
-                                        setDisplayedUrlValue(currentUrl.toString());
-                                    }
-                                }} */
                                 onChange={(newPathParams: KeyValueProps[]) => {
                                     if (!newPathParams) return;
                                     setPathParams(newPathParams);
@@ -737,7 +613,6 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                             <ResponseTab
                                 onChange={(value: any) => {
                                     setRequestBodyData(value);
-                                    //setRequestData(value);
                                     triggerDelayedNodeSaveOnServer(delayTimeSet);
                                     if (checkValidJson(value)) {
                                         setIsJsonValid(true);
@@ -929,7 +804,6 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                                             disabled={apiType === 'system' ? true : false}
                                             onChange={(value: any) => {
                                                 setRequestBodyData(value);
-                                                //setRequestData(value);
                                                 if (checkValidJson(value)) {
                                                     setIsJsonValid(true);
                                                 } else {
@@ -944,7 +818,7 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                                         key={`response-${runData?.output?.status || 0}-${executionNumber}`}
                                     >
                                         <ResponseTab
-                                            message={''}
+                                            message={runData?.output?.status?.toString()}
                                             isError={runData?.output?.status != 200}
                                             value={runData?.output?.data}
                                             disabled={apiType === 'system' ? true : false}
@@ -973,7 +847,7 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                             </Stack>
                             <Stack width="100%" key={`response-${runData?.output?.status || 0}-${executionNumber}`}>
                                 <ResponseTab
-                                    message={''}
+                                    message={runData?.output?.status?.toString()}
                                     isError={runData?.output?.status != 200}
                                     isResponse={true}
                                     value={runData?.output?.data}

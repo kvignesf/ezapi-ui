@@ -36,14 +36,13 @@ function NodeTypeSectionNode(props: NodeProps) {
     const { useStore, projectId, operationId } = useContext(BusinessFlowContext);
     const { xPos, yPos } = props;
 
-    //const store = useStoreApi();
-
     const setNodeType = useStore((state: MyReactFlowState) => state.setNodeType);
     const addChildNode = useStore((state: MyReactFlowState) => state.addChildNode);
     const [selectedMenu, setSelectedMenu] = useState('');
 
     const nodes = useStore((state: MyReactFlowState) => state.nodes);
     const numberOfNodes = (nodeType: string) => nodes.filter((node: Node) => node.type === nodeType).length;
+
     const [updateNodeDataProps, setUpdateNodeDataProps] = useState<NodeTypeSelectionState | null>();
 
     useEffect(() => {
@@ -118,6 +117,7 @@ function NodeTypeSectionNode(props: NodeProps) {
     const handleNodeType = async (type: string) => {
         switch (type) {
             case 'API':
+                setSelectedNodeCardType('external');
                 setUpdateNodeDataProps({
                     type: NODE_TYPES.EXTERNAL_API_NODE,
                     data: {
@@ -145,7 +145,6 @@ function NodeTypeSectionNode(props: NodeProps) {
                 setNodeType(nodeId, NODE_TYPES.LOOP_NODE, {});
                 break;
             case 'FILTER':
-                console.log('FILTER.props.data', props.data);
                 const newNode = await attachNewExternalNodeToFilterNode();
                 setUpdateNodeDataProps({
                     type: NODE_TYPES.FILTER_NODE,
@@ -167,8 +166,10 @@ function NodeTypeSectionNode(props: NodeProps) {
                     },
                 });
                 break;
+
             case 'PAYLOAD_BUILDER':
                 setNodeType(nodeId, NODE_TYPES.PAYLOAD_BUILDER_NODE, {});
+                const newPayloadNode = await attachNewExternalNodeToFilterNode();
                 setUpdateNodeDataProps({
                     type: NODE_TYPES.PAYLOAD_BUILDER_NODE,
                     data: {
@@ -179,7 +180,12 @@ function NodeTypeSectionNode(props: NodeProps) {
                         runData: {},
                         mainData: {},
                         filterData: {},
-                        responsePayloadData: {},
+                        responsePayloadData: {
+                            ...(props.data.responsePayloadData || {}),
+                            customMapping: false,
+                            cardId: newPayloadNode.id,
+                            data: {},
+                        },
                     },
                 });
                 break;
@@ -187,14 +193,13 @@ function NodeTypeSectionNode(props: NodeProps) {
                 break;
         }
     };
-
     const handleSubNodeType = async (type: string) => {
         console.log('handlingSubNodeclick', type);
         switch (type) {
             case 'LOOP':
                 setSelectedNodeCardType('loop');
                 setUpdateNodeDataProps({
-                    type: NODE_TYPES.EXTERNAL_API_NODE,
+                    type: NODE_TYPES.EXTERNAL_API_NODE_LOOP,
                     data: {
                         commonData: {
                             ...props.data.commonData,
@@ -275,17 +280,6 @@ function NodeTypeSectionNode(props: NodeProps) {
                                 <ListItemText primary="Branch" />
                             </ListItemButton>
                         </ListItem>
-                        {/* <ListItem sx={{ padding: '0' }} onClick={() => handleNodeType('LOOP')}>
-                            <ListItemButton disableGutters>
-                                <ListItemIcon sx={{ minWidth: '35px', marginLeft: '14px' }}>
-                                    <img
-                                        src={LoopIcon}
-                                        style={{ width: '24px', height: '24px', alignSelf: 'center' }}
-                                    />
-                                </ListItemIcon>
-                                <ListItemText primary="Loop" />
-                            </ListItemButton>
-                        </ListItem> */}
                         <div style={{ display: 'flex' }}>
                             <Stack sx={{ width: '182px' }}>
                                 <ListItem
@@ -388,6 +382,7 @@ function NodeTypeSectionNode(props: NodeProps) {
                                 </Stack>
                             )}
                         </div>
+
                         <ListItem sx={{ padding: '0' }} onClick={() => handleNodeType('FILTER')}>
                             <ListItemButton disableGutters>
                                 <ListItemIcon sx={{ minWidth: '35px', marginLeft: '14px' }}>

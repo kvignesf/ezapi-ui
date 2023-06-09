@@ -9,7 +9,7 @@ import { FilterNode, FilterNodeProps } from './FilterNode';
 import { LoopNode, LoopNodeProps } from './LoopNode';
 import { MainNode, MainNodeProps } from './MainNode';
 import { NodeTypeSectionNode } from './NodeTypeSectionNode';
-import { PayloadNode } from './PayloadNode';
+import { PayloadNode, PayloadNodeProps } from './PayloadNode';
 
 export {
     StartNode,
@@ -29,4 +29,5 @@ export {
     MainNodeProps,
     NodeTypeSectionNode,
     PayloadNode,
+    PayloadNodeProps,
 };

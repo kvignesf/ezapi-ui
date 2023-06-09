@@ -65,6 +65,7 @@ const nodeTypes = {
     [NODE_TYPES.START_NODE]: StartNode,
     [NODE_TYPES.SELECTION_NODE]: NodeTypeSectionNode,
     [NODE_TYPES.EXTERNAL_API_NODE]: ExternalAPINode,
+    [NODE_TYPES.EXTERNAL_API_NODE_LOOP]: ExternalAPINode,
     [NODE_TYPES.MAIN_NODE]: MainNode,
 };
 
@@ -322,7 +323,6 @@ const Flow = () => {
 
     useEffect(() => {
         const source: CancelTokenSource = axios.CancelToken.source();
-
         if (newNodeInfo?.position) {
             createNewAggregateCard({
                 projectId,
@@ -420,6 +420,7 @@ const Flow = () => {
                     }}
                 />
             </Drawer>
+
             <Drawer
                 anchor={'right'}
                 open={openFilterDrawer}
@@ -459,7 +460,6 @@ const Flow = () => {
                             const latestNodeInfo = await fetchNodeFromServer(getNodeData);
                             updateNodeData(targetNode.id, latestNodeInfo.data);
                         }
-
                         setOpenFilterDrawer(false);
                         setSelectedNode('');
                         setFilterType('');

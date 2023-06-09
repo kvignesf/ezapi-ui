@@ -12,12 +12,9 @@ import {
     OnNodesChange,
     OnNodesDelete,
 } from 'reactflow';
-import { create } from 'zustand';
-
 import { v4 as uuidv4 } from 'uuid';
-
+import { create } from 'zustand';
 import { NODE_TYPES, NON_DELETABLE_NODE_IDS, NON_DELETABLE_NODE_TYPES } from './constants';
-
 import defaultEdges from './edges';
 import { ElementsType, Node, UpdateNodeAPIProps } from './interfaces';
 import defaultNodes from './nodes';
@@ -78,7 +75,11 @@ export function getInputNodeIdsFromNode(nodeId: string, edges: Edge[]): string[]
 
 export function updateInputNodeIdsForNodes(nodes: Node[], edges: Edge[]) {
     nodes.forEach((node: Node) => {
-        if ([NODE_TYPES.EXTERNAL_API_NODE, NODE_TYPES.BRANCH_NODE].includes(node.type as string)) {
+        if (
+            [NODE_TYPES.EXTERNAL_API_NODE, NODE_TYPES.EXTERNAL_API_NODE_LOOP, NODE_TYPES.BRANCH_NODE].includes(
+                node.type as string,
+            )
+        ) {
             const parentNode = node.data.commonData.parentNode;
             const inputNodeIds = getInputNodeIdsFromNode(node.id, edges);
             node.data.commonData.inputNodeIds = inputNodeIds;
@@ -125,7 +126,7 @@ const createStore = ({ projectId, operationId, initialNodes, initialEdges }: Ini
         },
 
         saveFlowState: () => {
-            console.log('saving...');
+            // console.log('meta save called');
             const { projectId, operationId, nodes, edges } = get();
             const props = prepareAggregateMetaData(projectId, operationId, nodes, edges);
             saveAggregateMetaData(props);
@@ -139,7 +140,6 @@ const createStore = ({ projectId, operationId, initialNodes, initialEdges }: Ini
             }
 
             const newDeferredSaveId = setTimeout(() => {
-                console.log('deferred saving.....');
                 saveFlowState();
             }, 5000);
 
@@ -159,13 +159,15 @@ const createStore = ({ projectId, operationId, initialNodes, initialEdges }: Ini
                 setElements(updatedNodes, edges);
             }
             if (parsedChanges.length && parsedChanges[0].type !== 'remove') {
-                console.log('deferred saving in OnNodeChanges');
+                // console.log('deffered save from updatenodedata!');
+
                 deferredSave();
             }
         },
 
         onNodesDelete: async (rfDeletedNodes: Node[]) => {
             const { nodes, edges, setElements, resetHistory } = get();
+
             // remove non deletable nodes from the list of deleted nodes
             rfDeletedNodes = rfDeletedNodes.filter((deletedNode: Node) => {
                 return (
@@ -177,9 +179,9 @@ const createStore = ({ projectId, operationId, initialNodes, initialEdges }: Ini
                     )
                 );
             });
+
             // check if deletedNodes has a filter node or a filter node's external api node. if it is, then delete both as well
             const nonFilteredDeletedNodeIds = rfDeletedNodes.map((deletedNode: Node) => deletedNode.id);
-
             const deletedNodeIds: string[] = [];
 
             nodes.forEach((node: Node) => {
@@ -188,10 +190,17 @@ const createStore = ({ projectId, operationId, initialNodes, initialEdges }: Ini
                 if (node.type === NODE_TYPES.FILTER_NODE && isNodeInDeletedNodes) {
                     let targetNodeId = edges.find((edge: Edge) => edge.source === node.id)?.target;
                     const targetNode = nodes.find((node: Node) => node.id === targetNodeId);
-                    if (targetNode && targetNode.type === NODE_TYPES.EXTERNAL_API_NODE) {
+                    if (
+                        targetNode &&
+                        (targetNode.type === NODE_TYPES.EXTERNAL_API_NODE ||
+                            targetNode.type === NODE_TYPES.EXTERNAL_API_NODE_LOOP)
+                    ) {
                         deletedNodeIds.push(targetNodeId);
                     }
-                } else if (node.type === NODE_TYPES.EXTERNAL_API_NODE && isNodeInDeletedNodes) {
+                } else if (
+                    (node.type === NODE_TYPES.EXTERNAL_API_NODE || node.type === NODE_TYPES.EXTERNAL_API_NODE_LOOP) &&
+                    isNodeInDeletedNodes
+                ) {
                     let parentNode = nodes.find((node: Node) => node.id === node.parentNode);
                     if (!parentNode) {
                         const parentNodeId = edges.find((edge: Edge) => edge.target === node.id)?.source;
@@ -268,7 +277,8 @@ const createStore = ({ projectId, operationId, initialNodes, initialEdges }: Ini
 
             if (parsedChanges.length) {
                 updateHistory();
-                console.log('saving in OnEdgesChange');
+                // console.log('realtime save from onedgechange!');
+
                 saveFlowState();
             }
         },
@@ -282,7 +292,11 @@ const createStore = ({ projectId, operationId, initialNodes, initialEdges }: Ini
             updateInputNodeIdsForNodes(updatedNodes, updatedEdges);
 
             const updatedNode = updatedNodes.find((node: any) => node.id === connection.target);
-            if ([NODE_TYPES.EXTERNAL_API_NODE, NODE_TYPES.BRANCH_NODE].includes(updatedNode.type)) {
+            if (
+                [NODE_TYPES.EXTERNAL_API_NODE, NODE_TYPES.EXTERNAL_API_NODE_LOOP, NODE_TYPES.BRANCH_NODE].includes(
+                    updatedNode.type,
+                )
+            ) {
                 const updatedNodeRequestData: UpdateNodeAPIProps = {
                     card: prepareAggregateCardFromNode(updatedNode, projectId, operationId),
                 };
@@ -291,7 +305,8 @@ const createStore = ({ projectId, operationId, initialNodes, initialEdges }: Ini
 
             setElements(updatedNodes, updatedEdges);
             updateHistory();
-            console.log('saving in OnConnect');
+            // console.log('realtime save from onconnnect!');
+
             saveFlowState();
         },
 
@@ -316,11 +331,13 @@ const createStore = ({ projectId, operationId, initialNodes, initialEdges }: Ini
             const updatedEdges = [...edges, newEdge];
 
             setElements(updatedNodes, updatedEdges);
+
             if (triggerUpdateHistory) {
                 updateHistory();
             }
             if (triggerSaveFlowState) {
-                console.log('saving in addChildNode');
+                // console.log('realtime save from addchild!');
+
                 saveFlowState();
             }
         },
@@ -338,9 +355,11 @@ const createStore = ({ projectId, operationId, initialNodes, initialEdges }: Ini
             });
 
             setElements(updatedNodes, edges);
-            console.log('saving in updateNodeData');
+            // console.log('deffered save from updatenodedata!');
+            // console.log('realtime save from updatenodedata!');
+
             saveFlowState();
-            //deferredSave();
+            // deferredSave();
         },
 
         setNodeType: async (nodeId: string, type: string, data: any) => {
@@ -357,7 +376,8 @@ const createStore = ({ projectId, operationId, initialNodes, initialEdges }: Ini
 
             setElements(updatedNodes, edges);
             updateHistory();
-            console.log('saving in setNodeType');
+            // console.log('realtime save from setnodetype!');
+
             saveFlowState();
         },
     }));
