@@ -1,89 +1,92 @@
-import { atom } from "recoil";
-import ApiCall from "./CollectionTabs/ApiCall/ApiCall";
+import { atom } from 'recoil';
+import ApiCall from './CollectionTabs/ApiCall/ApiCall';
 
 export const accessToken = atom({
-  key: "accessToken",
-  default: "",
+    key: 'accessToken',
+    default: '',
 });
 
 export const authFormData = atom({
-  key: "authFormData",
-  default: {
-    authType: "No Auth",
-    grantType: "Grant Type",
-    baseAuthUsername: "",
-    baseAuthPassword: "",
-    authCodeClientID: "",
-    authCodeClientSecret: "",
-    authEndpoint: "",
-    authCodeScope: "",
-    authCodeCode: "",
-    authCodeRedirUri: "",
-    implicitClientID: "",
-    implicitAuthEndpoint: "",
-    implicitRedirUri: "",
-    implicitState: "",
-    implicitScope: "",
-    ccClientID: "",
-    ccClientSecret: "",
-    ccTokenEndpoint: "",
-    bearerToken: "",
-    apiKey: "",
-    ccScope: "",
-    pcClientID: "",
-    pcClientSecret: "",
-    pcTokenEndpoint: "",
-    pcUsername: "",
-    pcPassword: "",
-    pcScope: "",
-  },
+    key: 'authFormData',
+    default: {
+        authType: 'No Auth',
+        grantType: 'Grant Type',
+        baseAuthUsername: '',
+        baseAuthPassword: '',
+        authCodeClientID: '',
+        authCodeClientSecret: '',
+        authEndpoint: '',
+        authCodeScope: '',
+        authCodeCode: '',
+        authCodeRedirUri: '',
+        implicitClientID: '',
+        implicitAuthEndpoint: '',
+        implicitRedirUri: '',
+        implicitState: '',
+        implicitScope: '',
+        ccClientID: '',
+        ccClientSecret: '',
+        ccTokenEndpoint: '',
+        bearerToken: '',
+        apiKey: '',
+        ccScope: '',
+        pcClientID: '',
+        pcClientSecret: '',
+        pcTokenEndpoint: '',
+        pcUsername: '',
+        pcPassword: '',
+        pcScope: '',
+    },
 });
 
 export const requestParams = atom({
-  key: "requestParams",
-  default: {
-    method: "GET",
-    proxy: "No Proxy",
-    url: "",
-    body: { "": "" },
-    header: [],
-    queryParams: [],
-  },
+    key: 'requestParams',
+    default: {
+        method: 'GET',
+        proxy: 'No Proxy',
+        url: '',
+        body: { '': '' },
+        header: [],
+        queryParams: [],
+    },
 });
 
 export const responseInfo = atom({
-  key: "responseInfo",
-  default: {},
+    key: 'responseInfo',
+    default: {},
 });
 
 export const currentApi = atom({
-  key: "currentApi",
-  default: { id: 0, name: "", type: "file" },
+    key: 'currentApi',
+    default: {},
 });
 
 export const currentTab = atom({
-  key: "currentTab",
-  default: 0,
+    key: 'currentTab',
+    default: null,
 });
 export const selectedType = atom({
-  key: "selectedType",
-  default: "",
+    key: 'selectedType',
+    default: '',
 });
-
+export const requestName = atom({
+    key: 'requestName',
+    default: '',
+});
 export const currentBreadCrumbs = atom({
-  key: "currentBreadCrumbs",
-  default: [],
+    key: 'currentBreadCrumbs',
+    default: [],
 });
 export const currentTabs = atom({
-  key: "currentTabs",
-  default: [
-    {
-      id: 0,
-      request: { method: "GET", proxy: "No Proxy", url: "", body: { "": "" }, header: [], queryParams: [] },
-      response: {},
-      label: "New Request",
-      content: <ApiCall />,
-      breadCrumbs: "",
-    },
-  ],
+    key: 'currentTabs',
+    default: [],
+});
+export const isSaveModalOpen = atom({
+    key: 'isSaveModalOpen',
+    default: false,
+});
+
+export const loadingState = atom({
+    key: 'loadingState',
+    default: false,
 });
