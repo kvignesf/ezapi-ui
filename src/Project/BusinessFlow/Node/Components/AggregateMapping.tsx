@@ -1,4 +1,3 @@
-import { selectedExternalNodeType } from '@/shared/atom/selectedNodeAtom';
 import { PrimaryButton, TextButton } from '@/shared/components/AppButton';
 import AppIcon from '@/shared/components/AppIcon';
 import { operationAtomWithMiddleware } from '@/shared/utils';
@@ -6,7 +5,7 @@ import CloseIcon from '@material-ui/icons/Close';
 import { Box, Checkbox, FormControlLabel } from '@mui/material';
 import _ from 'lodash';
 import { useEffect, useState } from 'react';
-import { useRecoilState, useRecoilValue } from 'recoil';
+import { useRecoilValue } from 'recoil';
 import { ConvertResponseData, structureBodyForMapping, structureFormData } from '../../businessFlowHelper';
 import {
     getMappingData,
@@ -85,12 +84,12 @@ export const AggregateMapping = ({
     projectId,
     isResponse,
     inputNodeIds,
+    selectedNodeCardType,
 }: AggregateMappingProps) => {
     const [allCards, setAllCards] = useState<AggregateCard[]>([]);
     const [currentNodeData, setCurrentNodeData] = useState<TreeNode>();
     const [parentNodeData, setParentNodeData] = useState<TreeNode[]>();
     const [selectedNode, setSelectedNode] = useState<TreeNode>();
-    const [selectedNodeCardType, setSelectedNodeCardType] = useRecoilState(selectedExternalNodeType);
 
     const [selectedParent, setSelectedParent] = useState<TreeNode>();
     const [selectedData, setSelectedData] = useState<MappingData[]>([]);
@@ -130,7 +129,7 @@ export const AggregateMapping = ({
         }
     }, [selectedNode, selectedParent]);
 
-    const prepareData = async () => {
+    const prepareData = async (selectedNodeCardType: any) => {
         const allCardsDataFromServer: AggregateCard[] = await fetchAllAggregateCards({ operationId, projectId });
         if (isResponse) {
             const mappingData = await getResponseMappingData(operationId, projectId);
@@ -426,7 +425,7 @@ export const AggregateMapping = ({
     };
 
     useEffect(() => {
-        prepareData();
+        prepareData(selectedNodeCardType ?? '');
     }, []);
 
     return (
