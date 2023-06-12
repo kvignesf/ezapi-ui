@@ -34,7 +34,9 @@ import ApiIcon from '../../../icons/ApiIcon.svg';
 import Collapse from '../../../icons/collapse.svg';
 import DialogIcon from '../../../icons/dialogIcon.svg';
 import RunIcon from '../../../icons/runIcon.svg';
+import { BusinessFlowContext } from '../BusinessFlowContext';
 import { checkValidJson, convertObjectToFormData, formDataToObject } from '../businessFlowHelper';
+import { getAggregateCard, getMappingData } from '../businessFlowQueries';
 import { DEFAULT_API_RESPONSE } from '../defaults';
 import useNodeHook from '../hooks/useNodeHook';
 import { ExternalAPI, KeyValueProps, NodeProps } from '../interfaces';
@@ -154,12 +156,11 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
 
     const [isExecuting, setIsExecuting] = useState<boolean>(false);
     const [iconSelector, setIconSelector] = useState('delete');
+    const [isLoop, setIsLoop] = useState(true);
 
     const [value, setValue] = useState('0');
     const [systemApis, _setSystemApis] = useState();
-    // const [pathParamsKey, setPathParamsKey] = useState('emptyPathParams');
-    // const [queryParamsKey, setQueryParamsKey] = useState('emptyQueryParams');
-    // const [headersKey, setHeadersKey] = useState('emptyHeaders');
+    const { projectId, operationId } = useContext(BusinessFlowContext);
 
     const [apiType, setApiType] = useState<string>('api_call');
     const [_selectedCard, setSelectedCard] = useRecoilState(drawerCardAtom);
@@ -277,60 +278,125 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
             requestBodyData,
         );
 
-        axios
-            .request(options)
-            .then(function (response: AxiosResponse) {
-                const newNodeData = {
-                    ...runData,
-                    output: {
-                        data: response.data,
-                        success: response.status >= 200 && response.status < 300,
-                        status: response.status,
-                        statusText: response.statusText,
-                    },
-                };
-
-                setRunData(newNodeData);
-                triggerDelayedNodeSaveOnServer(delayTimeSet);
-            })
-            .catch(function (error: any) {
-                // check if the error was thrown from axios
-                if (axios.isAxiosError(error)) {
-                    const axiosError = error as AxiosError;
+        const apiCall = () => {
+            axios
+                .request(options)
+                .then(function (response: AxiosResponse) {
                     const newNodeData = {
                         ...runData,
                         output: {
-                            data: axiosError.response?.data,
-                            success: false,
-                            status: axiosError.response?.status,
-                            statusText: axiosError.response?.statusText,
+                            data: response.data,
+                            success: response.status >= 200 && response.status < 300,
+                            status: response.status,
+                            statusText: response.statusText,
                         },
                     };
 
                     setRunData(newNodeData);
-                } else {
-                    const newNodeData = {
-                        ...runData,
-                        output: {
-                            data: {},
-                            success: false,
-                            statusText: 'Something went wrong!',
-                        },
-                    };
+                    triggerDelayedNodeSaveOnServer(delayTimeSet);
+                })
+                .catch(function (error: any) {
+                    // check if the error was thrown from axios
+                    if (axios.isAxiosError(error)) {
+                        const axiosError = error as AxiosError;
+                        const newNodeData = {
+                            ...runData,
+                            output: {
+                                data: axiosError.response?.data,
+                                success: false,
+                                status: axiosError.response?.status,
+                                statusText: axiosError.response?.statusText,
+                            },
+                        };
 
-                    setRunData(newNodeData);
+                        setRunData(newNodeData);
+                    } else {
+                        const newNodeData = {
+                            ...runData,
+                            output: {
+                                data: {},
+                                success: false,
+                                statusText: 'Something went wrong!',
+                            },
+                        };
+
+                        setRunData(newNodeData);
+                    }
+                })
+                .finally(() => {
+                    setCollapse(true);
+                    setIsExecuting(false);
+                    setResponseValue('1');
+                    setShowResponse(true);
+                    nullChecker();
+
+                    triggerDelayedNodeSaveOnServer(delayTimeSet);
+                    setExecutionNumber(executionNumber + 1);
+                });
+        };
+
+        if (isLoop && options.url && NON_PROXY_HOST_NAMES.includes(new URL(options.url).hostname)) {
+            const mappingData = await getMappingData(cardId, operationId, projectId);
+            if (
+                mappingData &&
+                mappingData.data &&
+                mappingData.data.relationsRequestBody &&
+                mappingData.data.relationsRequestBody.length > 0
+            ) {
+                const relationsRequestBody = mappingData.data.relationsRequestBody.filter((obj: any) =>
+                    obj.mappedAttributeRef.includes('[n]'),
+                );
+                if (relationsRequestBody && relationsRequestBody.length > 0) {
+                    relationsRequestBody.map(async (item: any) => {
+                        const { mappedAttributeAPI, attributeRef, mappedAttributeRef } = item;
+                        const attributes = attributeRef.split('body.'); //finds the attribute sequence for attribute
+                        const mappedAttributes = mappedAttributeRef.split('.'); //finds the parent level sequence for mapped attribute
+                        const mappedItemIndex = mappedAttributes.findIndex((element: string) =>
+                            element.includes('[n]'),
+                        );
+
+                        if (mappedAttributeAPI !== '') {
+                            const mappedCardData = await getAggregateCard(
+                                item.mappedAttributeAPI,
+                                operationId,
+                                projectId,
+                            );
+
+                            let mappedRefArray = 'runData.output.data';
+                            let mapedRefValue = '';
+                            if (mappedItemIndex === 1) {
+                                mapedRefValue = mappedAttributes[2];
+                                for (let i = 3; i < mappedAttributes.length; i++) {
+                                    mapedRefValue = mapedRefValue + '.' + mappedAttributes[i];
+                                }
+                            } else {
+                                for (let i = 2; i < mappedAttributes.length; i++) {
+                                    if (i <= mappedItemIndex) {
+                                        mappedRefArray = mappedRefArray + '.' + mappedAttributes[i];
+                                    } else {
+                                        mapedRefValue = mapedRefValue + '.' + mappedAttributes[i];
+                                    }
+                                }
+                            }
+
+                            const arr = _.get(mappedCardData, mappedRefArray); //array which needs to be mapped
+
+                            arr.forEach((_arrData: any, index: number) => {
+                                const newRef = mappedRefArray + `[${index}].` + mapedRefValue;
+                                const finalData = _.get(mappedCardData, newRef);
+                                if (finalData !== undefined && attributes[1] !== undefined) {
+                                    let updatedData = _.set(requestBodyData, attributes[1], finalData);
+                                    runData.body = updatedData;
+                                    apiCall();
+                                }
+                            });
+                        }
+                    });
                 }
-            })
-            .finally(() => {
-                setCollapse(true);
-                setIsExecuting(false);
-                setResponseValue('1');
-                setShowResponse(true);
-                nullChecker();
-
-                triggerDelayedNodeSaveOnServer(delayTimeSet);
-                setExecutionNumber(executionNumber + 1);
-            });
+            }
+        } else {
+            apiCall();
+        }
     };
 
     useEffect(() => {
