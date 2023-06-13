@@ -32,8 +32,8 @@ export const ValueCard = (props: ValueCardProps): React.ReactElement => {
             sx={{
                 border: '1px solid #C0CCDA',
                 borderRadius: '2.5%',
-                width: cardType === 'node' ? '460px' : '100%',
-                height: isDrawer ? '320px' : '200px',
+                width: cardType === 'node' ? '460px' : '920px',
+                minHeight: cardType === 'node' ? '200px' : '300px',
                 overflow: 'auto',
                 padding: '12px 18px',
                 whiteSpace: 'nowrap',
@@ -49,7 +49,10 @@ export const ValueCard = (props: ValueCardProps): React.ReactElement => {
                         >
                             Key
                         </p>
-                        <p className="flex-1 text-smallLabel uppercase text-neutral-gray2" style={{ width: '200px' }}>
+                        <p
+                            className="flex-1 text-smallLabel uppercase text-neutral-gray2"
+                            style={{ width: cardType === 'node' ? '200px' : '390px' }}
+                        >
                             Value
                         </p>
                         <div className="w-12" />

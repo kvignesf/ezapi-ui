@@ -471,7 +471,7 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                             }}
                             options={['GET', 'POST', 'PUT', 'DELETE', 'PATCH']}
                             renderInput={(params: AutocompleteRenderInputParams) => (
-                                <TextField {...params} variant="outlined" />
+                                <TextField {...params} variant="outlined" style={{ height: '50px' }} />
                             )}
                             defaultValue={'GET'}
                             value={runData.method ? runData.method.toUpperCase() : ''}
@@ -502,7 +502,7 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                             sx={{
                                 width: '301px',
                             }}
-                            inputProps={{ style: { height: '15px' } }}
+                            style={{ height: '50px' }}
                         />
                     </Stack>
                 </Stack>

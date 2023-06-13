@@ -437,7 +437,7 @@ export const ExternalAPIDrawer = ({ cardId }: ExternalAPIDrawerProps) => {
 
     const renderAPINodeBody = () => (
         <>
-            <Stack justifyContent={'space-around'} sx={{ padding: '24px 16px', height: '300px' }}>
+            <Stack justifyContent={'space-around'} sx={{ padding: '24px 16px', height: '300px' }} spacing={2}>
                 <RadioGroup
                     aria-labelledby="controlled-radio-buttons-group"
                     name="controlled-radio-buttons-group"
@@ -484,13 +484,15 @@ export const ExternalAPIDrawer = ({ cardId }: ExternalAPIDrawerProps) => {
                         <Typography sx={{ fontSize: '14px', fontWeight: 600 }} color="text.primary" gutterBottom>
                             Action Type
                         </Typography>
-
                         <Autocomplete
                             key={runData.method}
-                            onChange={(_event: SyntheticEvent, newValue: string) => setActionType(newValue)}
+                            onChange={(_event: SyntheticEvent, newValue: string) => {
+                                if (newValue === 'GET') setResponseValue('0');
+                                setActionType(newValue);
+                            }}
                             options={['GET', 'POST', 'PUT', 'DELETE', 'PATCH']}
                             renderInput={(params: AutocompleteRenderInputParams) => (
-                                <TextField {...params} variant="outlined" />
+                                <TextField {...params} variant="outlined" style={{ height: '50px' }} />
                             )}
                             defaultValue={'GET'}
                             value={runData.method ? runData.method.toUpperCase() : ''}
@@ -498,7 +500,7 @@ export const ExternalAPIDrawer = ({ cardId }: ExternalAPIDrawerProps) => {
                             openOnFocus={true}
                             fullWidth={true}
                             style={{
-                                width: '205px',
+                                width: '155px',
                             }}
                         />
                     </Stack>
@@ -513,14 +515,15 @@ export const ExternalAPIDrawer = ({ cardId }: ExternalAPIDrawerProps) => {
                             value={displayedUrlValue}
                             disabled={apiType === 'system' ? true : false}
                             onChange={(event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
-                                const inputValue = event.target.value as string;
-                                setDisplayedUrlValue(inputValue);
-                                setUrl(event.target.value as string);
+                                setDisplayedUrlValue(event.target.value as string);
+                                triggerDelayedNodeSaveOnServer(delayTimeSet);
                             }}
+                            onFocus={() => setIsFocused(true)}
+                            onBlur={() => setIsFocused(false)}
                             sx={{
-                                width: '720px',
+                                width: '301px',
                             }}
-                            inputProps={{ style: { height: '15px' } }}
+                            style={{ height: '50px' }}
                         />
                     </Stack>
                 </Stack>
