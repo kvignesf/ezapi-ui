@@ -75,9 +75,6 @@ export const ValueCardRow = (props: ValueCardRowProps) => {
                     onChange={(e) => {
                         onChange({ key: data.key, value: e.target.value });
                     }}
-                    onBlur={() => {
-                        setRender(!render);
-                    }}
                     sx={{
                         width: cardType === 'node' ? '230px' : '690px',
                     }}

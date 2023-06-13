@@ -48,7 +48,6 @@ const MainNode = (props: MainNodeProps) => {
         body: props.data.runData?.body || '',
     };
 
-    console.log(props);
     const cardId: string = useNodeId() || '';
 
     const saveDelay = 2500;
@@ -58,7 +57,7 @@ const MainNode = (props: MainNodeProps) => {
     const nodes = useStore((state: MyReactFlowState) => state.nodes);
     const operationState = useRecoilValue(operationAtomWithMiddleware);
     const [isJsonValid, setIsJsonValid] = useState(true);
-    const [simulateFailed, setSimulateFailed] = useState(false);
+    const [simulateFailed, setSimulateFailed] = useState(true);
     const [savedNodeRB, setSavedNodeRB] = useState<Record<string, any> | undefined>({});
     const [requestBodyData, setRequestBodyData] = useState<Record<string, any> | undefined>({});
     const [mainData, setMainData] = useState<ExternalAPI>(initialMainData);
@@ -75,12 +74,9 @@ const MainNode = (props: MainNodeProps) => {
         getUpdatedNodeData: getUpdatedNodeDataFn,
         collapse: true,
     });
-    /* useEffect(() => {
-        console.log('cardid=>', cardId);
-    }, [cardId]); */
+
     function getUpdatedNodeDataFn() {
         const newNodeData = (_.isEmpty(props.data) ? {} : props.data) as NodeData;
-        console.log('requestBodyData..', requestBodyData);
         return {
             ...newNodeData,
             mainData: {
@@ -210,12 +206,9 @@ const MainNode = (props: MainNodeProps) => {
             method: 'GET',
         })
             .then((res) => {
-                console.log('res=>', res, res.json);
                 return res.json();
             })
             .then((result) => {
-                console.log('result=>', result);
-
                 if (result?.data) {
                     return result?.data?.requestBody;
                 } else {
@@ -233,7 +226,7 @@ const MainNode = (props: MainNodeProps) => {
                 .then((response) => {
                     if (response.message == 'Ok') {
                         simulateAPI().then((response) => {
-                            //console.log('response=>', response);
+                            setSimulateFailed(false);
                             setRequestBodyData(transformObject(response));
                             triggerDelayedNodeSaveOnServer(saveDelay);
                         });
@@ -246,7 +239,7 @@ const MainNode = (props: MainNodeProps) => {
         }
     }, []);
     useEffect(() => {
-        //if requestbody has 0 keys
+        if (simulateFailed) return;
         const generateInitialValue = (
             operationStateArray: { name: string; possibleValues: string[] }[],
             nodeArray: Param[],
@@ -278,7 +271,7 @@ const MainNode = (props: MainNodeProps) => {
             pathParams: pathParamsInitialValue,
         });
         triggerDelayedNodeSaveOnServer(saveDelay);
-    }, [operationState, node]);
+    }, [operationState, node, simulateFailed]);
     const getOperationMutation = useGetOperation();
 
     useEffect(() => {
@@ -293,12 +286,12 @@ const MainNode = (props: MainNodeProps) => {
     }, []);
 
     useEffect(() => {
-        /* if (simulateFailed) {
+        if (simulateFailed) {
             setRequestBodyData(savedNodeRB);
             return;
-        } */
+        }
         if (
-            //simulateFailed ||
+            simulateFailed ||
             stopTrigger ||
             !requestBodyData ||
             !savedNodeRB ||
