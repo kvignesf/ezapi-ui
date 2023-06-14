@@ -65,7 +65,7 @@ const _prepareBaseNodeAttributes = (responseData: any): any => {
 // eslint-disable-next-line no-underscore-dangle
 const _prepareExtraNodeAttributes = (responseData: any): any => {
     const data: any = {};
-    ['width', 'height', 'positionAbsolute', 'selected', 'dragging'].forEach((fieldName: string) => {
+    ['width', 'height', 'positionAbsolute', 'selected', 'dragging', 'dragHandle'].forEach((fieldName: string) => {
         if (fieldName in responseData) {
             data[fieldName] = responseData[fieldName];
         }

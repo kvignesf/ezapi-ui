@@ -62,7 +62,7 @@ export const structureBodyForMapping = (data: any, parentName: string, oldRef: s
 
         id++;
         // Check if data is an array
-        if (Array.isArray(data) && selectedNodeCardType === 'loop') {
+        if (Array.isArray(data) && selectedNodeCardType === 'externalAPILoopNode') {
             // If the array has at least one element, and it is an object (but not an array)
             if (data.length > 0 && typeof data[0] === 'object' && !Array.isArray(data[0])) {
                 // create 'n' node using the 0th element of the array

@@ -30,6 +30,11 @@ import 'reactflow/dist/style.css';
 import { useRecoilState } from 'recoil';
 import { shallow } from 'zustand/shallow';
 import { BusinessFlowContext } from './BusinessFlowContext';
+import { NODE_TYPES } from './constants';
+import { DEFAULT_BUSINESS_FLOW_STATE } from './defaults';
+import './index.css';
+import { IBusinessFlow } from './interfaces';
+import { NewAggregateCard } from './interfaces/aggregate-cards';
 import {
     BranchNode,
     ExternalAPINode,
@@ -44,11 +49,11 @@ import { AggregateMapping } from './Node/Components/AggregateMapping';
 import { BranchQuerySelector } from './Node/Components/BranchQuerySelector';
 import { FilterDrawer } from './Node/Components/FilterDrawer';
 import { ExternalAPIDrawer } from './Node/ExternalAPIDrawer';
-import { NODE_TYPES } from './constants';
+/* import { NODE_TYPES } from './constants';
 import { DEFAULT_BUSINESS_FLOW_STATE } from './defaults';
 import './index.css';
 import { IBusinessFlow } from './interfaces';
-import { NewAggregateCard } from './interfaces/aggregate-cards';
+import { NewAggregateCard } from './interfaces/aggregate-cards'; */
 import { createAggregateCard, fetchAggregateMetaData, fetchNodeFromServer } from './services';
 import createStore, { MyReactFlowState, getInputNodeIdsFromNode } from './store';
 import { prepareNodeFromAggregateCard, prepareNodeFromAggregateCardResponse } from './transformers';
@@ -400,6 +405,7 @@ const Flow = () => {
                     inputNodeIds={
                         nodes.find((node: Node) => node.id === selectedNode)?.data.commonData.inputNodeIds || []
                     }
+                    selectedNodeCardType={nodes.find((node: Node) => node.id === selectedNode)?.type || ''}
                     onClose={async () => {
                         const node = nodes.find((node: Node) => node.id === selectedNode);
                         if (showResponseMapping) {
@@ -507,7 +513,7 @@ const Flow = () => {
                 PaperProps={{
                     style: {
                         height: '100%',
-                        width: '80%',
+                        width: '66%',
                         position: 'absolute',
                     },
                 }}

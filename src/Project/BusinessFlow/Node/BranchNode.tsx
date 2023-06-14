@@ -1,7 +1,7 @@
 import branchQueryAtom from '@/shared/atom/branchQueryAtom';
 import selectedNodeAtom from '@/shared/atom/selectedNodeAtom';
 import { Add } from '@mui/icons-material';
-import { Button, Card, Stack, Typography } from '@mui/material';
+import { Button, Card, Stack, Tooltip, Typography } from '@mui/material';
 import _ from 'lodash';
 import { useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Edge, Handle, NodeProps, Position, useNodeId } from 'reactflow';
@@ -191,45 +191,48 @@ const BranchNode = (props: BranchNodeProps) => {
             {Boolean(!collapse && branchConditions.length) && renderBranchHandles}
 
             <Card sx={{ width: '512px' }}>
-                <Stack
-                    direction={'row'}
-                    sx={{ borderBottom: '1px solid #C0CCDA', height: '52px', padding: '24px 16px' }}
-                    justifyContent={'space-between'}
-                >
-                    <Stack direction={'row'}>
-                        <img src={BranchIcon} style={{ width: '24px', height: '24px', alignSelf: 'center' }} />
-                        <Typography
-                            sx={{
-                                fontSize: '16px',
-                                alignSelf: 'center',
-                                marginBottom: '0',
-                                fontWeight: 600,
-                                paddingLeft: '8px',
-                            }}
-                            color="text.primary"
-                            gutterBottom
-                        >
-                            Branch
-                        </Typography>
+                <Tooltip arrow placement="top" title="Branch Node">
+                    <Stack
+                        direction={'row'}
+                        sx={{ borderBottom: '1px solid #C0CCDA', height: '52px', padding: '24px 16px' }}
+                        justifyContent={'space-between'}
+                        className={'custom-drag-handle'} //This is required to make only the header section draggable
+                    >
+                        <Stack direction={'row'}>
+                            <img src={BranchIcon} style={{ width: '24px', height: '24px', alignSelf: 'center' }} />
+                            <Typography
+                                sx={{
+                                    fontSize: '16px',
+                                    alignSelf: 'center',
+                                    marginBottom: '0',
+                                    fontWeight: 600,
+                                    paddingLeft: '8px',
+                                }}
+                                color="text.primary"
+                                gutterBottom
+                            >
+                                Branch
+                            </Typography>
+                        </Stack>
+                        <Stack direction={'row'} spacing={1}>
+                            <img
+                                src={Collapse}
+                                style={{ width: '24px', height: '24px', alignSelf: 'center' }}
+                                onClick={() => {
+                                    setCollapse(!collapse);
+                                }}
+                            />
+                            <img src={DialogIcon} style={{ width: '24px', height: '24px', alignSelf: 'center' }} />
+                            <img
+                                src={RunIcon}
+                                style={{ width: '24px', height: '24px', alignSelf: 'center' }}
+                                onClick={() => {
+                                    setShowResponse(!showResponse);
+                                }}
+                            />
+                        </Stack>
                     </Stack>
-                    <Stack direction={'row'} spacing={1}>
-                        <img
-                            src={Collapse}
-                            style={{ width: '24px', height: '24px', alignSelf: 'center' }}
-                            onClick={() => {
-                                setCollapse(!collapse);
-                            }}
-                        />
-                        <img src={DialogIcon} style={{ width: '24px', height: '24px', alignSelf: 'center' }} />
-                        <img
-                            src={RunIcon}
-                            style={{ width: '24px', height: '24px', alignSelf: 'center' }}
-                            onClick={() => {
-                                setShowResponse(!showResponse);
-                            }}
-                        />
-                    </Stack>
-                </Stack>
+                </Tooltip>
                 {!collapse && (
                     <>
                         <Stack

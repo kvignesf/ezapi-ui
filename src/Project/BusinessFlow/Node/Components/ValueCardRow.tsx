@@ -28,7 +28,7 @@ export const ValueCardRow = (props: ValueCardRowProps) => {
         });
     }, [render]);
     return (
-        <Stack direction={'row'} justifyContent={'space-between'} sx={{ marginBottom: '12px' }}>
+        <Stack direction={'row'} spacing={3} sx={{ marginBottom: '12px' }}>
             <Stack>
                 {isHeader ? (
                     <Autocomplete
@@ -46,7 +46,7 @@ export const ValueCardRow = (props: ValueCardRowProps) => {
                                 required
                                 variant="outlined"
                                 disabled={disabled || nodeType === 'main'}
-                                sx={{ width: cardType === 'node' ? '140px' : '520px' }}
+                                sx={{ width: cardType === 'node' ? '140px' : '320px' }}
                                 inputProps={{ ...params.inputProps, style: { height: '15px' } }}
                             />
                         )}
@@ -60,7 +60,7 @@ export const ValueCardRow = (props: ValueCardRowProps) => {
                         onChange={(e) => {
                             onChange({ key: e.target.value, value: data.value });
                         }}
-                        sx={{ width: cardType === 'node' ? '140px' : '420px' }}
+                        sx={{ minWidth: cardType === 'node' ? '140px' : '320px' }}
                         inputProps={{ style: { height: '15px' } }}
                     />
                 )}
@@ -75,15 +75,13 @@ export const ValueCardRow = (props: ValueCardRowProps) => {
                     onChange={(e) => {
                         onChange({ key: data.key, value: e.target.value });
                     }}
-                    onBlur={() => {
-                        setRender(!render);
-                    }}
                     sx={{
-                        width: cardType === 'node' ? '230px' : '690px',
+                        minWidth: cardType === 'node' ? '140px' : '320px',
                     }}
                     inputProps={{ style: { height: '15px' } }}
                 />
             </Stack>
+
             {!disableDelete &&
                 nodeType !== 'main' &&
                 (iconSelector === 'delete' ? (

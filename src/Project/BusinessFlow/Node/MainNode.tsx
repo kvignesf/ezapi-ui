@@ -2,7 +2,7 @@ import ErrorWithMessage from '@/shared/components/ErrorWithMessage';
 import { operationAtomWithMiddleware } from '@/shared/utils';
 import ArrowCircleRightOutlinedIcon from '@mui/icons-material/ArrowCircleRightOutlined';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
-import { Card, Stack, Tab, Typography } from '@mui/material';
+import { Card, Stack, Tab, Tooltip, Typography } from '@mui/material';
 import { Node } from '@reactflow/core';
 import _, { isEqual } from 'lodash';
 import { useGetOperation } from '../../../shared/query/operationDetailsQuery';
@@ -48,7 +48,7 @@ const MainNode = (props: MainNodeProps) => {
         body: props.data.runData?.body || '',
     };
 
-    console.log(props);
+    //console.log(props);
     const cardId: string = useNodeId() || '';
 
     const saveDelay = 2500;
@@ -58,7 +58,7 @@ const MainNode = (props: MainNodeProps) => {
     const nodes = useStore((state: MyReactFlowState) => state.nodes);
     const operationState = useRecoilValue(operationAtomWithMiddleware);
     const [isJsonValid, setIsJsonValid] = useState(true);
-    const [simulateFailed, setSimulateFailed] = useState(false);
+    const [simulateFailed, setSimulateFailed] = useState(true);
     const [savedNodeRB, setSavedNodeRB] = useState<Record<string, any> | undefined>({});
     const [requestBodyData, setRequestBodyData] = useState<Record<string, any> | undefined>({});
     const [mainData, setMainData] = useState<ExternalAPI>(initialMainData);
@@ -80,7 +80,7 @@ const MainNode = (props: MainNodeProps) => {
     }, [cardId]); */
     function getUpdatedNodeDataFn() {
         const newNodeData = (_.isEmpty(props.data) ? {} : props.data) as NodeData;
-        console.log('requestBodyData..', requestBodyData);
+        //console.log('requestBodyData..', requestBodyData);
         return {
             ...newNodeData,
             mainData: {
@@ -210,12 +210,11 @@ const MainNode = (props: MainNodeProps) => {
             method: 'GET',
         })
             .then((res) => {
-                console.log('res=>', res, res.json);
+                //console.log('res=>', res, res.json);
                 return res.json();
             })
             .then((result) => {
-                console.log('result=>', result);
-
+                //console.log('result=>', result);
                 if (result?.data) {
                     return result?.data?.requestBody;
                 } else {
@@ -224,6 +223,7 @@ const MainNode = (props: MainNodeProps) => {
             })
             .catch((error) => {
                 console.log(error);
+                setSimulateFailed(true);
             });
     }
 
@@ -233,7 +233,7 @@ const MainNode = (props: MainNodeProps) => {
                 .then((response) => {
                     if (response.message == 'Ok') {
                         simulateAPI().then((response) => {
-                            //console.log('response=>', response);
+                            setSimulateFailed(false);
                             setRequestBodyData(transformObject(response));
                             triggerDelayedNodeSaveOnServer(saveDelay);
                         });
@@ -247,6 +247,7 @@ const MainNode = (props: MainNodeProps) => {
     }, []);
     useEffect(() => {
         //if requestbody has 0 keys
+        if (simulateFailed) return;
         const generateInitialValue = (
             operationStateArray: { name: string; possibleValues: string[] }[],
             nodeArray: Param[],
@@ -278,7 +279,7 @@ const MainNode = (props: MainNodeProps) => {
             pathParams: pathParamsInitialValue,
         });
         triggerDelayedNodeSaveOnServer(saveDelay);
-    }, [operationState, node]);
+    }, [operationState, node, simulateFailed]);
     const getOperationMutation = useGetOperation();
 
     useEffect(() => {
@@ -293,12 +294,12 @@ const MainNode = (props: MainNodeProps) => {
     }, []);
 
     useEffect(() => {
-        /* if (simulateFailed) {
+        if (simulateFailed) {
             setRequestBodyData(savedNodeRB);
             return;
-        } */
+        }
         if (
-            //simulateFailed ||
+            simulateFailed ||
             stopTrigger ||
             !requestBodyData ||
             !savedNodeRB ||
@@ -361,28 +362,33 @@ const MainNode = (props: MainNodeProps) => {
             />
 
             <Card sx={{ width: '513px' }}>
-                <Stack
-                    direction={'row'}
-                    sx={{ borderBottom: '1px solid #C0CCDA', height: '52px', padding: '24px 16px' }}
-                    justifyContent={'space-between'}
-                >
-                    <Stack direction={'row'}>
-                        <ArrowCircleRightOutlinedIcon style={{ width: '24px', height: '24px', alignSelf: 'center' }} />
-                        <Typography
-                            sx={{
-                                fontSize: '16px',
-                                alignSelf: 'center',
-                                marginBottom: '0',
-                                fontWeight: 600,
-                                paddingLeft: '8px',
-                            }}
-                            color="text.primary"
-                            gutterBottom
-                        >
-                            {'Main'}
-                        </Typography>
+                <Tooltip title={'Main Node'} arrow placement="top">
+                    <Stack
+                        direction={'row'}
+                        sx={{ borderBottom: '1px solid #C0CCDA', height: '52px', padding: '24px 16px' }}
+                        justifyContent={'space-between'}
+                        className={'custom-drag-handle'} //This is required to make only the header section draggable
+                    >
+                        <Stack direction={'row'}>
+                            <ArrowCircleRightOutlinedIcon
+                                style={{ width: '24px', height: '24px', alignSelf: 'center' }}
+                            />
+                            <Typography
+                                sx={{
+                                    fontSize: '16px',
+                                    alignSelf: 'center',
+                                    marginBottom: '0',
+                                    fontWeight: 600,
+                                    paddingLeft: '8px',
+                                }}
+                                color="text.primary"
+                                gutterBottom
+                            >
+                                {'Main'}
+                            </Typography>
+                        </Stack>
                     </Stack>
-                </Stack>
+                </Tooltip>
                 {outputNodes.length <= 0 && (
                     <>
                         <Stack sx={{ width: '100%' }}>

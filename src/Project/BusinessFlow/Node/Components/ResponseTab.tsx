@@ -16,7 +16,6 @@ interface ResponseTabProps {
 export const ResponseTab = ({
     isResponse = true,
     value,
-    displayTitle = false,
     disabled = false,
     message = '',
     editable = true,
@@ -38,32 +37,21 @@ export const ResponseTab = ({
 
     return (
         <Stack width="100%">
-            {isResponse ? (
-                isError !== undefined && (
-                    <Stack
-                        height={'32px'}
-                        sx={{
-                            backgroundColor: isError ? '#ff3333' : '#71C72C',
-                            color: '#fff',
-                            fontWeight: 600,
-                            padding: ' 2px 16px',
-                        }}
-                    >
-                        {isError ? `error: ${message}` : `success: ${message}`}
-                    </Stack>
-                )
-            ) : (
-                <Stack
-                    height={'32px'}
-                    sx={{
-                        color: '#000',
-                        fontWeight: 600,
-                        padding: ' 2px 16px',
-                    }}
-                >
-                    {displayTitle ? 'Request Body' : 'Response Body'}
-                </Stack>
-            )}
+            {isResponse
+                ? isError !== undefined && (
+                      <Stack
+                          height={'32px'}
+                          sx={{
+                              backgroundColor: isError ? '#ff3333' : '#71C72C',
+                              color: '#fff',
+                              fontWeight: 600,
+                              padding: ' 2px 16px',
+                          }}
+                      >
+                          {isError ? `error: ${message}` : `success: ${message}`}
+                      </Stack>
+                  )
+                : null}
             <Stack sx={{ padding: '8px' }}>
                 <Stack
                     style={{

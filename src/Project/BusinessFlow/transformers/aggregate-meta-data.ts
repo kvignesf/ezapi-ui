@@ -3,6 +3,7 @@ import { AggregateMetaData, AggregateMetaDataEdge, AggregateMetaDataNode, Node }
 
 export const prepareAggregateMetaDataNode = (node: Node): AggregateMetaDataNode => {
     const aggregateMetaDataNode: AggregateMetaDataNode = {
+        dragHandle: '.custom-drag-handle',
         cardId: node.id,
         type: node.type || '',
         name: node.data.commonData.name,

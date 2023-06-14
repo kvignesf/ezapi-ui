@@ -2,7 +2,7 @@ import responseMapperAtom from '@/shared/atom/reponseMapperAtom';
 import ErrorWithMessage from '@/shared/components/ErrorWithMessage';
 import { operationAtomWithMiddleware } from '@/shared/utils';
 import { Button } from '@material-ui/core';
-import { Card, FormControlLabel, Radio, RadioGroup, Stack, Typography } from '@mui/material';
+import { Card, FormControlLabel, Radio, RadioGroup, Stack, Tooltip, Typography } from '@mui/material';
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 import React, { SyntheticEvent, useEffect, useState } from 'react';
@@ -99,38 +99,41 @@ const PayloadNode = (props: PayloadNodeProps): React.ReactElement => {
 
     return (
         <Card sx={{ width: '390px' }}>
-            <Stack
-                direction={'row'}
-                sx={{ borderBottom: '1px solid #C0CCDA', height: '52px', padding: '24px 16px' }}
-                justifyContent={'space-between'}
-            >
-                <Stack direction={'row'}>
-                    <img src={Json} style={{ width: '24px', height: '24px', alignSelf: 'center' }} />
-                    <Typography
-                        sx={{
-                            fontSize: '16px',
-                            alignSelf: 'center',
-                            marginBottom: '0',
-                            fontWeight: 600,
-                            paddingLeft: '8px',
-                        }}
-                        color="text.primary"
-                        gutterBottom
-                    >
-                        Payload-builder
-                    </Typography>
+            <Tooltip title={'Payload Node'} arrow placement="top">
+                <Stack
+                    direction={'row'}
+                    sx={{ borderBottom: '1px solid #C0CCDA', height: '52px', padding: '24px 16px' }}
+                    justifyContent={'space-between'}
+                    className={'custom-drag-handle'} //This is required to make only the header section draggable
+                >
+                    <Stack direction={'row'}>
+                        <img src={Json} style={{ width: '24px', height: '24px', alignSelf: 'center' }} />
+                        <Typography
+                            sx={{
+                                fontSize: '16px',
+                                alignSelf: 'center',
+                                marginBottom: '0',
+                                fontWeight: 600,
+                                paddingLeft: '8px',
+                            }}
+                            color="text.primary"
+                            gutterBottom
+                        >
+                            Payload-builder
+                        </Typography>
+                    </Stack>
+                    <Stack direction={'row'} spacing={1}>
+                        <img
+                            src={Collapse}
+                            style={{ width: '24px', height: '24px', alignSelf: 'center' }}
+                            onClick={() => {
+                                setCollapse(!collapse);
+                            }}
+                        />
+                        <img src={DialogIcon} style={{ width: '24px', height: '24px', alignSelf: 'center' }} />
+                    </Stack>
                 </Stack>
-                <Stack direction={'row'} spacing={1}>
-                    <img
-                        src={Collapse}
-                        style={{ width: '24px', height: '24px', alignSelf: 'center' }}
-                        onClick={() => {
-                            setCollapse(!collapse);
-                        }}
-                    />
-                    <img src={DialogIcon} style={{ width: '24px', height: '24px', alignSelf: 'center' }} />
-                </Stack>
-            </Stack>
+            </Tooltip>
             {collapse && (
                 <Stack justifyContent={'space-between'} sx={{ padding: '12px 16px 24px 16px', minHeight: '188px' }}>
                     <RadioGroup

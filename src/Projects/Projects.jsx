@@ -731,35 +731,19 @@ const ProjectRow = ({
 
 const Content = ({ showCreateProjectDialog }) => {
     //socket related code for event handling
-    const [isStatusChanged, setIsStatusChanged] = useState(false);
-
     //load socket from context
     const socket = useContext(SocketContext);
-
-    useEffect(() => {
-        // connect to socker server and emit event
-        //console.log("socket", socket);
-        if (socket) {
-            console.log('socket in', socket.connected);
-            socket.on('connect', () => {
-                //console.log("Socket connected!!!")
-                console.log('socket in2', socket.connected);
-            });
-
-            socket.emit('userConnected', {
-                user: getUserId(),
-            });
-        }
-    }, []);
 
     useEffect(() => {
         // listen to events emitted by socker server (from node)
 
         if (socket) {
+            socket.emit('userConnected', {
+                user: getUserId(),
+            });
+
             let fetchProjects = (eventName) => {
                 refetchProjects();
-                setIsStatusChanged(!isStatusChanged);
-                console.log(eventName + ' triggered!');
             };
             // look for when the server emits the updated count
             socket.on('githubEvent', (eventName) => {
@@ -786,7 +770,7 @@ const Content = ({ showCreateProjectDialog }) => {
                 fetchProjects(eventName);
             });
         }
-    }, [isStatusChanged]);
+    }, []);
 
     const {
         data: projects,

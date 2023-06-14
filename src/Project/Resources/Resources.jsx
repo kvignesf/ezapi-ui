@@ -18,8 +18,8 @@ import EmptyState from '../../static/images/empty-state.svg';
 import AddOrEditResource from './AddOrEditResource';
 import OperationTreeItem from './OperationTreeItem';
 import PathTreeItem from './PathTreeItem';
-import { useGetResources } from './resourcesQuery';
 import ResourceTreeItem from './ResourcesTreeItem';
+import { useGetResources } from './resourcesQuery';
 
 const useStyles = makeStyles({
     root: {
@@ -30,6 +30,7 @@ const useStyles = makeStyles({
 });
 
 const Resources = ({
+    projectType,
     projectId,
     isDesign,
     selectedIndex,
@@ -146,7 +147,7 @@ const Resources = ({
 
                 {isLoadingResourcesBg && <CircularProgress size="16px" className="mr-2" />}
 
-                {canEdit() && currentTab == 0 && (
+                {canEdit() && currentTab == 0 && projectType !== 'aggregate' && (
                     <AppIcon style={{ padding: '0', margin: '0' }} onClick={showAddResourceDialog}>
                         <AddIcon style={{ fontSize: '18px', color: 'black' }} />
                     </AppIcon>
@@ -170,6 +171,7 @@ const Resources = ({
                             // console.log(resource);
                             return (
                                 <ResourceTreeItem
+                                    projectType={projectType}
                                     currentTab={currentTab}
                                     key={resourceNodeIndex}
                                     nodeId={resourceNodeIndex}
@@ -189,6 +191,7 @@ const Resources = ({
 
                                               return (
                                                   <PathTreeItem
+                                                      projectType={projectType}
                                                       currentTab={currentTab}
                                                       key={pathNodeId}
                                                       nodeId={pathNodeId}
@@ -269,6 +272,7 @@ const Resources = ({
 
                                   return (
                                       <PathTreeItem
+                                          projectType={projectType}
                                           key={pathNodeId}
                                           nodeId={pathNodeId}
                                           // resourceId={resource?.resourceId}

@@ -1,4 +1,4 @@
-import { selectedExternalNodeType } from '@/shared/atom/selectedNodeAtom';
+//import { selectedExternalNodeType } from '@/shared/atom/selectedNodeAtom';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -9,13 +9,15 @@ import Stack from '@mui/material/Stack';
 import axios, { CancelTokenSource } from 'axios';
 import { useContext, useEffect, useState } from 'react';
 import { Handle, HandleType, Node, Position, XYPosition, useNodeId } from 'reactflow';
-import { useRecoilState } from 'recoil';
 import ApiIcon from '../../../icons/ApiIcon.svg';
 import FunctionIcon from '../../../icons/FunctionIcon.svg';
 import Json from '../../../icons/Json.svg';
 import LoopIcon from '../../../icons/LoopIcon.svg';
+import apiLoop from '../../../icons/apiLoop.svg';
 import BranchIcon from '../../../icons/branch.svg';
+import branchLoop from '../../../icons/branchLoop.svg';
 import FilterIcon from '../../../icons/filter.svg';
+import filterLoop from '../../../icons/filterLoop.svg';
 import { BusinessFlowContext } from '../BusinessFlowContext';
 import { NODE_TYPES } from '../constants';
 import { NodeProps, UpdateNodeAPIProps } from '../interfaces';
@@ -30,7 +32,7 @@ interface NodeTypeSelectionState {
 }
 
 function NodeTypeSectionNode(props: NodeProps) {
-    const [selectedNodeCardType, setSelectedNodeCardType] = useRecoilState(selectedExternalNodeType);
+    //const [selectedNodeCardType, setSelectedNodeCardType] = useRecoilState(selectedExternalNodeType);
 
     const nodeId: string = useNodeId() || '';
     const { useStore, projectId, operationId } = useContext(BusinessFlowContext);
@@ -116,8 +118,8 @@ function NodeTypeSectionNode(props: NodeProps) {
 
     const handleNodeType = async (type: string) => {
         switch (type) {
-            case 'API':
-                setSelectedNodeCardType('external');
+            case 'API': {
+                //setSelectedNodeCardType('external');
                 setUpdateNodeDataProps({
                     type: NODE_TYPES.EXTERNAL_API_NODE,
                     data: {
@@ -136,15 +138,18 @@ function NodeTypeSectionNode(props: NodeProps) {
                     },
                 });
                 break;
-            case 'BRANCH':
+            }
+            case 'BRANCH': {
                 setNodeType(nodeId, NODE_TYPES.BRANCH_NODE, {
                     conditions: [],
                 });
                 break;
-            case 'LOOP':
+            }
+            case 'LOOP': {
                 setNodeType(nodeId, NODE_TYPES.LOOP_NODE, {});
                 break;
-            case 'FILTER':
+            }
+            case 'FILTER': {
                 const newNode = await attachNewExternalNodeToFilterNode();
                 setUpdateNodeDataProps({
                     type: NODE_TYPES.FILTER_NODE,
@@ -166,16 +171,16 @@ function NodeTypeSectionNode(props: NodeProps) {
                     },
                 });
                 break;
-
-            case 'PAYLOAD_BUILDER':
+            }
+            case 'PAYLOAD_BUILDER': {
                 setNodeType(nodeId, NODE_TYPES.PAYLOAD_BUILDER_NODE, {});
-                const newPayloadNode = await attachNewExternalNodeToFilterNode();
+                //const newPayloadNode = await attachNewExternalNodeToFilterNode();
                 setUpdateNodeDataProps({
                     type: NODE_TYPES.PAYLOAD_BUILDER_NODE,
                     data: {
                         commonData: {
                             ...props.data.commonData,
-                            name: `Payload Response ${numberOfNodes(NODE_TYPES.FILTER_NODE) + 1}`,
+                            name: `Payload Response ${numberOfNodes(NODE_TYPES.PAYLOAD_BUILDER_NODE) + 1}`,
                         },
                         runData: {},
                         mainData: {},
@@ -183,12 +188,13 @@ function NodeTypeSectionNode(props: NodeProps) {
                         responsePayloadData: {
                             ...(props.data.responsePayloadData || {}),
                             customMapping: false,
-                            cardId: newPayloadNode.id,
+                            cardId: '',
                             data: {},
                         },
                     },
                 });
                 break;
+            }
             default:
                 break;
         }
@@ -197,7 +203,7 @@ function NodeTypeSectionNode(props: NodeProps) {
         console.log('handlingSubNodeclick', type);
         switch (type) {
             case 'LOOP':
-                setSelectedNodeCardType('loop');
+                //setSelectedNodeCardType('loop');
                 setUpdateNodeDataProps({
                     type: NODE_TYPES.EXTERNAL_API_NODE_LOOP,
                     data: {
@@ -328,7 +334,7 @@ function NodeTypeSectionNode(props: NodeProps) {
                                                 <ListItemButton disableGutters>
                                                     <ListItemIcon sx={{ minWidth: '35px', marginLeft: '14px' }}>
                                                         <img
-                                                            src={LoopIcon}
+                                                            src={apiLoop}
                                                             style={{
                                                                 width: '24px',
                                                                 height: '24px',
@@ -347,7 +353,7 @@ function NodeTypeSectionNode(props: NodeProps) {
                                                 <ListItemButton disableGutters>
                                                     <ListItemIcon sx={{ minWidth: '35px', marginLeft: '14px' }}>
                                                         <img
-                                                            src={LoopIcon}
+                                                            src={branchLoop}
                                                             style={{
                                                                 width: '24px',
                                                                 height: '24px',
@@ -366,7 +372,7 @@ function NodeTypeSectionNode(props: NodeProps) {
                                                 <ListItemButton disableGutters>
                                                     <ListItemIcon sx={{ minWidth: '35px', marginLeft: '14px' }}>
                                                         <img
-                                                            src={LoopIcon}
+                                                            src={filterLoop}
                                                             style={{
                                                                 width: '24px',
                                                                 height: '24px',

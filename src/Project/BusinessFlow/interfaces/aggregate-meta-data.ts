@@ -16,6 +16,7 @@ export interface AggregateMetaDataNode {
     };
     selected?: boolean;
     dragging?: boolean;
+    dragHandle: string;
 }
 
 export interface AggregateMetaDataEdge {

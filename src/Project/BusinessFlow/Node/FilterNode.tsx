@@ -1,6 +1,6 @@
 import filterAtom from '@/shared/atom/filterAtom';
 import selectedNodeAtom from '@/shared/atom/selectedNodeAtom';
-import { Card, Stack, TextField, Typography } from '@mui/material';
+import { Card, Stack, TextField, Tooltip, Typography } from '@mui/material';
 import _ from 'lodash';
 import { useEffect, useState } from 'react';
 import { Handle, NodeProps, Position, useNodeId } from 'reactflow';
@@ -79,43 +79,46 @@ const FilterNode = (props: FilterNodeProps) => {
                 isConnectable={props.isConnectable}
             />
             <Card sx={{ width: '512px' }}>
-                <Stack
-                    direction={'row'}
-                    sx={{ borderBottom: '1px solid #C0CCDA', height: '52px', padding: '24px 16px' }}
-                    justifyContent={'space-between'}
-                >
-                    <Stack direction={'row'}>
-                        <img src={FilterIcon} style={{ width: '24px', height: '24px', alignSelf: 'center' }} />
-                        <Typography
-                            sx={{
-                                fontSize: '16px',
-                                alignSelf: 'center',
-                                marginBottom: '0',
-                                fontWeight: 600,
-                                paddingLeft: '8px',
-                            }}
-                            color="text.primary"
-                            gutterBottom
-                        >
-                            Filter
-                        </Typography>
+                <Tooltip title={'Filter Node'} arrow placement="top">
+                    <Stack
+                        className={'custom-drag-handle'} //This is required to make only the header section draggable
+                        direction={'row'}
+                        sx={{ borderBottom: '1px solid #C0CCDA', height: '52px', padding: '24px 16px' }}
+                        justifyContent={'space-between'}
+                    >
+                        <Stack direction={'row'}>
+                            <img src={FilterIcon} style={{ width: '24px', height: '24px', alignSelf: 'center' }} />
+                            <Typography
+                                sx={{
+                                    fontSize: '16px',
+                                    alignSelf: 'center',
+                                    marginBottom: '0',
+                                    fontWeight: 600,
+                                    paddingLeft: '8px',
+                                }}
+                                color="text.primary"
+                                gutterBottom
+                            >
+                                Filter
+                            </Typography>
+                        </Stack>
+                        <Stack direction={'row'} spacing={1}>
+                            <img
+                                src={Collapse}
+                                style={{ width: '24px', height: '24px', alignSelf: 'center' }}
+                                onClick={() => {
+                                    setCollapse(!collapse);
+                                }}
+                            />
+                            <img src={DialogIcon} style={{ width: '24px', height: '24px', alignSelf: 'center' }} />
+                            <img
+                                src={RunIcon}
+                                style={{ width: '24px', height: '24px', alignSelf: 'center' }}
+                                onClick={() => {}}
+                            />
+                        </Stack>
                     </Stack>
-                    <Stack direction={'row'} spacing={1}>
-                        <img
-                            src={Collapse}
-                            style={{ width: '24px', height: '24px', alignSelf: 'center' }}
-                            onClick={() => {
-                                setCollapse(!collapse);
-                            }}
-                        />
-                        <img src={DialogIcon} style={{ width: '24px', height: '24px', alignSelf: 'center' }} />
-                        <img
-                            src={RunIcon}
-                            style={{ width: '24px', height: '24px', alignSelf: 'center' }}
-                            onClick={() => {}}
-                        />
-                    </Stack>
-                </Stack>
+                </Tooltip>
                 {collapse && (
                     <>
                         <Stack

@@ -1080,6 +1080,7 @@ const Project = () => {
                             {/* <Scrollbar style={{ height: `calc(100vh - 100px)` }}> */}
                             <Resources
                                 className="h-full flex flex-col"
+                                projectType={projectDetails?.projectType}
                                 projectId={projectId}
                                 onOperationSelect={(index, resource, path, operation) => {
                                     if (index === null && resource === null && path === null && operation === null) {

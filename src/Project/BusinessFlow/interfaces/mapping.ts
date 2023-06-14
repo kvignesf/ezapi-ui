@@ -31,6 +31,7 @@ export interface AggregateMappingProps {
     projectId: string;
     isResponse: boolean;
     inputNodeIds: string[];
+    selectedNodeCardType?: any;
 }
 
 export interface FilterDrawerProps {
