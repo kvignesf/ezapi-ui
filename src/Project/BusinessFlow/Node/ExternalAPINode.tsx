@@ -21,7 +21,6 @@ import { SyntheticEvent, useContext, useEffect, useState } from 'react';
 import { Handle, Position, useNodeId } from 'reactflow';
 import LoaderWithMessage from '../../../shared/components/LoaderWithMessage';
 // @ts-ignore
-import { SocketContext } from '@/Context/socket';
 import drawerCardAtom from '@/shared/atom/drawerCardAtom';
 import selectedNodeAtom from '@/shared/atom/selectedNodeAtom';
 import ErrorWithMessage from '@/shared/components/ErrorWithMessage';
@@ -31,14 +30,18 @@ import { TabContext, TabList, TabPanel } from '@mui/lab';
 import buildURL from 'axios/lib/helpers/buildURL';
 import { useRecoilState } from 'recoil';
 import ApiIcon from '../../../icons/ApiIcon.svg';
+import LoopIcon from '../../../icons/LoopIcon.svg';
 import Collapse from '../../../icons/collapse.svg';
 import DialogIcon from '../../../icons/dialogIcon.svg';
 import RunIcon from '../../../icons/runIcon.svg';
+import { BusinessFlowContext } from '../BusinessFlowContext';
 import { checkValidJson, convertObjectToFormData, formDataToObject } from '../businessFlowHelper';
+import { getAggregateCard, getMappingData } from '../businessFlowQueries';
 import { DEFAULT_API_RESPONSE } from '../defaults';
 import useNodeHook from '../hooks/useNodeHook';
 import { ExternalAPI, KeyValueProps, NodeProps } from '../interfaces';
-import { CommonNodeData, NodeData } from '../interfaces/flow';
+import { CommonNodeData, IBusinessFlow, NodeData } from '../interfaces/flow';
+import { MyReactFlowState } from '../store';
 import { ResponseTab } from './Components/ResponseTab';
 import { TreeDropDown } from './Components/TreeDropDown';
 import { ValueCard } from './Components/ValueCard';
@@ -123,8 +126,6 @@ function getExternalAPIRequestAxiosOptions(
 const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
     const cardId: string = useNodeId() || '';
 
-    const socket = useContext(SocketContext);
-
     const initialCommonData: CommonNodeData = {
         name: props.data.commonData.name,
         parentNode: props.data.commonData.parentNode,
@@ -148,6 +149,9 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
     const [requestBodyData, setRequestBodyData] = useState<any>(initialRunData.body?.data || {});
     const [commonData, setCommonData] = useState<CommonNodeData>(initialCommonData);
     const [runData, setRunData] = useState<ExternalAPI>(initialRunData);
+    const { useStore } = useContext<IBusinessFlow>(BusinessFlowContext);
+    const [selectedNodeCardType, setSelectedNodeCardType] = useState('');
+    const nodes = useStore((state: MyReactFlowState) => state.nodes);
 
     const [displayedUrlValue, setDisplayedUrlValue] = useState(initialRunData.url ?? '');
     const [isFocused, setIsFocused] = useState(false);
@@ -157,9 +161,7 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
 
     const [value, setValue] = useState('0');
     const [systemApis, _setSystemApis] = useState();
-    // const [pathParamsKey, setPathParamsKey] = useState('emptyPathParams');
-    // const [queryParamsKey, setQueryParamsKey] = useState('emptyQueryParams');
-    // const [headersKey, setHeadersKey] = useState('emptyHeaders');
+    const { projectId, operationId } = useContext(BusinessFlowContext);
 
     const [apiType, setApiType] = useState<string>('api_call');
     const [_selectedCard, setSelectedCard] = useRecoilState(drawerCardAtom);
@@ -167,7 +169,7 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
     const [explicitLoading, setExplicitLoading] = useState(false);
 
     const [isJsonValid, setIsJsonValid] = useState(true);
-    const [_selectedNode, setSelectedNode] = useRecoilState(selectedNodeAtom);
+    const [selectedNode, setSelectedNode] = useRecoilState(selectedNodeAtom);
 
     const [collapse, setCollapse] = useState(props.data.runData?.output?.success || false);
     const [showResponse, setShowResponse] = useState(
@@ -212,6 +214,10 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
     const handleResponseChange = (_event: React.SyntheticEvent, newValue: string) => {
         setResponseValue(newValue);
     };
+
+    useEffect(() => {
+        setSelectedNodeCardType(nodes.find((node: any) => node.id === selectedNode)?.type || '');
+    }, [nodes, selectedNode]);
 
     function getUpdatedNodeDataFn() {
         const newNodeData = (_.isEmpty(props.data) ? {} : props.data) as NodeData;
@@ -277,60 +283,132 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
             requestBodyData,
         );
 
-        axios
-            .request(options)
-            .then(function (response: AxiosResponse) {
-                const newNodeData = {
-                    ...runData,
-                    output: {
-                        data: response.data,
-                        success: response.status >= 200 && response.status < 300,
-                        status: response.status,
-                        statusText: response.statusText,
-                    },
-                };
-
-                setRunData(newNodeData);
-                triggerDelayedNodeSaveOnServer(delayTimeSet);
-            })
-            .catch(function (error: any) {
-                // check if the error was thrown from axios
-                if (axios.isAxiosError(error)) {
-                    const axiosError = error as AxiosError;
+        const apiCall = async () => {
+            await axios
+                .request(options)
+                .then(function (response: AxiosResponse) {
                     const newNodeData = {
                         ...runData,
                         output: {
-                            data: axiosError.response?.data,
-                            success: false,
-                            status: axiosError.response?.status,
-                            statusText: axiosError.response?.statusText,
+                            data: response.data,
+                            success: response.status >= 200 && response.status < 300,
+                            status: response.status,
+                            statusText: response.statusText,
                         },
                     };
-
+                    console.log('then');
                     setRunData(newNodeData);
-                } else {
-                    const newNodeData = {
-                        ...runData,
-                        output: {
-                            data: {},
-                            success: false,
-                            statusText: 'Something went wrong!',
-                        },
-                    };
+                    //triggerDelayedNodeSaveOnServer(delayTimeSet);
+                })
+                .catch(function (error: any) {
+                    // check if the error was thrown from axios
+                    if (axios.isAxiosError(error)) {
+                        const axiosError = error as AxiosError;
+                        const newNodeData = {
+                            ...runData,
+                            output: {
+                                data: axiosError.response?.data,
+                                success: false,
+                                status: axiosError.response?.status,
+                                statusText: axiosError.response?.statusText,
+                            },
+                        };
 
-                    setRunData(newNodeData);
+                        setRunData(newNodeData);
+                    } else {
+                        const newNodeData = {
+                            ...runData,
+                            output: {
+                                data: {},
+                                success: false,
+                                statusText: 'Something went wrong!',
+                            },
+                        };
+
+                        setRunData(newNodeData);
+                    }
+                })
+                .finally(() => {
+                    setCollapse(true);
+                    setIsExecuting(false);
+                    setResponseValue('1');
+                    setShowResponse(true);
+                    nullChecker();
+
+                    //triggerDelayedNodeSaveOnServer(delayTimeSet);
+                    setExecutionNumber(executionNumber + 1);
+                });
+        };
+
+        //if (isLoop && options.url && NON_PROXY_HOST_NAMES.includes(new URL(options.url).hostname)) {
+        if (
+            selectedNodeCardType === 'externalAPILoopNode' &&
+            options.url &&
+            NON_PROXY_HOST_NAMES.includes(new URL(options.url).hostname)
+        ) {
+            const mappingData = await getMappingData(cardId, operationId, projectId);
+            if (
+                mappingData &&
+                mappingData.data &&
+                mappingData.data.relationsRequestBody &&
+                mappingData.data.relationsRequestBody.length > 0
+            ) {
+                const relationsRequestBody = mappingData.data.relationsRequestBody.filter((obj: any) =>
+                    obj.mappedAttributeRef.includes('[n]'),
+                );
+                if (relationsRequestBody && relationsRequestBody.length > 0) {
+                    relationsRequestBody.map(async (item: any) => {
+                        const { mappedAttributeAPI, attributeRef, mappedAttributeRef } = item;
+                        const attributes = attributeRef.split('body.'); //finds the attribute sequence for attribute
+                        const mappedAttributes = mappedAttributeRef.split('.'); //finds the parent level sequence for mapped attribute
+                        const mappedItemIndex = mappedAttributes.findIndex((element: string) =>
+                            element.includes('[n]'),
+                        );
+
+                        if (mappedAttributeAPI !== '') {
+                            const mappedCardData = await getAggregateCard(
+                                item.mappedAttributeAPI,
+                                operationId,
+                                projectId,
+                            );
+
+                            let mappedRefArray = 'runData.output.data';
+                            let mapedRefValue = '';
+                            if (mappedItemIndex === 1) {
+                                mapedRefValue = mappedAttributes[2];
+                                for (let i = 3; i < mappedAttributes.length; i++) {
+                                    mapedRefValue = mapedRefValue + '.' + mappedAttributes[i];
+                                }
+                            } else {
+                                for (let i = 2; i < mappedAttributes.length; i++) {
+                                    if (i <= mappedItemIndex) {
+                                        mappedRefArray = mappedRefArray + '.' + mappedAttributes[i];
+                                    } else {
+                                        mapedRefValue = mapedRefValue + '.' + mappedAttributes[i];
+                                    }
+                                }
+                            }
+
+                            const arr = _.get(mappedCardData, mappedRefArray); //array which needs to be mapped
+
+                            for (let index = 0; index < arr.length; index++) {
+                                const newRef = mappedRefArray + `[${index}].` + mapedRefValue;
+                                const finalData = _.get(mappedCardData, newRef);
+                                if (finalData !== undefined && attributes[1] !== undefined) {
+                                    let updatedData = _.set(requestBodyData, attributes[1], finalData);
+                                    runData.body = updatedData;
+                                    await apiCall();
+                                }
+                            }
+                            triggerDelayedNodeSaveOnServer(delayTimeSet);
+                        }
+                    });
                 }
-            })
-            .finally(() => {
-                setCollapse(true);
-                setIsExecuting(false);
-                setResponseValue('1');
-                setShowResponse(true);
-                nullChecker();
-
-                triggerDelayedNodeSaveOnServer(delayTimeSet);
-                setExecutionNumber(executionNumber + 1);
-            });
+            }
+        } else {
+            apiCall();
+            triggerDelayedNodeSaveOnServer(delayTimeSet);
+        }
     };
 
     useEffect(() => {
@@ -359,10 +437,10 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
     }, [node]);
 
     useEffect(() => {
-        if (!_selectedNode && collapse) {
+        if (!selectedNode && collapse) {
             loadNodeDataFromServer();
         }
-    }, [_selectedNode]);
+    }, [selectedNode]);
 
     useEffect(() => {
         if (props && !_.isEmpty(props.data.commonData)) {
@@ -614,6 +692,7 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                                 onChange={(value: any) => {
                                     setRequestBodyData(value);
                                     triggerDelayedNodeSaveOnServer(delayTimeSet);
+
                                     if (checkValidJson(value)) {
                                         setIsJsonValid(true);
                                     } else {
@@ -658,84 +737,98 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
 
     return (
         <Card sx={{ width: '513px' }}>
-            <Stack
-                direction={'row'}
-                sx={{ borderBottom: '1px solid #C0CCDA', height: '52px', padding: '24px 16px' }}
-                justifyContent={'space-between'}
+            <Tooltip
+                title={selectedNodeCardType === 'externalAPILoopNode' ? 'Loop Node' : 'API Node'}
+                arrow
+                placement="top"
             >
-                <Stack direction={'row'}>
-                    <img src={ApiIcon} style={{ width: '24px', height: '24px', alignSelf: 'center' }} />
-                    <Typography
-                        sx={{
-                            fontSize: '16px',
-                            alignSelf: 'center',
-                            marginBottom: '0',
-                            fontWeight: 600,
-                            paddingLeft: '8px',
-                        }}
-                        color="text.primary"
-                        gutterBottom
-                    >
-                        {commonData.name ?? 'API'}
-                    </Typography>
-                </Stack>
-                <Stack direction={'row'} spacing={1}>
-                    {explicitLoading && !isUpdateNodeOnServerDone ? (
-                        <div className="flex flex-row items-center">
-                            <CircularProgress
-                                style={{
-                                    width: '18px',
-                                    height: '18px',
-                                    marginRight: '0.5rem',
-                                }}
-                            />
+                <Stack
+                    className={'custom-drag-handle'} //This is required to make only the header section draggable
+                    direction={'row'}
+                    sx={{ borderBottom: '1px solid #C0CCDA', height: '52px', padding: '24px 16px' }}
+                    justifyContent={'space-between'}
+                >
+                    <Stack direction={'row'}>
+                        <img
+                            src={selectedNodeCardType === 'externalAPILoopNode' ? LoopIcon : ApiIcon}
+                            style={{ width: '24px', height: '24px', alignSelf: 'center' }}
+                        />
+                        <Typography
+                            sx={{
+                                fontSize: '16px',
+                                alignSelf: 'center',
+                                marginBottom: '0',
+                                fontWeight: 600,
+                                paddingLeft: '8px',
+                            }}
+                            color="text.primary"
+                            gutterBottom
+                        >
+                            {commonData.name
+                                ? commonData.name
+                                : selectedNodeCardType === 'externalAPILoopNode'
+                                ? 'Loop Node'
+                                : 'API Node'}
+                        </Typography>
+                    </Stack>
+                    <Stack direction={'row'} spacing={1}>
+                        {explicitLoading && !isUpdateNodeOnServerDone ? (
+                            <div className="flex flex-row items-center">
+                                <CircularProgress
+                                    style={{
+                                        width: '18px',
+                                        height: '18px',
+                                        marginRight: '0.5rem',
+                                    }}
+                                />
 
-                            <p className="text-overline2 opacity-60">Saving ...</p>
-                        </div>
-                    ) : (
-                        <div
+                                <p className="text-overline2 opacity-60">Saving ...</p>
+                            </div>
+                        ) : (
+                            <div
+                                style={{ width: '24px', height: '24px', alignSelf: 'center' }}
+                                onClick={() => {
+                                    nullChecker();
+
+                                    triggerDelayedNodeSaveOnServer(1);
+                                    setExplicitLoading(true);
+                                }}
+                            >
+                                <Tooltip title="Save changes">
+                                    <CloudUploadIcon style={{ color: '#2c71c7' }} />
+                                </Tooltip>
+                            </div>
+                        )}
+
+                        <img
+                            src={DialogIcon}
                             style={{ width: '24px', height: '24px', alignSelf: 'center' }}
                             onClick={() => {
-                                nullChecker();
-
-                                triggerDelayedNodeSaveOnServer(1);
-                                setExplicitLoading(true);
+                                setDrawerSelected(true);
                             }}
-                        >
-                            <Tooltip title="Save changes">
-                                <CloudUploadIcon style={{ color: '#2c71c7' }} />
-                            </Tooltip>
-                        </div>
-                    )}
+                        />
 
-                    <img
-                        src={DialogIcon}
-                        style={{ width: '24px', height: '24px', alignSelf: 'center' }}
-                        onClick={() => {
-                            setDrawerSelected(true);
-                        }}
-                    />
+                        <img
+                            src={Collapse}
+                            style={{ width: '24px', height: '24px', alignSelf: 'center' }}
+                            onClick={toggleCollapse}
+                        />
 
-                    <img
-                        src={Collapse}
-                        style={{ width: '24px', height: '24px', alignSelf: 'center' }}
-                        onClick={toggleCollapse}
-                    />
-
-                    <img
-                        src={RunIcon}
-                        style={{ width: '24px', height: '24px', alignSelf: 'center' }}
-                        onClick={
-                            apiType === 'system'
-                                ? () => {
-                                      setCollapse(true);
-                                      setResponseValue('1');
-                                  }
-                                : execute
-                        }
-                    />
+                        <img
+                            src={RunIcon}
+                            style={{ width: '24px', height: '24px', alignSelf: 'center' }}
+                            onClick={
+                                apiType === 'system'
+                                    ? () => {
+                                          setCollapse(true);
+                                          setResponseValue('1');
+                                      }
+                                    : execute
+                            }
+                        />
+                    </Stack>
                 </Stack>
-            </Stack>
+            </Tooltip>
 
             {collapse && isNodeDataLoaded && renderAPINodeBody()}
 
@@ -804,6 +897,7 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                                             disabled={apiType === 'system' ? true : false}
                                             onChange={(value: any) => {
                                                 setRequestBodyData(value);
+
                                                 if (checkValidJson(value)) {
                                                     setIsJsonValid(true);
                                                 } else {

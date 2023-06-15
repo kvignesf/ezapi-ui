@@ -515,8 +515,9 @@ export const ExternalAPIDrawer = ({ cardId }: ExternalAPIDrawerProps) => {
                             value={displayedUrlValue}
                             disabled={apiType === 'system' ? true : false}
                             onChange={(event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
-                                setDisplayedUrlValue(event.target.value as string);
-                                triggerDelayedNodeSaveOnServer(delayTimeSet);
+                                const inputValue = event.target.value as string;
+                                setDisplayedUrlValue(inputValue);
+                                setUrl(event.target.value as string);
                             }}
                             onFocus={() => setIsFocused(true)}
                             onBlur={() => setIsFocused(false)}

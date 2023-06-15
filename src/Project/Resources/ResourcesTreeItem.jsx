@@ -13,7 +13,16 @@ import AddOrEditResource from './AddOrEditResource';
 import DeleteResource from './DeleteResource';
 import StyledTreeItem from './StyledTreeItem';
 
-const ResourceTreeItem = ({ currentTab, nodeId, resource, children, isDesign, resetSelectedOperation, ...rest }) => {
+const ResourceTreeItem = ({
+    currentTab,
+    nodeId,
+    resource,
+    children,
+    isDesign,
+    resetSelectedOperation,
+    projectType,
+    ...rest
+}) => {
     const [menuAnchor, setMenuAnchor] = useState(null);
     const [isEllipsisActive, setIsEllipsisActive] = useState(null);
     const [dialog, setDialog] = useState({
@@ -143,7 +152,7 @@ const ResourceTreeItem = ({ currentTab, nodeId, resource, children, isDesign, re
                                     </div>
                                 </div>
 
-                                {isHovering && currentTab == 0 && canEdit() && (
+                                {isHovering && currentTab == 0 && canEdit() && projectType !== 'aggregate' && (
                                     <div>
                                         <AppIcon onClick={handleAddPathClick} style={{ marginRight: '0.5rem' }}>
                                             <AddIcon

@@ -13,6 +13,7 @@ import DeletePath from './DeletePath';
 import StyledTreeItem from './StyledTreeItem';
 
 const PathTreeItem = ({
+    projectType,
     currentTab,
     nodeId,
     resourceId,
@@ -145,7 +146,7 @@ const PathTreeItem = ({
                                     </ReactTooltip>
                                 </div>
 
-                                {isHovering && currentTab == 0 && canEdit() && (
+                                {isHovering && currentTab == 0 && canEdit() && projectType !== 'aggregate' && (
                                     <div>
                                         <AppIcon onClick={handleAddOperationClick} style={{ marginRight: '0.5rem' }}>
                                             <AddIcon

@@ -7,13 +7,16 @@ import ListItemText from '@mui/material/ListItemText';
 import Stack from '@mui/material/Stack';
 import axios, { CancelTokenSource } from 'axios';
 import { useContext, useEffect, useState } from 'react';
-import { Handle, HandleType, Node, Position, useNodeId, XYPosition } from 'reactflow';
+import { Handle, HandleType, Node, Position, XYPosition, useNodeId } from 'reactflow';
 import ApiIcon from '../../../icons/ApiIcon.svg';
-import BranchIcon from '../../../icons/branch.svg';
-import FilterIcon from '../../../icons/filter.svg';
 import FunctionIcon from '../../../icons/FunctionIcon.svg';
 import Json from '../../../icons/Json.svg';
 import LoopIcon from '../../../icons/LoopIcon.svg';
+import apiLoop from '../../../icons/apiLoop.svg';
+import BranchIcon from '../../../icons/branch.svg';
+import branchLoop from '../../../icons/branchLoop.svg';
+import FilterIcon from '../../../icons/filter.svg';
+import filterLoop from '../../../icons/filterLoop.svg';
 import { BusinessFlowContext } from '../BusinessFlowContext';
 import { NODE_TYPES } from '../constants';
 import { NodeProps, UpdateNodeAPIProps } from '../interfaces';
@@ -326,7 +329,7 @@ function NodeTypeSectionNode(props: NodeProps) {
                                                 <ListItemButton disableGutters>
                                                     <ListItemIcon sx={{ minWidth: '35px', marginLeft: '14px' }}>
                                                         <img
-                                                            src={LoopIcon}
+                                                            src={apiLoop}
                                                             style={{
                                                                 width: '24px',
                                                                 height: '24px',
@@ -345,7 +348,7 @@ function NodeTypeSectionNode(props: NodeProps) {
                                                 <ListItemButton disableGutters>
                                                     <ListItemIcon sx={{ minWidth: '35px', marginLeft: '14px' }}>
                                                         <img
-                                                            src={LoopIcon}
+                                                            src={branchLoop}
                                                             style={{
                                                                 width: '24px',
                                                                 height: '24px',
@@ -364,7 +367,7 @@ function NodeTypeSectionNode(props: NodeProps) {
                                                 <ListItemButton disableGutters>
                                                     <ListItemIcon sx={{ minWidth: '35px', marginLeft: '14px' }}>
                                                         <img
-                                                            src={LoopIcon}
+                                                            src={filterLoop}
                                                             style={{
                                                                 width: '24px',
                                                                 height: '24px',

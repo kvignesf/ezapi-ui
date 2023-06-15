@@ -160,7 +160,7 @@ export const AggregateMapping = ({
                         itemData.relationRef = item.mappedAttributeRef ?? '';
                         itemData.relationId = item.mappedAttributeAPI ?? '';
                         itemData.relationName = item.mappedAttributeName ?? '';
-                        itemData.relationNode = mappedCardData?.name ?? '';
+                        itemData.relationNode = mappedCardData?.name ?? 'op/ ' + operationState.operation.operationName;
                         itemData.relationParent = item.mappedAttributeType ?? '';
                         mappingResponseData.push(itemData);
                     });
@@ -190,7 +190,7 @@ export const AggregateMapping = ({
                         itemData.ref = item.attributeRef ?? '';
                         itemData.relationRef = item.mappedAttributeRef ?? '';
                         itemData.relationName = item.mappedAttributeName ?? '';
-                        itemData.relationNode = mappedCardData?.name ?? '';
+                        itemData.relationNode = mappedCardData?.name ?? 'op/ ' + operationState.operation.operationName;
                         itemData.relationParent = item.mappedAttributeType ?? '';
                         mappingResponseData.push(itemData);
                     });
@@ -288,7 +288,7 @@ export const AggregateMapping = ({
                         itemData.relationRef = item.mappedAttributeRef ?? '';
                         itemData.relationId = item.mappedAttributeAPI ?? '';
                         itemData.relationName = item.mappedAttributeName ?? '';
-                        itemData.relationNode = mappedCardData?.name ?? '';
+                        itemData.relationNode = mappedCardData?.name ?? 'op/ ' + operationState.operation.operationName;
                         itemData.relationParent = item.mappedAttributeType ?? '';
                         mappingResponseData.push(itemData);
                     });
@@ -319,7 +319,7 @@ export const AggregateMapping = ({
                         itemData.ref = item.attributeRef ?? '';
                         itemData.relationId = item.mappedAttributeAPI ?? '';
                         itemData.relationName = item.mappedAttributeName ?? '';
-                        itemData.relationNode = mappedCardData?.name ?? '';
+                        itemData.relationNode = mappedCardData?.name ?? 'op/ ' + operationState.operation.operationName;
                         itemData.relationParent = item.mappedAttributeType ?? '';
                         mappingResponseData.push(itemData);
                     });
@@ -348,7 +348,7 @@ export const AggregateMapping = ({
                         itemData.relationRef = item.mappedAttributeRef ?? '';
                         itemData.relationId = item.mappedAttributeAPI ?? '';
                         itemData.relationName = item.mappedAttributeName ?? '';
-                        itemData.relationNode = mappedCardData?.name ?? '';
+                        itemData.relationNode = mappedCardData?.name ?? 'op/ ' + operationState.operation.operationName;
                         itemData.relationParent = item.mappedAttributeType ?? '';
                         mappingResponseData.push(itemData);
                     });
