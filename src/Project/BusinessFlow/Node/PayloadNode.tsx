@@ -39,7 +39,8 @@ const PayloadNode = (props: PayloadNodeProps): React.ReactElement => {
     const [showResponseMapping, setShowResponseMapping] = useRecoilState(responseMapperAtom);
     const [isJsonValid, setIsJsonValid] = useState(true);
     const [tabValue, setTabValue] = useState('0');
-    const [headers, setHeaders] = useState<KeyValueProps[]>();
+    const [headerData, setHeaderData] = useState<KeyValueProps[]>();
+    const [responseBodyData, setResponseBodyData] = useState<KeyValueProps[]>();
 
     const { projectId = '' }: { projectId: string } = useParams();
     const [operationData, _] = useRecoilState(operationAtomWithMiddleware);
@@ -84,7 +85,12 @@ const PayloadNode = (props: PayloadNodeProps): React.ReactElement => {
         if (!socket.connected) return;
         const fetchData = (eventName: any) => {
             console.log('fetchingData', eventName);
-            loadNodeDataFromServer();
+            if (isFullMapping) {
+                setResponseBodyData(eventName);
+            } else {
+                setResponseBodyData(eventName?.body);
+                setHeaderData(eventName?.headers);
+            }
         };
 
         socket.on('payloadCardResponse', (eventName: any) => {
@@ -93,11 +99,13 @@ const PayloadNode = (props: PayloadNodeProps): React.ReactElement => {
     }, []);
 
     useEffect(() => {
-        //traverse through node?.data?.responsePayloadData?.data?.headers
-        console.log(node?.data?.responsePayloadData);
         if (node?.data?.responsePayloadData?.cardId) {
             const name = dropDownData.find((x) => x.id === node?.data?.responsePayloadData?.cardId)?.name;
             setSelectedItem({ id: node?.data?.responsePayloadData?.cardId, name: name ?? '' });
+            setResponseBodyData(node?.data?.responsePayloadData?.data);
+        } else {
+            setResponseBodyData(node?.data?.responsePayloadData?.data?.body);
+            setHeaderData(node?.data?.responsePayloadData?.data?.headers);
         }
     }, [node]);
 
@@ -217,7 +225,7 @@ const PayloadNode = (props: PayloadNodeProps): React.ReactElement => {
                                 editable={false}
                                 isResponse={false}
                                 displayTitle="Response Body"
-                                value={node?.data?.responsePayloadData?.data ?? {}}
+                                value={responseBodyData}
                             />
                         ) : (
                             <TabContext value={tabValue}>
@@ -250,18 +258,14 @@ const PayloadNode = (props: PayloadNodeProps): React.ReactElement => {
                                 <TabPanel value={'0'} sx={{ padding: '6px' }}>
                                     <ValueCard
                                         isHeader={true}
-                                        value={node?.data?.responsePayloadData?.data?.headers}
+                                        value={headerData}
                                         disabled={true}
                                         disableAdd={true}
                                         disableDelete={true}
                                     />
                                 </TabPanel>
                                 <TabPanel value={'1'} sx={{ padding: '6px' }}>
-                                    <ResponseTab
-                                        editable={false}
-                                        isResponse={false}
-                                        value={node?.data?.responsePayloadData?.data?.body ?? {}}
-                                    />
+                                    <ResponseTab editable={false} isResponse={false} value={responseBodyData} />
                                 </TabPanel>
                             </TabContext>
                         )}
