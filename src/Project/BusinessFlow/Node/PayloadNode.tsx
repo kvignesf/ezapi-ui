@@ -1,11 +1,14 @@
+import { SocketContext } from '@/Context/socket';
 import responseMapperAtom from '@/shared/atom/reponseMapperAtom';
 import ErrorWithMessage from '@/shared/components/ErrorWithMessage';
 import { operationAtomWithMiddleware } from '@/shared/utils';
 import { Button } from '@material-ui/core';
-import { Card, FormControlLabel, Radio, RadioGroup, Stack, Typography } from '@mui/material';
+import { TabContext, TabList, TabPanel } from '@mui/lab';
+import { Card, FormControlLabel, Radio, RadioGroup, Stack, Tab, Typography } from '@mui/material';
+
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
-import React, { SyntheticEvent, useEffect, useState } from 'react';
+import React, { SyntheticEvent, useContext, useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 import { NodeProps, useNodeId } from 'reactflow';
 import { useRecoilState } from 'recoil';
@@ -14,10 +17,12 @@ import Collapse from '../../../icons/collapse.svg';
 import DialogIcon from '../../../icons/dialogIcon.svg';
 import { NODE_TYPES } from '../constants';
 import useNodeHook from '../hooks/useNodeHook';
-import { AggregateCard } from '../interfaces';
+import { AggregateCard, KeyValueProps } from '../interfaces';
 import { NodeData } from '../interfaces/flow';
+
 import { fetchAllAggregateCards } from '../services';
 import { ResponseTab } from './Components/ResponseTab';
+import { ValueCard } from './Components/ValueCard';
 
 interface PayloadNodeProps extends NodeProps {}
 interface DropDownProps {
@@ -33,6 +38,8 @@ const PayloadNode = (props: PayloadNodeProps): React.ReactElement => {
     const [isFullMapping, setIsFullMapping] = useState(true);
     const [showResponseMapping, setShowResponseMapping] = useRecoilState(responseMapperAtom);
     const [isJsonValid, setIsJsonValid] = useState(true);
+    const [tabValue, setTabValue] = useState('0');
+    const [headers, setHeaders] = useState<KeyValueProps[]>();
 
     const { projectId = '' }: { projectId: string } = useParams();
     const [operationData, _] = useRecoilState(operationAtomWithMiddleware);
@@ -58,19 +65,32 @@ const PayloadNode = (props: PayloadNodeProps): React.ReactElement => {
         return {
             ...newNodeData,
             responsePayloadData: {
-                customMapping: false,
-                cardId: selectedItem?.id,
+                customMapping: !isFullMapping,
+                cardId: selectedItem?.id ?? '',
             },
         };
     }
-
+    const handleChange = (_event: React.SyntheticEvent, newValue: string) => {
+        setTabValue(newValue);
+    };
     useEffect(() => {
         if (collapse) {
             loadNodeDataFromServer();
         }
     }, [collapse]);
+    const socket = useContext(SocketContext);
 
     useEffect(() => {
+        if (!socket.connected) return;
+        const fetchData = () => {
+            loadNodeDataFromServer();
+        };
+
+        socket.on('payloadCardResponse', fetchData);
+    }, []);
+
+    useEffect(() => {
+        console.log(node?.data?.responsePayloadData);
         if (node?.data?.responsePayloadData?.cardId) {
             const name = dropDownData.find((x) => x.id === node?.data?.responsePayloadData?.cardId)?.name;
             setSelectedItem({ id: node?.data?.responsePayloadData?.cardId, name: name ?? '' });
@@ -98,7 +118,7 @@ const PayloadNode = (props: PayloadNodeProps): React.ReactElement => {
     }, [collapse]);
 
     return (
-        <Card sx={{ width: '390px' }}>
+        <Card sx={{ width: '513px' }}>
             <Stack
                 direction={'row'}
                 sx={{ borderBottom: '1px solid #C0CCDA', height: '52px', padding: '24px 16px' }}
@@ -117,7 +137,7 @@ const PayloadNode = (props: PayloadNodeProps): React.ReactElement => {
                         color="text.primary"
                         gutterBottom
                     >
-                        Payload-builder
+                        Response Payload Builder
                     </Typography>
                 </Stack>
                 <Stack direction={'row'} spacing={1}>
@@ -132,7 +152,7 @@ const PayloadNode = (props: PayloadNodeProps): React.ReactElement => {
                 </Stack>
             </Stack>
             {collapse && (
-                <Stack justifyContent={'space-between'} sx={{ padding: '12px 16px 24px 16px', minHeight: '188px' }}>
+                <Stack justifyContent={'space-between'} sx={{ padding: '12px 8px', minHeight: '188px' }}>
                     <RadioGroup
                         aria-labelledby="controlled-radio-buttons-group"
                         name="controlled-radio-buttons-group"
@@ -157,12 +177,12 @@ const PayloadNode = (props: PayloadNodeProps): React.ReactElement => {
                             clearIcon={null}
                             openOnFocus={true}
                             fullWidth={true}
-                            style={{ width: '300px' }}
+                            style={{ width: '350px' }}
                             renderInput={(params) => <TextField {...params} label="Select a Card..." />}
                         />
                     )}
 
-                    <Stack width={'100%'} direction={'row-reverse'} paddingTop={'24px'}>
+                    <Stack width={'100%'} direction={'row-reverse'} paddingTop={'12px'}>
                         {isFullMapping ? (
                             <Button
                                 style={{ width: '100px', background: '#1565C0', color: '#FFF' }}
@@ -179,19 +199,68 @@ const PayloadNode = (props: PayloadNodeProps): React.ReactElement => {
                                 variant="contained"
                                 onClick={() => {
                                     setShowResponseMapping(true);
+                                    setSelectedItem(null);
+                                    triggerDelayedNodeSaveOnServer();
                                 }}
                             >
                                 Add Response Mapping
                             </Button>
                         )}
                     </Stack>
-                    <Stack sx={{ width: '100%' }}>
-                        <ResponseTab
-                            editable={false}
-                            isResponse={false}
-                            displayTitle={false}
-                            value={node?.data?.responsePayloadData?.data ?? {}}
-                        />
+                    <Stack paddingTop={'12px'} sx={{ width: '100%' }}>
+                        {isFullMapping ? (
+                            <ResponseTab
+                                editable={false}
+                                isResponse={false}
+                                displayTitle="Response Body"
+                                value={node?.data?.responsePayloadData?.data ?? {}}
+                            />
+                        ) : (
+                            <TabContext value={tabValue}>
+                                <Stack direction="row" sx={{ borderBottom: 1, borderColor: 'divider', width: '100%' }}>
+                                    <TabList
+                                        onChange={handleChange}
+                                        aria-label="lab API tabs example"
+                                        TabIndicatorProps={{ style: { display: 'none' } }}
+                                    >
+                                        <Tab
+                                            label="Headers"
+                                            value={'0'}
+                                            sx={{
+                                                borderBottom: tabValue === '0' ? '2px solid #1976d2' : '',
+                                                color: tabValue === '0' ? '#1976d2' : '',
+                                            }}
+                                            key="headers"
+                                        />
+                                        <Tab
+                                            label="Response Body"
+                                            value={'1'}
+                                            sx={{
+                                                borderBottom: tabValue === '1' ? '2px solid #1976d2' : '',
+                                                color: tabValue === '1' ? '#1976d2' : '',
+                                            }}
+                                            key="query"
+                                        />
+                                    </TabList>
+                                </Stack>
+                                <TabPanel value={'0'} sx={{ padding: '6px' }}>
+                                    <ValueCard
+                                        isHeader={true}
+                                        value={node?.data?.responsePayloadData?.headers}
+                                        disabled={true}
+                                        disableAdd={true}
+                                        disableDelete={true}
+                                    />
+                                </TabPanel>
+                                <TabPanel value={'1'} sx={{ padding: '6px' }}>
+                                    <ResponseTab
+                                        editable={false}
+                                        isResponse={false}
+                                        value={node?.data?.responsePayloadData?.data ?? {}}
+                                    />
+                                </TabPanel>
+                            </TabContext>
+                        )}
                     </Stack>
                     {!isJsonValid && <ErrorWithMessage message={'invalid JSON'} className={'mb-3'} contained isError />}
                 </Stack>

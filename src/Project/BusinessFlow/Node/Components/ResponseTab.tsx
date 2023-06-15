@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 
 interface ResponseTabProps {
     isResponse?: boolean;
-    displayTitle?: boolean;
+    displayTitle?: string;
     value?: object | string;
     disabled?: boolean;
     message?: string;
@@ -16,7 +16,7 @@ interface ResponseTabProps {
 export const ResponseTab = ({
     isResponse = true,
     value,
-    displayTitle = false,
+    displayTitle = '',
     disabled = false,
     message = '',
     editable = true,
@@ -61,7 +61,7 @@ export const ResponseTab = ({
                         padding: ' 2px 16px',
                     }}
                 >
-                    {displayTitle ? 'Request Body' : 'Response Body'}
+                    {displayTitle}
                 </Stack>
             )}
             <Stack sx={{ padding: '8px' }}>

@@ -622,7 +622,7 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                                 }}
                                 isError={isError}
                                 isResponse={false}
-                                displayTitle={true}
+                                displayTitle="Response Body"
                                 value={requestBodyData || {}}
                                 disabled={apiType === 'system' ? true : false}
                             />

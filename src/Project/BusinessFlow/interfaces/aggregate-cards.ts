@@ -24,6 +24,7 @@ export interface ResponsePayloadData {
     customMapping?: boolean;
     cardId?: string;
     data?: any;
+    headers?: KeyValueProps[];
 }
 
 export interface FilterRowData {
