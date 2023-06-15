@@ -82,14 +82,18 @@ const PayloadNode = (props: PayloadNodeProps): React.ReactElement => {
 
     useEffect(() => {
         if (!socket.connected) return;
-        const fetchData = () => {
+        const fetchData = (eventName: any) => {
+            console.log('fetchingData', eventName);
             loadNodeDataFromServer();
         };
 
-        socket.on('payloadCardResponse', fetchData);
+        socket.on('payloadCardResponse', (eventName: any) => {
+            fetchData(eventName);
+        });
     }, []);
 
     useEffect(() => {
+        //traverse through node?.data?.responsePayloadData?.data?.headers
         console.log(node?.data?.responsePayloadData);
         if (node?.data?.responsePayloadData?.cardId) {
             const name = dropDownData.find((x) => x.id === node?.data?.responsePayloadData?.cardId)?.name;
@@ -246,7 +250,7 @@ const PayloadNode = (props: PayloadNodeProps): React.ReactElement => {
                                 <TabPanel value={'0'} sx={{ padding: '6px' }}>
                                     <ValueCard
                                         isHeader={true}
-                                        value={node?.data?.responsePayloadData?.headers}
+                                        value={node?.data?.responsePayloadData?.data?.headers}
                                         disabled={true}
                                         disableAdd={true}
                                         disableDelete={true}
@@ -256,7 +260,7 @@ const PayloadNode = (props: PayloadNodeProps): React.ReactElement => {
                                     <ResponseTab
                                         editable={false}
                                         isResponse={false}
-                                        value={node?.data?.responsePayloadData?.data ?? {}}
+                                        value={node?.data?.responsePayloadData?.data?.body ?? {}}
                                     />
                                 </TabPanel>
                             </TabContext>
