@@ -5,7 +5,7 @@ import KeyValue from './KeyValue/KeyValuePanel';
 import JsonEditor from '../components/JsonEditor/JsonEditor';
 import AuthTab from './AuthenticationTab/AuthTab';
 import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
-import { currentApi, currentTabs, loadingState, requestParams, responseInfo } from '../../../CollectionsAtom';
+import { currentApi, currentTabs, requestParams, responseInfo } from '../../../CollectionsAtom';
 import { getUserId } from '../../../../shared/storage';
 import axios from 'axios';
 import { endpoint } from '../../../../shared/network/client';
@@ -54,10 +54,10 @@ export default function RequestTabs() {
     const requestData = useRecoilValue(requestParams);
     const responseData = useRecoilValue(responseInfo);
     const setTabs = useSetRecoilState(currentTabs);
-    const loading = useRecoilValue(loadingState);
+
     useEffect(() => {
         async function ApiUpdate() {
-            if (file.type === 'file' && file.id !== 0 && loading === false) {
+            if (file.type === 'file' && file.id !== 0) {
                 await axios
                     .put(process.env.REACT_APP_API_URL + endpoint.collectionsRequest + `/${userId}/${file.id}`, {
                         name: file.name,
@@ -98,7 +98,7 @@ export default function RequestTabs() {
             }
         }
         ApiUpdate();
-    }, [file.id, file.name, file.onSave, requestData, responseData, setTabs, userId, loading, file.type]);
+    }, [file.id, file.name, file.onSave, requestData, responseData, setTabs, userId, file.type]);
     const classes = useStyles();
     const [value, setValue] = useState(0);
 

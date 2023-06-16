@@ -3,8 +3,7 @@ import { Drawer, makeStyles } from '@material-ui/core';
 import { Resizable } from 'react-resizable';
 import DocStore from './DocStore/DocStore';
 import CollectionTabs from './CollectionTabs/CollectionTabs';
-
-const drawerWidth = 260;
+const drawerWidth = 300;
 const maxSidebarWidth = 550;
 
 export default function Collections() {
