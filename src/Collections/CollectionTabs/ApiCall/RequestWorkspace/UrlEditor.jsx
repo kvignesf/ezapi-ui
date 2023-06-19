@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import { FormControl, Select, MenuItem, Input, Button } from '@material-ui/core';
+import { FormControl, Select, MenuItem, Input, Button, FormControlLabel, Checkbox } from '@material-ui/core';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
@@ -127,8 +127,13 @@ export default function UrlEditor({ onInputSend }) {
     const userId = getUserId();
     let setTabs = useSetRecoilState(currentTabs);
     const currenttab = useRecoilValue(currentTab);
-    const setCurrentApi = useSetRecoilState(currentApi);
+    const [api, setCurrentApi] = useRecoilState(currentApi);
     const setBreadCrumbs = useSetRecoilState(currentBreadCrumbs);
+    const [checked, setChecked] = useState(false);
+
+    const handleCheckChange = (event) => {
+        setChecked(event.target.checked);
+    };
 
     const handleChange = (event) => {
         const { name, value } = event.target;
@@ -142,65 +147,88 @@ export default function UrlEditor({ onInputSend }) {
     };
     const handleSave = async (event) => {
         const newId = Date.now();
-        if (selectedFolder.id) {
-            const type = 'file';
-            let parentFolderNames;
-            await axios.post(process.env.REACT_APP_API_URL + endpoint.collectionDirectory, {
-                userId: userId,
-                id: newId,
-                name: fileName ? fileName : 'New Request',
-                type: 'File',
-                parentFolderId: selectedFolder.id,
-            });
-            await axios.post(process.env.REACT_APP_API_URL + endpoint.collectionsRequest + `/${userId}/${newId}`, {
-                name: fileName ? fileName : 'New Request',
-                request: request
-                    ? request
-                    : { method: 'GET', proxy: 'No Proxy', url: '', body: { '': '' }, header: [], queryParams: [] },
-                response: response ? response : { status: null, headers: {}, data: {}, time: 0, size: 0 },
-                onSave: true,
-            });
-            await axios
-                .get(process.env.REACT_APP_API_URL + endpoint.collectionDirectory + `/${userId}/${type}/${newId}`)
-                .then((response) => {
-                    parentFolderNames = response['data'].result;
-                    parentFolderNames = parentFolderNames.reverse();
-                })
-                .catch((err) => {
-                    console.log(err);
+        if (checked) {
+            if (selectedFolder.id) {
+                const type = 'file';
+                let parentFolderNames;
+                await axios.post(process.env.REACT_APP_API_URL + endpoint.collectionDirectory, {
+                    userId: userId,
+                    id: newId,
+                    name: fileName ? fileName : 'New Request',
+                    type: 'File',
+                    parentFolderId: selectedFolder.id,
                 });
-
-            await axios
-                .get(process.env.REACT_APP_API_URL + `${endpoint.collectionsRequest}/${userId}/${newId}`)
-                .then(async (response) => {
-                    const data = response.data;
-                    setTabs((prev) => {
-                        return prev.map((tab, index) => {
-                            if (index === currenttab) {
-                                // Modify the object at the target index
-                                return {
-                                    ...tab,
-                                    id: data.id,
-                                    parentFolderNames: parentFolderNames,
-                                    request: data.request,
-                                    response: data.response,
-                                    label: data.name,
-                                    onSave: data.onSave,
-                                    type: 'file',
-                                };
-                            }
-                            // For other indices, return the tab object as is
-                            return tab;
-                        });
+                await axios.post(process.env.REACT_APP_API_URL + endpoint.collectionsRequest + `/${userId}/${newId}`, {
+                    name: fileName ? fileName : 'New Request',
+                    request: request
+                        ? request
+                        : { method: 'GET', proxy: 'No Proxy', url: '', body: { '': '' }, header: [], queryParams: [] },
+                    response: response ? response : { status: null, headers: {}, data: {}, time: 0, size: 0 },
+                    onSave: true,
+                });
+                await axios
+                    .get(process.env.REACT_APP_API_URL + endpoint.collectionDirectory + `/${userId}/${type}/${newId}`)
+                    .then((response) => {
+                        parentFolderNames = response['data'].result;
+                        parentFolderNames = parentFolderNames.reverse();
+                    })
+                    .catch((err) => {
+                        console.log(err);
                     });
 
-                    setRequest(data.request);
-                    setResponse(data.response);
-                    setCurrentApi({ id: data.id, name: data.name, onSave: data.onSave });
-                    setBreadCrumbs(parentFolderNames);
-                });
-        }
+                await axios
+                    .get(process.env.REACT_APP_API_URL + `${endpoint.collectionsRequest}/${userId}/${newId}`)
+                    .then(async (response) => {
+                        const data = response.data;
+                        setTabs((prev) => {
+                            return prev.map((tab, index) => {
+                                if (index === currenttab) {
+                                    // Modify the object at the target index
+                                    return {
+                                        ...tab,
+                                        id: data.id,
+                                        parentFolderNames: parentFolderNames,
+                                        request: data.request,
+                                        response: data.response,
+                                        label: data.name,
+                                        onSave: data.onSave,
+                                        type: 'file',
+                                    };
+                                }
+                                // For other indices, return the tab object as is
+                                return tab;
+                            });
+                        });
 
+                        setRequest(data.request);
+                        setResponse(data.response);
+                        setCurrentApi({
+                            id: data.id,
+                            name: data.name,
+                            onSave: data.onSave,
+                            parentFolderId: data.parentFolderId,
+                        });
+                        setBreadCrumbs(parentFolderNames);
+                    });
+            }
+        } else {
+            if (api.parentFolderId === 0) {
+                await axios.post(process.env.REACT_APP_API_URL + endpoint.collectionDirectory, {
+                    userId: userId,
+                    id: newId,
+                    name: fileName ? fileName : 'New Request',
+                    type: 'File',
+                    parentFolderId: selectedFolder.id,
+                });
+            } else {
+                await axios.put(process.env.REACT_APP_API_URL + endpoint.collectionDirectory + `/${userId}/${api.id}`, {
+                    parentFolderId: selectedFolder.id,
+                });
+            }
+            await axios.put(process.env.REACT_APP_API_URL + endpoint.collectionsRequest + `/${userId}/${api.id}`, {
+                parentFolderId: selectedFolder.id,
+            });
+        }
         setOpen(false);
     };
 
@@ -273,25 +301,37 @@ export default function UrlEditor({ onInputSend }) {
                 <DialogContent dividers style={{ height: '60vh', width: '37rem', overflow: 'hidden' }}>
                     <DocStore isModal={true} />
                 </DialogContent>
-                <DialogActions>
-                    <Button
-                        className={`${classes.modalButton} ${classes.cancel}`}
-                        variant="contained"
-                        color="grey"
-                        size="small"
-                        onClick={handleSaveClose}
-                    >
-                        Cancel
-                    </Button>
-                    <Button
-                        className={`${classes.modalButton}`}
-                        variant="contained"
-                        color="primary"
-                        size="small"
-                        onClick={handleSave}
-                    >
-                        Save
-                    </Button>
+                <DialogActions style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                checked={checked}
+                                onChange={handleCheckChange}
+                                inputProps={{ 'aria-label': 'controlled' }}
+                            />
+                        }
+                        label={<span style={{ fontWeight: 500, fontSize: '15px' }}>Save as duplicate</span>}
+                    />
+                    <div>
+                        <Button
+                            className={`${classes.modalButton} ${classes.cancel}`}
+                            variant="contained"
+                            color="grey"
+                            size="small"
+                            onClick={handleSaveClose}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            className={`${classes.modalButton}`}
+                            variant="contained"
+                            color="primary"
+                            size="small"
+                            onClick={handleSave}
+                        >
+                            Save
+                        </Button>
+                    </div>
                 </DialogActions>
             </Dialog>
         </div>

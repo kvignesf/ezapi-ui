@@ -1,9 +1,13 @@
 import { atom } from 'recoil';
-import ApiCall from './CollectionTabs/ApiCall/ApiCall';
 
 export const accessToken = atom({
     key: 'accessToken',
     default: '',
+});
+
+export const toggle = atom({
+    key: 'toggle',
+    default: 'folders',
 });
 
 export const authFormData = atom({
@@ -85,8 +89,7 @@ export const isSaveModalOpen = atom({
     key: 'isSaveModalOpen',
     default: false,
 });
-
-export const loadingState = atom({
-    key: 'loadingState',
-    default: false,
+export const recentRequest = atom({
+    key: 'recentRequest',
+    default: [],
 });

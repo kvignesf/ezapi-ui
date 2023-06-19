@@ -25,6 +25,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
+
 const useStyles = makeStyles((theme) => ({
     tabPanel: {
         margin: '-25px',
@@ -36,22 +37,35 @@ const useStyles = makeStyles((theme) => ({
     root: {
         borderBottom: '3px solid #F0F0F0',
         marginTop: '-2px',
+        height: '20px',
     },
     tab: {
         zIndex: '1',
         fontWeight: 'semibold',
         textTransform: 'none',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
     },
     selectedTab: {
         backgroundColor: 'rgba(128, 128, 128, 0.2)',
         fontWeight: 600,
+        paddingRight: 5,
     },
     tabButton: {
         zIndex: '2',
     },
     closeButton: {
         zIndex: '2',
-        marginRight: '6px',
+        position: 'relative',
+        '&::after': {
+            content: '""',
+            position: 'absolute',
+            top: -10,
+            right: -5,
+            height: '120px',
+            width: '2px',
+            backgroundColor: theme.palette.divider,
+        },
     },
     modalButton: {
         margin: theme.spacing(1),
@@ -86,7 +100,7 @@ function CollectionTabs() {
         setOpen(false);
     };
 
-    const handleChange = (event, newValue) => {
+    const handleChange = async (event, newValue) => {
         setValue(newValue);
         setRequest(tabs[newValue].request);
         setResponse(tabs[newValue].response);
@@ -97,7 +111,13 @@ function CollectionTabs() {
             onSave: tabs[newValue].onSave,
         });
         setBreadCrumbs(tabs[newValue].parentFolderNames);
+        await axios
+            .put(process.env.REACT_APP_API_URL + endpoint.collectionsRequest + `/${userId}/${tabs[newValue].id}`, {
+                isRecent: true,
+            })
+            .catch((error) => console.log(error));
     };
+
     const handleDelete = async (index) => {
         if (tabs[index]?.onSave === false) {
             await axios
@@ -188,7 +208,7 @@ function CollectionTabs() {
         setValue(tabs.length);
         setRequest({ method: 'GET', proxy: 'No Proxy', url: '', body: { '': '' }, header: [], queryParams: [] });
         setResponse({});
-        setCurrentApi({ id: newId, name: 'New Request', type: 'file', onSave: false });
+        setCurrentApi({ id: newId, name: 'New Request', type: 'file', onSave: false, parentFolderId: 0 });
         setBreadCrumbs([]);
 
         await axios.post(process.env.REACT_APP_API_URL + endpoint.collectionsRequest + `/${userId}/${newId}`, {
@@ -203,8 +223,11 @@ function CollectionTabs() {
             },
             response: { status: null, headers: {}, data: {}, time: 0, size: 0 },
             onSave: true,
+            parentFolderId: 0,
+            isRecent: true,
         });
     };
+
     return (
         <div>
             <TabContext value={value}>
@@ -217,18 +240,42 @@ function CollectionTabs() {
                     className={classes.root}
                 >
                     {tabs.map((tab, index) => (
-                        <div key={index} className={`${value === index ? classes.selectedTab : ''}`}>
+                        <div
+                            key={index}
+                            style={{ marginLeft: value > 0 ? 5 : 0 }}
+                            className={`${value === index ? classes.selectedTab : ''}`}
+                        >
                             <Tab
-                                label={tab.label}
+                                label={
+                                    <span>
+                                        <span
+                                            style={
+                                                tab.request.method === 'GET'
+                                                    ? { color: '#03C988', fontSize: '14px', fontWeight: 500 }
+                                                    : tab.request.method === 'POST'
+                                                    ? { color: '#F29727', fontSize: '14px', fontWeight: 500 }
+                                                    : tab.request.method === 'DELETE'
+                                                    ? { color: '#CD1818', fontSize: '14px', fontWeight: 500 }
+                                                    : tab.request.method === 'PATCH'
+                                                    ? { color: '#4F709C', fontSize: '14px', fontWeight: 500 }
+                                                    : tab.request.method === 'PUT'
+                                                    ? { color: '#5B8FF9', fontSize: '14px', fontWeight: 500 }
+                                                    : null
+                                            }
+                                        >
+                                            {tab.request.method}
+                                        </span>
+                                        {tab.label.length > 15 ? ` ${tab.label.substring(0, 10)}...` : ` ${tab.label}`}
+                                    </span>
+                                }
                                 value={index}
                                 onClick={(e) => handleChange(e, index)}
-                                className={`${classes.tab}`}
+                                className={classes.tab}
                             />
-
                             <IconButton
                                 size="small"
                                 onClick={() => handleClickOpen(index)}
-                                className={classes.closeButton}
+                                className={`${classes.closeButton}`}
                             >
                                 <Close fontSize="small" />
                             </IconButton>
@@ -238,10 +285,10 @@ function CollectionTabs() {
                         style={{
                             display: 'flex',
                             alignItems: 'center',
-
                             margin: '11px 7px',
                         }}
                     >
+                        {' '}
                         <IconButton size="small" onClick={handleAdd} className={classes.tabButton}>
                             <Add fontSize="small" />
                         </IconButton>
