@@ -133,6 +133,7 @@ const PayloadNode = (props: PayloadNodeProps): React.ReactElement => {
         <Card sx={{ width: '513px' }}>
             <Stack
                 direction={'row'}
+                className={'custom-drag-handle'} //This is required to make only the header section draggable
                 sx={{ borderBottom: '1px solid #C0CCDA', height: '52px', padding: '24px 16px' }}
                 justifyContent={'space-between'}
             >

@@ -114,6 +114,9 @@ function NodeTypeSectionNode(props: NodeProps) {
     };
 
     const handleNodeType = async (type: string) => {
+        if (type === 'PAYLOAD_BUILDER' && nodes.find((node: Node) => node.type === NODE_TYPES.PAYLOAD_BUILDER_NODE)) {
+            return;
+        }
         switch (type) {
             case 'API': {
                 setUpdateNodeDataProps({
