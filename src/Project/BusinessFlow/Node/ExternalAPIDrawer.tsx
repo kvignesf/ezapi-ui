@@ -675,7 +675,7 @@ export const ExternalAPIDrawer = ({ cardId }: ExternalAPIDrawerProps) => {
                             }}
                             isError={isError}
                             isResponse={false}
-                            displayTitle={true}
+                            displayTitle="Response Body"
                             value={runData.body?.data || {}}
                             disabled={apiType === 'system' ? true : false}
                         />

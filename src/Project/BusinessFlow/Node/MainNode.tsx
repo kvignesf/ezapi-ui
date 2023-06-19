@@ -500,7 +500,7 @@ const MainNode = (props: MainNodeProps) => {
                                         }}
                                         // isError={isError}
                                         isResponse={false}
-                                        displayTitle={true}
+                                        displayTitle="Request Body"
                                         value={
                                             Array.isArray(requestBodyData) && requestBodyData.length === 0
                                                 ? {}

@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 
 interface ResponseTabProps {
     isResponse?: boolean;
-    displayTitle?: boolean;
+    displayTitle?: string;
     value?: object | string;
     disabled?: boolean;
     message?: string;
@@ -16,6 +16,7 @@ interface ResponseTabProps {
 export const ResponseTab = ({
     isResponse = true,
     value,
+    displayTitle = '',
     disabled = false,
     message = '',
     editable = true,
@@ -37,21 +38,32 @@ export const ResponseTab = ({
 
     return (
         <Stack width="100%">
-            {isResponse
-                ? isError !== undefined && (
-                      <Stack
-                          height={'32px'}
-                          sx={{
-                              backgroundColor: isError ? '#ff3333' : '#71C72C',
-                              color: '#fff',
-                              fontWeight: 600,
-                              padding: ' 2px 16px',
-                          }}
-                      >
-                          {isError ? `error: ${message}` : `success: ${message}`}
-                      </Stack>
-                  )
-                : null}
+            {isResponse ? (
+                isError !== undefined && (
+                    <Stack
+                        height={'32px'}
+                        sx={{
+                            backgroundColor: isError ? '#ff3333' : '#71C72C',
+                            color: '#fff',
+                            fontWeight: 600,
+                            padding: ' 2px 16px',
+                        }}
+                    >
+                        {isError ? `error: ${message}` : `success: ${message}`}
+                    </Stack>
+                )
+            ) : (
+                <Stack
+                    height={'32px'}
+                    sx={{
+                        color: '#000',
+                        fontWeight: 600,
+                        padding: ' 2px 16px',
+                    }}
+                >
+                    {displayTitle}
+                </Stack>
+            )}
             <Stack sx={{ padding: '8px' }}>
                 <Stack
                     style={{

@@ -523,36 +523,44 @@ export const AggregateMapping = ({
                 >
                     Cancel
                 </TextButton>
-                {selectedData.some((item) => item.name === 'Authorization') && (
-                    <Box display="flex" alignItems="center" style={{ marginTop: '20px' }}>
-                        <label style={{ fontWeight: 'bold', marginRight: '20px' }}>
-                            Add Bearer prefix to Authorization value
-                        </label>
-                        <FormControlLabel
-                            control={
-                                <Checkbox
-                                    checked={isCheckedBearer}
-                                    onChange={(event) => {
-                                        const checked = event.target.checked;
-                                        setIsCheckedBearer(checked);
-                                        setSelectedData(
-                                            selectedData.map((item) => {
-                                                if (item.name === 'Authorization') {
-                                                    return {
-                                                        ...item,
-                                                        bearer: checked,
-                                                    };
-                                                }
-                                                return item;
-                                            }),
-                                        );
-                                    }}
-                                />
-                            }
-                            label=""
-                        />
-                    </Box>
-                )}
+                <Box display="flex" alignItems="center">
+                    {selectedData.some((item) => item.name === 'Authorization') ? (
+                        <>
+                            <label style={{ fontWeight: 'bold', marginRight: '20px' }}>
+                                Add Bearer prefix to Authorization value
+                            </label>
+                            <FormControlLabel
+                                control={
+                                    <Checkbox
+                                        checked={isCheckedBearer}
+                                        onChange={(event) => {
+                                            const checked = event.target.checked;
+                                            setIsCheckedBearer(checked);
+                                            setSelectedData(
+                                                selectedData.map((item) => {
+                                                    if (item.name === 'Authorization') {
+                                                        return {
+                                                            ...item,
+                                                            bearer: checked,
+                                                        };
+                                                    }
+                                                    return item;
+                                                }),
+                                            );
+                                        }}
+                                    />
+                                }
+                                label=""
+                            />
+                        </>
+                    ) : (
+                        // This is the "ghost" element that maintains the layout's spacing Authorization is not there
+                        <div style={{ visibility: 'hidden' }}>
+                            <label style={{ fontWeight: 'bold', marginRight: '20px' }}>Placeholder</label>
+                            <FormControlLabel control={<Checkbox checked={false} />} label="" />
+                        </div>
+                    )}
+                </Box>
 
                 {/*@ts-ignore */}
 

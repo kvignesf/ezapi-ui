@@ -76,7 +76,7 @@ export const ValueCardRow = (props: ValueCardRowProps) => {
                         onChange({ key: data.key, value: e.target.value });
                     }}
                     sx={{
-                        minWidth: cardType === 'node' ? '140px' : '320px',
+                        width: cardType === 'node' ? '230px' : '690px',
                     }}
                     inputProps={{ style: { height: '15px' } }}
                 />
