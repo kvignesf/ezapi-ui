@@ -673,8 +673,8 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                             }
                         >
                             <ValueCard
-                                // disableAdd={true}
-                                // disableDelete={true}
+                                disableAdd={true}
+                                disableDelete={true}
                                 value={pathParams}
                                 disabled={apiType === 'system' ? true : false}
                                 onChange={(newPathParams: KeyValueProps[]) => {

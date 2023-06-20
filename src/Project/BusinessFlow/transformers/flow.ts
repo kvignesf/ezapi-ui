@@ -130,6 +130,7 @@ export const prepareNodeFromAggregateCard = (card: AggregateCard, position: XYPo
         type: card.type,
         position: position,
         data: nodeData,
+        dragHandle: '.custom-drag-handle',
         // systemApi: node.systemApi,
     };
     return node as Node;

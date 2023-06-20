@@ -30,11 +30,6 @@ import 'reactflow/dist/style.css';
 import { useRecoilState } from 'recoil';
 import { shallow } from 'zustand/shallow';
 import { BusinessFlowContext } from './BusinessFlowContext';
-import { NODE_TYPES } from './constants';
-import { DEFAULT_BUSINESS_FLOW_STATE } from './defaults';
-import './index.css';
-import { IBusinessFlow } from './interfaces';
-import { NewAggregateCard } from './interfaces/aggregate-cards';
 import {
     BranchNode,
     ExternalAPINode,
@@ -49,6 +44,11 @@ import { AggregateMapping } from './Node/Components/AggregateMapping';
 import { BranchQuerySelector } from './Node/Components/BranchQuerySelector';
 import { FilterDrawer } from './Node/Components/FilterDrawer';
 import { ExternalAPIDrawer } from './Node/ExternalAPIDrawer';
+import { NODE_TYPES } from './constants';
+import { DEFAULT_BUSINESS_FLOW_STATE } from './defaults';
+import './index.css';
+import { IBusinessFlow } from './interfaces';
+import { NewAggregateCard } from './interfaces/aggregate-cards';
 /* import { NODE_TYPES } from './constants';
 import { DEFAULT_BUSINESS_FLOW_STATE } from './defaults';
 import './index.css';
@@ -517,6 +517,7 @@ const Flow = () => {
                         position: 'absolute',
                     },
                 }}
+                sx={{ overflow: 'unset' }}
             >
                 <ExternalAPIDrawer cardId={selectedCard} />
             </Drawer>
