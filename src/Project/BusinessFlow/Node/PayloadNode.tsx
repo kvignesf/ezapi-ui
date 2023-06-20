@@ -84,12 +84,11 @@ const PayloadNode = (props: PayloadNodeProps): React.ReactElement => {
     useEffect(() => {
         if (!socket.connected) return;
         const fetchData = (eventName: any) => {
-            console.log('fetchingData', eventName);
-            if (isFullMapping) {
-                setResponseBodyData(eventName);
-            } else {
+            if (eventName?.body && eventName?.headers) {
                 setResponseBodyData(eventName?.body);
                 setHeaderData(eventName?.headers);
+            } else {
+                setResponseBodyData(eventName);
             }
         };
 
@@ -171,7 +170,7 @@ const PayloadNode = (props: PayloadNodeProps): React.ReactElement => {
                         name="controlled-radio-buttons-group"
                         value={isFullMapping}
                         onChange={(e) => {
-                            setIsFullMapping(e.target.value === 'true');
+                            setIsFullMapping(e.target.value == 'true');
                         }}
                     >
                         <Stack direction={'row'}>

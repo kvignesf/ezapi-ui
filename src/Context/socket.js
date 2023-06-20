@@ -16,4 +16,4 @@ export const socket = io(process.env.REACT_APP_SOCKET_URI, {
 // export const socket = io('http://localhost:7744/socket.io/', {
 //     transports: ['websocket'],
 // });
-export const SocketContext = React.createContext();
+export const SocketContext = React.createContext(socket);
