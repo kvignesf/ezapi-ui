@@ -37,7 +37,6 @@ export const ValueCardRow = (props: ValueCardRowProps) => {
                         clearIcon={null}
                         inputValue={data.key}
                         onInputChange={(event, newInputValue) => {
-                            console.log(event);
                             onChange({ key: newInputValue, value: data.value });
                         }}
                         renderInput={(params) => (
@@ -76,7 +75,7 @@ export const ValueCardRow = (props: ValueCardRowProps) => {
                         onChange({ key: data.key, value: e.target.value });
                     }}
                     sx={{
-                        width: cardType === 'node' ? '230px' : '690px',
+                        width: cardType === 'node' ? '228px' : '690px',
                     }}
                     inputProps={{ style: { height: '15px' } }}
                 />
