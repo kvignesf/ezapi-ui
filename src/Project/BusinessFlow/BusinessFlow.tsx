@@ -518,6 +518,7 @@ const Flow = () => {
                         position: 'absolute',
                     },
                 }}
+                sx={{ overflow: 'unset' }}
             >
                 <ExternalAPIDrawer cardId={selectedCard} />
             </Drawer>
