@@ -37,6 +37,7 @@ export const ValueCardRow = (props: ValueCardRowProps) => {
                         clearIcon={null}
                         inputValue={data.key}
                         onInputChange={(event, newInputValue) => {
+                            console.log(event);
                             onChange({ key: newInputValue, value: data.value });
                         }}
                         renderInput={(params) => (
