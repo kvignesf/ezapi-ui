@@ -49,6 +49,7 @@ import { DEFAULT_BUSINESS_FLOW_STATE } from './defaults';
 import './index.css';
 import { IBusinessFlow } from './interfaces';
 import { NewAggregateCard } from './interfaces/aggregate-cards';
+
 /* import { NODE_TYPES } from './constants';
 import { DEFAULT_BUSINESS_FLOW_STATE } from './defaults';
 import './index.css';

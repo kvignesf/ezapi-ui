@@ -1,4 +1,3 @@
-//import { selectedExternalNodeType } from '@/shared/atom/selectedNodeAtom';
 import { PrimaryButton, TextButton } from '@/shared/components/AppButton';
 import AppIcon from '@/shared/components/AppIcon';
 import { operationAtomWithMiddleware } from '@/shared/utils';

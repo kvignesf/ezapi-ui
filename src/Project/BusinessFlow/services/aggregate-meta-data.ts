@@ -1,34 +1,51 @@
 import client from '@/shared/network/client';
 import { getApiError } from '@/shared/utils';
-
 import { CancelTokenSource } from 'axios';
+import { socket } from '../../../Context/socket';
 import { AggregateMetaData, DeleteNodesAPIProps, FetchAPIProps } from '../interfaces';
 import { prepareNodesAndEdgesFromAggregateMetaDataResponse } from '../transformers/flow';
 
+// export async function saveAggregateMetaData({ projectId, operationId, nodes, edges }: AggregateMetaData) {
+//     const url = `${process.env.REACT_APP_API_URL}/aggregateMetadata/${operationId}`;
+//     const requestData = {
+//         projectId,
+//         nodes,
+//         edges,
+//     };
+//     try {
+//         const { data } = await client.post(url, requestData);
+//         return data;
+//     } catch (error) {
+//         console.log('------------------------------------');
+//         console.log('error.response', error.response);
+//         console.log('error.response.data', error.response.data);
+//         console.log('------------------------------------');
+
+//         if (
+//             error.response?.status === 400 &&
+//             (error.response?.data?.message).startsWith('No matching document found for id')
+//         ) {
+//             console.log('error.response.data.message', error.response.data.message);
+//         } else {
+//             throw getApiError(error);
+//         }
+//     }
+// }
 export async function saveAggregateMetaData({ projectId, operationId, nodes, edges }: AggregateMetaData) {
-    const url = `${process.env.REACT_APP_API_URL}/aggregateMetadata/${operationId}`;
     const requestData = {
         projectId,
         nodes,
         edges,
+        operationId,
     };
-    try {
-        const { data } = await client.post(url, requestData);
-        return data;
-    } catch (error) {
-        console.log('------------------------------------');
-        console.log('error.response', error.response);
-        console.log('error.response.data', error.response.data);
-        console.log('------------------------------------');
 
-        if (
-            error.response?.status === 400 &&
-            (error.response?.data?.message).startsWith('No matching document found for id')
-        ) {
-            console.log('error.response.data.message', error.response.data.message);
-        } else {
-            throw getApiError(error);
+    try {
+        if (socket) {
+            socket.emit('aggregateMetadata', requestData ?? null);
+            console.log('Data has been sent to the server via socket');
         }
+    } catch (error) {
+        console.log('An error occurred when sending the data:', error);
     }
 }
 

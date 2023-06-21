@@ -69,14 +69,14 @@ const FilterNode = (props: FilterNodeProps) => {
                 position={Position.Right}
                 style={{ background: '#555' }}
                 onConnect={(params) => console.log('handle onConnect', params)}
-                isConnectable={props.isConnectable}
+                isConnectable={false}
             />
             <Handle
                 type="target"
                 position={Position.Left}
                 style={{ background: '#555' }}
                 onConnect={(params) => console.log('handle onConnect', params)}
-                isConnectable={props.isConnectable}
+                isConnectable={false}
             />
             <Card sx={{ width: '512px' }}>
                 <Tooltip title={'Filter Node'} arrow placement="top">

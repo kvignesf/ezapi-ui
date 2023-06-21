@@ -4,7 +4,8 @@ import ErrorWithMessage from '@/shared/components/ErrorWithMessage';
 import { operationAtomWithMiddleware } from '@/shared/utils';
 import { Button } from '@material-ui/core';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
-import { Card, FormControlLabel, Radio, RadioGroup, Stack, Tab, Tooltip, Typography } from '@mui/material';
+import { Card, FormControlLabel, Radio, RadioGroup, Stack, Tab, Typography } from '@mui/material';
+
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 import React, { SyntheticEvent, useContext, useEffect, useState } from 'react';
@@ -18,6 +19,7 @@ import { NODE_TYPES } from '../constants';
 import useNodeHook from '../hooks/useNodeHook';
 import { AggregateCard, KeyValueProps } from '../interfaces';
 import { NodeData } from '../interfaces/flow';
+
 import { fetchAllAggregateCards } from '../services';
 import { ResponseTab } from './Components/ResponseTab';
 import { ValueCard } from './Components/ValueCard';
@@ -77,18 +79,16 @@ const PayloadNode = (props: PayloadNodeProps): React.ReactElement => {
             loadNodeDataFromServer();
         }
     }, [collapse]);
-
     const socket = useContext(SocketContext);
 
     useEffect(() => {
         if (!socket.connected) return;
         const fetchData = (eventName: any) => {
-            console.log('fetchingData', eventName);
-            if (isFullMapping) {
-                setResponseBodyData(eventName);
-            } else {
+            if (eventName?.body && eventName?.headers) {
                 setResponseBodyData(eventName?.body);
                 setHeaderData(eventName?.headers);
+            } else {
+                setResponseBodyData(eventName);
             }
         };
 
@@ -129,42 +129,40 @@ const PayloadNode = (props: PayloadNodeProps): React.ReactElement => {
     }, [collapse]);
 
     return (
-        <Card sx={{ width: '390px' }}>
-            <Tooltip title={'Payload Node'} arrow placement="top">
-                <Stack
-                    direction={'row'}
-                    sx={{ borderBottom: '1px solid #C0CCDA', height: '52px', padding: '24px 16px' }}
-                    justifyContent={'space-between'}
-                    className={'custom-drag-handle'} //This is required to make only the header section draggable
-                >
-                    <Stack direction={'row'}>
-                        <img src={Json} style={{ width: '24px', height: '24px', alignSelf: 'center' }} />
-                        <Typography
-                            sx={{
-                                fontSize: '16px',
-                                alignSelf: 'center',
-                                marginBottom: '0',
-                                fontWeight: 600,
-                                paddingLeft: '8px',
-                            }}
-                            color="text.primary"
-                            gutterBottom
-                        >
-                            Response Payload Builder
-                        </Typography>
-                    </Stack>
-                    <Stack direction={'row'} spacing={1}>
-                        <img
-                            src={Collapse}
-                            style={{ width: '24px', height: '24px', alignSelf: 'center' }}
-                            onClick={() => {
-                                setCollapse(!collapse);
-                            }}
-                        />
-                        <img src={DialogIcon} style={{ width: '24px', height: '24px', alignSelf: 'center' }} />
-                    </Stack>
+        <Card sx={{ width: '513px' }}>
+            <Stack
+                direction={'row'}
+                className={'custom-drag-handle'} //This is required to make only the header section draggable
+                sx={{ borderBottom: '1px solid #C0CCDA', height: '52px', padding: '24px 16px' }}
+                justifyContent={'space-between'}
+            >
+                <Stack direction={'row'}>
+                    <img src={Json} style={{ width: '24px', height: '24px', alignSelf: 'center' }} />
+                    <Typography
+                        sx={{
+                            fontSize: '16px',
+                            alignSelf: 'center',
+                            marginBottom: '0',
+                            fontWeight: 600,
+                            paddingLeft: '8px',
+                        }}
+                        color="text.primary"
+                        gutterBottom
+                    >
+                        Response Payload Builder
+                    </Typography>
                 </Stack>
-            </Tooltip>
+                <Stack direction={'row'} spacing={1}>
+                    <img
+                        src={Collapse}
+                        style={{ width: '24px', height: '24px', alignSelf: 'center' }}
+                        onClick={() => {
+                            setCollapse(!collapse);
+                        }}
+                    />
+                    <img src={DialogIcon} style={{ width: '24px', height: '24px', alignSelf: 'center' }} />
+                </Stack>
+            </Stack>
             {collapse && (
                 <Stack justifyContent={'space-between'} sx={{ padding: '12px 8px', minHeight: '188px' }}>
                     <RadioGroup
@@ -172,7 +170,7 @@ const PayloadNode = (props: PayloadNodeProps): React.ReactElement => {
                         name="controlled-radio-buttons-group"
                         value={isFullMapping}
                         onChange={(e) => {
-                            setIsFullMapping(e.target.value === 'true');
+                            setIsFullMapping(e.target.value == 'true');
                         }}
                     >
                         <Stack direction={'row'}>

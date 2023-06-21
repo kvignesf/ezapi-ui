@@ -484,7 +484,6 @@ export const ExternalAPIDrawer = ({ cardId }: ExternalAPIDrawerProps) => {
                         <Typography sx={{ fontSize: '14px', fontWeight: 600 }} color="text.primary" gutterBottom>
                             Action Type
                         </Typography>
-
                         <Autocomplete
                             key={runData.method}
                             onChange={(_event: SyntheticEvent, newValue: string) => {
@@ -516,11 +515,9 @@ export const ExternalAPIDrawer = ({ cardId }: ExternalAPIDrawerProps) => {
                             value={displayedUrlValue}
                             disabled={apiType === 'system' ? true : false}
                             onChange={(event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
-                                /* const inputValue = event.target.value as string;
+                                const inputValue = event.target.value as string;
                                 setDisplayedUrlValue(inputValue);
-                                setUrl(event.target.value as string); */
-                                setDisplayedUrlValue(event.target.value as string);
-                                triggerDelayedNodeSaveOnServer(delayTimeSet);
+                                setUrl(event.target.value as string);
                             }}
                             onFocus={() => setIsFocused(true)}
                             onBlur={() => setIsFocused(false)}

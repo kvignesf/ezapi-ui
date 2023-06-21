@@ -1,4 +1,3 @@
-//import { selectedExternalNodeType } from '@/shared/atom/selectedNodeAtom';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -32,8 +31,6 @@ interface NodeTypeSelectionState {
 }
 
 function NodeTypeSectionNode(props: NodeProps) {
-    //const [selectedNodeCardType, setSelectedNodeCardType] = useRecoilState(selectedExternalNodeType);
-
     const nodeId: string = useNodeId() || '';
     const { useStore, projectId, operationId } = useContext(BusinessFlowContext);
     const { xPos, yPos } = props;
@@ -122,7 +119,6 @@ function NodeTypeSectionNode(props: NodeProps) {
         }
         switch (type) {
             case 'API': {
-                //setSelectedNodeCardType('external');
                 setUpdateNodeDataProps({
                     type: NODE_TYPES.EXTERNAL_API_NODE,
                     data: {
@@ -175,9 +171,9 @@ function NodeTypeSectionNode(props: NodeProps) {
                 });
                 break;
             }
+
             case 'PAYLOAD_BUILDER': {
                 setNodeType(nodeId, NODE_TYPES.PAYLOAD_BUILDER_NODE, {});
-                //const newPayloadNode = await attachNewExternalNodeToFilterNode();
                 setUpdateNodeDataProps({
                     type: NODE_TYPES.PAYLOAD_BUILDER_NODE,
                     data: {
@@ -206,7 +202,6 @@ function NodeTypeSectionNode(props: NodeProps) {
         console.log('handlingSubNodeclick', type);
         switch (type) {
             case 'LOOP':
-                //setSelectedNodeCardType('loop');
                 setUpdateNodeDataProps({
                     type: NODE_TYPES.EXTERNAL_API_NODE_LOOP,
                     data: {

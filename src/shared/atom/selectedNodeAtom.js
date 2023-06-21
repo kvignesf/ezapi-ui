@@ -8,9 +8,4 @@ const selectedNodeAtom = atom({
     default: defaultState,
 });
 
-/* export const selectedExternalNodeType = atom({
-    key: 'ENodeType',
-    default: defaultState2,
-}); */
-
 export default selectedNodeAtom;
