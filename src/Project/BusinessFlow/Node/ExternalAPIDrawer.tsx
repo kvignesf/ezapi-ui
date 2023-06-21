@@ -41,7 +41,7 @@ interface ExternalAPIDrawerProps {
 }
 
 export const ExternalAPIDrawer = ({ cardId }: ExternalAPIDrawerProps) => {
-    const { projectId, operationId, useStore } = useContext(BusinessFlowContext);
+    const { useStore } = useContext(BusinessFlowContext);
 
     const [cardData, setCardData] = useState<NodeData>();
 
@@ -93,7 +93,7 @@ export const ExternalAPIDrawer = ({ cardId }: ExternalAPIDrawerProps) => {
     const [urlValue, setUrlValue] = useState<string>('');
     const [displayedUrlValue, setDisplayedUrlValue] = useState(urlValue);
     const [explicitLoading, setExplicitLoading] = useState(false);
-
+    const [isFocused, setIsFocused] = useState(false);
     const [value, setValue] = useState('0');
     const [systemApis, _setSystemApis] = useState();
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -397,7 +397,7 @@ export const ExternalAPIDrawer = ({ cardId }: ExternalAPIDrawerProps) => {
     };
 
     const updatePathParamsFromUrl = () => {
-        if (!displayedUrlValue || !isValidUrl(displayedUrlValue)) return;
+        if (!displayedUrlValue || !isValidUrl(displayedUrlValue) || !isFocused) return;
 
         const currentUrl = new URL(displayedUrlValue ?? '');
         const pathname = currentUrl.pathname;
@@ -699,7 +699,13 @@ export const ExternalAPIDrawer = ({ cardId }: ExternalAPIDrawerProps) => {
         <Stack sx={{ height: '100%', width: '100%', display: 'flex', flexDirection: 'column' }}>
             <Stack
                 direction={'row'}
-                sx={{ borderBottom: '1px solid #C0CCDA', height: '52px', padding: '24px 16px' }}
+                sx={{
+                    borderBottom: '1px solid #C0CCDA',
+                    height: '52px',
+                    padding: '24px 16px',
+                    position: 'sticky',
+                    top: '0',
+                }}
                 justifyContent={'space-between'}
             >
                 <Stack direction={'row'}>
@@ -760,85 +766,87 @@ export const ExternalAPIDrawer = ({ cardId }: ExternalAPIDrawerProps) => {
                 </Stack>
             </Stack>
 
-            {renderAPINodeBody()}
+            <Stack sx={{ overflow: 'auto', height: '100%' }}>
+                {renderAPINodeBody()}
 
-            {isLoading && (
-                <Stack>
-                    <Typography
-                        sx={{
-                            fontSize: '16px',
-                            alignSelf: 'center',
-                            marginBottom: '0',
-                            fontWeight: 600,
-                            paddingLeft: '8px',
-                        }}
-                        color="text.primary"
-                        gutterBottom
-                    >
-                        {'Loading...'}
-                    </Typography>
-                </Stack>
-            )}
+                {isLoading && (
+                    <Stack>
+                        <Typography
+                            sx={{
+                                fontSize: '16px',
+                                alignSelf: 'center',
+                                marginBottom: '0',
+                                fontWeight: 600,
+                                paddingLeft: '8px',
+                            }}
+                            color="text.primary"
+                            gutterBottom
+                        >
+                            {'Loading...'}
+                        </Typography>
+                    </Stack>
+                )}
 
-            {showResponse && (
-                <Stack>
-                    {runData.method !== 'GET' ? (
-                        <>
-                            <TabContext value={responseValue}>
-                                <Stack direction="row" sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                                    <TabList onChange={handleResponseChange} aria-label="lab API tabs responses">
-                                        <Tab label="Request" value={'0'} />
-                                        <Tab label="Response" value={'1'} />
-                                    </TabList>
-                                </Stack>
-                                <Stack width="100%">
-                                    <TabPanel
-                                        value={'0'}
-                                        key={`request-${runData?.output?.status || 0}-${executionNumber}`}
-                                    >
-                                        <ResponseTab
-                                            message={''}
-                                            isError={isError}
-                                            isResponse={false}
-                                            value={runData.body?.data || {}}
-                                            disabled={apiType === 'system' ? true : false}
-                                            onChange={(value: any) => {
-                                                setRequestData(value);
-                                                if (checkValidJson(value)) {
-                                                    setIsJsonValid(true);
-                                                } else {
-                                                    setIsJsonValid(false);
-                                                }
-                                            }}
-                                        />
-                                    </TabPanel>
-                                    <TabPanel
-                                        value={'1'}
-                                        key={`response-${runData?.output?.status || 0}-${executionNumber}`}
-                                    >
-                                        <ResponseTab
-                                            message={''}
-                                            isError={isError}
-                                            value={runData?.output?.data}
-                                            disabled={apiType === 'system' ? true : false}
-                                        />
-                                    </TabPanel>
-                                </Stack>
-                            </TabContext>
-                        </>
-                    ) : (
-                        <Stack width="100%" key={`response-${runData?.output?.status || 0}-${executionNumber}`}>
-                            <ResponseTab
-                                message={''}
-                                isError={isError}
-                                isResponse={true}
-                                value={runData?.output?.data}
-                                disabled={apiType === 'system' ? true : false}
-                            />
-                        </Stack>
-                    )}
-                </Stack>
-            )}
+                {showResponse && (
+                    <Stack>
+                        {runData.method !== 'GET' ? (
+                            <>
+                                <TabContext value={responseValue}>
+                                    <Stack direction="row" sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                                        <TabList onChange={handleResponseChange} aria-label="lab API tabs responses">
+                                            <Tab label="Request" value={'0'} />
+                                            <Tab label="Response" value={'1'} />
+                                        </TabList>
+                                    </Stack>
+                                    <Stack width="100%">
+                                        <TabPanel
+                                            value={'0'}
+                                            key={`request-${runData?.output?.status || 0}-${executionNumber}`}
+                                        >
+                                            <ResponseTab
+                                                message={''}
+                                                isError={isError}
+                                                isResponse={false}
+                                                value={runData.body?.data || {}}
+                                                disabled={apiType === 'system' ? true : false}
+                                                onChange={(value: any) => {
+                                                    setRequestData(value);
+                                                    if (checkValidJson(value)) {
+                                                        setIsJsonValid(true);
+                                                    } else {
+                                                        setIsJsonValid(false);
+                                                    }
+                                                }}
+                                            />
+                                        </TabPanel>
+                                        <TabPanel
+                                            value={'1'}
+                                            key={`response-${runData?.output?.status || 0}-${executionNumber}`}
+                                        >
+                                            <ResponseTab
+                                                message={''}
+                                                isError={isError}
+                                                value={runData?.output?.data}
+                                                disabled={apiType === 'system' ? true : false}
+                                            />
+                                        </TabPanel>
+                                    </Stack>
+                                </TabContext>
+                            </>
+                        ) : (
+                            <Stack width="100%" key={`response-${runData?.output?.status || 0}-${executionNumber}`}>
+                                <ResponseTab
+                                    message={''}
+                                    isError={isError}
+                                    isResponse={true}
+                                    value={runData?.output?.data}
+                                    disabled={apiType === 'system' ? true : false}
+                                />
+                            </Stack>
+                        )}
+                    </Stack>
+                )}
+            </Stack>
         </Stack>
     );
 };

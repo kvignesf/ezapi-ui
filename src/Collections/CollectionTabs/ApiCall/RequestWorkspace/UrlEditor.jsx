@@ -158,6 +158,7 @@ export default function UrlEditor({ onInputSend }) {
                     type: 'File',
                     parentFolderId: selectedFolder.id,
                 });
+
                 await axios.post(process.env.REACT_APP_API_URL + endpoint.collectionsRequest + `/${userId}/${newId}`, {
                     name: fileName ? fileName : 'New Request',
                     request: request
@@ -206,6 +207,7 @@ export default function UrlEditor({ onInputSend }) {
                             id: data.id,
                             name: data.name,
                             onSave: data.onSave,
+                            type: 'file',
                             parentFolderId: data.parentFolderId,
                         });
                         setBreadCrumbs(parentFolderNames);
@@ -215,7 +217,7 @@ export default function UrlEditor({ onInputSend }) {
             if (api.parentFolderId === 0) {
                 await axios.post(process.env.REACT_APP_API_URL + endpoint.collectionDirectory, {
                     userId: userId,
-                    id: newId,
+                    id: api.id,
                     name: fileName ? fileName : 'New Request',
                     type: 'File',
                     parentFolderId: selectedFolder.id,
@@ -225,9 +227,59 @@ export default function UrlEditor({ onInputSend }) {
                     parentFolderId: selectedFolder.id,
                 });
             }
+            const type = 'file';
+            let parentFolderNames;
+
             await axios.put(process.env.REACT_APP_API_URL + endpoint.collectionsRequest + `/${userId}/${api.id}`, {
                 parentFolderId: selectedFolder.id,
+                name: fileName ? fileName : 'New Request',
+                onSave: true,
             });
+
+            await axios
+                .get(process.env.REACT_APP_API_URL + endpoint.collectionDirectory + `/${userId}/${type}/${api.id}`)
+                .then((response) => {
+                    parentFolderNames = response['data'].result;
+                    parentFolderNames = parentFolderNames.reverse();
+                })
+                .catch((err) => {
+                    console.log(err);
+                });
+            await axios
+                .get(process.env.REACT_APP_API_URL + `${endpoint.collectionsRequest}/${userId}/${api.id}`)
+                .then(async (response) => {
+                    const data = response.data;
+                    setTabs((prev) => {
+                        return prev.map((tab, index) => {
+                            if (index === currenttab) {
+                                // Modify the object at the target index
+                                return {
+                                    ...tab,
+                                    id: data.id,
+                                    parentFolderNames: parentFolderNames,
+                                    request: data.request,
+                                    response: data.response,
+                                    label: data.name,
+                                    onSave: data.onSave,
+                                    type: 'file',
+                                };
+                            }
+                            // For other indices, return the tab object as is
+                            return tab;
+                        });
+                    });
+
+                    setRequest(data.request);
+                    setResponse(data.response);
+                    setCurrentApi({
+                        id: data.id,
+                        name: data.name,
+                        onSave: data.onSave,
+                        type: 'file',
+                        parentFolderId: data.parentFolderId,
+                    });
+                    setBreadCrumbs(parentFolderNames);
+                });
         }
         setOpen(false);
     };
@@ -302,16 +354,21 @@ export default function UrlEditor({ onInputSend }) {
                     <DocStore isModal={true} />
                 </DialogContent>
                 <DialogActions style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <FormControlLabel
-                        control={
-                            <Checkbox
-                                checked={checked}
-                                onChange={handleCheckChange}
-                                inputProps={{ 'aria-label': 'controlled' }}
-                            />
-                        }
-                        label={<span style={{ fontWeight: 500, fontSize: '15px' }}>Save as duplicate</span>}
-                    />
+                    {api.parentFolderId === 0 ? (
+                        <div></div>
+                    ) : (
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    checked={checked}
+                                    onChange={handleCheckChange}
+                                    inputProps={{ 'aria-label': 'controlled' }}
+                                />
+                            }
+                            label={<span style={{ fontWeight: 500, fontSize: '15px' }}>Save as duplicate</span>}
+                        />
+                    )}
+
                     <div>
                         <Button
                             className={`${classes.modalButton} ${classes.cancel}`}

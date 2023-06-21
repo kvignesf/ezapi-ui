@@ -122,6 +122,7 @@ const RecentHistory = () => {
             name: tabs[value - 1]?.label ? tabs[value - 1].label : 'New Request',
             type: 'file',
             onSave: tabs[value - 1]?.onSave ? tabs[value - 1].onSave : false,
+            parentFolderId: tabs[value - 1].parentFolderId,
         });
         setBreadCrumbs(tabs[value - 1]?.parentFolderNames ? tabs[value - 1].parentFolderNames : []);
         setOpen(false);

@@ -109,6 +109,7 @@ function CollectionTabs() {
             name: tabs[newValue].label,
             type: 'file',
             onSave: tabs[newValue].onSave,
+            parentFolderId: tabs[newValue].parentFolderId,
         });
         setBreadCrumbs(tabs[newValue].parentFolderNames);
         await axios
@@ -149,6 +150,7 @@ function CollectionTabs() {
                     name: tabs[value - 1]?.label ? tabs[value - 1].label : 'New Request',
                     type: 'file',
                     onSave: tabs[value - 1]?.onSave ? tabs[value - 1].onSave : false,
+                    parentFolderId: tabs[value - 1]?.parentFolderId ? tabs[value - 1].parentFolderId : 0,
                 });
                 setBreadCrumbs(tabs[value - 1]?.parentFolderNames ? tabs[value - 1].parentFolderNames : []);
             } else {
@@ -171,6 +173,7 @@ function CollectionTabs() {
                     name: tabs[value]?.label ? tabs[value].label : 'New Request',
                     type: 'file',
                     onSave: tabs[value]?.onSave ? tabs[value].onSave : false,
+                    parentFolderId: tabs[value]?.parentFolderId ? tabs[value].parentFolderId : 0,
                 });
                 setBreadCrumbs(tabs[value]?.parentFolderNames ? tabs[value].parentFolderNames : []);
             }
@@ -185,7 +188,7 @@ function CollectionTabs() {
                 queryParams: [],
             });
             setResponse({});
-            setCurrentApi({ id: 0, name: '', type: 'file', onSave: false });
+            setCurrentApi({ id: 0, name: '', type: 'file', onSave: false, parentFolderId: 0 });
             setBreadCrumbs([]);
         }
 
