@@ -68,3 +68,27 @@ export const useEditParameter = () => {
 
     return mutation;
 };
+
+const bulkParamChange = async ({ projectId, data: postData }) => {
+    try {
+        const { data } = await client.post(endpoint.bulkParamChange, {
+            projectId,
+            data: postData,
+        });
+        return data;
+    } catch (error) {
+        console.log('error', error);
+        throw error;
+    }
+};
+
+export const useBulkChange = () => {
+    const queryClient = useQueryClient();
+    const mutation = useMutation(bulkParamChange, {
+        onSuccess: (data) => {
+            queryClient.invalidateQueries(queries.parameters);
+        },
+    });
+
+    return mutation;
+};
