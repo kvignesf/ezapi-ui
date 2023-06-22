@@ -1,9 +1,8 @@
-import React from 'react';
-import { v4 as uuidv4 } from 'uuid';
-import KeyValueEditor from './KeyValueEditor';
 import { Button, makeStyles } from '@material-ui/core';
 import { useRecoilState } from 'recoil';
+import { v4 as uuidv4 } from 'uuid';
 import { requestParams } from '../../../../CollectionsAtom';
+import KeyValueEditor from './KeyValueEditor';
 
 const useStyles = makeStyles((theme) => ({
     button: {

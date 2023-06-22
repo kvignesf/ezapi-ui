@@ -1,4 +1,3 @@
-import React from 'react';
 import { Dialog, DialogContent } from '@mui/material';
 import { ThreeDots } from 'react-loader-spinner';
 
