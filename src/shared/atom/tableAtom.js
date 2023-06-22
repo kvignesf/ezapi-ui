@@ -1,13 +1,13 @@
-import { atom } from "recoil";
+import { atom } from 'recoil';
 
 export const defaultState = {
-  selected: [],
-  ref: "",
+    selected: [],
+    ref: '',
 };
 
 const tableAtom = atom({
-  key: "table",
-  default: defaultState,
+    key: 'table',
+    default: defaultState,
 });
 
 export default tableAtom;

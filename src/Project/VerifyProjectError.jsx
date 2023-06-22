@@ -1,50 +1,46 @@
-import React from "react";
-import CloseIcon from "@material-ui/icons/Close";
-
-import AppIcon from "../shared/components/AppIcon";
-import { PrimaryButton } from "../shared/components/AppButton";
+import CloseIcon from '@material-ui/icons/Close';
+import { PrimaryButton } from '../shared/components/AppButton';
+import AppIcon from '../shared/components/AppIcon';
 
 const VerifyProjectError = ({ error, onClose, onRetry }) => {
-  return (
-    <div
-      className='flex flex-col'
-      onClick={(e) => {
-        e?.preventDefault();
-        e?.stopPropagation();
-      }}
-    >
-      <div className='flex flex-row p-4 justify-between border-b-1'>
-        <p className='text-subtitle2'>Project Validation Failure</p>
-        <AppIcon
-          onClick={(e) => {
-            e?.preventDefault();
-            e?.stopPropagation();
-
-            onClose();
-          }}
+    return (
+        <div
+            className="flex flex-col"
+            onClick={(e) => {
+                e?.preventDefault();
+                e?.stopPropagation();
+            }}
         >
-          <CloseIcon />
-        </AppIcon>
-      </div>
+            <div className="flex flex-row p-4 justify-between border-b-1">
+                <p className="text-subtitle2">Project Validation Failure</p>
+                <AppIcon
+                    onClick={(e) => {
+                        e?.preventDefault();
+                        e?.stopPropagation();
 
-      <p className='text-overline2 p-4 my-2'>
-        Failed to validate the project. Do you wish to retry ?
-      </p>
+                        onClose();
+                    }}
+                >
+                    <CloseIcon />
+                </AppIcon>
+            </div>
 
-      <div className='border-t-1 p-4 flex flex-row justify-end'>
-        <PrimaryButton
-          onClick={(e) => {
-            e?.preventDefault();
-            e?.stopPropagation();
+            <p className="text-overline2 p-4 my-2">Failed to validate the project. Do you wish to retry ?</p>
 
-            onRetry();
-          }}
-        >
-          Retry
-        </PrimaryButton>
-      </div>
-    </div>
-  );
+            <div className="border-t-1 p-4 flex flex-row justify-end">
+                <PrimaryButton
+                    onClick={(e) => {
+                        e?.preventDefault();
+                        e?.stopPropagation();
+
+                        onRetry();
+                    }}
+                >
+                    Retry
+                </PrimaryButton>
+            </div>
+        </div>
+    );
 };
 
 export default VerifyProjectError;

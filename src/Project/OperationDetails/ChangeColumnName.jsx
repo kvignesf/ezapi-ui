@@ -1,146 +1,127 @@
-import React, { useRef, useState } from "react";
-import { useSetRecoilState } from "recoil";
-import _ from "lodash";
-import { Field, ErrorMessage, Form, Formik } from "formik";
-import { TextField } from "@material-ui/core";
-import CloseIcon from "@material-ui/icons/Close";
-import * as Yup from "yup";
+import { TextField } from '@material-ui/core';
+import CloseIcon from '@material-ui/icons/Close';
+import { ErrorMessage, Field, Form, Formik } from 'formik';
+import _ from 'lodash';
+import { useRef, useState } from 'react';
+import * as Yup from 'yup';
+import { PrimaryButton, TextButton } from '../../shared/components/AppButton';
+import AppIcon from '../../shared/components/AppIcon';
+import EnterKeyCaptureInput from '../../shared/components/EnterKeyCaptureInput';
+import Messages from '../../shared/messages';
+import apiNameSchema from '../../shared/schemas/apiNameSchema';
 
-import operationAtom from "../operationAtom";
-import AppIcon from "../../shared/components/AppIcon";
-import { TextButton, PrimaryButton } from "../../shared/components/AppButton";
-import { isDatabase } from "../../shared/utils";
-import apiNameSchema from "../../shared/schemas/apiNameSchema";
-import EnterKeyCaptureInput from "../../shared/components/EnterKeyCaptureInput";
-import Messages from "../../shared/messages";
+const ChangeColumnName = ({ labelItem, isNameTaken, renameColumn, onClose }) => {
+    const formRef = useRef(null);
+    const [error, setError] = useState(null);
 
-const ChangeColumnName = ({
-  labelItem,
-  isNameTaken,
-  renameColumn,
-  onClose,
-}) => {
-  const formRef = useRef(null);
-  const [error, setError] = useState(null);
+    const onTableNameUpdate = ({ name }) => {
+        if (isNameTaken(labelItem, name)) {
+            setError(Messages.TABLE_COLUMN_EXISTS);
+            return;
+        }
+        renameColumn(labelItem, name);
+    };
 
-  const onTableNameUpdate = ({ name }) => {
-    if (isNameTaken(labelItem, name)) {
-      setError(Messages.TABLE_COLUMN_EXISTS);
-      return;
-    }
-    renameColumn(labelItem, name);
-  };
-
-  return (
-    <div
-      className='flex flex-col'
-      onClick={(e) => {
-        e?.preventDefault();
-        e?.stopPropagation();
-      }}
-    >
-      <div className='flex flex-row p-4 justify-between border-b-1'>
-        <p className='text-subtitle2'>Edit Column Name</p>
-        <AppIcon
-          onClick={(e) => {
-            e?.preventDefault();
-            e?.stopPropagation();
-
-            onClose();
-          }}
+    return (
+        <div
+            className="flex flex-col"
+            onClick={(e) => {
+                e?.preventDefault();
+                e?.stopPropagation();
+            }}
         >
-          <CloseIcon />
-        </AppIcon>
-      </div>
+            <div className="flex flex-row p-4 justify-between border-b-1">
+                <p className="text-subtitle2">Edit Column Name</p>
+                <AppIcon
+                    onClick={(e) => {
+                        e?.preventDefault();
+                        e?.stopPropagation();
 
-      <div className='p-4'>
-        <Formik
-          initialValues={{
-            name: labelItem?.name ?? "",
-          }}
-          validationSchema={Yup.object().shape({
-            name: apiNameSchema(Messages.NAME_REQUIRED),
-          })}
-          innerRef={formRef}
-          onSubmit={onTableNameUpdate}
-        >
-          {({
-            errors,
-            touched,
-            values,
-            handleBlur,
-            validateForm,
-            setErrors,
-            submitForm,
-          }) => (
-            <Form
-              onKeyDown={async (e) => {
-                if (e.key === "Enter") {
-                  handleBlur(e);
-                  const errors = await validateForm(values);
+                        onClose();
+                    }}
+                >
+                    <CloseIcon />
+                </AppIcon>
+            </div>
 
-                  if (!_.isEmpty(errors)) {
-                    setErrors(errors);
-                  } else {
-                    submitForm();
-                  }
+            <div className="p-4">
+                <Formik
+                    initialValues={{
+                        name: labelItem?.name ?? '',
+                    }}
+                    validationSchema={Yup.object().shape({
+                        name: apiNameSchema(Messages.NAME_REQUIRED),
+                    })}
+                    innerRef={formRef}
+                    onSubmit={onTableNameUpdate}
+                >
+                    {({ errors, touched, values, handleBlur, validateForm, setErrors, submitForm }) => (
+                        <Form
+                            onKeyDown={async (e) => {
+                                if (e.key === 'Enter') {
+                                    handleBlur(e);
+                                    const errors = await validateForm(values);
 
-                  e.preventDefault();
-                }
-              }}
-            >
-              <EnterKeyCaptureInput />
+                                    if (!_.isEmpty(errors)) {
+                                        setErrors(errors);
+                                    } else {
+                                        submitForm();
+                                    }
 
-              <Field
-                id='name'
-                name='name'
-                fullWidth
-                color='primary'
-                variant='outlined'
-                error={touched.name && Boolean(errors.name)}
-                helperText={<ErrorMessage name='name' />}
-                onKeyUp={(e) => {
-                  if (error) {
-                    setError(null);
-                  }
-                }}
-                inputProps={{
-                  style: {
-                    height: "6px",
-                  },
-                }}
-                as={TextField}
-              />
-            </Form>
-          )}
-        </Formik>
-      </div>
+                                    e.preventDefault();
+                                }
+                            }}
+                        >
+                            <EnterKeyCaptureInput />
 
-      {error && (
-        <p className='text-overline2 text-accent-red m-4 mt-0'>{error}</p>
-      )}
+                            <Field
+                                id="name"
+                                name="name"
+                                fullWidth
+                                color="primary"
+                                variant="outlined"
+                                error={touched.name && Boolean(errors.name)}
+                                helperText={<ErrorMessage name="name" />}
+                                onKeyUp={(e) => {
+                                    if (error) {
+                                        setError(null);
+                                    }
+                                }}
+                                inputProps={{
+                                    style: {
+                                        height: '6px',
+                                    },
+                                }}
+                                as={TextField}
+                            />
+                        </Form>
+                    )}
+                </Formik>
+            </div>
 
-      <div className='border-t-1 p-4 flex flex-row justify-end'>
-        <TextButton
-          onClick={(e) => {
-            e?.preventDefault();
-            e?.stopPropagation();
+            {error && <p className="text-overline2 text-accent-red m-4 mt-0">{error}</p>}
 
-            onClose();
-          }}
-        >
-          Cancel
-        </TextButton>
-        <PrimaryButton
-          onClick={(e) => {
-            formRef.current.submitForm();
-          }}
-        >
-          Save
-        </PrimaryButton>
-      </div>
-    </div>
-  );
+            <div className="border-t-1 p-4 flex flex-row justify-end">
+                <TextButton
+                    onClick={(e) => {
+                        e?.preventDefault();
+                        e?.stopPropagation();
+
+                        onClose();
+                    }}
+                >
+                    Cancel
+                </TextButton>
+                <PrimaryButton
+                    onClick={(e) => {
+                        formRef.current.submitForm();
+                    }}
+                >
+                    Save
+                </PrimaryButton>
+            </div>
+        </div>
+    );
 };
 
 export default ChangeColumnName;

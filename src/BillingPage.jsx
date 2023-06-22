@@ -1,16 +1,7 @@
-import React from "react";
-import { ErrorMessage, Field, Form, Formik, useFormik } from "formik";
-import { MenuItem, Select, TextField } from "@material-ui/core";
-import countryList from "react-select-country-list";
-import PhoneInput from "react-phone-input-2";
-import "react-phone-input-2/lib/style.css";
-import { CountryDropdown, RegionDropdown } from "react-country-region-selector";
+import 'react-phone-input-2/lib/style.css';
 
-import billingDetailsSchema from "./ProjectPayment/billingDetailsSchema";
-import { PrimaryButton } from "./shared/components/AppButton";
-import classNames from "classnames";
-import EzapiFooter from "./shared/components/EzapiFooter";
-import BillingForm from "./BillingForm.jsx";
+import BillingForm from './BillingForm.jsx';
+import EzapiFooter from './shared/components/EzapiFooter';
 
 // const Header = ({
 //   projectDetails,
@@ -75,23 +66,23 @@ import BillingForm from "./BillingForm.jsx";
 // };
 
 const BillingPage = ({ disabled = false }) => {
-  return (
-    <div>
-      {/* <Header projectDetails={projectDetails} logoutMutation={logoutMutation} /> */}
-      <div className="w-full flex flex-row p-12 h-full mt-14">
-        <div className="flex-1 mr-6 px-6">
-          <BillingForm />
+    return (
+        <div>
+            {/* <Header projectDetails={projectDetails} logoutMutation={logoutMutation} /> */}
+            <div className="w-full flex flex-row p-12 h-full mt-14">
+                <div className="flex-1 mr-6 px-6">
+                    <BillingForm />
 
-          {/* <CardDetailsForm
+                    {/* <CardDetailsForm
               formRef={cardDetailsRef}
               disabled={isInitiatingPayment || isConfirmingPayment}
             /> */}
-        </div>
-      </div>
+                </div>
+            </div>
 
-      <EzapiFooter />
-    </div>
-  );
+            <EzapiFooter />
+        </div>
+    );
 };
 
 export default BillingPage;

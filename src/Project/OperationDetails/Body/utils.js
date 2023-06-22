@@ -1,12 +1,12 @@
-import { useState } from "react";
+import { useState } from 'react';
 
 export const useExpandedIds = () => {
-  const [expandedIds, setExpandedIds] = useState([]);
+    const [expandedIds, setExpandedIds] = useState([]);
 
-  const getExandedIds = () => expandedIds;
+    const getExandedIds = () => expandedIds;
 
-  return {
-    getExandedIds,
-    setExpandedIds,
-  };
+    return {
+        getExandedIds,
+        setExpandedIds,
+    };
 };

@@ -1,19 +1,15 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext } from 'react';
 
 const UserRoleContext = createContext();
 
 const UserRoleProvider = ({ role: defaultRole, children }) => {
-  return (
-    <UserRoleContext.Provider value={defaultRole}>
-      {children}
-    </UserRoleContext.Provider>
-  );
+    return <UserRoleContext.Provider value={defaultRole}>{children}</UserRoleContext.Provider>;
 };
 
 export const useUserRole = () => {
-  const role = useContext(UserRoleContext);
+    const role = useContext(UserRoleContext);
 
-  return role;
+    return role;
 };
 
 export default UserRoleProvider;

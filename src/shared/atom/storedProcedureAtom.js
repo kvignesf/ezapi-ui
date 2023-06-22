@@ -1,12 +1,12 @@
-import { atom } from "recoil";
+import { atom } from 'recoil';
 
 export const defaultState = {
-  selected: null,
+    selected: null,
 };
 
 const storedProcedureAtom = atom({
-  key: "storedProcedure",
-  default: defaultState,
+    key: 'storedProcedure',
+    default: defaultState,
 });
 
 export default storedProcedureAtom;
