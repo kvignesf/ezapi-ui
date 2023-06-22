@@ -1,12 +1,16 @@
-import axios from 'axios';
-import React, { useEffect, useRef, useState } from 'react';
-import { endpoint } from '../../../shared/network/client';
-import { getUserId } from '../../../shared/storage';
-import { makeStyles } from '@material-ui/core/styles';
-import InsertDriveFileOutlinedIcon from '@material-ui/icons/InsertDriveFileOutlined';
+import { Menu, MenuItem } from '@material-ui/core';
 import IconButton from '@material-ui/core/IconButton';
 import Tooltip from '@material-ui/core/Tooltip';
+import { makeStyles } from '@material-ui/core/styles';
+import { Close } from '@material-ui/icons';
+import InsertDriveFileOutlinedIcon from '@material-ui/icons/InsertDriveFileOutlined';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import axios from 'axios';
+import { useEffect, useRef, useState } from 'react';
 import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
+import { endpoint } from '../../../shared/network/client';
+import { getUserId } from '../../../shared/storage';
+import ApiCall from '../../CollectionTabs/ApiCall/ApiCall';
 import {
     currentApi,
     currentBreadCrumbs,
@@ -16,11 +20,6 @@ import {
     responseInfo,
     toggle,
 } from '../../CollectionsAtom';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
-import { Menu, MenuItem } from '@material-ui/core';
-import ApiCall from '../../CollectionTabs/ApiCall/ApiCall';
-import DeleteIcon from '@mui/icons-material/Delete';
-import { Close } from '@material-ui/icons';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -117,10 +116,11 @@ export default function File({
     const isMountedRef = useRef(true);
     let [tabs, setTabs] = useRecoilState(currentTabs);
     const [currenttab, setCurrentTab] = useRecoilState(currentTab);
-    const setRequest = useSetRecoilState(requestParams);
-    const setResponse = useSetRecoilState(responseInfo);
+    const [request, setRequest] = useRecoilState(requestParams);
+    const [response, setResponse] = useRecoilState(responseInfo);
     const [api, setCurrentApi] = useRecoilState(currentApi);
     const setBreadCrumbs = useSetRecoilState(currentBreadCrumbs);
+    const [isApiHappening, setApiHappening] = useState(false);
     const alignment = useRecoilValue(toggle);
 
     const handleOptionClick = (event) => {
@@ -158,7 +158,7 @@ export default function File({
                     name: tabs[currenttab - 1]?.label ? tabs[currenttab - 1].label : 'New Request',
                     type: 'file',
                     onSave: tabs[currenttab - 1]?.onSave ? tabs[currenttab - 1].onSave : false,
-                    parentFolderId: tabs[currenttab - 1]?.parentFolderId ? tabs[currenttab - 1].parentFolderId : 0,
+                    parentFolderId: tabs[currenttab - 1]?.parentFolderId ? tabs[currenttab - 1].parentFolderId : '0',
                 });
                 setBreadCrumbs(tabs[currenttab - 1]?.parentFolderNames ? tabs[currenttab - 1].parentFolderNames : []);
             } else {
@@ -181,12 +181,12 @@ export default function File({
                     name: tabs[currenttab]?.label ? tabs[currenttab].label : 'New Request',
                     type: 'file',
                     onSave: tabs[currenttab]?.onSave ? tabs[currenttab].onSave : false,
-                    parentFolderId: tabs[currenttab - 1]?.parentFolderId ? tabs[currenttab - 1].parentFolderId : 0,
+                    parentFolderId: tabs[currenttab - 1]?.parentFolderId ? tabs[currenttab - 1].parentFolderId : '0',
                 });
                 setBreadCrumbs(tabs[currenttab]?.parentFolderNames ? tabs[currenttab].parentFolderNames : []);
             }
         } else if (tabs.length === 0) {
-            setCurrentTab();
+            setCurrentTab(-1);
             setRequest({
                 method: 'GET',
                 proxy: 'No Proxy',
@@ -196,7 +196,7 @@ export default function File({
                 queryParams: [],
             });
             setResponse({});
-            setCurrentApi({ id: 0, name: '', type: 'file', onSave: false, parentFolderId: 0 });
+            setCurrentApi({ id: 0, name: '', type: 'file', onSave: false, parentFolderId: '0' });
             setBreadCrumbs([]);
         }
 
@@ -212,36 +212,71 @@ export default function File({
                 console.log(err);
             });
     };
-
     const handleSelect = async (event) => {
         event.stopPropagation();
         onSelect({ type: 'file', id: id });
         if (editing === false) {
             const isTabExists = tabs.some((tab) => tab.id === id);
             let index = tabs.findIndex((tab) => tab.id === id);
-            setCurrentApi({});
+
+            if (
+                (tabs[currenttab]?.request && JSON.stringify(tabs[currenttab]?.request) !== JSON.stringify(request)) ||
+                (tabs[currenttab]?.response && JSON.stringify(tabs[currenttab]?.response) !== JSON.stringify(response))
+            ) {
+                await axios
+                    .put(
+                        process.env.REACT_APP_API_URL +
+                            endpoint.collectionsRequest +
+                            `/${userId}/${tabs[currenttab]?.id}`,
+                        {
+                            request: request,
+                            response: response,
+                        },
+                    )
+                    .then((response) => {
+                        const data = response.data;
+                        setTabs((prev) => {
+                            const isTabExists = prev.some((tab) => tab.id === data.id);
+                            if (isTabExists) {
+                                // If the tab already exists, update the existing tab with new data
+                                return prev.map((tab) => {
+                                    if (tab.id === data.id) {
+                                        return {
+                                            ...tab,
+                                            request: data.request,
+                                            response: data.response,
+                                        };
+                                    }
+                                    return tab;
+                                });
+                            } else {
+                                return [...prev];
+                            }
+                        });
+                    })
+                    .catch((error) => {
+                        console.error('Error:', error);
+                    });
+            }
+
             if (isTabExists) {
                 setCurrentTab(index);
                 setRequest(tabs[index].request);
                 setResponse(tabs[index].response);
+
                 setCurrentApi({
                     id: tabs[index].id,
-                    name: tabs[index].label,
-                    onSave: tabs[index].onSave,
-                    type: tabs[index].type,
-                    parentFolderId: tabs[index].parentFolderId,
+                    name: tabs[index]?.label ? tabs[index].label : 'New Request',
+                    type: 'file',
+                    onSave: tabs[index]?.onSave ? tabs[index].onSave : false,
+                    parentFolderId: tabs[index]?.parentFolderId ? tabs[index].parentFolderId : '0',
                 });
                 setBreadCrumbs(tabs[index].parentFolderNames);
                 return [...tabs];
             } else {
+                setApiHappening(true);
                 const type = 'file';
                 let parentFolderNames;
-
-                await axios
-                    .put(process.env.REACT_APP_API_URL + endpoint.collectionsRequest + `/${userId}/${id}`, {
-                        isRecent: true,
-                    })
-                    .catch((error) => console.log(error));
 
                 await axios
                     .get(process.env.REACT_APP_API_URL + endpoint.collectionDirectory + `/${userId}/${type}/${id}`)
@@ -252,9 +287,10 @@ export default function File({
                     .catch((err) => {
                         console.log(err);
                     });
-
                 await axios
-                    .get(process.env.REACT_APP_API_URL + `${endpoint.collectionsRequest}/${userId}/${id}`)
+                    .put(process.env.REACT_APP_API_URL + endpoint.collectionsRequest + `/${userId}/${id}`, {
+                        isRecent: true,
+                    })
                     .then(async (response) => {
                         const data = response.data;
                         setTabs((prev) => {
@@ -285,9 +321,11 @@ export default function File({
                             parentFolderId: data.parentFolderId,
                         });
                         setBreadCrumbs(parentFolderNames);
+                        setApiHappening(false);
                     })
                     .catch((error) => {
                         console.error('Error:', error);
+                        setApiHappening(false);
                     });
             }
         }
@@ -315,18 +353,30 @@ export default function File({
         if (fileName) {
             let parentFolderNames;
             await onRename(id, fileName);
-            const fileData = {
-                name: fileName,
-            };
 
             await axios
-                .put(process.env.REACT_APP_API_URL + `${endpoint.collectionDirectory}/${userId}/${id}`, fileData)
+                .put(process.env.REACT_APP_API_URL + `${endpoint.collectionDirectory}/${userId}/${id}`, {
+                    name: fileName,
+                })
                 .catch((error) => {
                     console.error('Error:', error);
                 });
 
+            const currentDate = new Date();
+            const formattedDateTime = currentDate.toLocaleString('en-GB', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+            });
+
             await axios
-                .put(process.env.REACT_APP_API_URL + `${endpoint.collectionsRequest}/${userId}/${id}`, fileData)
+                .put(process.env.REACT_APP_API_URL + `${endpoint.collectionsRequest}/${userId}/${id}`, {
+                    name: fileName,
+                    modifiedAt: formattedDateTime,
+                })
                 .catch((error) => {
                     console.error('Error:', error);
                 });
@@ -393,7 +443,11 @@ export default function File({
 
     return (
         <div className={fileClass}>
-            <div onClick={saveModalOpen === true ? null : handleSelect} className={classes.newfileClass} ref={inputRef}>
+            <div
+                onClick={saveModalOpen === true || isApiHappening === true ? null : handleSelect}
+                className={classes.newfileClass}
+                ref={inputRef}
+            >
                 <InsertDriveFileOutlinedIcon className={classes.fileIcon} />
                 {editing === true ? (
                     <input

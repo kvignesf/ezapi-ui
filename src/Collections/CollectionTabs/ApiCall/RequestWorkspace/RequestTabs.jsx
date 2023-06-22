@@ -1,15 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import { MenuItem, Select, Tab, Tabs, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
-import { Tabs, Tab, Typography, Select, MenuItem } from '@material-ui/core';
-import KeyValue from './KeyValue/KeyValuePanel';
-import JsonEditor from '../components/JsonEditor/JsonEditor';
+import { useState } from 'react';
+import { useRecoilState } from 'recoil';
+import { requestParams } from '../../../CollectionsAtom';
+import JsonEditor from '../components/JsonEditor';
 import AuthTab from './AuthenticationTab/AuthTab';
-import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
-import { currentApi, currentTabs, requestParams, responseInfo } from '../../../CollectionsAtom';
-import { getUserId } from '../../../../shared/storage';
-import axios from 'axios';
-import { endpoint } from '../../../../shared/network/client';
-import ApiCall from '../ApiCall';
+import KeyValue from './KeyValue/KeyValuePanel';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -49,56 +45,6 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export default function RequestTabs() {
-    const userId = getUserId();
-    const file = useRecoilValue(currentApi);
-    const requestData = useRecoilValue(requestParams);
-    const responseData = useRecoilValue(responseInfo);
-    const setTabs = useSetRecoilState(currentTabs);
-
-    useEffect(() => {
-        async function ApiUpdate() {
-            if (file.type === 'file' && file.id !== 0) {
-                await axios
-                    .put(process.env.REACT_APP_API_URL + endpoint.collectionsRequest + `/${userId}/${file.id}`, {
-                        name: file.name,
-                        request: requestData,
-                        response: responseData,
-                    })
-                    .catch((error) => {
-                        console.error('Error while saving contents:', error);
-                    });
-                await axios
-                    .get(process.env.REACT_APP_API_URL + `${endpoint.collectionsRequest}/${userId}/${file.id}`)
-                    .then((response) => {
-                        const data = response.data;
-                        setTabs((prev) => {
-                            const isTabExists = prev.some((tab) => tab.id === data.id);
-                            if (isTabExists) {
-                                // If the tab already exists, update the existing tab with new data
-                                return prev.map((tab) => {
-                                    if (tab.id === data.id) {
-                                        return {
-                                            ...tab,
-                                            request: data.request,
-                                            response: data.response,
-                                            label: data.name,
-                                            content: <ApiCall />,
-                                        };
-                                    }
-                                    return tab;
-                                });
-                            } else {
-                                return [...prev];
-                            }
-                        });
-                    })
-                    .catch((error) => {
-                        console.error('Error:', error);
-                    });
-            }
-        }
-        ApiUpdate();
-    }, [file.id, file.name, file.onSave, requestData, responseData, setTabs, userId, file.type]);
     const classes = useStyles();
     const [value, setValue] = useState(0);
 
@@ -144,7 +90,7 @@ export default function RequestTabs() {
             <div className={classes.container}>
                 <Select
                     className={classes.select}
-                    value={request.proxy}
+                    value={request.proxy ? request.proxy : 'No Proxy'}
                     onChange={handleSelect}
                     variant="outlined"
                     name="proxy"

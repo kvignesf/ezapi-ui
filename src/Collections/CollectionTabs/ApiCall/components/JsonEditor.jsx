@@ -1,7 +1,7 @@
 import MonacoEditor from '@monaco-editor/react';
 import { useRef } from 'react';
 import { useSetRecoilState } from 'recoil';
-import { requestParams } from '../../../../CollectionsAtom';
+import { requestParams } from '../../../CollectionsAtom';
 
 export default function JsonEditor({ value, type, readOnly }) {
     const editorRef = useRef(null);

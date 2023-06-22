@@ -1,31 +1,32 @@
-import { Tabs, Tab, IconButton } from '@material-ui/core';
-import { Close, Add } from '@material-ui/icons';
-import { TabContext, TabPanel } from '@material-ui/lab';
-import { useRecoilState, useSetRecoilState } from 'recoil';
-import {
-    currentApi,
-    currentBreadCrumbs,
-    currentTab,
-    currentTabs,
-    requestParams,
-    responseInfo,
-} from '../CollectionsAtom';
-import ApiCall from './ApiCall/ApiCall';
+import { IconButton, Tab, Tabs } from '@material-ui/core';
 import Breadcrumbs from '@material-ui/core/Breadcrumbs';
 import Typography from '@material-ui/core/Typography';
-import { NavigateNext } from '@material-ui/icons';
 import { makeStyles } from '@material-ui/core/styles';
-import { useEffect, useState } from 'react';
-import axios from 'axios';
-import { endpoint } from '../../shared/network/client';
-import { getUserId } from '../../shared/storage';
+import { Add, Close, NavigateNext } from '@material-ui/icons';
+import { TabContext, TabPanel } from '@material-ui/lab';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
-
+import axios from 'axios';
+import { useEffect, useState } from 'react';
+import { useRecoilState, useSetRecoilState } from 'recoil';
+import { v4 as uuidv4 } from 'uuid';
+import { endpoint } from '../../shared/network/client';
+import { getUserId } from '../../shared/storage';
+import {
+    currentApi,
+    currentBreadCrumbs,
+    currentTab,
+    currentTabs,
+    isSaveModalOpen,
+    requestParams,
+    responseInfo,
+} from '../CollectionsAtom';
+import ApiCall from './ApiCall/ApiCall';
+import DefaultPage from './ApiCall/components/DefaultPage';
 const useStyles = makeStyles((theme) => ({
     tabPanel: {
         margin: '-25px',
@@ -55,8 +56,6 @@ const useStyles = makeStyles((theme) => ({
         zIndex: '2',
     },
     closeButton: {
-        zIndex: '2',
-        position: 'relative',
         '&::after': {
             content: '""',
             position: 'absolute',
@@ -65,6 +64,14 @@ const useStyles = makeStyles((theme) => ({
             height: '120px',
             width: '2px',
             backgroundColor: theme.palette.divider,
+        },
+    },
+    closeBtn: {
+        zIndex: '2',
+        position: 'relative',
+        opacity: 0,
+        '&:hover': {
+            opacity: 1,
         },
     },
     modalButton: {
@@ -79,44 +86,107 @@ function CollectionTabs() {
     const userId = getUserId();
     const classes = useStyles();
     const [tabs, setTabs] = useRecoilState(currentTabs);
-    const [index, setIndex] = useState();
+    const [index, setIndex] = useState(-1);
     const [value, setValue] = useRecoilState(currentTab);
-    const setRequest = useSetRecoilState(requestParams);
-    const setResponse = useSetRecoilState(responseInfo);
+    const [request, setRequest] = useRecoilState(requestParams);
+    const [response, setResponse] = useRecoilState(responseInfo);
     const setCurrentApi = useSetRecoilState(currentApi);
     const [breadCrumbs, setBreadCrumbs] = useRecoilState(currentBreadCrumbs);
     const [open, setOpen] = useState(false);
+    const setSaveModalOpen = useSetRecoilState(isSaveModalOpen);
 
     const handleClickOpen = (index) => {
         setIndex(index);
-        if (tabs[index].onSave === false) {
+        if (
+            tabs[index]?.onSave === false &&
+            tabs[index]?.request &&
+            JSON.stringify(tabs[index].request) !==
+                JSON.stringify({
+                    method: 'GET',
+                    proxy: 'No Proxy',
+                    url: '',
+                    body: { '': '' },
+                    header: [],
+                    queryParams: [],
+                })
+        ) {
             setOpen(true);
         } else {
             handleDelete(index);
         }
     };
-
     const handleClose = () => {
         setOpen(false);
     };
 
     const handleChange = async (event, newValue) => {
+        if (
+            (tabs[value]?.request && JSON.stringify(tabs[value]?.request) !== JSON.stringify(request)) ||
+            (tabs[value]?.response && JSON.stringify(tabs[value]?.response) !== JSON.stringify(response))
+        ) {
+            const currentDate = new Date();
+            const formattedDateTime = currentDate.toLocaleString('en-GB', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+            });
+            await axios
+                .put(process.env.REACT_APP_API_URL + endpoint.collectionsRequest + `/${userId}/${tabs[value]?.id}`, {
+                    request: request,
+                    response: response,
+                    modifiedAt: formattedDateTime,
+                })
+                .then((response) => {
+                    const data = response.data;
+                    setTabs((prev) => {
+                        const isTabExists = prev.some((tab) => tab.id === data.id);
+                        if (isTabExists) {
+                            // If the tab already exists, update the existing tab with new data
+                            return prev.map((tab) => {
+                                if (tab.id === data.id) {
+                                    return {
+                                        ...tab,
+                                        request: data.request,
+                                        response: data.response,
+                                    };
+                                }
+                                return tab;
+                            });
+                        } else {
+                            return [...prev];
+                        }
+                    });
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                });
+        }
         setValue(newValue);
         setRequest(tabs[newValue].request);
         setResponse(tabs[newValue].response);
         setCurrentApi({
-            id: tabs[newValue].id,
-            name: tabs[newValue].label,
+            id: tabs[newValue]?.id ? tabs[newValue].id : '0',
+            name: tabs[newValue]?.label ? tabs[newValue].label : 'New Request',
             type: 'file',
-            onSave: tabs[newValue].onSave,
-            parentFolderId: tabs[newValue].parentFolderId,
+            onSave: tabs[newValue]?.onSave ? tabs[newValue].onSave : false,
+            parentFolderId: tabs[newValue]?.parentFolderId ? tabs[newValue].parentFolderId : '0',
         });
-        setBreadCrumbs(tabs[newValue].parentFolderNames);
-        await axios
+        setBreadCrumbs(tabs[newValue]?.parentFolderNames ? tabs[newValue]?.parentFolderNames : []);
+        axios
             .put(process.env.REACT_APP_API_URL + endpoint.collectionsRequest + `/${userId}/${tabs[newValue].id}`, {
                 isRecent: true,
             })
             .catch((error) => console.log(error));
+    };
+
+    const handleSave = () => {
+        if (tabs[index]?.onSave === false) {
+            setOpen(false);
+            setSaveModalOpen(true);
+        }
     };
 
     const handleDelete = async (index) => {
@@ -127,10 +197,35 @@ function CollectionTabs() {
                     console.error('Error while saving contents:', error);
                 });
         }
+        if (
+            JSON.stringify(request) !== JSON.stringify(tabs[value]?.request) ||
+            JSON.stringify(response) !== JSON.stringify(tabs[value]?.response)
+        ) {
+            const currentDate = new Date();
+            const formattedDateTime = currentDate.toLocaleString('en-GB', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+            });
+            await axios
+                .put(process.env.REACT_APP_API_URL + endpoint.collectionsRequest + `/${userId}/${tabs[value]?.id}`, {
+                    request: request,
+                    response: response,
+                    modifiedAt: formattedDateTime,
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                });
+        }
+
         const newTabs = tabs.filter((_, i) => i !== index);
         setTabs(newTabs);
         if (tabs.length > 0) {
             if (index === value - 1 || index <= value) {
+                setIndex(value - 1);
                 setValue(value - 1);
                 setRequest(
                     tabs[value - 1]?.request
@@ -146,14 +241,15 @@ function CollectionTabs() {
                 );
                 setResponse(tabs[value - 1]?.response ? tabs[value - 1].response : {});
                 setCurrentApi({
-                    id: tabs[value - 1]?.id ? tabs[value - 1].id : 0,
+                    id: tabs[value - 1]?.id ? tabs[value - 1].id : '0',
                     name: tabs[value - 1]?.label ? tabs[value - 1].label : 'New Request',
                     type: 'file',
                     onSave: tabs[value - 1]?.onSave ? tabs[value - 1].onSave : false,
-                    parentFolderId: tabs[value - 1]?.parentFolderId ? tabs[value - 1].parentFolderId : 0,
+                    parentFolderId: tabs[value - 1]?.parentFolderId ? tabs[value - 1].parentFolderId : '0',
                 });
                 setBreadCrumbs(tabs[value - 1]?.parentFolderNames ? tabs[value - 1].parentFolderNames : []);
             } else {
+                setIndex(value);
                 setValue(value);
                 setRequest(
                     tabs[value]?.request
@@ -173,12 +269,13 @@ function CollectionTabs() {
                     name: tabs[value]?.label ? tabs[value].label : 'New Request',
                     type: 'file',
                     onSave: tabs[value]?.onSave ? tabs[value].onSave : false,
-                    parentFolderId: tabs[value]?.parentFolderId ? tabs[value].parentFolderId : 0,
+                    parentFolderId: tabs[value]?.parentFolderId ? tabs[value].parentFolderId : '0',
                 });
                 setBreadCrumbs(tabs[value]?.parentFolderNames ? tabs[value].parentFolderNames : []);
             }
         } else {
-            setValue();
+            setIndex(-1);
+            setValue(-1);
             setRequest({
                 method: 'GET',
                 proxy: 'No Proxy',
@@ -188,7 +285,7 @@ function CollectionTabs() {
                 queryParams: [],
             });
             setResponse({});
-            setCurrentApi({ id: 0, name: '', type: 'file', onSave: false, parentFolderId: 0 });
+            setCurrentApi({ id: 0, name: '', type: 'file', onSave: false, parentFolderId: '0' });
             setBreadCrumbs([]);
         }
 
@@ -196,7 +293,7 @@ function CollectionTabs() {
     };
 
     const handleAdd = async () => {
-        const newId = Date.now();
+        const newId = uuidv4();
         const newTab = {
             id: newId,
             request: { method: 'GET', proxy: 'No Proxy', url: '', body: { '': '' }, header: [], queryParams: [] },
@@ -208,12 +305,66 @@ function CollectionTabs() {
             type: 'file',
         };
         setTabs([...tabs, newTab]);
+
+        if (
+            (tabs[value]?.request && JSON.stringify(tabs[value]?.request) !== JSON.stringify(request)) ||
+            (tabs[value]?.response && JSON.stringify(tabs[value]?.response) !== JSON.stringify(response))
+        ) {
+            const currentDate = new Date();
+            const formattedDateTime = currentDate.toLocaleString('en-GB', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+            });
+            await axios
+                .put(process.env.REACT_APP_API_URL + endpoint.collectionsRequest + `/${userId}/${tabs[value]?.id}`, {
+                    request: request,
+                    response: response,
+                    modifiedAt: formattedDateTime,
+                })
+                .then((response) => {
+                    const data = response.data;
+                    setTabs((prev) => {
+                        const isTabExists = prev.some((tab) => tab.id === data.id);
+                        if (isTabExists) {
+                            // If the tab already exists, update the existing tab with new data
+                            return prev.map((tab) => {
+                                if (tab.id === data.id) {
+                                    return {
+                                        ...tab,
+                                        request: data.request,
+                                        response: data.response,
+                                    };
+                                }
+                                return tab;
+                            });
+                        } else {
+                            return [...prev];
+                        }
+                    });
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                });
+        }
+        setIndex(tabs.length);
         setValue(tabs.length);
         setRequest({ method: 'GET', proxy: 'No Proxy', url: '', body: { '': '' }, header: [], queryParams: [] });
         setResponse({});
-        setCurrentApi({ id: newId, name: 'New Request', type: 'file', onSave: false, parentFolderId: 0 });
+        setCurrentApi({ id: newId, name: 'New Request', type: 'file', onSave: false, parentFolderId: '0' });
         setBreadCrumbs([]);
-
+        const currentDate = new Date();
+        const formattedDateTime = currentDate.toLocaleString('en-GB', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+        });
         await axios.post(process.env.REACT_APP_API_URL + endpoint.collectionsRequest + `/${userId}/${newId}`, {
             name: 'New Request',
             request: {
@@ -226,11 +377,99 @@ function CollectionTabs() {
             },
             response: { status: null, headers: {}, data: {}, time: 0, size: 0 },
             onSave: true,
-            parentFolderId: 0,
+            parentFolderId: '0',
             isRecent: true,
+            createdAt: formattedDateTime,
+            modifiedAt: formattedDateTime,
         });
     };
 
+    const handleLeft = () => {
+        if (value > 0) {
+            setIndex(value - 1);
+            setValue(value - 1);
+            setRequest(
+                tabs[value - 1]?.request
+                    ? tabs[value - 1].request
+                    : {
+                          method: 'GET',
+                          proxy: 'No Proxy',
+                          url: '',
+                          body: { '': '' },
+                          header: [],
+                          queryParams: [],
+                      },
+            );
+            setResponse(tabs[value - 1]?.response ? tabs[value - 1].response : {});
+            setCurrentApi({
+                id: tabs[value - 1]?.id ? tabs[value - 1].id : '0',
+                name: tabs[value - 1]?.label ? tabs[value - 1].label : 'New Request',
+                type: 'file',
+                onSave: tabs[value - 1]?.onSave ? tabs[value - 1].onSave : false,
+                parentFolderId: tabs[value - 1]?.parentFolderId ? tabs[value - 1].parentFolderId : '0',
+            });
+            setBreadCrumbs(tabs[value - 1]?.parentFolderNames ? tabs[value - 1].parentFolderNames : []);
+        }
+    };
+    const handleRight = () => {
+        if (value < tabs.length - 1) {
+            setIndex(value + 1);
+            setValue(value + 1);
+            setRequest(
+                tabs[value + 1]?.request
+                    ? tabs[value + 1].request
+                    : {
+                          method: 'GET',
+                          proxy: 'No Proxy',
+                          url: '',
+                          body: { '': '' },
+                          header: [],
+                          queryParams: [],
+                      },
+            );
+            setResponse(tabs[value + 1]?.response ? tabs[value + 1].response : {});
+            setCurrentApi({
+                id: tabs[value + 1]?.id ? tabs[value + 1].id : '0',
+                name: tabs[value + 1]?.label ? tabs[value + 1].label : 'New Request',
+                type: 'file',
+                onSave: tabs[value + 1]?.onSave ? tabs[value + 1].onSave : false,
+                parentFolderId: tabs[value + 1]?.parentFolderId ? tabs[value + 1].parentFolderId : '0',
+            });
+            setBreadCrumbs(tabs[value + 1]?.parentFolderNames ? tabs[value + 1].parentFolderNames : []);
+        }
+    };
+    useEffect(() => {
+        const handleKeyDown = (event) => {
+            if (event.ctrlKey) {
+                if (event.key === 'a') {
+                    event.preventDefault(); // Prevent browser's default Save dialog
+                    // Call your function here
+                    handleAdd();
+                }
+                if (event.key === 'd') {
+                    event.preventDefault(); // Prevent browser's default Save dialog
+                    // Call your function here
+                    handleClickOpen(index);
+                }
+                if (event.key === 'ArrowLeft') {
+                    event.preventDefault(); // Prevent browser's default Save dialog
+                    // Call your function here
+                    handleLeft();
+                }
+                if (event.key === 'ArrowRight') {
+                    event.preventDefault(); // Prevent browser's default Save dialog
+                    // Call your function here
+                    handleRight();
+                }
+            }
+        };
+
+        document.addEventListener('keydown', handleKeyDown);
+
+        return () => {
+            document.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [handleAdd, handleClickOpen, index]);
     return (
         <div>
             <TabContext value={value}>
@@ -280,7 +519,7 @@ function CollectionTabs() {
                                 onClick={() => handleClickOpen(index)}
                                 className={`${classes.closeButton}`}
                             >
-                                <Close fontSize="small" />
+                                <Close fontSize="small" className={`${classes.closeBtn}`} />
                             </IconButton>
                         </div>
                     ))}
@@ -291,7 +530,6 @@ function CollectionTabs() {
                             margin: '11px 7px',
                         }}
                     >
-                        {' '}
                         <IconButton size="small" onClick={handleAdd} className={classes.tabButton}>
                             <Add fontSize="small" />
                         </IconButton>
@@ -321,11 +559,16 @@ function CollectionTabs() {
                           })
                         : null}
                 </Breadcrumbs>
-                {tabs.map((tab, index) => (
-                    <TabPanel key={index} value={index} className={classes.tabPanel}>
-                        <p>{tab.content}</p>
-                    </TabPanel>
-                ))}
+                {value < 0 || value == null || value === undefined ? (
+                    <DefaultPage />
+                ) : (
+                    tabs.map((tab, index) => (
+                        <TabPanel key={index} value={index} className={classes.tabPanel}>
+                            <p>{tab.content}</p>
+                        </TabPanel>
+                    ))
+                )}
+
                 <Dialog open={open} onClose={handleClose}>
                     <DialogTitle
                         style={{
@@ -340,10 +583,10 @@ function CollectionTabs() {
                         <DialogContentText
                             style={{
                                 fontWeight: 500,
-                                fontSize: '15px',
+                                fontSize: '16px',
                             }}
                         >
-                            Are you sure you want to delete? Request will not be saved.
+                            Request is not saved. Would you like to save?
                         </DialogContentText>
                     </DialogContent>
                     <DialogActions>
@@ -364,7 +607,7 @@ function CollectionTabs() {
                                     backgroundColor: 'black',
                                 },
                             }}
-                            onClick={handleClose}
+                            onClick={() => handleDelete(index)}
                         >
                             No
                         </Button>
@@ -381,7 +624,7 @@ function CollectionTabs() {
                                 boxShadow: 'none',
                             }}
                             size="small"
-                            onClick={() => handleDelete(index)}
+                            onClick={handleSave}
                         >
                             Yes
                         </Button>

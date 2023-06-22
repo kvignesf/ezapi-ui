@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
 import { Drawer, makeStyles } from '@material-ui/core';
+import { useState } from 'react';
 import { Resizable } from 'react-resizable';
-import DocStore from './DocStore/DocStore';
 import CollectionTabs from './CollectionTabs/CollectionTabs';
+import DocStore from './DocStore/DocStore';
 const drawerWidth = 300;
 const maxSidebarWidth = 550;
 
