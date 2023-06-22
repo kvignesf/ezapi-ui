@@ -5,6 +5,7 @@ import { isSaveModalOpen } from '../../CollectionsAtom';
 import Request from './RequestWorkspace/RequestPanel';
 import Response from './ResponseWorkspace/ResponsePanel';
 
+// styles
 const useStyles = makeStyles((theme) => ({
     requestContainer: {
         height: '100%',
