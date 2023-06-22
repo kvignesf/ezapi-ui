@@ -1,31 +1,32 @@
-import axios from 'axios';
-import React, { useEffect, useState } from 'react';
-import { endpoint } from '../../../shared/network/client';
-import { getUserId } from '../../../shared/storage';
-import File from './File';
 import { makeStyles } from '@material-ui/core/styles';
-import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
-import {
-    currentApi,
-    currentBreadCrumbs,
-    currentTab,
-    currentTabs,
-    recentRequest,
-    requestParams,
-    responseInfo,
-    selectedType,
-} from '../../CollectionsAtom';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
-
+import axios from 'axios';
+import { useEffect, useState } from 'react';
+import { useRecoilState, useSetRecoilState } from 'recoil';
+import { endpoint } from '../../../shared/network/client';
+import { getUserId } from '../../../shared/storage';
+import {
+    currentApi,
+    currentBreadCrumbs,
+    currentTab,
+    currentTabs,
+    isSaveModalOpen,
+    requestParams,
+    responseInfo,
+    selectedType,
+} from '../../CollectionsAtom';
+import File from './File';
 const useStyles = makeStyles((theme) => ({
     heading: {
         color: 'grey',
-        fontSize: '15px',
+        fontSize: '14px',
         fontWeight: 600,
         fontStyle: 'italic',
         marginTop: '10px',
@@ -54,6 +55,8 @@ const RecentHistory = () => {
     const setResponse = useSetRecoilState(responseInfo);
     const setCurrentApi = useSetRecoilState(currentApi);
     const setBreadCrumbs = useSetRecoilState(currentBreadCrumbs);
+    const setSaveModalOpen = useSetRecoilState(isSaveModalOpen);
+
     const handleClose = () => {
         setOpen(false);
     };
@@ -64,7 +67,27 @@ const RecentHistory = () => {
                 .get(process.env.REACT_APP_API_URL + endpoint.collectionsRequest + `/${userId}`)
                 .then((response) => {
                     let req = response.data;
-                    req.sort((a, b) => a.id - b.id);
+                    req.sort((dateStr1, dateStr2) => {
+                        const date1 = new Date(
+                            dateStr1.modifiedAt.slice(6, 10),
+                            dateStr1.modifiedAt.slice(3, 5) - 1,
+                            dateStr1.modifiedAt.slice(0, 2),
+                            dateStr1.modifiedAt.slice(11, 13),
+                            dateStr1.modifiedAt.slice(14, 16),
+                            dateStr1.modifiedAt.slice(17, 19),
+                        );
+
+                        const date2 = new Date(
+                            dateStr2.modifiedAt.slice(6, 10),
+                            dateStr2.modifiedAt.slice(3, 5) - 1,
+                            dateStr2.modifiedAt.slice(0, 2),
+                            dateStr2.modifiedAt.slice(11, 13),
+                            dateStr2.modifiedAt.slice(14, 16),
+                            dateStr2.modifiedAt.slice(17, 19),
+                        );
+
+                        return date1 - date2;
+                    });
 
                     req = req.filter((obj) => obj.isRecent === true);
                     setRequests(req);
@@ -76,21 +99,34 @@ const RecentHistory = () => {
         getFiles();
     }, [userId, tabs]);
 
-    console.log(requests);
     // Get the current date
-    const today = new Date().toDateString();
+    const today = new Date();
     // Get the date for yesterday
-    const yesterday = new Date(Date.now() - 86400000).toDateString();
+    const yesterday = new Date(Date.now() - 86400000);
 
     // Group the objects based on date
     let groupedData = requests.reduce((acc, obj) => {
-        const dateKey = new Date(obj.id).toDateString();
+        const parts = obj.modifiedAt.split(', ');
+        const date = parts[0];
+        const dateKey =
+            date === today.toLocaleDateString()
+                ? 'Today'
+                : date === yesterday.toLocaleDateString()
+                ? 'Yesterday'
+                : date;
         if (!acc[dateKey]) {
             acc[dateKey] = [];
         }
         acc[dateKey].push(obj);
         return acc;
     }, {});
+
+    const handleSave = () => {
+        if (tabs[value]?.onSave === false) {
+            setOpen(false);
+            setSaveModalOpen(true);
+        }
+    };
 
     const handleDelete = async (id) => {
         await axios
@@ -118,18 +154,29 @@ const RecentHistory = () => {
         );
         setResponse(tabs[value - 1]?.response ? tabs[value - 1].response : {});
         setCurrentApi({
-            id: tabs[value - 1]?.id ? tabs[value - 1].id : 0,
+            id: tabs[value - 1]?.id ? tabs[value - 1]?.id : '0',
             name: tabs[value - 1]?.label ? tabs[value - 1].label : 'New Request',
             type: 'file',
             onSave: tabs[value - 1]?.onSave ? tabs[value - 1].onSave : false,
-            parentFolderId: tabs[value - 1].parentFolderId,
+            parentFolderId: tabs[value - 1]?.parentFolderId ? tabs[value - 1].parentFolderId : '0',
         });
         setBreadCrumbs(tabs[value - 1]?.parentFolderNames ? tabs[value - 1].parentFolderNames : []);
         setOpen(false);
     };
 
     const handleDialog = async (parentFolderId, id) => {
-        if (parentFolderId === 0) {
+        if (
+            tabs[value]?.onSave === false &&
+            JSON.stringify(tabs[value].request) !==
+                JSON.stringify({
+                    method: 'GET',
+                    proxy: 'No Proxy',
+                    url: '',
+                    body: { '': '' },
+                    header: [],
+                    queryParams: [],
+                })
+        ) {
             setOpen(true);
             setId(id);
         } else {
@@ -142,6 +189,15 @@ const RecentHistory = () => {
                 .then(() => {
                     setRequests(updatedRequests);
                 });
+        }
+    };
+    const [collapsedDates, setCollapsedDates] = useState([]);
+
+    const toggleDateCollapse = (date) => {
+        if (collapsedDates.includes(date)) {
+            setCollapsedDates(collapsedDates.filter((d) => d !== date));
+        } else {
+            setCollapsedDates([...collapsedDates, date]);
         }
     };
 
@@ -195,21 +251,34 @@ const RecentHistory = () => {
                 .filter((date) => ![today, yesterday].includes(date)) // Exclude today and yesterday
                 .map((date) => (
                     <div key={date}>
-                        <p className={classes.heading} style={{ marginLeft: '10px' }}>
+                        <p
+                            className={classes.heading}
+                            style={{ marginLeft: '5px', cursor: 'pointer', marginRight: '10px' }}
+                            onClick={() => toggleDateCollapse(date)}
+                        >
+                            {collapsedDates.includes(date) ? (
+                                <KeyboardArrowRightIcon style={{ marginTop: '-2px' }} />
+                            ) : (
+                                <KeyboardArrowDownIcon style={{ marginTop: '-2px' }} />
+                            )}
                             {date}
                         </p>
-                        {groupedData[date].map((obj, idx) => (
-                            <File
-                                key={obj.id}
-                                id={obj.id}
-                                name={obj.name}
-                                reqMethod={obj.request.method}
-                                reqUrl={obj.request.url}
-                                onSelect={setSelected}
-                                selected={selected}
-                                handleDialog={() => handleDialog(obj.parentFolderId, obj.id)}
-                            />
-                        ))}
+                        {!collapsedDates.includes(date) && (
+                            <>
+                                {groupedData[date].map((obj, idx) => (
+                                    <File
+                                        key={obj.id}
+                                        id={obj.id}
+                                        name={obj.name}
+                                        reqMethod={obj.request.method}
+                                        reqUrl={obj.request.url}
+                                        onSelect={setSelected}
+                                        selected={selected}
+                                        handleDialog={() => handleDialog(obj.parentFolderId, obj.id)}
+                                    />
+                                ))}
+                            </>
+                        )}
                     </div>
                 ))}
             <Dialog open={open} onClose={handleClose}>
@@ -229,7 +298,7 @@ const RecentHistory = () => {
                             fontSize: '15px',
                         }}
                     >
-                        Are you sure you want to delete? Request will not be saved.
+                        Request is not saved. Would you like to save?
                     </DialogContentText>
                 </DialogContent>
                 <DialogActions>
@@ -250,7 +319,7 @@ const RecentHistory = () => {
                                 backgroundColor: 'black',
                             },
                         }}
-                        onClick={handleClose}
+                        onClick={() => handleDelete(id)}
                     >
                         No
                     </Button>
@@ -267,7 +336,7 @@ const RecentHistory = () => {
                             boxShadow: 'none',
                         }}
                         size="small"
-                        onClick={() => handleDelete(id)}
+                        onClick={handleSave}
                     >
                         Yes
                     </Button>

@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
-import { Tabs, Tab } from '@material-ui/core';
-import { ThreeDots } from 'react-loader-spinner';
+import { Tab, Tabs } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
-import JsonEditor from '../components/JsonEditor/JsonEditor';
-import ResponseHeader from './ResponseHeader';
 import httpStatus from 'http-status-codes';
+import { useState } from 'react';
+import { ThreeDots } from 'react-loader-spinner';
+import JsonEditor from '../components/JsonEditor';
+import ResponseHeader from './ResponseHeader';
 
 const useStyles = makeStyles((theme) => ({
     root: {

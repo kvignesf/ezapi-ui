@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import { makeStyles } from '@material-ui/core';
+import { useEffect, useState } from 'react';
+import { useSetRecoilState } from 'recoil';
+import { isSaveModalOpen } from '../../CollectionsAtom';
 import Request from './RequestWorkspace/RequestPanel';
 import Response from './ResponseWorkspace/ResponsePanel';
-import { makeStyles } from '@material-ui/core';
 
 const useStyles = makeStyles((theme) => ({
     requestContainer: {
@@ -66,6 +68,8 @@ export default function ApiCall() {
     const [height, setHeight] = useState(300);
     const [isResizing, setIsResizing] = useState(false);
     const [prevY, setPrevY] = useState(0);
+    const setSaveModalOpen = useSetRecoilState(isSaveModalOpen);
+
     const onMouseDown = (event) => {
         event.preventDefault();
         setIsResizing(true);
@@ -87,6 +91,22 @@ export default function ApiCall() {
     };
 
     const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        const handleKeyDown = (event) => {
+            if (event.ctrlKey && event.key === 's') {
+                event.preventDefault(); // Prevent browser's default Save dialog
+                // Call your function here
+                setSaveModalOpen(true);
+            }
+        };
+
+        document.addEventListener('keydown', handleKeyDown);
+
+        return () => {
+            document.removeEventListener('keydown', handleKeyDown);
+        };
+    }, []);
     return (
         <div className="flex bg-white">
             <div className="w-full">
