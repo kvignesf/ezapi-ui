@@ -1,10 +1,16 @@
+import currentViewAtom from '@/shared/atom/currentViewAtom';
+import saveBulkParamAtom from '@/shared/atom/saveBulkParamAtom';
 import { CircularProgress, Dialog } from '@material-ui/core';
 import DragIndicatorIcon from '@material-ui/icons/DragIndicator';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import _ from 'lodash';
-import { useState } from 'react';
+import { useRecoilState } from 'recoil';
+
+import Constants from '@/shared/constants';
+import { useEffect, useState } from 'react';
 import { useDrag } from 'react-dnd';
+import MonacoEditor from 'react-monaco-editor';
 import { useParams } from 'react-router';
 import Scrollbar from 'react-smooth-scrollbar';
 import { useRecoilValue } from 'recoil';
@@ -12,10 +18,11 @@ import Colors from '../../../shared/colors';
 import AppIcon from '../../../shared/components/AppIcon';
 import { operationAtomWithMiddleware, useCanEdit } from '../../../shared/utils';
 import AddOrEditParameter from './AddOrEditParameter/AddOrEditParameter';
+import { useBulkChange } from './AddOrEditParameter/modifyParameterQueries';
 import DeleteParameter from './DeleteParameter/DeleteParameter';
 import { useGetParameters } from './parametersQuery';
 
-const Parameters = ({ projectType }) => {
+const Parameters = ({ projectType, currentView }) => {
     const { projectId } = useParams();
     const {
         isLoading: isFetchingParameters,
@@ -24,6 +31,228 @@ const Parameters = ({ projectType }) => {
     } = useGetParameters(projectId, {
         refetchOnWindowFocus: false,
     });
+    const [parametersData, setParametersData] = useState([]);
+    useEffect(() => {
+        if (parameters) {
+            setParametersData(parameters.data);
+        }
+    }, [parameters]);
+    return (
+        <>
+            {parametersData && currentView === 'grid' ? (
+                <ParametersGrid
+                    parameters={parametersData}
+                    projectType={projectType}
+                    isFetchingParameters={isFetchingParameters}
+                    getParametersError={getParametersError}
+                    setParametersData={setParametersData}
+                />
+            ) : (
+                <ParametersEditor
+                    projectType={projectType}
+                    parameters={parametersData}
+                    setParametersData={setParametersData}
+                />
+            )}
+        </>
+    );
+};
+
+const ParametersEditor = ({ projectType, parameters, isFetchingParameters, getParametersError }) => {
+    const { projectId } = useParams();
+    const [operationState, setOperationState] = useRecoilState(operationAtomWithMiddleware);
+
+    const headers = 'Attribute, Data Type, Possible Values, Required, Description';
+    const {
+        isLoading: isEditingParameter,
+        isSuccess: isEditSuccess,
+        error: editParamError,
+        mutate: editParam,
+        reset: resetEditParam,
+    } = useBulkChange();
+    const [value, setValue] = useState(headers);
+    const [editorViewValidation, setEditorViewValidation] = useState(null);
+
+    const [saveBulkParameter, setSaveBulkParam] = useRecoilState(saveBulkParamAtom);
+    const [currentView, setCurrentView] = useRecoilState(currentViewAtom);
+
+    const parametersToCsv = (parameters) => {
+        const csv = ['Attribute,Data Type,Possible Values,Required,Description'];
+
+        parameters.forEach((param) => {
+            const row = [
+                param.name,
+                param.commonName,
+                '[' + param.possibleValues.join(',') + ']', // Add square brackets here
+                param.required ? 'Yes' : 'No',
+                param.description,
+            ].join(',');
+            csv.push(row);
+        });
+
+        return csv.join('\n');
+    };
+
+    useEffect(() => {
+        console.log('data=>', parameters);
+        if (parameters) {
+            setValue(parametersToCsv(parameters));
+        }
+    }, [parameters]);
+
+    const options = {
+        selectOnLineNumbers: true,
+        roundedSelection: false,
+        readOnly: false,
+        cursorStyle: 'line',
+        automaticLayout: true,
+    };
+
+    const handleChange = (newValue) => {
+        setValue(newValue);
+    };
+
+    function csvToPayload(input) {
+        const header = 'Attribute,Data Type,Possible Values,Required,Description';
+        if (input === '') {
+            setValue(header);
+            return null;
+        }
+        if (input === header) return 'empty';
+        if (!input.toLowerCase().startsWith(header.toLowerCase())) {
+            input = header + '\n' + input;
+        }
+
+        const preprocessed = input.replace(/\[(.*?)\]/g, (match) => match.replace(/,/g, '|'));
+        const lines = preprocessed.split(/\r?\n/);
+        const keys = lines[0].split(',').map((key) => key.toLowerCase().trim());
+
+        for (let line of lines.slice(1)) {
+            const values = line.split(/,(?![^\[]*\])/);
+
+            if (values.length !== keys.length) {
+                setEditorViewValidation('Each row should have the same number of columns as the header row.');
+                return null;
+            }
+        }
+
+        let objects = lines.slice(1).map((line) => {
+            const values = line.split(/,(?![^\[]*\])/);
+
+            const object = {};
+            keys.forEach((key, index) => {
+                let value = values[index]?.trim();
+
+                if (key === 'required') {
+                    value = value.toLowerCase() === 'yes' ? true : false;
+                }
+
+                if (key === 'possible values' && value) {
+                    value = value
+                        .replace(/\|/g, ',')
+                        .replace(/[\[\]]/g, '')
+                        .split(',')
+                        .map((item) => {
+                            const isQuoted = item.startsWith('"') && item.endsWith('"');
+                            return isQuoted ? item.slice(1, -1).trim() : item.trim();
+                        });
+                }
+
+                if (key === 'data type') {
+                    const dataTypeInList = Constants.parameterDataTypes.find(
+                        (dt) => dt.toLowerCase() === value.toLowerCase(),
+                    );
+                    if (!dataTypeInList) {
+                        setEditorViewValidation('Please enter a valid data type.');
+                        return null;
+                    }
+                    value = dataTypeInList;
+                }
+
+                object[key] = value;
+            });
+
+            if (object.hasOwnProperty('attribute')) {
+                object['name'] = object['attribute'];
+                delete object['attribute'];
+            }
+            if (object.hasOwnProperty('data type')) {
+                object['type'] = object['data type'];
+                delete object['data type'];
+            }
+            if (object.hasOwnProperty('possible values')) {
+                object['possibleValues'] = object['possible values'];
+                delete object['possible values'];
+            }
+            if (object.hasOwnProperty('description')) {
+                object['description'] = object['description'];
+            }
+            if (object.hasOwnProperty('required')) {
+                object['required'] = object['required'];
+            }
+            return object;
+        });
+        objects = objects.filter((obj) => obj !== null);
+
+        const names = objects.map((obj) => obj.name);
+        const hasDuplicates = names.some((name, index) => names.indexOf(name) !== index);
+
+        if (hasDuplicates) {
+            setEditorViewValidation('Each parameter name must be unique.');
+            return null;
+        }
+
+        return objects;
+    }
+
+    useEffect(() => {
+        if (saveBulkParameter && currentView === 'editor') {
+            submitData();
+            setSaveBulkParam(false);
+        }
+    }, [saveBulkParameter, currentView]);
+    const submitData = () => {
+        setEditorViewValidation(null);
+        const newData = csvToPayload(value);
+        console.log('submitData', csvToPayload(value));
+        if (newData && newData.length > 0) {
+            if (newData === 'empty') {
+                editParam({ projectId: projectId, data: [] });
+            } else {
+                editParam({ projectId: projectId, data: newData });
+            }
+        }
+    };
+
+    return (
+        <div className="m-4 h-full mb-16">
+            <div
+                className="bg-neutral-gray7 mt-14 p-4 rounded-md flex flex-col"
+                style={{ height: `calc(100% - 80px)` }}
+            >
+                <Scrollbar
+                    style={{
+                        height: !operationState?.operationIndex ? `calc(100vh - 210px)` : null,
+                    }}
+                >
+                    <MonacoEditor
+                        height={!operationState?.operationIndex ? `calc(100vh - 240px)` : null}
+                        language="plaintext"
+                        value={value}
+                        options={options}
+                        onChange={handleChange}
+                        style={{ border: '1px solid lightgrey', borderRadius: '4px', backgroundColor: '#f5f5f5' }}
+                    />{' '}
+                    {editorViewValidation && (
+                        <p className="text-overline2 mb-1 text-accent-red">{editorViewValidation}</p>
+                    )}
+                </Scrollbar>
+            </div>
+        </div>
+    );
+};
+
+const ParametersGrid = ({ parameters, projectType, isFetchingParameters, getParametersError }) => {
     const [dialog, setDialog] = useState({
         show: false,
         type: null,
@@ -98,18 +327,20 @@ const Parameters = ({ projectType }) => {
                             <p className="flex-1 text-smallLabel uppercase text-neutral-gray2">Description</p>
                             <div className="w-12"></div>
                         </div>
-                        {parameters && parameters?.data && !_.isEmpty(parameters?.data) ? (
+                        {parameters && parameters && !_.isEmpty(parameters) ? (
                             <Scrollbar
                                 style={{
                                     height: !operationState?.operationIndex ? `calc(100vh - 210px)` : null,
                                     maxHeight: operationState?.operationIndex ? `calc(50vh - 210px)` : null,
                                 }}
                             >
-                                {parameters?.data?.map((param) => {
+                                {parameters?.map((param) => {
                                     //console.log("eachParam:",param);
-                                    return <ParamRow projectType={projectType} param={param} />;
+                                    return (
+                                        <ParamRow projectType={projectType} param={param} entireParam={parameters} />
+                                    );
                                 })}
-                                <AddOrEditParameter projectType={projectType} onClose={handleCloseDialog} />
+                                <AddOrEditParameter projectType={projectType} entireParam={parameters} type="add" />
                             </Scrollbar>
                         ) : (
                             <Scrollbar
@@ -128,7 +359,7 @@ const Parameters = ({ projectType }) => {
     );
 };
 
-const ParamRow = ({ projectType, param }) => {
+const ParamRow = ({ projectType, param, entireParam }) => {
     const [{ isDragging }, drag, dragPreview] = useDrag(
         () => ({
             type: 'drag_item',
@@ -207,6 +438,7 @@ const ParamRow = ({ projectType, param }) => {
                         stopEdit={handleEditParameter}
                         onClose={handleCloseDialog}
                         parameter={param}
+                        entireParam={entireParam}
                     />
                 ) : (
                     <div key={param.name} className="bg-white mb-1 rounded-md flex flex-row p-1 py-1 items-center">
