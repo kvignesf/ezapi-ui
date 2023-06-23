@@ -1,4 +1,7 @@
-import { Dialog, Tab, Tabs } from '@material-ui/core';
+import currentViewAtom from '@/shared/atom/currentViewAtom';
+import saveBulkParamAtom from '@/shared/atom/saveBulkParamAtom';
+import { Dialog, Switch, Tab, Tabs } from '@material-ui/core';
+import { makeStyles } from '@material-ui/core/styles';
 import AddIcon from '@material-ui/icons/Add';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import classNames from 'classnames';
@@ -28,6 +31,8 @@ const Match = ({ projectType, isBusinessFlow, ...props }) => {
     const { projectId } = useParams();
     let [operationData, setOperationDetails] = useRecoilState(operationAtomWithMiddleware);
     const [addParamCheck, setAddParamCheck] = useRecoilState(addParamAtom);
+    const [saveBulkParameter, setSaveBulkParam] = useRecoilState(saveBulkParamAtom);
+
     const [currentTab, setTab] = useState(null);
     const [schemaState, setSchemaState] = useRecoilState(schemaAtom);
     const resetSchemaState = useResetRecoilState(schemaAtom);
@@ -35,6 +40,8 @@ const Match = ({ projectType, isBusinessFlow, ...props }) => {
     const [tablesDataState, setTablesDataState] = useRecoilState(tablesDataAtom);
     const [storedProcedureState, setStoredProcedureState] = useRecoilState(storedProcedureAtom);
     const resetTableState = useResetRecoilState(tableAtom);
+    const [currentView, setCurrentView] = useRecoilState(currentViewAtom);
+
     const resetStoredProcedureState = useResetRecoilState(storedProcedureAtom);
     const [dialog, setDialog] = useState({
         show: false,
@@ -108,6 +115,22 @@ const Match = ({ projectType, isBusinessFlow, ...props }) => {
     }
 
     const isOperationSelected = projectId && operationData?.operation?.operationId;
+
+    const useStyles = makeStyles((theme) => ({
+        switchBase: {
+            color: theme.palette.grey[500],
+            '&$checked': {
+                color: theme.palette.primary.main,
+            },
+            '&$checked + $track': {
+                backgroundColor: theme.palette.primary.main,
+            },
+        },
+        checked: {},
+        track: {},
+    }));
+
+    const classes = useStyles();
 
     return (
         <div className="flex-1 relative w-full" {...props}>
@@ -410,24 +433,64 @@ const Match = ({ projectType, isBusinessFlow, ...props }) => {
                 </div>
 
                 {(currentTab === 'param' || currentTab === 'customParam') && canEdit() && (
-                    <div
-                        className="flex flex-row items-center cursor-pointer hover:opacity-80 mr-16 border-1 rounded-md border-brand-secondary px-2 py-2"
-                        onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            if (currentTab === 'param') {
-                                //showAddParameterDialog();
-                                setAddParamCheck(true);
-                            }
-                            if (currentTab === 'customParam') {
-                                showAddCustomParameterDialog();
-                            }
-                        }}
-                    >
-                        <AppIcon size="20px" color={Colors.brand.secondary} style={{ marginRight: '0.5rem' }}>
-                            <AddIcon style={{ fontSize: '20px' }} />
-                        </AppIcon>
-                        <p className="text-overline2 text-brand-secondary">Save Parameter</p>
+                    <div className="flex flex-row items-center ">
+                        <div id="durationMY" className="container mx-auto p-4 ">
+                            <div className="flex justify-center ">
+                                {' '}
+                                <div
+                                    id="mo"
+                                    style={{ color: currentView === 'grid' ? '#c72c71' : 'black' }}
+                                    className="mt-1.5 text-black-500"
+                                >
+                                    Grid View
+                                </div>
+                                <Switch
+                                    color="default"
+                                    checked={currentView === 'editor'}
+                                    onChange={(e) => setCurrentView(e.target.checked ? 'editor' : 'grid')}
+                                />
+                                <div
+                                    id="yr"
+                                    style={{ color: currentView === 'editor' ? '#c72c71' : 'black' }}
+                                    className="mt-1.5 text-black-500"
+                                >
+                                    Editor View
+                                </div>
+                            </div>
+                        </div>
+                        {/* <label className="flex items-center px-2 text-brand-secondary" style={{ cursor: 'pointer' }}>
+                            <input
+                                type="checkbox"
+                                className="form-checkbox text-brand-secondary mr-2"
+                                checked={currentView === 'editor'}
+                                onChange={(e) => setCurrentView(e.target.checked ? 'editor' : 'grid')}
+                            />
+                            Editor View
+                        </label> */}
+
+                        <div
+                            className="flex flex-row items-center cursor-pointer hover:opacity-80 mr-16 border-1 rounded-md border-brand-secondary px-2 py-2"
+                            onClick={(e) => {
+                                console.log('save clicked');
+                                e.preventDefault();
+                                e.stopPropagation();
+                                if (currentTab === 'param') {
+                                    if (currentView === 'editor') {
+                                        setSaveBulkParam(true);
+                                    } else {
+                                        setAddParamCheck(true);
+                                    }
+                                }
+                                if (currentTab === 'customParam') {
+                                    showAddCustomParameterDialog();
+                                }
+                            }}
+                        >
+                            <AppIcon size="20px" color={Colors.brand.secondary} style={{ marginRight: '0.5rem' }}>
+                                <AddIcon style={{ fontSize: '20px' }} />
+                            </AppIcon>
+                            <p className="text-overline2 text-brand-secondary">Save Parameter</p>
+                        </div>
                     </div>
                 )}
 
@@ -438,7 +501,7 @@ const Match = ({ projectType, isBusinessFlow, ...props }) => {
                 {currentTab === 'schema' ? (
                     <Schema />
                 ) : currentTab === 'param' ? (
-                    <Parameters projectType={projectType} />
+                    <Parameters projectType={projectType} currentView={currentView} />
                 ) : currentTab === 'db' ? (
                     <Database />
                 ) : currentTab === 'customParam' ? (

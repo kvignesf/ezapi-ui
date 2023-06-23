@@ -22,6 +22,7 @@ export const endpoint = Object.freeze({
     subSchemaData: '/subSchemaData',
     addParameter: '/projectParams/add',
     editParameter: '/projectParams/edit',
+    bulkParamChange: '/projectParams/bulk',
     getParameter: '/projectParams/get',
     deleteParameter: '/projectParams/delete',
     tablesLookup: '/tablesLookup',
