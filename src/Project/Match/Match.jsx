@@ -2,7 +2,6 @@ import currentViewAtom from '@/shared/atom/currentViewAtom';
 import saveBulkParamAtom from '@/shared/atom/saveBulkParamAtom';
 import { Dialog, Switch, Tab, Tabs } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
-import AddIcon from '@material-ui/icons/Add';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import classNames from 'classnames';
 import _ from 'lodash';
@@ -14,7 +13,6 @@ import schemaAtom from '../../shared/atom/schemaAtom';
 import storedProcedureAtom from '../../shared/atom/storedProcedureAtom';
 import tableAtom from '../../shared/atom/tableAtom';
 import tablesDataAtom from '../../shared/atom/tablesDataAtom';
-import Colors from '../../shared/colors';
 import AppIcon from '../../shared/components/AppIcon';
 import TabLabel from '../../shared/components/TabLabel';
 import { isArray, isMongoDb, isObject, operationAtomWithMiddleware, useCanEdit } from '../../shared/utils';
@@ -154,7 +152,7 @@ const Match = ({ projectType, isBusinessFlow, ...props }) => {
                 className={classNames('fixed top-0 mt-14 z-999 bg-white flex flex-row items-center border-b-2', {
                     'p-3': schemaState?.selected && !_.isEmpty(schemaState?.selected),
                 })}
-                style={{ width: `calc(100vw - 230px)` }}
+                style={{ width: `calc(100vw - 230px)`, height: '43px' }}
             >
                 <div className="flex-1">
                     {schemaState?.selected && !_.isEmpty(schemaState?.selected) ? (
@@ -442,36 +440,32 @@ const Match = ({ projectType, isBusinessFlow, ...props }) => {
                                     style={{ color: currentView === 'grid' ? '#c72c71' : 'black' }}
                                     className="mt-1.5 text-black-500"
                                 >
-                                    Grid View
+                                    <span className="text-overline2 capitalize">Grid View</span>
                                 </div>
                                 <Switch
                                     color="default"
                                     checked={currentView === 'editor'}
-                                    onChange={(e) => setCurrentView(e.target.checked ? 'editor' : 'grid')}
+                                    onChange={(e) => {
+                                        if (!e.target.checked) {
+                                            setSaveBulkParam(true);
+                                        } else {
+                                            setCurrentView('editor');
+                                        }
+                                    }}
                                 />
                                 <div
                                     id="yr"
                                     style={{ color: currentView === 'editor' ? '#c72c71' : 'black' }}
                                     className="mt-1.5 text-black-500"
                                 >
-                                    Editor View
+                                    <span className="text-overline2 capitalize"> Editor View</span>
                                 </div>
                             </div>
                         </div>
-                        {/* <label className="flex items-center px-2 text-brand-secondary" style={{ cursor: 'pointer' }}>
-                            <input
-                                type="checkbox"
-                                className="form-checkbox text-brand-secondary mr-2"
-                                checked={currentView === 'editor'}
-                                onChange={(e) => setCurrentView(e.target.checked ? 'editor' : 'grid')}
-                            />
-                            Editor View
-                        </label> */}
 
                         <div
                             className="flex flex-row items-center cursor-pointer hover:opacity-80 mr-16 border-1 rounded-md border-brand-secondary px-2 py-2"
                             onClick={(e) => {
-                                console.log('save clicked');
                                 e.preventDefault();
                                 e.stopPropagation();
                                 if (currentTab === 'param') {
@@ -486,10 +480,10 @@ const Match = ({ projectType, isBusinessFlow, ...props }) => {
                                 }
                             }}
                         >
-                            <AppIcon size="20px" color={Colors.brand.secondary} style={{ marginRight: '0.5rem' }}>
+                            {/* <AppIcon size="20px" color={Colors.brand.secondary} style={{ marginRight: '0.5rem' }}>
                                 <AddIcon style={{ fontSize: '20px' }} />
-                            </AppIcon>
-                            <p className="text-overline2 text-brand-secondary">Save Parameter</p>
+                            </AppIcon> */}
+                            <p className="text-overline2 text-brand-secondary">Save</p>
                         </div>
                     </div>
                 )}

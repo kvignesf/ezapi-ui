@@ -206,7 +206,7 @@ const ParametersEditor = ({ projectType, parameters, isFetchingParameters, getPa
     }
 
     useEffect(() => {
-        if (saveBulkParameter && currentView === 'editor') {
+        if (saveBulkParameter) {
             submitData();
             setSaveBulkParam(false);
         }
@@ -214,29 +214,30 @@ const ParametersEditor = ({ projectType, parameters, isFetchingParameters, getPa
     const submitData = () => {
         setEditorViewValidation(null);
         const newData = csvToPayload(value);
-        console.log('submitData', csvToPayload(value));
         if (newData && newData.length > 0) {
             if (newData === 'empty') {
                 editParam({ projectId: projectId, data: [] });
             } else {
                 editParam({ projectId: projectId, data: newData });
             }
+            setCurrentView('grid');
+        } else {
+            setCurrentView('editor');
         }
     };
-
     return (
-        <div className="m-4 h-full mb-16">
+        <div className="h-full">
             <div
-                className="bg-neutral-gray7 mt-14 p-4 rounded-md flex flex-col"
+                className="bg-neutral-gray7 mt-16 p-3 rounded-md flex flex-col"
                 style={{ height: `calc(100% - 80px)` }}
             >
                 <Scrollbar
                     style={{
-                        height: !operationState?.operationIndex ? `calc(100vh - 210px)` : null,
+                        height: !operationState?.operationIndex ? `calc(100vh - 210px)` : `calc(100vh - 300px)`,
                     }}
                 >
                     <MonacoEditor
-                        height={!operationState?.operationIndex ? `calc(100vh - 240px)` : null}
+                        height={!operationState?.operationIndex ? `calc(100vh - 240px)` : `calc(24vh)`}
                         language="plaintext"
                         value={value}
                         options={options}
@@ -286,9 +287,9 @@ const ParametersGrid = ({ parameters, projectType, isFetchingParameters, getPara
                 )}
             </Dialog>
 
-            <div className="m-4 h-full mb-16">
+            <div className="h-full">
                 <div
-                    className="bg-neutral-gray7 mt-14 p-4 rounded-md flex flex-col"
+                    className="bg-neutral-gray7 mt-14 p-2 rounded-md flex flex-col"
                     style={{ height: `calc(100% - 80px)` }}
                 >
                     {isFetchingParameters && (
