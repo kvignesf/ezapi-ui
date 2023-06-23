@@ -62,6 +62,55 @@ const useStyles = makeStyles((theme) => ({
             backgroundColor: '#20262E',
         },
     },
+    shortcutsContainer: {
+        display: 'flex',
+        justifyContent: 'center',
+        marginTop: theme.spacing(10),
+        textAlign: 'left',
+    },
+    shortcut: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: theme.spacing(1),
+    },
+    shortcutKey: {
+        fontWeight: 'bold',
+        marginRight: theme.spacing(1),
+    },
+    ctrlContainer: {
+        display: 'flex',
+        alignItems: 'center',
+        background: '#D8D8D8',
+        width: 'fit-content',
+        height: '27px',
+        borderRadius: '5px',
+        border: '1px solid grey',
+        marginRight: '10px',
+    },
+    spanCtrl: {
+        padding: '3px',
+        color: 'grey',
+        fontWeight: 'bold',
+        fontSize: '10px',
+    },
+    letterContainer: {
+        display: 'flex',
+        alignItems: 'center',
+        background: '#D8D8D8',
+        width: 'fit-content',
+        padding: '5px',
+        height: '27px',
+        borderRadius: '5px',
+        border: '1px solid grey',
+        marginRight: '10px',
+    },
+    letterSpan: {
+        padding: '3px',
+        color: 'grey',
+        fontWeight: 'bold',
+        fontSize: '10px',
+    },
 }));
 
 export default function ApiCall() {

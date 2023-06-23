@@ -33,7 +33,7 @@ export default function Request({ setLoading }) {
         let data;
         const startTime = Date.now(); // Start tracking elapsed time
         if (request.body === undefined || request.body === null) {
-            console.error('The request body is undefined or null.');
+            data = {};
         } else {
             try {
                 data = request.body;
@@ -63,20 +63,35 @@ export default function Request({ setLoading }) {
                     headers,
                     data: request.body,
                 };
-                const response = await axios({
+
+                await axios({
                     url: 'https://proxy.ezapi.ai',
                     data,
                     method: 'POST',
-                });
-                const responseData = {
-                    status: response.status,
-                    headers: response.headers,
-                    data: response.data,
-                    time: ((Date.now() - startTime) / 1000).toFixed(2),
-                    size: (new Blob([JSON.stringify(response)]).size / 1024).toFixed(2),
-                    error: false,
-                };
-                setResponse(responseData);
+                })
+                    .then((response) => {
+                        const responseData = {
+                            status: response.status,
+                            headers: response.headers,
+                            data: response.data,
+                            time: ((Date.now() - startTime) / 1000).toFixed(2),
+                            size: (new Blob([JSON.stringify(response)]).size / 1024).toFixed(2),
+                            error: false,
+                        };
+                        setResponse(responseData);
+                    })
+                    .catch(function (error) {
+                        if (error.response) {
+                            setResponse({
+                                time: ((Date.now() - startTime) / 1000).toFixed(2),
+                                data: error.response.data,
+                                status: error.response.status,
+                                headers: error.response.headers,
+                            });
+                        }
+
+                        // setResponse({ status: 400, data: error.message });
+                    });
             } else {
                 const requestOptions = {
                     method: request.method,
@@ -88,7 +103,7 @@ export default function Request({ setLoading }) {
                 } else {
                     requestOptions.body = data;
                 }
-
+                // console.log(requestOptions);
                 const response = await fetch(newUrl, requestOptions);
 
                 const responseHeaders = response.headers;

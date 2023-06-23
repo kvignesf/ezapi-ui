@@ -438,7 +438,13 @@ export default function File({
     }, []);
 
     const fileClass = selected && selected.id === id ? classes.selectedFile : classes.root;
-    const method = reqMethod ? reqMethod : 'GET';
+    let method;
+    if (api.id === id) {
+        method = request.method;
+    } else {
+        method = reqMethod ? reqMethod : 'GET';
+    }
+
     const requestUrl = reqUrl ? reqUrl : null;
 
     return (

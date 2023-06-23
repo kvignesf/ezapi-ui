@@ -394,7 +394,7 @@ export default function Folder({ id, parentId, onDelete, selected, onSelect, onR
             };
             handleSelect();
         }
-    }, [saveModalOpen, tabs, selected]);
+    }, [saveModalOpen, selected]);
 
     const fileClass = id === selected.id ? classes.selectedFile : classes.root;
 
