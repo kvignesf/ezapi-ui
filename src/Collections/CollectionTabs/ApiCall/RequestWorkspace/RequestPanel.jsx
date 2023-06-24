@@ -56,6 +56,12 @@ export default function Request({ setLoading }) {
                 headers.Authorization = `Bearer ${authToken}`;
             }
             if (newProxy === 'Proxy') {
+                const req = {
+                    ...request,
+                    url: newUrl,
+                    proxy: newProxy,
+                };
+                let res = {};
                 const data = {
                     url: request.url,
                     method: request.method,
@@ -69,7 +75,7 @@ export default function Request({ setLoading }) {
                     data,
                     method: 'POST',
                 })
-                    .then((response) => {
+                    .then(async (response) => {
                         const responseData = {
                             status: response.status,
                             headers: response.headers,
@@ -79,8 +85,9 @@ export default function Request({ setLoading }) {
                             error: false,
                         };
                         setResponse(responseData);
+                        res = responseData;
                     })
-                    .catch(function (error) {
+                    .catch(async function (error) {
                         if (error.response) {
                             setResponse({
                                 time: ((Date.now() - startTime) / 1000).toFixed(2),
@@ -88,9 +95,53 @@ export default function Request({ setLoading }) {
                                 status: error.response.status,
                                 headers: error.response.headers,
                             });
+                            res = {
+                                time: ((Date.now() - startTime) / 1000).toFixed(2),
+                                data: error.response.data,
+                                status: error.response.status,
+                                headers: error.response.headers,
+                            };
                         }
+                    });
 
-                        // setResponse({ status: 400, data: error.message });
+                const currentDate = new Date();
+                const formattedDateTime = currentDate.toLocaleString('en-GB', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                });
+                await axios
+                    .put(process.env.REACT_APP_API_URL + endpoint.collectionsRequest + `/${userId}/${api.id}`, {
+                        request: req,
+                        response: res,
+                        modifiedAt: formattedDateTime,
+                    })
+                    .then((response) => {
+                        const data = response.data;
+                        setTabs((prev) => {
+                            const isTabExists = prev.some((tab) => tab.id === data.id);
+                            if (isTabExists) {
+                                // If the tab already exists, update the existing tab with new data
+                                return prev.map((tab) => {
+                                    if (tab.id === data.id) {
+                                        return {
+                                            ...tab,
+                                            request: data.request,
+                                            response: data.response,
+                                        };
+                                    }
+                                    return tab;
+                                });
+                            } else {
+                                return [...prev];
+                            }
+                        });
+                    })
+                    .catch((error) => {
+                        console.error('Error:', error);
                     });
             } else {
                 const requestOptions = {

@@ -33,6 +33,10 @@ import RecentHistory from './components/RecentHistory';
 const useStyles = makeStyles((theme) => ({
     app: {
         height: '100vh',
+        overflow: 'hidden',
+    },
+    main: {
+        height: '100vh',
         overflow: 'auto',
         '&::-webkit-scrollbar': {
             width: '5px',
@@ -562,35 +566,36 @@ export default function DocStore({ isModal }) {
                             />
                         )}
                     </div>
-
-                    {searchQuery.length > 0
-                        ? filteredFiles.map((request) => (
-                              <div key={request.props.id}>
-                                  {React.cloneElement(request, {
-                                      onDelete: handleDelete,
-                                      onSelect: setSelected,
-                                      selected: selected,
-                                      onRename: handleRename,
-                                      setLoading: setLoading,
-                                      loading: loading,
-                                  })}
-                              </div>
-                          ))
-                        : folders.map((folder) => (
-                              <div key={folder.props.id}>
-                                  {React.cloneElement(folder, {
-                                      onDelete: handleDelete,
-                                      onSelect: setSelected,
-                                      selected: selected,
-                                      onRename: handleRename,
-                                      parentId: '0',
-                                      isModal: isModal,
-                                      saveModalOpen: saveModalOpen,
-                                      setLoading: setLoading,
-                                      loading: loading,
-                                  })}
-                              </div>
-                          ))}
+                    <div className={classes.main}>
+                        {searchQuery.length > 0
+                            ? filteredFiles.map((request) => (
+                                  <div key={request.props.id}>
+                                      {React.cloneElement(request, {
+                                          onDelete: handleDelete,
+                                          onSelect: setSelected,
+                                          selected: selected,
+                                          onRename: handleRename,
+                                          setLoading: setLoading,
+                                          loading: loading,
+                                      })}
+                                  </div>
+                              ))
+                            : folders.map((folder) => (
+                                  <div key={folder.props.id}>
+                                      {React.cloneElement(folder, {
+                                          onDelete: handleDelete,
+                                          onSelect: setSelected,
+                                          selected: selected,
+                                          onRename: handleRename,
+                                          parentId: '0',
+                                          isModal: isModal,
+                                          saveModalOpen: saveModalOpen,
+                                          setLoading: setLoading,
+                                          loading: loading,
+                                      })}
+                                  </div>
+                              ))}
+                    </div>
                 </div>
             ) : null}
         </div>
