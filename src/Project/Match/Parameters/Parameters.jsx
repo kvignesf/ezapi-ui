@@ -39,18 +39,18 @@ const Parameters = ({ projectType, currentView }) => {
     }, [parameters]);
     return (
         <>
-            {parametersData && currentView === 'grid' ? (
+            {currentView === 'editor' ? (
+                <ParametersEditor
+                    projectType={projectType}
+                    parameters={parametersData}
+                    setParametersData={setParametersData}
+                />
+            ) : (
                 <ParametersGrid
                     parameters={parametersData}
                     projectType={projectType}
                     isFetchingParameters={isFetchingParameters}
                     getParametersError={getParametersError}
-                    setParametersData={setParametersData}
-                />
-            ) : (
-                <ParametersEditor
-                    projectType={projectType}
-                    parameters={parametersData}
                     setParametersData={setParametersData}
                 />
             )}
@@ -62,7 +62,6 @@ const ParametersEditor = ({ projectType, parameters, isFetchingParameters, getPa
     const { projectId } = useParams();
     const [operationState, setOperationState] = useRecoilState(operationAtomWithMiddleware);
 
-    const headers = 'Attribute, Data Type, Possible Values, Required, Description';
     const {
         isLoading: isEditingParameter,
         isSuccess: isEditSuccess,
@@ -70,7 +69,7 @@ const ParametersEditor = ({ projectType, parameters, isFetchingParameters, getPa
         mutate: editParam,
         reset: resetEditParam,
     } = useBulkChange();
-    const [value, setValue] = useState(headers);
+    const [value, setValue] = useState('Attribute,Data Type,Possible Values,Required,Description');
     const [editorViewValidation, setEditorViewValidation] = useState(null);
 
     const [saveBulkParameter, setSaveBulkParam] = useRecoilState(saveBulkParamAtom);
