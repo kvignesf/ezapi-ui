@@ -1,3 +1,3 @@
-import OperationDetails from "./OperationDetails";
+import OperationDetails from './OperationDetails';
 
 export default OperationDetails;

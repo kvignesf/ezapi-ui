@@ -1,147 +1,148 @@
-import React, { useMemo, useState } from 'react';
-import { QueryClientProvider } from 'react-query';
-import { RecoilRoot, useRecoilValue } from 'recoil';
-import { BrowserRouter, Route, Switch, Redirect } from 'react-router-dom';
-import { LinkedInPopUp } from 'react-linkedin-login-oauth2';
-import { MuiThemeProvider, createTheme } from '@material-ui/core';
-import SnackbarProvider from 'react-simple-snackbar';
+import { createTheme, MuiThemeProvider } from '@material-ui/core';
+import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
-import { Elements, ElementsConsumer } from '@stripe/react-stripe-js';
+import { LinkedInPopUp } from 'react-linkedin-login-oauth2';
+import { QueryClientProvider } from 'react-query';
+import { BrowserRouter, Redirect, Route, Switch } from 'react-router-dom';
+import SnackbarProvider from 'react-simple-snackbar';
+import { RecoilRoot } from 'recoil';
 
-import queryClient from './shared/network/queryClient';
-import NotFound from './shared/components/NotFound';
-import PrivateRoute from './shared/components/PrivateRoute';
-import routes from './shared/routes';
-import Colors from './shared/colors';
-import Login from './Login';
-import Projects from './Projects';
+import ApiGovernance from './ApiGovernance/ApiGovernance';
+import Collections from './Collections/Collections';
+import Response from './Collections/CollectionTabs/ApiCall/ResponseWorkspace/ResponsePanel';
+import { socket, SocketContext } from './Context/socket';
 import Landing from './Landing';
-import { isUserLoggedIn, DebugObserver } from './shared/utils';
+import Login from './Login';
+import Orders from './Orders/Orders';
+import Pricing from './Pricing';
+import ProductTour from './ProductTour/ProductTour';
 import Project from './Project';
 import ProjectPayment from './ProjectPayment/ProjectPayment';
 import ProjectPayment2 from './ProjectPayment/ProjectPayment2';
-import Orders from './Orders/Orders';
-import ProductTour from './ProductTour/ProductTour';
-import ConekttoDocs from './Docs/ConekttoDocs';
-import {SocketContext, socket} from './Context/socket';
-
-import EzapiFooter from './shared/components/EzapiFooter';
-import Pricing from './Pricing';
-import Billing from './BillingPage';
+import Projects from './Projects';
+import Colors from './shared/colors';
+import NotFound from './shared/components/NotFound';
+import PrivateRoute from './shared/components/PrivateRoute';
+import queryClient from './shared/network/queryClient';
+import routes from './shared/routes';
+import { isUserLoggedIn } from './shared/utils';
 
 const theme = createTheme({
-  palette: {
-    primary: {
-      main: Colors.brand.primary,
+    palette: {
+        primary: {
+            main: Colors.brand.primary,
+        },
     },
-  },
 });
 
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_KEY);
 
 const App = () => {
-  const isAuthenticated = () => isUserLoggedIn();
+    const isAuthenticated = () => isUserLoggedIn();
 
-  return (
-    <SocketContext.Provider value={socket}>
-    <RecoilRoot>
-      <QueryClientProvider client={queryClient}>
-        <MuiThemeProvider theme={theme}>
-          <SnackbarProvider>
-            <BrowserRouter>
-              {/* <CookieConsentPopup /> */}
+    return (
+        <SocketContext.Provider value={socket}>
+            <RecoilRoot>
+                <QueryClientProvider client={queryClient}>
+                    <MuiThemeProvider theme={theme}>
+                        <SnackbarProvider>
+                            <BrowserRouter>
+                                {/* <CookieConsentPopup /> */}
 
-              <Switch>
-                {/* Login route */}
-                <Route exact path={routes.signIn} component={Login} >
-                  <Login />
-                  {/* {!isUserLoggedIn() ? (
+                                <Switch>
+                                    {/* Login route */}
+                                    <Route exact path={routes.signIn} component={Login}>
+                                        <Login />
+                                        {/* {!isUserLoggedIn() ? (
                   <Login />
                 ) : (
                   <Redirect to={routes.projects} />
                 )} */}
-                </Route>
+                                    </Route>
 
-                <PrivateRoute exact path={routes.orders} component={Orders} />
-                <PrivateRoute
-                  exact
-                  path={routes.projects}
-                  component={Projects}
-                />
-                <PrivateRoute exact path={routes.pricing} component={Pricing} />
-                <PrivateRoute exact path={routes.productTour} component={ProductTour} />
-                {/* <PrivateRoute exact path={routes.docs} component={() => {
+                                    <PrivateRoute exact path={routes.orders} component={Orders} />
+                                    <PrivateRoute exact path={routes.projects} component={Projects} />
+                                    <PrivateRoute exact path={routes.pricing} component={Pricing} />
+                                    <PrivateRoute exact path={routes.productTour} component={ProductTour} />
+                                    {/* <PrivateRoute exact path={routes.docs} component={() => {
                   //window.open('https://docs.conektto.io', '_blank') || window.location.replace('https://docs.conektto.io');
                   //window.location.replace('https://docs.conektto.io');
                   window.open('https://docs.conektto.io', '_blank')
                   return null;
                 }}/> */}
 
-                <PrivateRoute exact path={routes.docs} component={() => {
-                  window.location.replace('https://docs.conektto.io');
-                  return null;
-                }}/>
+                                    <PrivateRoute
+                                        exact
+                                        path={routes.docs}
+                                        component={() => {
+                                            window.location.replace('https://docs.conektto.io');
+                                            return null;
+                                        }}
+                                    />
 
-                {/*<PrivateRoute exact path={routes.docs} component={ConekttoDocs} />*/}
-                <Route
-                  path={routes.payment}
-                  render={(props) => {
-                    return (
-                      <>
-                        {isAuthenticated() ? (
-                          <Elements stripe={stripePromise}>
-                            <ProjectPayment2 {...props} />
-                          </Elements>
-                        ) : (
-                          <Redirect
-                            to={{
-                              pathname: routes.signIn,
-                              state: { from: props.location },
-                            }}
-                          />
-                        )}
-                      </>
-                    );
-                  }}
-                />
+                                    <PrivateRoute exact path={routes.apiGovernance} component={ApiGovernance} />
+                                    <PrivateRoute exact path={routes.collections} component={Collections} />
+                                    <PrivateRoute exact path={routes.responseTab} component={Response} />
+                                    {/*<PrivateRoute exact path={routes.docs} component={ConekttoDocs} />*/}
+                                    <Route
+                                        path={routes.payment}
+                                        render={(props) => {
+                                            return (
+                                                <>
+                                                    {isAuthenticated() ? (
+                                                        <Elements stripe={stripePromise}>
+                                                            <ProjectPayment2 {...props} />
+                                                        </Elements>
+                                                    ) : (
+                                                        <Redirect
+                                                            to={{
+                                                                pathname: routes.signIn,
+                                                                state: { from: props.location },
+                                                            }}
+                                                        />
+                                                    )}
+                                                </>
+                                            );
+                                        }}
+                                    />
 
-                <Route
-                  path={routes.paymentForOrder}
-                  render={(props) => {
-                    return (
-                      <>
-                        {isAuthenticated() ? (
-                          <Elements stripe={stripePromise}>
-                            <ProjectPayment />
-                          </Elements>
-                        ) : (
-                          <Redirect
-                            to={{
-                              pathname: routes.signIn,
-                              state: { from: props.location },
-                            }}
-                          />
-                        )}
-                      </>
-                    );
-                  }}
-                />
+                                    <Route
+                                        path={routes.paymentForOrder}
+                                        render={(props) => {
+                                            return (
+                                                <>
+                                                    {isAuthenticated() ? (
+                                                        <Elements stripe={stripePromise}>
+                                                            <ProjectPayment />
+                                                        </Elements>
+                                                    ) : (
+                                                        <Redirect
+                                                            to={{
+                                                                pathname: routes.signIn,
+                                                                state: { from: props.location },
+                                                            }}
+                                                        />
+                                                    )}
+                                                </>
+                                            );
+                                        }}
+                                    />
 
-                <PrivateRoute exact path={routes.project} component={Project} />
+                                    <PrivateRoute exact path={routes.project} component={Project} />
 
-                <Route exact path="/linkedin" component={LinkedInPopUp} />
-                {/* Base route */}
-                <Route exact path="/" component={Landing} />
-                {/* 404 */}
-                <Route component={NotFound} />
-              </Switch>
-            </BrowserRouter>
-          </SnackbarProvider>
-        </MuiThemeProvider>
-      </QueryClientProvider>
-    </RecoilRoot>
-    </SocketContext.Provider>
-  );
+                                    <Route exact path="/linkedin" component={LinkedInPopUp} />
+                                    {/* Base route */}
+                                    <Route exact path="/" component={Landing} />
+                                    {/* 404 */}
+                                    <Route component={NotFound} />
+                                </Switch>
+                            </BrowserRouter>
+                        </SnackbarProvider>
+                    </MuiThemeProvider>
+                </QueryClientProvider>
+            </RecoilRoot>
+        </SocketContext.Provider>
+    );
 };
 
 export default App;

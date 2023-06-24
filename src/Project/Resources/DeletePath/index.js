@@ -1,3 +1,3 @@
-import DeletePath from "./DeletePath";
+import DeletePath from './DeletePath';
 
 export default DeletePath;

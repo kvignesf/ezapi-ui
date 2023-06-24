@@ -1,3 +1,3 @@
-import DeleteResource from "./DeleteResource";
+import DeleteResource from './DeleteResource';
 
 export default DeleteResource;

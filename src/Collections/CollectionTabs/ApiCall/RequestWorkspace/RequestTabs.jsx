@@ -1,0 +1,143 @@
+import { MenuItem, Select, Tab, Tabs, Typography } from '@material-ui/core';
+import { makeStyles } from '@material-ui/core/styles';
+import { useState } from 'react';
+import { useRecoilState } from 'recoil';
+import { requestParams } from '../../../CollectionsAtom';
+import JsonEditor from '../components/JsonEditor';
+import AuthTab from './AuthenticationTab/AuthTab';
+import KeyValue from './KeyValue/KeyValuePanel';
+
+const useStyles = makeStyles((theme) => ({
+    root: {
+        flexGrow: 1,
+        backgroundColor: theme.palette.background.paper,
+    },
+    tab: {
+        minWidth: 100,
+        fontWeight: 500,
+        fontSize: '14px',
+        textTransform: 'none',
+        '&.Mui-selected': {
+            borderBottom: 'none',
+        },
+    },
+    panel: {
+        borderBottom: '1px solid #ddd',
+        marginTop: '-2px',
+        borderTop: '1px solid #ddd',
+    },
+    select: {
+        fontWeight: 500,
+        fontSize: '14px',
+        width: 107,
+        '&:focus': {
+            backgroundColor: 'transparent',
+            outline: 'none',
+        },
+        '& .MuiOutlinedInput-notchedOutline': {
+            border: 'none',
+        },
+    },
+    container: {
+        display: 'flex',
+        alignItems: 'center',
+    },
+}));
+
+export default function RequestTabs() {
+    const classes = useStyles();
+    const [value, setValue] = useState(0);
+
+    const handleChange = (event, newValue) => {
+        setValue(newValue);
+    };
+
+    const [request, setRequest] = useRecoilState(requestParams);
+
+    const handleSelect = (event) => {
+        const { name, value } = event.target;
+        setRequest((prevData) => ({
+            ...prevData,
+            [name]: value,
+        }));
+    };
+
+    const requestTabs = [
+        {
+            slug: 'query-params',
+            title: 'Query Params',
+            panel: <KeyValue tab={0} />,
+        },
+        {
+            slug: 'headers',
+            title: 'Headers',
+            panel: <KeyValue tab={1} />,
+        },
+        {
+            slug: 'body',
+            title: 'Body',
+            panel: <JsonEditor value={request.body} type={'reqBody'} readOnly={false} tab={2} />,
+        },
+        {
+            slug: 'authorization',
+            title: 'Authorization',
+            panel: <AuthTab tab={3} />,
+        },
+    ];
+
+    return (
+        <div className={classes.root}>
+            <div className={classes.container}>
+                <Select
+                    className={classes.select}
+                    value={request.proxy ? request.proxy : 'No Proxy'}
+                    onChange={handleSelect}
+                    variant="outlined"
+                    name="proxy"
+                >
+                    <MenuItem value="No Proxy">No Proxy</MenuItem>
+                    <MenuItem value="Proxy">Proxy</MenuItem>
+                </Select>
+                <Tabs
+                    value={value}
+                    onChange={handleChange}
+                    variant="standard"
+                    indicatorColor="transparent"
+                    textColor="primary"
+                    style={{
+                        borderBottom: 'none',
+                    }}
+                >
+                    {requestTabs.map((tab) => (
+                        <Tab className={classes.tab} key={tab.slug} label={tab.title} />
+                    ))}
+                </Tabs>
+            </div>
+            {requestTabs.map((tab, index) => (
+                <TabPanel className={classes.panel} value={value} index={index} key={tab.slug}>
+                    {tab.panel}
+                </TabPanel>
+            ))}
+        </div>
+    );
+}
+
+function TabPanel(props) {
+    const { children, value, index, ...other } = props;
+
+    return (
+        <div
+            role="tabpanel"
+            hidden={value !== index}
+            id={`tabpanel-${index}`}
+            aria-labelledby={`tab-${index}`}
+            {...other}
+        >
+            {value === index && (
+                <Typography component="div" variant="body1">
+                    {children}
+                </Typography>
+            )}
+        </div>
+    );
+}
