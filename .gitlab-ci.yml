@@ -106,6 +106,7 @@ build-stage:
   extends: .build-stage
   only:
     - feature/aggregate-apis
+    - stage
 build-test:
   stage: build-test
   extends: .build-test
@@ -134,6 +135,7 @@ deploy-demo1:
   extends: .deploy-demo1
   only:
     - feature/aggregate-apis
+    - stage
 deploy-instance1:
   stage: deploy-instance1
   image: alpine
