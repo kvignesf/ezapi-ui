@@ -94,38 +94,45 @@ export default function ResponseTabs({ doc, response, loading }) {
                         <Tab className={classes.tab} label="Response Header" />
                     ) : null}
                 </Tabs>
-                {response && response.status && response.size && response.time ? (
+                {response && (
                     <div className="flex mt-4 mr-4">
-                        <span className={classes.span}>
-                            Status:
-                            <span
-                                style={{
-                                    color: response.status >= 200 && response.status < 300 ? '#138808' : 'red',
-                                }}
-                            >
-                                {response.status ? `${response.status} ${statusText}` : ''}
+                        {response.status && (
+                            <span className={classes.span}>
+                                Status:
+                                <span
+                                    style={{
+                                        color: response.status >= 200 && response.status < 300 ? '#138808' : 'red',
+                                    }}
+                                >
+                                    {response.status ? `${response.status} ${statusText}` : ''}
+                                </span>
                             </span>
-                        </span>
-                        <span className={classes.span}>
-                            Time:
-                            <span
-                                style={{
-                                    color: response.status >= 200 && response.status < 300 ? '#138808' : 'red',
-                                }}
-                            >
-                                {response.time ? ` ${response.time}s` : ''}
+                        )}
+                        {response.time && (
+                            <span className={classes.span}>
+                                Time:
+                                <span
+                                    style={{
+                                        color: response.status >= 200 && response.status < 300 ? '#138808' : 'red',
+                                    }}
+                                >
+                                    {response.time ? ` ${response.time}s` : ''}
+                                </span>
                             </span>
-                        </span>
-                        <span className={classes.span}>
-                            Size:
-                            <span
-                                style={{
-                                    color: response.status >= 200 && response.status < 300 ? '#138808' : 'red',
-                                }}
-                            >
-                                {response.size ? ` ${response.size}kB` : ''}
+                        )}
+                        {response.size && (
+                            <span className={classes.span}>
+                                Size:
+                                <span
+                                    style={{
+                                        color: response.status >= 200 && response.status < 300 ? '#138808' : 'red',
+                                    }}
+                                >
+                                    {response.size ? ` ${response.size}kB` : ''}
+                                </span>
                             </span>
-                        </span>
+                        )}
+
                         {/* <span className={classes.iconSpan}>
             <Tooltip
               title="Open a new tab"
@@ -144,7 +151,7 @@ export default function ResponseTabs({ doc, response, loading }) {
             </Tooltip>
           </span> */}
                     </div>
-                ) : null}
+                )}
             </div>
 
             <div className="px-4 py-4 ">

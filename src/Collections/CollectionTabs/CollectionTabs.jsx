@@ -90,7 +90,7 @@ function CollectionTabs() {
     const [value, setValue] = useRecoilState(currentTab);
     const [request, setRequest] = useRecoilState(requestParams);
     const [response, setResponse] = useRecoilState(responseInfo);
-    const setCurrentApi = useSetRecoilState(currentApi);
+    const [api, setCurrentApi] = useRecoilState(currentApi);
     const [breadCrumbs, setBreadCrumbs] = useRecoilState(currentBreadCrumbs);
     const [open, setOpen] = useState(false);
     const setSaveModalOpen = useSetRecoilState(isSaveModalOpen);
@@ -196,29 +196,33 @@ function CollectionTabs() {
                 .catch((error) => {
                     console.error('Error while saving contents:', error);
                 });
-        }
-        if (
-            JSON.stringify(request) !== JSON.stringify(tabs[value]?.request) ||
-            JSON.stringify(response) !== JSON.stringify(tabs[value]?.response)
-        ) {
-            const currentDate = new Date();
-            const formattedDateTime = currentDate.toLocaleString('en-GB', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit',
-            });
-            await axios
-                .put(process.env.REACT_APP_API_URL + endpoint.collectionsRequest + `/${userId}/${tabs[value]?.id}`, {
-                    request: request,
-                    response: response,
-                    modifiedAt: formattedDateTime,
-                })
-                .catch((error) => {
-                    console.error('Error:', error);
+        } else {
+            if (
+                JSON.stringify(request) !== JSON.stringify(tabs[value]?.request) ||
+                JSON.stringify(response) !== JSON.stringify(tabs[value]?.response)
+            ) {
+                const currentDate = new Date();
+                const formattedDateTime = currentDate.toLocaleString('en-GB', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
                 });
+                await axios
+                    .put(
+                        process.env.REACT_APP_API_URL + endpoint.collectionsRequest + `/${userId}/${tabs[value]?.id}`,
+                        {
+                            request: request,
+                            response: response,
+                            modifiedAt: formattedDateTime,
+                        },
+                    )
+                    .catch((error) => {
+                        console.error('Error:', error);
+                    });
+            }
         }
 
         const newTabs = tabs.filter((_, i) => i !== index);
@@ -492,7 +496,19 @@ function CollectionTabs() {
                                     <span>
                                         <span
                                             style={
-                                                tab.request.method === 'GET'
+                                                api.id === tab.id
+                                                    ? request.method === 'GET'
+                                                        ? { color: '#03C988', fontSize: '14px', fontWeight: 500 }
+                                                        : request.method === 'POST'
+                                                        ? { color: '#F29727', fontSize: '14px', fontWeight: 500 }
+                                                        : request.method === 'DELETE'
+                                                        ? { color: '#CD1818', fontSize: '14px', fontWeight: 500 }
+                                                        : request.method === 'PATCH'
+                                                        ? { color: '#4F709C', fontSize: '14px', fontWeight: 500 }
+                                                        : request.method === 'PUT'
+                                                        ? { color: '#5B8FF9', fontSize: '14px', fontWeight: 500 }
+                                                        : null
+                                                    : tab.request.method === 'GET'
                                                     ? { color: '#03C988', fontSize: '14px', fontWeight: 500 }
                                                     : tab.request.method === 'POST'
                                                     ? { color: '#F29727', fontSize: '14px', fontWeight: 500 }
@@ -505,7 +521,7 @@ function CollectionTabs() {
                                                     : null
                                             }
                                         >
-                                            {tab.request.method}
+                                            {api.id === tab.id ? request.method : tab.request.method}
                                         </span>
                                         {tab.label.length > 15 ? ` ${tab.label.substring(0, 10)}...` : ` ${tab.label}`}
                                     </span>
