@@ -899,7 +899,10 @@ const Project = () => {
                     />
                 </Drawer>
                 <DndProvider backend={HTML5Backend}>
-                    <header className="fixed top-0 w-full px-2 border-b-2 flex flex-row items-center bg-white z-50">
+                    <header
+                        className="fixed top-0 w-full px-2 border-b-2 flex flex-row items-center bg-white z-50"
+                        style={{ height: '50px' }}
+                    >
                         <div className="flex flex-row py-2 items-center">
                             <AppIcon
                                 style={{ marginRight: '1rem' }}

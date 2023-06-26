@@ -1,13 +1,18 @@
-import React, { useState } from 'react';
+import { Button, Checkbox, FormControl, FormControlLabel, Input, MenuItem, Select } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
-import { FormControl, Select, MenuItem, Input, Button, FormControlLabel, Checkbox } from '@material-ui/core';
 import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import { useState } from 'react';
 
-import SendIcon from '@material-ui/icons/Send';
 import SaveOutlinedIcon from '@material-ui/icons/SaveOutlined';
+import SendIcon from '@material-ui/icons/Send';
+import axios from 'axios';
+import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
+import { v4 as uuidv4 } from 'uuid';
+import { endpoint } from '../../../../shared/network/client';
+import { getUserId } from '../../../../shared/storage';
 import {
     currentApi,
     currentBreadCrumbs,
@@ -19,11 +24,7 @@ import {
     responseInfo,
     selectedType,
 } from '../../../CollectionsAtom';
-import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
 import DocStore from '../../../DocStore/DocStore';
-import { endpoint } from '../../../../shared/network/client';
-import axios from 'axios';
-import { getUserId } from '../../../../shared/storage';
 
 const requestMethods = [
     {
@@ -142,11 +143,11 @@ export default function UrlEditor({ onInputSend }) {
             [name]: value,
         }));
     };
-    const handleSendClick = (event) => {
+    const handleSendClick = async (event) => {
         onInputSend(event);
     };
     const handleSave = async (event) => {
-        const newId = Date.now();
+        const newId = uuidv4();
         if (checked) {
             if (selectedFolder.id) {
                 const type = 'file';
@@ -158,6 +159,15 @@ export default function UrlEditor({ onInputSend }) {
                     type: 'File',
                     parentFolderId: selectedFolder.id,
                 });
+                const currentDate = new Date();
+                const formattedDateTime = currentDate.toLocaleString('en-GB', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                });
 
                 await axios.post(process.env.REACT_APP_API_URL + endpoint.collectionsRequest + `/${userId}/${newId}`, {
                     name: fileName ? fileName : 'New Request',
@@ -166,6 +176,9 @@ export default function UrlEditor({ onInputSend }) {
                         : { method: 'GET', proxy: 'No Proxy', url: '', body: { '': '' }, header: [], queryParams: [] },
                     response: response ? response : { status: null, headers: {}, data: {}, time: 0, size: 0 },
                     onSave: true,
+                    parentFolderId: selectedFolder.id,
+                    createdAt: formattedDateTime,
+                    modifiedAt: formattedDateTime,
                 });
                 await axios
                     .get(process.env.REACT_APP_API_URL + endpoint.collectionDirectory + `/${userId}/${type}/${newId}`)
@@ -194,6 +207,7 @@ export default function UrlEditor({ onInputSend }) {
                                         label: data.name,
                                         onSave: data.onSave,
                                         type: 'file',
+                                        parentFolderId: data.parentFolderId,
                                     };
                                 }
                                 // For other indices, return the tab object as is
@@ -214,7 +228,7 @@ export default function UrlEditor({ onInputSend }) {
                     });
             }
         } else {
-            if (api.parentFolderId === 0) {
+            if (api.parentFolderId === '0') {
                 await axios.post(process.env.REACT_APP_API_URL + endpoint.collectionDirectory, {
                     userId: userId,
                     id: api.id,
@@ -223,17 +237,36 @@ export default function UrlEditor({ onInputSend }) {
                     parentFolderId: selectedFolder.id,
                 });
             } else {
+                const currentDate = new Date();
+                const formattedDateTime = currentDate.toLocaleString('en-GB', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                });
                 await axios.put(process.env.REACT_APP_API_URL + endpoint.collectionDirectory + `/${userId}/${api.id}`, {
                     parentFolderId: selectedFolder.id,
+                    modifiedAt: formattedDateTime,
                 });
             }
             const type = 'file';
             let parentFolderNames;
-
+            const currentDate = new Date();
+            const formattedDateTime = currentDate.toLocaleString('en-GB', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+            });
             await axios.put(process.env.REACT_APP_API_URL + endpoint.collectionsRequest + `/${userId}/${api.id}`, {
                 parentFolderId: selectedFolder.id,
                 name: fileName ? fileName : 'New Request',
                 onSave: true,
+                modifiedAt: formattedDateTime,
             });
 
             await axios
@@ -291,6 +324,12 @@ export default function UrlEditor({ onInputSend }) {
         setOpen(false);
     };
 
+    const handleKeyPress = (event) => {
+        if (event.keyCode === 13) {
+            // Call your function here
+            handleSendClick(event);
+        }
+    };
     return (
         <div>
             <form className="flex">
@@ -320,6 +359,7 @@ export default function UrlEditor({ onInputSend }) {
                         'aria-label': 'URL',
                     }}
                     name="url"
+                    onKeyUp={handleKeyPress}
                 />
                 <Button
                     className={`${classes.button} ${classes.sendButton}`}
@@ -354,7 +394,7 @@ export default function UrlEditor({ onInputSend }) {
                     <DocStore isModal={true} />
                 </DialogContent>
                 <DialogActions style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    {api.parentFolderId === 0 ? (
+                    {api.parentFolderId === '0' ? (
                         <div></div>
                     ) : (
                         <FormControlLabel

@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
+import { makeStyles } from '@material-ui/core';
+import { useEffect, useState } from 'react';
+import { useSetRecoilState } from 'recoil';
+import { isSaveModalOpen } from '../../CollectionsAtom';
 import Request from './RequestWorkspace/RequestPanel';
 import Response from './ResponseWorkspace/ResponsePanel';
-import { makeStyles } from '@material-ui/core';
 
+// styles
 const useStyles = makeStyles((theme) => ({
     requestContainer: {
         height: '100%',
@@ -59,6 +62,55 @@ const useStyles = makeStyles((theme) => ({
             backgroundColor: '#20262E',
         },
     },
+    shortcutsContainer: {
+        display: 'flex',
+        justifyContent: 'center',
+        marginTop: theme.spacing(10),
+        textAlign: 'left',
+    },
+    shortcut: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: theme.spacing(1),
+    },
+    shortcutKey: {
+        fontWeight: 'bold',
+        marginRight: theme.spacing(1),
+    },
+    ctrlContainer: {
+        display: 'flex',
+        alignItems: 'center',
+        background: '#D8D8D8',
+        width: 'fit-content',
+        height: '27px',
+        borderRadius: '5px',
+        border: '1px solid grey',
+        marginRight: '10px',
+    },
+    spanCtrl: {
+        padding: '3px',
+        color: 'grey',
+        fontWeight: 'bold',
+        fontSize: '10px',
+    },
+    letterContainer: {
+        display: 'flex',
+        alignItems: 'center',
+        background: '#D8D8D8',
+        width: 'fit-content',
+        padding: '5px',
+        height: '27px',
+        borderRadius: '5px',
+        border: '1px solid grey',
+        marginRight: '10px',
+    },
+    letterSpan: {
+        padding: '3px',
+        color: 'grey',
+        fontWeight: 'bold',
+        fontSize: '10px',
+    },
 }));
 
 export default function ApiCall() {
@@ -66,6 +118,8 @@ export default function ApiCall() {
     const [height, setHeight] = useState(300);
     const [isResizing, setIsResizing] = useState(false);
     const [prevY, setPrevY] = useState(0);
+    const setSaveModalOpen = useSetRecoilState(isSaveModalOpen);
+
     const onMouseDown = (event) => {
         event.preventDefault();
         setIsResizing(true);
@@ -87,6 +141,22 @@ export default function ApiCall() {
     };
 
     const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        const handleKeyDown = (event) => {
+            if (event.ctrlKey && event.key === 's') {
+                event.preventDefault(); // Prevent browser's default Save dialog
+                // Call your function here
+                setSaveModalOpen(true);
+            }
+        };
+
+        document.addEventListener('keydown', handleKeyDown);
+
+        return () => {
+            document.removeEventListener('keydown', handleKeyDown);
+        };
+    }, []);
     return (
         <div className="flex bg-white">
             <div className="w-full">

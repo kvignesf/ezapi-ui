@@ -1,15 +1,20 @@
-import axios from 'axios';
-import React, { useEffect, useRef, useState } from 'react';
-import { makeStyles } from '@material-ui/core/styles';
-import CreateNewFolderOutlinedIcon from '@material-ui/icons/CreateNewFolderOutlined';
-import InsertDriveFileOutlinedIcon from '@material-ui/icons/InsertDriveFileOutlined';
-import FolderIcon from '@material-ui/icons/Folder';
-import FolderOpenIcon from '@material-ui/icons/FolderOpen';
+import { Menu, MenuItem } from '@material-ui/core';
 import IconButton from '@material-ui/core/IconButton';
 import Tooltip from '@material-ui/core/Tooltip';
-import EditIcon from '@mui/icons-material/Edit';
+import { makeStyles } from '@material-ui/core/styles';
+import CreateNewFolderOutlinedIcon from '@material-ui/icons/CreateNewFolderOutlined';
+import FolderIcon from '@material-ui/icons/Folder';
+import FolderOpenIcon from '@material-ui/icons/FolderOpen';
+import InsertDriveFileOutlinedIcon from '@material-ui/icons/InsertDriveFileOutlined';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
+import EditIcon from '@mui/icons-material/Edit';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import axios from 'axios';
+import React, { useEffect, useRef, useState } from 'react';
+import { useRecoilState, useSetRecoilState } from 'recoil';
+import { v4 as uuidv4 } from 'uuid';
+import { endpoint } from '../../../shared/network/client';
+import { getUserId } from '../../../shared/storage';
 import {
     currentApi,
     currentBreadCrumbs,
@@ -18,13 +23,8 @@ import {
     requestParams,
     responseInfo,
 } from '../../CollectionsAtom';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
-import { Menu, MenuItem } from '@material-ui/core';
-import { endpoint } from '../../../shared/network/client';
-import { getUserId } from '../../../shared/storage';
-import File from './File';
-import { ThreeDots } from 'react-loader-spinner';
 import LoadingDialog from '../../components/LoadingDialog';
+import File from './File';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -33,6 +33,7 @@ const useStyles = makeStyles((theme) => ({
         padding: '3px',
         cursor: 'pointer',
         minWidth: '12rem',
+        paddingLeft: '5px',
         justifyContent: 'space-between',
         '&:hover': {
             backgroundColor: theme.palette.action.hover,
@@ -79,6 +80,7 @@ const useStyles = makeStyles((theme) => ({
         cursor: 'pointer',
         justifyContent: 'space-between',
         backgroundColor: 'rgba(128, 128, 128, 0.2)',
+        paddingLeft: '5px',
     },
     newfileClass: {
         display: 'flex',
@@ -116,7 +118,6 @@ export default function Folder({ id, parentId, onDelete, selected, onSelect, onR
     const [anchorEl, setAnchorEl] = useState(null);
     const inputRef = useRef(null);
     const isMountedRef = useRef(true);
-    const [contentLoading, setContentLoading] = useState(false);
     const [tabs, setTabs] = useRecoilState(currentTabs);
     const setCurrentTab = useSetRecoilState(currentTab);
     const setRequest = useSetRecoilState(requestParams);
@@ -134,7 +135,7 @@ export default function Folder({ id, parentId, onDelete, selected, onSelect, onR
     };
     const addFile = async () => {
         const parentId = id;
-        const newId = Date.now();
+        const newId = uuidv4();
         const newFile = (
             <File
                 key={newId}
@@ -150,6 +151,17 @@ export default function Folder({ id, parentId, onDelete, selected, onSelect, onR
             /> // Pass onSelect prop to child components
         );
         setChildComponents([...childComponents, newFile]);
+
+        const currentDate = new Date();
+        const formattedDateTime = currentDate.toLocaleString('en-GB', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+        });
+
         await axios.post(process.env.REACT_APP_API_URL + endpoint.collectionDirectory, {
             userId: userId,
             id: newId,
@@ -172,11 +184,13 @@ export default function Folder({ id, parentId, onDelete, selected, onSelect, onR
             onSave: true,
             parentFolderId: parentId,
             isRecent: true,
+            createdAt: formattedDateTime,
+            modifiedAt: formattedDateTime,
         });
     };
 
     const addFolder = async () => {
-        const newId = Date.now();
+        const newId = uuidv4();
         const parentId = id;
         const newFolder = (
             <Folder
@@ -217,14 +231,14 @@ export default function Folder({ id, parentId, onDelete, selected, onSelect, onR
             .then((response) => {
                 // Remove objects with matching IDs
                 const tabsToRemove = response['data'].requestFiles;
-                const isCurrentTab = tabsToRemove.find((tab) => tab === currentApi.id);
+                const isCurrentTab = tabsToRemove.find((tab) => tab.id === currentApi.id);
                 const updatedTabs = tabs.filter((obj) => !tabsToRemove.includes(obj.id));
 
                 // Update the Recoil state with the updated array
                 setTabs(updatedTabs);
 
                 if (isCurrentTab) {
-                    setCurrentTab();
+                    setCurrentTab(-1);
                     setRequest({
                         method: 'GET',
                         proxy: 'No Proxy',
@@ -234,7 +248,7 @@ export default function Folder({ id, parentId, onDelete, selected, onSelect, onR
                         queryParams: [],
                     });
                     setResponse({});
-                    setCurrentApi({ id: 0, name: '', type: 'file', onSave: false, parentFolderId: 0 });
+                    setCurrentApi({ id: 0, name: '', type: 'file', onSave: false, parentFolderId: '0' });
                     setBreadCrumbs([]);
                 }
             });
@@ -245,55 +259,7 @@ export default function Folder({ id, parentId, onDelete, selected, onSelect, onR
     const toggleCollapsed = async (event) => {
         // Check if the click target is one of the icon buttons
         if (!collapsed === false) {
-            const type = selected.type;
-            let requestFiles;
             setCollapsed(false);
-            setContentLoading(true);
-            await axios.get(process.env.REACT_APP_API_URL + endpoint.collectionsRequest + `/${userId}`).then((res) => {
-                requestFiles = res.data;
-            });
-            if (type === 'folder') {
-                await axios
-                    .get(process.env.REACT_APP_API_URL + endpoint.collectionDirectory + `/${userId}/${type}/${id}`)
-                    .then((response) => {
-                        const children = response['data'].data;
-                        const childComponents = children.map((child) => {
-                            let reqFile = requestFiles.filter((file) => file.id === child.id);
-                            let reqObject = reqFile[0]?.request;
-                            if (child.type === 'File') {
-                                return (
-                                    <File
-                                        key={child.id}
-                                        id={child.id}
-                                        parentId={id}
-                                        onDelete={deleteChild}
-                                        selected={selected}
-                                        onSelect={onSelect}
-                                        name={child.name}
-                                        onRename={onRename}
-                                        reqMethod={reqObject ? reqObject.method : null}
-                                        reqUrl={reqObject ? reqObject.url : null}
-                                    />
-                                );
-                            } else if (child.type === 'Folder') {
-                                return (
-                                    <Folder
-                                        key={child.id}
-                                        id={child.id}
-                                        parentId={id}
-                                        onDelete={deleteChild}
-                                        selected={selected}
-                                        onSelect={onSelect}
-                                        name={child.name}
-                                        onRename={onRename}
-                                    />
-                                );
-                            }
-                        });
-                        setChildComponents(childComponents);
-                    });
-            }
-            setContentLoading(false);
         } else {
             setCollapsed(!collapsed);
         }
@@ -354,7 +320,6 @@ export default function Folder({ id, parentId, onDelete, selected, onSelect, onR
         await axios
             .get(process.env.REACT_APP_API_URL + `${endpoint.collectionDirectory}/${userId}/${id}`)
             .then((response) => {
-                console.log(response['data'].exportData);
                 downloadJson(response['data'].exportData, `conektto_collection_${name}.json`);
             });
 
@@ -378,7 +343,7 @@ export default function Folder({ id, parentId, onDelete, selected, onSelect, onR
     }, []);
 
     useEffect(() => {
-        if (loading === false && collapsed === false) {
+        if (loading === false && collapsed === false && selected.type === 'folder') {
             const handleSelect = async () => {
                 const type = selected.type;
                 let requestFiles;
@@ -395,7 +360,6 @@ export default function Folder({ id, parentId, onDelete, selected, onSelect, onR
                             if (child.type === 'File') {
                                 let reqFile = requestFiles.filter((file) => file.id === child.id);
                                 let reqObject = reqFile[0]?.request;
-                                console.log(reqObject);
                                 return (
                                     <File
                                         key={child.id}
@@ -430,7 +394,7 @@ export default function Folder({ id, parentId, onDelete, selected, onSelect, onR
             };
             handleSelect();
         }
-    }, [userId, isModal, setChildComponents, selected, saveModalOpen, tabs, collapsed]);
+    }, [saveModalOpen, selected]);
 
     const fileClass = id === selected.id ? classes.selectedFile : classes.root;
 
@@ -461,8 +425,7 @@ export default function Folder({ id, parentId, onDelete, selected, onSelect, onR
 
                 {isModal === false ? (
                     <div className={classes.icons}>
-                        {' '}
-                        <Tooltip title="Add File">
+                        <Tooltip title="Add Request">
                             <IconButton className={classes.iconButton} onClick={addFile}>
                                 <InsertDriveFileOutlinedIcon className={classes.fileIcon} />
                             </IconButton>
@@ -482,7 +445,7 @@ export default function Folder({ id, parentId, onDelete, selected, onSelect, onR
                                 <MenuItem onClick={handleRename} style={{ fontSize: '14px', fontWeight: 500 }}>
                                     Rename
                                 </MenuItem>
-                                {parentId === 0 ? (
+                                {parentId === '0' ? (
                                     <MenuItem onClick={handleExport} style={{ fontSize: '14px', fontWeight: 500 }}>
                                         Export
                                     </MenuItem>
@@ -518,22 +481,18 @@ export default function Folder({ id, parentId, onDelete, selected, onSelect, onR
             </div>
             {collapsed === true && (editing === true || editing === false) ? null : (
                 <div style={{ paddingLeft: '20px' }}>
-                    {contentLoading === true ? (
-                        <ThreeDots height="20" width="20" color="gray" visible={true} />
-                    ) : (
-                        childComponents.map((component) => (
-                            <div key={component.props.id}>
-                                {React.cloneElement(component, {
-                                    onDelete: deleteChild,
-                                    onSelect: onSelect,
-                                    selected: selected,
-                                    onRename: onRename,
-                                    isModal: isModal,
-                                    saveModalOpen: saveModalOpen,
-                                })}
-                            </div>
-                        ))
-                    )}
+                    {childComponents.map((component) => (
+                        <div key={component.props.id}>
+                            {React.cloneElement(component, {
+                                onDelete: deleteChild,
+                                onSelect: onSelect,
+                                selected: selected,
+                                onRename: onRename,
+                                isModal: isModal,
+                                saveModalOpen: saveModalOpen,
+                            })}
+                        </div>
+                    ))}
                 </div>
             )}
         </div>

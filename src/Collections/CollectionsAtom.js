@@ -67,7 +67,7 @@ export const currentApi = atom({
 
 export const currentTab = atom({
     key: 'currentTab',
-    default: null,
+    default: -1,
 });
 export const selectedType = atom({
     key: 'selectedType',

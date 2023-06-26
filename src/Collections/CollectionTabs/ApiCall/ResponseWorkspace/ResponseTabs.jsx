@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
-import { Tabs, Tab } from '@material-ui/core';
-import { ThreeDots } from 'react-loader-spinner';
+import { Tab, Tabs } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
-import JsonEditor from '../components/JsonEditor/JsonEditor';
-import ResponseHeader from './ResponseHeader';
 import httpStatus from 'http-status-codes';
+import { useState } from 'react';
+import { ThreeDots } from 'react-loader-spinner';
+import JsonEditor from '../components/JsonEditor';
+import ResponseHeader from './ResponseHeader';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -94,38 +94,45 @@ export default function ResponseTabs({ doc, response, loading }) {
                         <Tab className={classes.tab} label="Response Header" />
                     ) : null}
                 </Tabs>
-                {response && response.status && response.size && response.time ? (
+                {response && (
                     <div className="flex mt-4 mr-4">
-                        <span className={classes.span}>
-                            Status:
-                            <span
-                                style={{
-                                    color: response.status >= 200 && response.status < 300 ? '#138808' : 'red',
-                                }}
-                            >
-                                {response.status ? `${response.status} ${statusText}` : ''}
+                        {response.status && (
+                            <span className={classes.span}>
+                                Status:
+                                <span
+                                    style={{
+                                        color: response.status >= 200 && response.status < 300 ? '#138808' : 'red',
+                                    }}
+                                >
+                                    {response.status ? `${response.status} ${statusText}` : ''}
+                                </span>
                             </span>
-                        </span>
-                        <span className={classes.span}>
-                            Time:
-                            <span
-                                style={{
-                                    color: response.status >= 200 && response.status < 300 ? '#138808' : 'red',
-                                }}
-                            >
-                                {response.time ? ` ${response.time}s` : ''}
+                        )}
+                        {response.time && (
+                            <span className={classes.span}>
+                                Time:
+                                <span
+                                    style={{
+                                        color: response.status >= 200 && response.status < 300 ? '#138808' : 'red',
+                                    }}
+                                >
+                                    {response.time ? ` ${response.time}s` : ''}
+                                </span>
                             </span>
-                        </span>
-                        <span className={classes.span}>
-                            Size:
-                            <span
-                                style={{
-                                    color: response.status >= 200 && response.status < 300 ? '#138808' : 'red',
-                                }}
-                            >
-                                {response.size ? ` ${response.size}kB` : ''}
+                        )}
+                        {response.size && (
+                            <span className={classes.span}>
+                                Size:
+                                <span
+                                    style={{
+                                        color: response.status >= 200 && response.status < 300 ? '#138808' : 'red',
+                                    }}
+                                >
+                                    {response.size ? ` ${response.size}kB` : ''}
+                                </span>
                             </span>
-                        </span>
+                        )}
+
                         {/* <span className={classes.iconSpan}>
             <Tooltip
               title="Open a new tab"
@@ -144,7 +151,7 @@ export default function ResponseTabs({ doc, response, loading }) {
             </Tooltip>
           </span> */}
                     </div>
-                ) : null}
+                )}
             </div>
 
             <div className="px-4 py-4 ">

@@ -1,34 +1,41 @@
-import axios from 'axios';
-import React, { useEffect, useState } from 'react';
-import { endpoint } from '../../shared/network/client';
-import { getUserId } from '../../shared/storage';
-import { makeStyles } from '@material-ui/core/styles';
-import IconButton from '@material-ui/core/IconButton';
-import AppIcon from '../../shared/components/AppIcon';
-import ArrowBackIcon from '@material-ui/icons/ArrowBack';
-import { useHistory } from 'react-router-dom';
-import routes from '../../shared/routes';
-import AddIcon from '@mui/icons-material/Add';
-import { Button } from '@mui/material';
-import { useRecoilState, useRecoilValue } from 'recoil';
-import { currentTabs, isSaveModalOpen, requestName, selectedType, toggle } from '../CollectionsAtom';
 import { styled } from '@material-ui/core';
-import imageLogo from '../../static/images/logo/newconnectoLogo.svg';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
+import IconButton from '@material-ui/core/IconButton';
+import { makeStyles } from '@material-ui/core/styles';
+import ArrowBackIcon from '@material-ui/icons/ArrowBack';
+import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
-import Typography from '@mui/material/Typography';
-import Folder from './components/Folder';
-import File from './components/File';
+import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
+import WorkHistoryOutlinedIcon from '@mui/icons-material/WorkHistoryOutlined';
+import { Button } from '@mui/material';
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
-import WorkHistoryOutlinedIcon from '@mui/icons-material/WorkHistoryOutlined';
-import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
-import RecentHistory from './components/RecentHistory';
+import Typography from '@mui/material/Typography';
+import axios from 'axios';
+import React, { useEffect, useState } from 'react';
+import { useHistory } from 'react-router-dom';
+import { useRecoilState, useRecoilValue } from 'recoil';
+import { v4 as uuidv4 } from 'uuid';
+import { PrimaryButton } from '../../shared/components/AppButton';
+import AppIcon from '../../shared/components/AppIcon';
+import { endpoint } from '../../shared/network/client';
+import routes from '../../shared/routes';
+import { getUserId } from '../../shared/storage';
+import imageLogo from '../../static/images/logo/newconnectoLogo.svg';
+import { isSaveModalOpen, requestName, selectedType, toggle } from '../CollectionsAtom';
 import LoadingDialog from '../components/LoadingDialog';
+import File from './components/File';
+import Folder from './components/Folder';
+import RecentHistory from './components/RecentHistory';
+
 const useStyles = makeStyles((theme) => ({
     app: {
+        height: '100vh',
+        overflow: 'hidden',
+    },
+    main: {
         height: '100vh',
         overflow: 'auto',
         '&::-webkit-scrollbar': {
@@ -106,12 +113,12 @@ export default function DocStore({ isModal }) {
     };
 
     const addFolder = async () => {
-        const newId = Date.now();
+        const newId = uuidv4();
         const newFolder = (
             <Folder
                 key={newId}
                 id={newId}
-                parentId={0}
+                parentId={'0'}
                 onDelete={handleDelete}
                 selected={selected}
                 onSelect={setSelected}
@@ -126,7 +133,7 @@ export default function DocStore({ isModal }) {
                 id: newId,
                 name: 'New Collection',
                 type: 'Collection',
-                parentFolderId: 0,
+                parentFolderId: '0',
             })
             .catch((error) => {
                 // Handle error
@@ -176,7 +183,7 @@ export default function DocStore({ isModal }) {
                     .get(process.env.REACT_APP_API_URL + endpoint.collectionDirectory + `/${userId}`)
                     .then((response) => {
                         const parentFolders = response['data'].data.map((data) => (
-                            <Folder key={data.id} id={data.id} parentId={0} name={data.name} /> // Pass onSelect prop to child components
+                            <Folder key={data.id} id={data.id} parentId={'0'} name={data.name} /> // Pass onSelect prop to child components
                         ));
 
                         setFolders(parentFolders);
@@ -188,7 +195,7 @@ export default function DocStore({ isModal }) {
                     .get(process.env.REACT_APP_API_URL + endpoint.collectionDirectory + `/${userId}`)
                     .then((response) => {
                         const requests = response['data'].files.map((data) => (
-                            <File key={data.id} id={data.id} parentId={0} name={data.name} /> // Pass onSelect prop to child components
+                            <File key={data.id} id={data.id} parentId={'0'} name={data.name} /> // Pass onSelect prop to child components
                         ));
                         setRequests(requests);
                     })
@@ -198,7 +205,7 @@ export default function DocStore({ isModal }) {
             }
         };
         getFilesAndFolders();
-    }, [loading, userId]);
+    }, [loading, userId, saveModalOpen]);
 
     const handleSearchChange = (event) => {
         const query = event.target.value;
@@ -212,6 +219,7 @@ export default function DocStore({ isModal }) {
     const handleClickOpen = () => {
         setConnectOpen(false);
         setPostOpen(false);
+        setFile(null);
         setOpen(true);
     };
     const handleClose = () => {
@@ -275,9 +283,6 @@ export default function DocStore({ isModal }) {
                         jsonData,
                         userId,
                     })
-                    .then(() => {
-                        console.log('posted upload');
-                    })
                     .catch((error) => {
                         console.error('Error uploading file:', error);
                         // Handle the error if needed
@@ -323,7 +328,23 @@ export default function DocStore({ isModal }) {
             setFile(file);
         }
     };
+    useEffect(() => {
+        const handleKeyDown = (event) => {
+            if (event.ctrlKey) {
+                if (event.key === 'i') {
+                    event.preventDefault(); // Prevent browser's default Save dialog
+                    // Call your function here
+                    handleClickOpen();
+                }
+            }
+        };
 
+        document.addEventListener('keydown', handleKeyDown);
+
+        return () => {
+            document.removeEventListener('keydown', handleKeyDown);
+        };
+    }, []);
     return (
         <div className={classes.app}>
             {loading && <LoadingDialog />}
@@ -379,35 +400,57 @@ export default function DocStore({ isModal }) {
                                             display: !postOpen ? 'hidden' : 'none',
                                         }}
                                     >
-                                        <Button
-                                            variant="outlined"
-                                            style={{
-                                                color: '#C72C71',
-                                                borderColor: '#C72C71',
-                                            }}
-                                            onClick={handleConnectOpen}
-                                        >
-                                            Import from Conektto
-                                        </Button>
+                                        <PrimaryButton onClick={handleConnectOpen}>Import from Conektto</PrimaryButton>
                                     </Typography>
                                 ) : (
-                                    <Typography>
-                                        <input
-                                            onChange={handleChange}
-                                            type="file"
-                                            placeholder="select a file"
-                                            accept=".json"
-                                        />
-                                        <Button
-                                            variant="outlined"
-                                            style={{
-                                                color: '#C72C71',
-                                                borderColor: '#C72C71',
-                                            }}
-                                            onClick={hanldeConnectFile}
-                                        >
-                                            Import
-                                        </Button>
+                                    <Typography
+                                        sx={{
+                                            margin: '0px 20px',
+                                            padding: '15px',
+                                        }}
+                                    >
+                                        <div>
+                                            <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+                                                <label
+                                                    for="specs"
+                                                    className={`bg-brand-secondary  ${
+                                                        file ? 'opacity-40' : 'hover:opacity-90'
+                                                    }  rounded-md px-4 py-2 text-white text-mediumLabel`}
+                                                    style={file ? { display: 'none' } : { display: 'block' }}
+                                                >
+                                                    Upload
+                                                </label>
+                                                <p style={{ margin: '10px', display: file ? 'none' : 'block' }}>
+                                                    Upload File
+                                                </p>
+                                            </div>
+
+                                            <input
+                                                id="specs"
+                                                type="file"
+                                                accept=".json"
+                                                hidden
+                                                onChange={handleChange}
+                                                disabled={file}
+                                            />
+
+                                            <div>
+                                                <ul>
+                                                    {file ? (
+                                                        <li key={file.name}>
+                                                            <div className="rounded-md border bg-neutral-gray7 p-2 mb-4 flex flex-row items-center justify-between">
+                                                                <p className="text-overline2">
+                                                                    {file.name} {Math.round(file.size / 1024)} KB
+                                                                </p>
+                                                            </div>
+                                                        </li>
+                                                    ) : null}
+                                                </ul>
+                                            </div>
+                                            {file ? (
+                                                <PrimaryButton onClick={hanldeConnectFile}>Import</PrimaryButton>
+                                            ) : null}
+                                        </div>
                                     </Typography>
                                 )}
                                 {!postOpen ? (
@@ -419,35 +462,57 @@ export default function DocStore({ isModal }) {
                                             display: !connectOpen ? 'hidden' : 'none',
                                         }}
                                     >
-                                        <Button
-                                            variant="outlined"
-                                            style={{
-                                                color: '#C72C71',
-                                                borderColor: '#C72C71',
-                                            }}
-                                            onClick={handlePostOpen}
-                                        >
-                                            Import from PostMan
-                                        </Button>
+                                        <PrimaryButton onClick={handlePostOpen}>Import from PostMan</PrimaryButton>
                                     </Typography>
                                 ) : (
-                                    <Typography>
-                                        <input
-                                            type="file"
-                                            placeholder="select a file"
-                                            onChange={handleChange}
-                                            accept=".json"
-                                        />
-                                        <Button
-                                            variant="outlined"
-                                            style={{
-                                                color: '#C72C71',
-                                                borderColor: '#C72C71',
-                                            }}
-                                            onClick={hanldePostFile}
-                                        >
-                                            Import
-                                        </Button>
+                                    <Typography
+                                        sx={{
+                                            margin: '0px 20px',
+                                            padding: '15px',
+                                        }}
+                                    >
+                                        <div>
+                                            <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+                                                <label
+                                                    for="specs"
+                                                    className={`bg-brand-secondary  ${
+                                                        file ? 'opacity-40' : 'hover:opacity-90'
+                                                    }  rounded-md px-4 py-2 text-white text-mediumLabel`}
+                                                    style={file ? { display: 'none' } : { display: 'block' }}
+                                                >
+                                                    Upload
+                                                </label>
+                                                <p style={{ margin: '10px', display: file ? 'none' : 'block' }}>
+                                                    Upload File
+                                                </p>
+                                            </div>
+
+                                            <input
+                                                id="specs"
+                                                type="file"
+                                                accept=".json"
+                                                hidden
+                                                onChange={handleChange}
+                                                disabled={file}
+                                            />
+
+                                            <div>
+                                                <ul>
+                                                    {file ? (
+                                                        <li key={file.name}>
+                                                            <div className="rounded-md border bg-neutral-gray7 p-2 mb-4 flex flex-row items-center justify-between">
+                                                                <p className="text-overline2">
+                                                                    {file.name} {Math.round(file.size / 1024)} KB
+                                                                </p>
+                                                            </div>
+                                                        </li>
+                                                    ) : null}
+                                                </ul>
+                                            </div>
+                                            {file ? (
+                                                <PrimaryButton onClick={hanldePostFile}>Import</PrimaryButton>
+                                            ) : null}
+                                        </div>
                                     </Typography>
                                 )}
                             </DialogContent>
@@ -501,35 +566,36 @@ export default function DocStore({ isModal }) {
                             />
                         )}
                     </div>
-
-                    {searchQuery.length > 0
-                        ? filteredFiles.map((request) => (
-                              <div key={request.props.id}>
-                                  {React.cloneElement(request, {
-                                      onDelete: handleDelete,
-                                      onSelect: setSelected,
-                                      selected: selected,
-                                      onRename: handleRename,
-                                      setLoading: setLoading,
-                                      loading: loading,
-                                  })}
-                              </div>
-                          ))
-                        : folders.map((folder) => (
-                              <div key={folder.props.id}>
-                                  {React.cloneElement(folder, {
-                                      onDelete: handleDelete,
-                                      onSelect: setSelected,
-                                      selected: selected,
-                                      onRename: handleRename,
-                                      parentId: 0,
-                                      isModal: isModal,
-                                      saveModalOpen: saveModalOpen,
-                                      setLoading: setLoading,
-                                      loading: loading,
-                                  })}
-                              </div>
-                          ))}
+                    <div className={classes.main}>
+                        {searchQuery.length > 0
+                            ? filteredFiles.map((request) => (
+                                  <div key={request.props.id}>
+                                      {React.cloneElement(request, {
+                                          onDelete: handleDelete,
+                                          onSelect: setSelected,
+                                          selected: selected,
+                                          onRename: handleRename,
+                                          setLoading: setLoading,
+                                          loading: loading,
+                                      })}
+                                  </div>
+                              ))
+                            : folders.map((folder) => (
+                                  <div key={folder.props.id}>
+                                      {React.cloneElement(folder, {
+                                          onDelete: handleDelete,
+                                          onSelect: setSelected,
+                                          selected: selected,
+                                          onRename: handleRename,
+                                          parentId: '0',
+                                          isModal: isModal,
+                                          saveModalOpen: saveModalOpen,
+                                          setLoading: setLoading,
+                                          loading: loading,
+                                      })}
+                                  </div>
+                              ))}
+                    </div>
                 </div>
             ) : null}
         </div>
