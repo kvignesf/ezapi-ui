@@ -1,6 +1,6 @@
 import Editor from '@monaco-editor/react';
 import { Add, Create, Upload } from '@mui/icons-material';
-import { Button, Stack } from '@mui/material';
+import { Button, Stack, Tooltip } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { KeyValueProps, ValueCardProps } from '../../interfaces';
 import { ValueCardRow } from './ValueCardRow';
@@ -94,12 +94,14 @@ export const ValueCard = (props: ValueCardProps): React.ReactElement => {
                         )}
                         {!isEditor ? (
                             nodeType !== 'main' && (
-                                <Create
-                                    sx={{ alignSelf: 'center', padding: '0 1px' }}
-                                    onClick={() => {
-                                        prepareEditorData();
-                                    }}
-                                />
+                                <Tooltip title="Bulk Edit" arrow placement={'top'}>
+                                    <Create
+                                        sx={{ alignSelf: 'center', padding: '0 1px' }}
+                                        onClick={() => {
+                                            prepareEditorData();
+                                        }}
+                                    />
+                                </Tooltip>
                             )
                         ) : (
                             <Stack
