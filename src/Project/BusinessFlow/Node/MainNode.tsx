@@ -1,4 +1,3 @@
-import ErrorWithMessage from '@/shared/components/ErrorWithMessage';
 import { operationAtomWithMiddleware } from '@/shared/utils';
 import ArrowCircleRightOutlinedIcon from '@mui/icons-material/ArrowCircleRightOutlined';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
@@ -35,7 +34,7 @@ type OperationStateType = {
         headers: { name: string; possibleValues: string[] }[];
         queryParams: { name: string; possibleValues: string[] }[];
         pathParams: { name: string; possibleValues: string[] }[];
-        // body: any;
+        body: any;
     };
 };
 
@@ -57,13 +56,13 @@ const MainNode = (props: MainNodeProps) => {
     const { useStore } = useContext<IBusinessFlow>(BusinessFlowContext);
     const nodes = useStore((state: MyReactFlowState) => state.nodes);
     const operationState = useRecoilValue(operationAtomWithMiddleware);
-    const [isJsonValid, setIsJsonValid] = useState(true);
+    // const [isJsonValid, setIsJsonValid] = useState(true);
     const [simulateFailed, setSimulateFailed] = useState<boolean>(true);
     const [savedNodeRB, setSavedNodeRB] = useState<Record<string, any> | undefined>({});
     const [requestBodyData, setRequestBodyData] = useState<Record<string, any> | undefined>({});
     const [mainData, setMainData] = useState<ExternalAPI>(initialMainData);
     const [stopTrigger, setStopTrigger] = useState(false);
-    const { node, triggerDelayedNodeSaveOnServer, loadNodeDataFromServer } = useNodeHook({
+    const { node, triggerDelayedNodeSaveOnServer } = useNodeHook({
         nodeId: cardId,
         getUpdatedNodeData: getUpdatedNodeDataFn,
         collapse: true,
@@ -93,8 +92,6 @@ const MainNode = (props: MainNodeProps) => {
     function setHeadersData(newHeaders: KeyValueProps[]) {
         if (newHeaders) {
             setMainData({ ...mainData, headers: newHeaders });
-            // console.log('headers saved');
-
             triggerDelayedNodeSaveOnServer(saveDelay);
         }
     }
@@ -102,7 +99,6 @@ const MainNode = (props: MainNodeProps) => {
     function setQueryData(newQueryParams: KeyValueProps[]) {
         if (newQueryParams) {
             setMainData({ ...mainData, queryParams: newQueryParams });
-            // console.log('queryParams saved');
             triggerDelayedNodeSaveOnServer(saveDelay);
         }
     }
@@ -110,8 +106,6 @@ const MainNode = (props: MainNodeProps) => {
     function setPathData(newPathParams: KeyValueProps[]) {
         if (newPathParams) {
             setMainData({ ...mainData, pathParams: newPathParams });
-            // console.log('pathparam saved');
-
             triggerDelayedNodeSaveOnServer(saveDelay);
         }
     }
@@ -212,14 +206,11 @@ const MainNode = (props: MainNodeProps) => {
 
     useEffect(() => {
         if (operationState.operation.operationType !== 'GET') {
-            // loadNodeDataFromServer();
-
             simulate_artefact_API()
                 .then((response) => {
                     if (response.message == 'Ok') {
                         simulateAPI().then((response) => {
                             setSimulateFailed(false);
-                            // console.log('called in simulate', transformObject(response));
                             setRequestBodyData(transformObject(response));
                             triggerDelayedNodeSaveOnServer(saveDelay);
                         });
@@ -258,15 +249,13 @@ const MainNode = (props: MainNodeProps) => {
             node?.data?.mainData?.pathParams || [],
         );
 
-        // console.log(node, 'data from node');
         setSavedNodeRB(node?.data?.mainData?.body?.data ?? {});
         setMainData({
             headers: headersInitialValue,
             queryParams: queryParamsInitialValue,
             pathParams: pathParamsInitialValue,
-            // body: node?.data?.mainData?.body?.data ?? {},
+            body: { data: node?.data?.mainData?.body?.data ?? {} },
         });
-        triggerDelayedNodeSaveOnServer(saveDelay);
     }, [operationState, node, simulateFailed]);
     const getOperationMutation = useGetOperation();
 
@@ -282,10 +271,7 @@ const MainNode = (props: MainNodeProps) => {
     }, []);
 
     useEffect(() => {
-        // console.log(requestBodyData, 'when value changes');
         if (simulateFailed) {
-            // console.log('nodeRB', savedNodeRB);
-
             setRequestBodyData(savedNodeRB);
             return;
         }
@@ -310,11 +296,7 @@ const MainNode = (props: MainNodeProps) => {
             requestBodyTypeChecked ?? {},
         );
 
-        // console.log(savedNodeRBTypeChecked, '11111111111');
-        // console.log(requestBodyTypeChecked, '2222222222');
         if (JSON.stringify(requestBodyData) !== JSON.stringify(operationRequestBody)) {
-            // console.log('operationbody', operationRequestBody);
-
             setRequestBodyData(operationRequestBody);
             setStopTrigger(true);
         }
@@ -484,7 +466,6 @@ const MainNode = (props: MainNodeProps) => {
                                     <ResponseTab
                                         onChange={(value: string) => {
                                             if (checkValidJson(value) === true) {
-                                                // console.log('reponsetab');
                                                 setRequestBodyData(JSON.parse(value));
                                                 setNewRequestData(value);
                                             }
@@ -496,9 +477,9 @@ const MainNode = (props: MainNodeProps) => {
                                         // disabled={apiType === 'system' ? true : false}
                                     />
                                 </Stack>
-                                {!isJsonValid && (
+                                {/* {!isJsonValid && (
                                     <ErrorWithMessage message={'invalid JSON'} className={'mb-3'} contained isError />
-                                )}
+                                )} */}
                             </>
                         )}
                     </>

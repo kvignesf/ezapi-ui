@@ -8,7 +8,6 @@ import {
 } from './utils';
 
 export const prepareAggregateCard = (responseData: any): AggregateCard => {
-    // console.log(responseData, 'data from prepareAggregate');
     const aggregateCard: AggregateCard = {
         id: responseData['_id'],
         projectId: responseData.projectId,
@@ -32,7 +31,6 @@ export const prepareAggregateCards = (responseData: any[]): AggregateCard[] => {
 };
 
 export const prepareAggregateCardFromNode = (node: Node, projectId: string, operationId: string): AggregateCard => {
-    // console.log(node, 'prepareAggregate2');
     const aggregateCard: AggregateCard = {
         id: node.id,
         projectId,
