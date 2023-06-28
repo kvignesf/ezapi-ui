@@ -59,6 +59,8 @@ const _prepareBaseNodeAttributes = (responseData: any): any => {
         node.data.commonData.name = responseData.data.name;
     }
 
+    // console.log(node, 'from transformer');
+
     return node;
 };
 

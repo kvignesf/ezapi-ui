@@ -43,6 +43,7 @@ const useNodeHook = ({ nodeId, getUpdatedNodeData, collapse = false }: NodeHookP
     }
 
     function loadNodeDataFromServer() {
+        // console.log(isLoading, 'loading');
         if (!isLoading) {
             setIsLoading(true);
             const loadNodeData = async () => {
@@ -52,6 +53,7 @@ const useNodeHook = ({ nodeId, getUpdatedNodeData, collapse = false }: NodeHookP
                     nodeId,
                 };
                 const latestNodeInfo = await fetchNodeFromServer(getNodeData);
+                // console.log(latestNodeInfo, 'latest node');
                 setNode(latestNodeInfo);
                 setIsNodeDataLoaded(true);
                 setIsLoading(false);
@@ -65,9 +67,12 @@ const useNodeHook = ({ nodeId, getUpdatedNodeData, collapse = false }: NodeHookP
             const source: CancelTokenSource = axios.CancelToken.source();
             const inputNodeIds = getInputNodeIdsFromNode(nodeId, edges);
 
+            // console.log(nodes, 'values');
             // eslint-disable-next-line no-underscore-dangle
             const _node: any = { ...nodes.find((node: Node) => node.id === nodeId) };
+            // console.log(_node, 'value1');
             _node.data = getUpdatedNodeData();
+            // console.log(_node, 'value2');
 
             const commonData = _.isEmpty(_node.data.commonData) ? {} : { ..._node.data.commonData };
             commonData.inputNodeIds = inputNodeIds;

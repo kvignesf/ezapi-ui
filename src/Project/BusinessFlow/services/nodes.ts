@@ -19,6 +19,7 @@ export async function fetchNodeFromServer(props: GetNodeAPIProps, source?: Cance
 
     try {
         const { data: responseData } = await client.get(url, { cancelToken: source?.token });
+        // console.log(responseData, 'from raw data');
         return prepareNodeFromAggregateCardResponse(responseData);
     } catch (error) {
         throw getApiError(error);

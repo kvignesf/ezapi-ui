@@ -45,6 +45,8 @@ export const prepareBranchData = (nodeData: any): BranchData => {
 
 export const prepareMainData = (nodeData: any): MainData => {
     const data: any = {};
+    // console.log(nodeData, 'oooopppp');
+    // console.log(_.isObject(nodeData) && !_.isEmpty(nodeData), 'ooooppp');
     if (_.isObject(nodeData) && !_.isEmpty(nodeData)) {
         MAIN_DATA_CONDITON_FIELDS.forEach((dataField: string) => {
             if (dataField in nodeData) {
