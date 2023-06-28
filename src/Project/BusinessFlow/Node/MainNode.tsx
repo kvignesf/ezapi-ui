@@ -4,9 +4,9 @@ import ArrowCircleRightOutlinedIcon from '@mui/icons-material/ArrowCircleRightOu
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { Card, Stack, Tab, Tooltip, Typography } from '@mui/material';
 import { Node } from '@reactflow/core';
-import _, { isEqual } from 'lodash';
+import _ from 'lodash';
 import { useGetOperation } from '../../../shared/query/operationDetailsQuery';
-import { checkValidJson, convertObjectToFormData, formDataToObject } from '../businessFlowHelper';
+import { checkValidJson } from '../businessFlowHelper';
 import { ValueCard } from './Components/ValueCard';
 
 import { useContext, useEffect, useState } from 'react';
@@ -57,7 +57,7 @@ const MainNode = (props: MainNodeProps) => {
     const nodes = useStore((state: MyReactFlowState) => state.nodes);
     const operationState = useRecoilValue(operationAtomWithMiddleware);
     const [isJsonValid, setIsJsonValid] = useState(true);
-    const [simulateFailed, setSimulateFailed] = useState(true);
+    const [simulateFailed, setSimulateFailed] = useState<boolean>(true);
     const [savedNodeRB, setSavedNodeRB] = useState<Record<string, any> | undefined>({});
     const [requestBodyData, setRequestBodyData] = useState<Record<string, any> | undefined>({});
     const [mainData, setMainData] = useState<ExternalAPI>(initialMainData);
@@ -77,18 +77,13 @@ const MainNode = (props: MainNodeProps) => {
 
     function getUpdatedNodeDataFn() {
         const newNodeData = (_.isEmpty(props.data) ? {} : props.data) as NodeData;
-        return {
-            ...newNodeData,
-            mainData: {
-                ...mainData,
-                body: {
-                    data:
-                        typeof requestBodyData === 'object'
-                            ? requestBodyData
-                            : formDataToObject(convertObjectToFormData(requestBodyData ?? {})),
-                },
-            },
-        };
+        if (requestBodyData && checkValidJson(requestBodyData) === true) {
+            return {
+                ...newNodeData,
+                mainData: mainData,
+            };
+        }
+        return newNodeData;
     }
 
     const [value, setValue] = useState('0');
@@ -104,6 +99,8 @@ const MainNode = (props: MainNodeProps) => {
     function setHeadersData(newHeaders: KeyValueProps[]) {
         if (newHeaders) {
             setMainData({ ...mainData, headers: newHeaders });
+            console.log('headers saved');
+
             triggerDelayedNodeSaveOnServer(saveDelay);
         }
     }
@@ -111,6 +108,7 @@ const MainNode = (props: MainNodeProps) => {
     function setQueryData(newQueryParams: KeyValueProps[]) {
         if (newQueryParams) {
             setMainData({ ...mainData, queryParams: newQueryParams });
+            console.log('queryParams saved');
             triggerDelayedNodeSaveOnServer(saveDelay);
         }
     }
@@ -118,19 +116,22 @@ const MainNode = (props: MainNodeProps) => {
     function setPathData(newPathParams: KeyValueProps[]) {
         if (newPathParams) {
             setMainData({ ...mainData, pathParams: newPathParams });
+            console.log('pathparam saved');
+
             triggerDelayedNodeSaveOnServer(saveDelay);
         }
     }
 
-    function setNewRequestData(newRequestData: KeyValueProps[]) {
-        if (newRequestData) {
+    function setNewRequestData(newRequestData: string) {
+        if (checkValidJson(newRequestData) === true) {
+            console.log('requestData saved');
+            console.log(newRequestData);
+            console.log(typeof newRequestData, 'tyep');
+
             setMainData({
                 ...mainData,
                 body: {
-                    data:
-                        typeof newRequestData === 'object'
-                            ? newRequestData
-                            : formDataToObject(convertObjectToFormData(newRequestData)),
+                    data: JSON.parse(newRequestData!),
                 },
                 // output: { ...DEFAULT_API_RESPONSE },
             });
@@ -229,6 +230,7 @@ const MainNode = (props: MainNodeProps) => {
                         simulateAPI().then((response) => {
                             setSimulateFailed(false);
                             setRequestBodyData(transformObject(response));
+                            console.log('sitmulate');
                             triggerDelayedNodeSaveOnServer(saveDelay);
                         });
                     }
@@ -239,8 +241,10 @@ const MainNode = (props: MainNodeProps) => {
                 });
         }
     }, []);
+
     useEffect(() => {
         if (simulateFailed) return;
+
         const generateInitialValue = (
             operationStateArray: { name: string; possibleValues: string[] }[],
             nodeArray: Param[],
@@ -271,6 +275,8 @@ const MainNode = (props: MainNodeProps) => {
             queryParams: queryParamsInitialValue,
             pathParams: pathParamsInitialValue,
         });
+        console.log('sitmulate failed');
+
         triggerDelayedNodeSaveOnServer(saveDelay);
     }, [operationState, node, simulateFailed]);
     const getOperationMutation = useGetOperation();
@@ -287,6 +293,7 @@ const MainNode = (props: MainNodeProps) => {
     }, []);
 
     useEffect(() => {
+        console.log(simulateFailed, 'simulatefailed');
         if (simulateFailed) {
             setRequestBodyData(savedNodeRB);
             return;
@@ -302,18 +309,14 @@ const MainNode = (props: MainNodeProps) => {
             return;
         }
 
-        const requestBodyTypeChecked =
-            typeof requestBodyData === 'object'
-                ? requestBodyData
-                : formDataToObject(convertObjectToFormData(requestBodyData ?? {}));
-        const savedNodeRBTypeChecked =
-            typeof savedNodeRB === 'object'
-                ? savedNodeRB
-                : formDataToObject(convertObjectToFormData(savedNodeRB ?? {}));
+        const requestBodyTypeChecked = typeof requestBodyData === 'object' ? requestBodyData : {};
+        const savedNodeRBTypeChecked = typeof savedNodeRB === 'object' ? savedNodeRB : {};
         let operationRequestBody = mapSavedRequestToOperation(
             savedNodeRBTypeChecked ?? {},
             requestBodyTypeChecked ?? {},
         );
+
+        console.log(operationRequestBody, 'this is oper');
         if (JSON.stringify(requestBodyData) !== JSON.stringify(operationRequestBody)) {
             setRequestBodyData(operationRequestBody);
             setStopTrigger(true);
@@ -325,17 +328,17 @@ const MainNode = (props: MainNodeProps) => {
         value: string;
     };
 
-    function mergeParams(initialValue: Param[], nodeValue: Param[]): Param[] {
-        const nodeMap = new Map(nodeValue.map((param) => [param.key, param.value]));
-        const initialMap = new Map(initialValue.map((param) => [param.key, param.value]));
+    // function mergeParams(initialValue: Param[], nodeValue: Param[]): Param[] {
+    //     const nodeMap = new Map(nodeValue.map((param) => [param.key, param.value]));
+    //     const initialMap = new Map(initialValue.map((param) => [param.key, param.value]));
 
-        return Array.from(initialMap.keys()).map((key) => {
-            return {
-                key: key,
-                value: nodeMap.has(key) ? nodeMap.get(key) ?? '' : initialMap.get(key) ?? '',
-            };
-        });
-    }
+    //     return Array.from(initialMap.keys()).map((key) => {
+    //         return {
+    //             key: key,
+    //             value: nodeMap.has(key) ? nodeMap.get(key) ?? '' : initialMap.get(key) ?? '',
+    //         };
+    //     });
+    // }
 
     return (
         <>
@@ -423,16 +426,16 @@ const MainNode = (props: MainNodeProps) => {
                                         value={mainData.headers}
                                         nodeType="main"
                                         onChange={(headers: KeyValueProps[]) => {
-                                            if (isEqual(headers, mainData.headers)) return;
-
-                                            const distinctHeaders = headers.filter(
-                                                (value, index, self) =>
-                                                    index ===
-                                                    self.findIndex(
-                                                        (t) => t.key === value.key && t.value === value.value,
-                                                    ),
-                                            );
-                                            setHeadersData(distinctHeaders);
+                                            if (!_.isEqual(headers, mainData.headers)) {
+                                                const distinctHeaders = headers.filter(
+                                                    (value, index, self) =>
+                                                        index ===
+                                                        self.findIndex(
+                                                            (t) => t.key === value.key && t.value === value.value,
+                                                        ),
+                                                );
+                                                setHeadersData(distinctHeaders);
+                                            }
                                         }}
                                     />
                                 </TabPanel>
@@ -441,16 +444,16 @@ const MainNode = (props: MainNodeProps) => {
                                         value={mainData.queryParams}
                                         nodeType="main"
                                         onChange={(queryParams: KeyValueProps[]) => {
-                                            if (isEqual(queryParams, mainData.queryParams)) return;
-
-                                            const distinctQueryParams = queryParams.filter(
-                                                (value, index, self) =>
-                                                    index ===
-                                                    self.findIndex(
-                                                        (t) => t.key === value.key && t.value === value.value,
-                                                    ),
-                                            );
-                                            setQueryData(distinctQueryParams);
+                                            if (!_.isEqual(queryParams, mainData.queryParams)) {
+                                                const distinctQueryParams = queryParams.filter(
+                                                    (value, index, self) =>
+                                                        index ===
+                                                        self.findIndex(
+                                                            (t) => t.key === value.key && t.value === value.value,
+                                                        ),
+                                                );
+                                                setQueryData(distinctQueryParams);
+                                            }
                                         }}
                                     />
                                 </TabPanel>
@@ -460,19 +463,19 @@ const MainNode = (props: MainNodeProps) => {
                                         value={mainData.pathParams}
                                         nodeType="main"
                                         onChange={(pathparams: KeyValueProps[]) => {
-                                            if (isEqual(pathparams, mainData.pathParams)) return;
-
-                                            const newPathparams = pathparams.filter(
-                                                (item: KeyValueProps) => item.key !== '',
-                                            );
-                                            const distinctPathParams = newPathparams.filter(
-                                                (value, index, self) =>
-                                                    index ===
-                                                    self.findIndex(
-                                                        (t) => t.key === value.key && t.value === value.value,
-                                                    ),
-                                            );
-                                            setPathData(distinctPathParams);
+                                            if (!_.isEqual(pathparams, mainData.pathParams)) {
+                                                const newPathparams = pathparams.filter(
+                                                    (item: KeyValueProps) => item.key !== '',
+                                                );
+                                                const distinctPathParams = newPathparams.filter(
+                                                    (value, index, self) =>
+                                                        index ===
+                                                        self.findIndex(
+                                                            (t) => t.key === value.key && t.value === value.value,
+                                                        ),
+                                                );
+                                                setPathData(distinctPathParams);
+                                            }
                                         }}
                                     />
                                 </TabPanel>
@@ -482,23 +485,14 @@ const MainNode = (props: MainNodeProps) => {
                             <>
                                 <Stack sx={{ width: '100%' }}>
                                     <ResponseTab
-                                        onChange={(value: any) => {
-                                            setRequestBodyData(value);
+                                        onChange={(value: string) => {
+                                            // setRequestBodyData(value);
                                             setNewRequestData(value);
-                                            if (checkValidJson(value)) {
-                                                setIsJsonValid(true);
-                                            } else {
-                                                setIsJsonValid(false);
-                                            }
                                         }}
                                         // isError={isError}
                                         isResponse={false}
                                         displayTitle="Request Body"
-                                        value={
-                                            Array.isArray(requestBodyData) && requestBodyData.length === 0
-                                                ? {}
-                                                : requestBodyData ?? {}
-                                        }
+                                        value={requestBodyData}
                                         // disabled={apiType === 'system' ? true : false}
                                     />
                                 </Stack>
