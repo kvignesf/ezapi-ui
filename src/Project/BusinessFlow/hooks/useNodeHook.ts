@@ -4,7 +4,7 @@ import { useContext, useEffect, useState } from 'react';
 import { BusinessFlowContext } from '../BusinessFlowContext';
 import { GetNodeAPIProps, Node, UpdateNodeAPIProps } from '../interfaces';
 import { fetchNodeFromServer, updateNodeOnServer } from '../services';
-import { getInputNodeIdsFromNode, MyReactFlowState } from '../store';
+import { MyReactFlowState, getInputNodeIdsFromNode } from '../store';
 import { prepareAggregateCardFromNode } from '../transformers';
 
 interface NodeHookProps {
@@ -104,7 +104,11 @@ const useNodeHook = ({ nodeId, getUpdatedNodeData, collapse = false }: NodeHookP
         }
     }, [collapse]);
 
-    useEffect(nodeSaveHandler, [triggerNodeSaveOnServer]);
+    useEffect(() => {
+        if (triggerNodeSaveOnServer) {
+            nodeSaveHandler();
+        }
+    }, [triggerNodeSaveOnServer]);
 
     return {
         node,

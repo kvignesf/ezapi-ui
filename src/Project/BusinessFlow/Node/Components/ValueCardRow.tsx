@@ -1,7 +1,6 @@
 import { Delete } from '@mui/icons-material';
 import DoneIcon from '@mui/icons-material/Done';
 import { Autocomplete, Stack, TextField } from '@mui/material';
-import { useEffect, useState } from 'react';
 import { ValueCardRowProps } from '../../interfaces';
 export const ValueCardRow = (props: ValueCardRowProps) => {
     const {
@@ -17,16 +16,6 @@ export const ValueCardRow = (props: ValueCardRowProps) => {
         onChange = () => {},
     } = props;
 
-    const [dataValue, setDataValue] = useState(data.value);
-    const [dataKey, setDataKey] = useState(data.key);
-    const [render, setRender] = useState(false);
-
-    useEffect(() => {
-        onChange({
-            key: dataKey,
-            value: dataValue,
-        });
-    }, [render]);
     return (
         <Stack direction={'row'} spacing={3} sx={{ marginBottom: '12px' }}>
             <Stack>
