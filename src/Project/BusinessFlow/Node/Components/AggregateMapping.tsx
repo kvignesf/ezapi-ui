@@ -573,7 +573,6 @@ export const AggregateMapping = ({
                     onClick={async () => {
                         if (
                             selectedData &&
-                            selectedData.length > 0 &&
                             (selectedData[selectedData.length]?.name !== '' ||
                                 selectedData[selectedData.length]?.relationName !== '')
                         ) {

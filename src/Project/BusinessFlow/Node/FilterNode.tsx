@@ -105,7 +105,7 @@ const FilterNode = (props: FilterNodeProps) => {
                         <Stack direction={'row'} spacing={1}>
                             <img
                                 src={Collapse}
-                                style={{ width: '24px', height: '24px', alignSelf: 'center' }}
+                                style={{ width: '24px', height: '24px', alignSelf: 'center', cursor: 'pointer' }}
                                 onClick={() => {
                                     setCollapse(!collapse);
                                 }}
@@ -113,7 +113,7 @@ const FilterNode = (props: FilterNodeProps) => {
                             <img src={DialogIcon} style={{ width: '24px', height: '24px', alignSelf: 'center' }} />
                             <img
                                 src={RunIcon}
-                                style={{ width: '24px', height: '24px', alignSelf: 'center' }}
+                                style={{ width: '24px', height: '24px', alignSelf: 'center', cursor: 'pointer' }}
                                 onClick={() => {}}
                             />
                         </Stack>

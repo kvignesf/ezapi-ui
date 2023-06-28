@@ -309,6 +309,7 @@ export const ExternalAPIDrawer = ({ cardId }: ExternalAPIDrawerProps) => {
                 setShowResponse(true);
                 triggerDelayedNodeSaveOnServer(delayTimeSet);
                 setExecutionNumber(executionNumber + 1);
+                scrollToBottom('scroll');
             });
     };
 
@@ -337,6 +338,11 @@ export const ExternalAPIDrawer = ({ cardId }: ExternalAPIDrawerProps) => {
             triggerDelayedNodeSaveOnServer(delayTimeSet);
         }
     }
+
+    const scrollToBottom = (id) => {
+        const element = document.getElementById(id);
+        element.scrollTop = element.scrollHeight;
+    };
 
     function setRequestData(newRequestData: string | object) {
         if (newRequestData) {
@@ -766,7 +772,7 @@ export const ExternalAPIDrawer = ({ cardId }: ExternalAPIDrawerProps) => {
                 </Stack>
             </Stack>
 
-            <Stack sx={{ overflow: 'auto', height: '100%' }}>
+            <Stack sx={{ overflow: 'auto', height: '100%' }} id="scroll">
                 {renderAPINodeBody()}
 
                 {isLoading && (
