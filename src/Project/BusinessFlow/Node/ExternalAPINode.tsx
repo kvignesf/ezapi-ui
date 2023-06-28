@@ -91,13 +91,7 @@ function getExternalAPIRequestAxiosOptions(
             'Content-Type': 'application/json',
             ...headerValues,
         },
-        data: !_.isEmpty(requestBodyData)
-            ? typeof requestBodyData === 'object'
-                ? requestBodyData
-                : typeof requestBodyData === 'string' && checkValidJson(requestBodyData) === true
-                ? JSON.parse(requestBodyData)
-                : {}
-            : {},
+        data: !_.isEmpty(requestBodyData) ? (typeof requestBodyData === 'object' ? requestBodyData : {}) : {},
         // params: paramsSerializer(queryParamsValues),
     };
     let isValidProxyRequest = true;
@@ -221,7 +215,6 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
     }, [nodes, selectedNode]);
 
     function getUpdatedNodeDataFn() {
-        console.log(node?.data?.runData?.body?.data, 'dssds');
         const newNodeData = (_.isEmpty(props.data) ? {} : props.data) as NodeData;
         setExplicitLoading(false);
         return {
@@ -234,12 +227,7 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                 queryParams: queryParams,
                 headers: headers,
                 body: {
-                    data:
-                        typeof requestBodyData === 'object'
-                            ? requestBodyData
-                            : typeof requestBodyData === 'string' && checkValidJson(requestBodyData) === true
-                            ? JSON.parse(requestBodyData)
-                            : node?.data?.runData?.body?.data ?? {},
+                    data: typeof requestBodyData === 'object' ? requestBodyData : {},
                 },
                 output: runData.output,
             },
@@ -810,9 +798,9 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                             >
                                 <Tooltip title="Save changes">
                                     {checkValidJson(requestBodyData) === false ? (
-                                        <CloudOff style={{ color: 'grey', cursor: 'pointer' }} />
+                                        <CloudOff style={{ color: 'grey' }} />
                                     ) : (
-                                        <CloudUploadIcon style={{ color: '#2c71c7', cursor: 'pointer' }} />
+                                        <CloudUploadIcon style={{ color: '#2c71c7' }} />
                                     )}
                                 </Tooltip>
                             </div>
