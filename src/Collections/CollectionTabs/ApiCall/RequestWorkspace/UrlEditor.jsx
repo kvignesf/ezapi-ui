@@ -173,7 +173,7 @@ export default function UrlEditor({ onInputSend }) {
                     name: fileName ? fileName : 'New Request',
                     request: request
                         ? request
-                        : { method: 'GET', proxy: 'No Proxy', url: '', body: { '': '' }, header: [], queryParams: [] },
+                        : { method: 'GET', proxy: 'No Proxy', url: '', body: {}, header: [], queryParams: [] },
                     response: response ? response : { status: null, headers: {}, data: {}, time: 0, size: 0 },
                     onSave: true,
                     parentFolderId: selectedFolder.id,

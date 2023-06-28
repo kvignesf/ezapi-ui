@@ -41,6 +41,7 @@
     "material-ui-search-bar": "^1.0.0",
     "moment": "^2.29.3",
     "monaco-editor": "^0.39.0",
+    "monaco-editor-webpack-plugin": "^7.0.1",
     "mui-tree-select": "^1.0.0-beta.11",
     "parse-url": "^8.1.0",
     "postcode-validator": "^3.6.6",

@@ -7,6 +7,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const NodePolyfillPlugin = require('node-polyfill-webpack-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
+const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
 
 // const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 // const CompressionPlugin = require('compression-webpack-plugin');
@@ -81,6 +82,7 @@ const config = {
     },
     plugins: [
         new DotenvFlow(),
+        new MonacoWebpackPlugin(),
         new CleanWebpackPlugin(),
         new MiniCssExtractPlugin({
             // Options similar to the same options in webpackOptions.output

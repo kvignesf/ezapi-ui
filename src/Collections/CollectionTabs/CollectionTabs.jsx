@@ -105,7 +105,7 @@ function CollectionTabs() {
                     method: 'GET',
                     proxy: 'No Proxy',
                     url: '',
-                    body: { '': '' },
+                    body: {},
                     header: [],
                     queryParams: [],
                 })
@@ -228,6 +228,7 @@ function CollectionTabs() {
         const newTabs = tabs.filter((_, i) => i !== index);
         setTabs(newTabs);
         if (tabs.length > 0) {
+            setResponse({});
             if (index === value - 1 || index <= value) {
                 setIndex(value - 1);
                 setValue(value - 1);
@@ -238,7 +239,7 @@ function CollectionTabs() {
                               method: 'GET',
                               proxy: 'No Proxy',
                               url: '',
-                              body: { '': '' },
+                              body: {},
                               header: [],
                               queryParams: [],
                           },
@@ -262,7 +263,7 @@ function CollectionTabs() {
                               method: 'GET',
                               proxy: 'No Proxy',
                               url: '',
-                              body: { '': '' },
+                              body: {},
                               header: [],
                               queryParams: [],
                           },
@@ -284,7 +285,7 @@ function CollectionTabs() {
                 method: 'GET',
                 proxy: 'No Proxy',
                 url: '',
-                body: { '': '' },
+                body: {},
                 header: [],
                 queryParams: [],
             });
@@ -300,7 +301,7 @@ function CollectionTabs() {
         const newId = uuidv4();
         const newTab = {
             id: newId,
-            request: { method: 'GET', proxy: 'No Proxy', url: '', body: { '': '' }, header: [], queryParams: [] },
+            request: { method: 'GET', proxy: 'No Proxy', url: '', body: {}, header: [], queryParams: [] },
             response: {},
             parentFolderNames: [''],
             label: 'New Request',
@@ -356,7 +357,7 @@ function CollectionTabs() {
         }
         setIndex(tabs.length);
         setValue(tabs.length);
-        setRequest({ method: 'GET', proxy: 'No Proxy', url: '', body: { '': '' }, header: [], queryParams: [] });
+        setRequest({ method: 'GET', proxy: 'No Proxy', url: '', body: {}, header: [], queryParams: [] });
         setResponse({});
         setCurrentApi({ id: newId, name: 'New Request', type: 'file', onSave: false, parentFolderId: '0' });
         setBreadCrumbs([]);
@@ -399,7 +400,7 @@ function CollectionTabs() {
                           method: 'GET',
                           proxy: 'No Proxy',
                           url: '',
-                          body: { '': '' },
+                          body: {},
                           header: [],
                           queryParams: [],
                       },
@@ -426,7 +427,7 @@ function CollectionTabs() {
                           method: 'GET',
                           proxy: 'No Proxy',
                           url: '',
-                          body: { '': '' },
+                          body: {},
                           header: [],
                           queryParams: [],
                       },

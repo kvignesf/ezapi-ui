@@ -125,6 +125,7 @@ export default function Folder({ id, parentId, onDelete, selected, onSelect, onR
     const setCurrentApi = useSetRecoilState(currentApi);
     const setBreadCrumbs = useSetRecoilState(currentBreadCrumbs);
     const [loading, setLoading] = useState(false);
+    const [processing, setProcessing] = useState(false);
 
     const handleOptionClick = (event) => {
         setAnchorEl(event.currentTarget);
@@ -136,6 +137,7 @@ export default function Folder({ id, parentId, onDelete, selected, onSelect, onR
     const addFile = async () => {
         const parentId = id;
         const newId = uuidv4();
+        setProcessing(true);
         const newFile = (
             <File
                 key={newId}
@@ -187,6 +189,7 @@ export default function Folder({ id, parentId, onDelete, selected, onSelect, onR
             createdAt: formattedDateTime,
             modifiedAt: formattedDateTime,
         });
+        setProcessing(false);
     };
 
     const addFolder = async () => {
@@ -243,7 +246,7 @@ export default function Folder({ id, parentId, onDelete, selected, onSelect, onR
                         method: 'GET',
                         proxy: 'No Proxy',
                         url: '',
-                        body: { '': '' },
+                        body: {},
                         header: [],
                         queryParams: [],
                     });
@@ -343,7 +346,7 @@ export default function Folder({ id, parentId, onDelete, selected, onSelect, onR
     }, []);
 
     useEffect(() => {
-        if (loading === false && collapsed === false && selected.type === 'folder') {
+        if (loading === false && collapsed === false && selected.type === 'folder' && processing === false) {
             const handleSelect = async () => {
                 const type = selected.type;
                 let requestFiles;
@@ -394,7 +397,7 @@ export default function Folder({ id, parentId, onDelete, selected, onSelect, onR
             };
             handleSelect();
         }
-    }, [saveModalOpen, selected]);
+    }, [saveModalOpen, selected.type]);
 
     const fileClass = id === selected.id ? classes.selectedFile : classes.root;
 

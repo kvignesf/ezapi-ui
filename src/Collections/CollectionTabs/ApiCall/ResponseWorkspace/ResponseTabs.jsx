@@ -4,6 +4,7 @@ import httpStatus from 'http-status-codes';
 import { useState } from 'react';
 import { ThreeDots } from 'react-loader-spinner';
 import JsonEditor from '../components/JsonEditor';
+import KeyBoardShortcuts from '../components/KeyBoardShortcuts';
 import ResponseHeader from './ResponseHeader';
 
 const useStyles = makeStyles((theme) => ({
@@ -78,23 +79,21 @@ export default function ResponseTabs({ doc, response, loading }) {
 
     return (
         <div>
-            <div className="flex justify-between ">
-                <Tabs
-                    value={selectedTabIndex}
-                    onChange={handleChange}
-                    variant="standard"
-                    indicatorColor="transparent"
-                    textColor="primary"
-                >
-                    <Tab className={classes.tab} label="Response Body" />
-                    {response &&
-                    response.data &&
-                    Object.keys(response.data).length &&
-                    Object.keys(response.headers).length > 0 ? (
+            {response &&
+            response.data &&
+            Object.keys(response.data).length &&
+            Object.keys(response.headers).length > 0 ? (
+                <div className="flex justify-between flex-wrap">
+                    <Tabs
+                        value={selectedTabIndex}
+                        onChange={handleChange}
+                        variant="standard"
+                        indicatorColor="transparent"
+                        textColor="primary"
+                    >
+                        <Tab className={classes.tab} label="Response Body" />
                         <Tab className={classes.tab} label="Response Header" />
-                    ) : null}
-                </Tabs>
-                {response && (
+                    </Tabs>
                     <div className="flex mt-4 mr-4">
                         {response.status && (
                             <span className={classes.span}>
@@ -132,27 +131,11 @@ export default function ResponseTabs({ doc, response, loading }) {
                                 </span>
                             </span>
                         )}
-
-                        {/* <span className={classes.iconSpan}>
-            <Tooltip
-              title="Open a new tab"
-              classes={{
-                tooltip: classes.launchTooltip,
-                arrow: classes.launchArrow,
-              }}
-              arrow
-              enterDelay={300}
-              leaveDelay={100}
-              placement="top"
-            >
-              <IconButton className={classes.launchButton} onClick={onTabChange}>
-                <LaunchIcon />
-              </IconButton>
-            </Tooltip>
-          </span> */}
                     </div>
-                )}
-            </div>
+                </div>
+            ) : (
+                <KeyBoardShortcuts />
+            )}
 
             <div className="px-4 py-4 ">
                 {loading ? (
@@ -161,7 +144,7 @@ export default function ResponseTabs({ doc, response, loading }) {
                     <>
                         {selectedTabIndex === 0 && doc && (
                             <JsonEditor
-                                value={doc !== undefined || null ? JSON.parse(doc) : {}}
+                                value={doc !== undefined || null ? doc : {}}
                                 readOnly={true}
                                 type={'responseTab'}
                             />
