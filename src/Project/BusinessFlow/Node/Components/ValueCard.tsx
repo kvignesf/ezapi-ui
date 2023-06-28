@@ -1,5 +1,5 @@
 import Editor from '@monaco-editor/react';
-import { Add, Close, Create, Upload } from '@mui/icons-material';
+import { Add, Create, Upload } from '@mui/icons-material';
 import { Button, Stack, Tooltip } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { KeyValueProps, ValueCardProps } from '../../interfaces';
@@ -95,7 +95,7 @@ export const ValueCard = (props: ValueCardProps): React.ReactElement => {
                             nodeType !== 'main' && (
                                 <Tooltip title="Bulk Edit" arrow placement={'top'}>
                                     <Create
-                                        sx={{ alignSelf: 'center', padding: '0 1px', cursor: 'pointer' }}
+                                        sx={{ alignSelf: 'center', padding: '0 1px' }}
                                         onClick={() => {
                                             prepareEditorData();
                                         }}
@@ -108,28 +108,14 @@ export const ValueCard = (props: ValueCardProps): React.ReactElement => {
                                 onClick={() => {
                                     prepareFormData();
                                 }}
-                                sx={{ cursor: 'pointer' }}
                             >
-                                {disableAdd ? (
-                                    <p
-                                        className="flex-1 text-smallLabel ml-3 text-neutral-gray2 uppercase pt-1"
-                                        style={{ width: '50px' }}
-                                    >
-                                        cancel
-                                    </p>
-                                ) : (
-                                    <p
-                                        className="flex-1 text-smallLabel ml-7 text-neutral-gray2 uppercase pt-1"
-                                        style={{ width: '30px' }}
-                                    >
-                                        save
-                                    </p>
-                                )}
-                                {disableAdd ? (
-                                    <Close sx={{ alignSelf: 'center', padding: '0 1px' }} />
-                                ) : (
-                                    <Upload sx={{ alignSelf: 'center', padding: '0 1px' }} />
-                                )}
+                                <p
+                                    className="flex-1 text-smallLabel ml-7 text-neutral-gray2 uppercase pt-1"
+                                    style={{ width: '30px' }}
+                                >
+                                    save
+                                </p>
+                                <Upload sx={{ alignSelf: 'center', padding: '0 1px' }} />
                             </Stack>
                         )}
                     </div>
