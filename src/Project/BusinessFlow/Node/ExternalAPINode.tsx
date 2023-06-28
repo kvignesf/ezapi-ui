@@ -221,7 +221,6 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
     }, [nodes, selectedNode]);
 
     function getUpdatedNodeDataFn() {
-        console.log(node?.data?.runData?.body?.data, 'dssds');
         const newNodeData = (_.isEmpty(props.data) ? {} : props.data) as NodeData;
         setExplicitLoading(false);
         return {
