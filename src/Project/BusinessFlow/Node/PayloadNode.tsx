@@ -155,12 +155,15 @@ const PayloadNode = (props: PayloadNodeProps): React.ReactElement => {
                 <Stack direction={'row'} spacing={1}>
                     <img
                         src={Collapse}
-                        style={{ width: '24px', height: '24px', alignSelf: 'center' }}
+                        style={{ width: '24px', height: '24px', alignSelf: 'center', cursor: 'pointer' }}
                         onClick={() => {
                             setCollapse(!collapse);
                         }}
                     />
-                    <img src={DialogIcon} style={{ width: '24px', height: '24px', alignSelf: 'center' }} />
+                    <img
+                        src={DialogIcon}
+                        style={{ width: '24px', height: '24px', alignSelf: 'center', cursor: 'pointer' }}
+                    />
                 </Stack>
             </Stack>
             {collapse && (

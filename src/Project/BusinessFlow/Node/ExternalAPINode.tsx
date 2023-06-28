@@ -808,7 +808,7 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
 
                         <img
                             src={DialogIcon}
-                            style={{ width: '24px', height: '24px', alignSelf: 'center' }}
+                            style={{ width: '24px', height: '24px', alignSelf: 'center', cursor: 'pointer' }}
                             onClick={() => {
                                 setDrawerSelected(true);
                             }}
@@ -816,13 +816,13 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
 
                         <img
                             src={Collapse}
-                            style={{ width: '24px', height: '24px', alignSelf: 'center' }}
+                            style={{ width: '24px', height: '24px', alignSelf: 'center', cursor: 'pointer' }}
                             onClick={toggleCollapse}
                         />
 
                         <img
                             src={RunIcon}
-                            style={{ width: '24px', height: '24px', alignSelf: 'center' }}
+                            style={{ width: '24px', height: '24px', alignSelf: 'center', cursor: 'pointer' }}
                             onClick={
                                 apiType === 'system'
                                     ? () => {

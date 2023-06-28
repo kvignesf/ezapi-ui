@@ -11,7 +11,6 @@ export const ValueCard = (props: ValueCardProps): React.ReactElement => {
         disabled = false,
         onChange = () => {},
         onDone,
-        onDelete,
         isHeader = false,
         isDrawer = false,
         disableAdd = false,
@@ -146,7 +145,6 @@ export const ValueCard = (props: ValueCardProps): React.ReactElement => {
                                 onDelete={() => {
                                     const updatedData = data.filter((value, index2) => value && index !== index2);
                                     onChange(updatedData);
-                                    onDelete;
                                 }}
                                 disabled={disabled}
                                 disableDelete={disableDelete}
