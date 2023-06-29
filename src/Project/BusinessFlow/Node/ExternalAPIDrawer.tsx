@@ -754,13 +754,13 @@ export const ExternalAPIDrawer = ({ cardId }: ExternalAPIDrawerProps) => {
                             }}
                         >
                             <Tooltip title="Save changes">
-                                <CloudUploadIcon style={{ color: '#2c71c7' }} />
+                                <CloudUploadIcon style={{ color: '#2c71c7', cursor: 'pointer' }} />
                             </Tooltip>
                         </div>
                     )}
                     <img
                         src={RunIcon}
-                        style={{ width: '24px', height: '24px', alignSelf: 'center' }}
+                        style={{ width: '24px', height: '24px', alignSelf: 'center', cursor: 'pointer' }}
                         onClick={
                             apiType === 'system'
                                 ? () => {
