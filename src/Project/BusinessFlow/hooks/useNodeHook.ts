@@ -77,7 +77,6 @@ const useNodeHook = ({ nodeId, getUpdatedNodeData, collapse = false }: NodeHookP
                 card: prepareAggregateCardFromNode(_node, projectId, operationId),
                 updateNodeData,
             };
-            console.log('updating node on server=> ');
             updateNodeOnServer(updatedNodeRequestData, source);
             setIsUpdateNodeOnServerDone(true);
 
@@ -87,7 +86,6 @@ const useNodeHook = ({ nodeId, getUpdatedNodeData, collapse = false }: NodeHookP
     }
 
     function triggerDelayedNodeSaveOnServer(delayTime: number = 2000) {
-        console.log('triggered a delayed save=> ', delayTime);
         setIsUpdateNodeOnServerDone(false);
         intervalManager(
             true,
