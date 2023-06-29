@@ -91,7 +91,13 @@ function getExternalAPIRequestAxiosOptions(
             'Content-Type': 'application/json',
             ...headerValues,
         },
-        data: !_.isEmpty(requestBodyData) ? (typeof requestBodyData === 'object' ? requestBodyData : {}) : {},
+        data: !_.isEmpty(requestBodyData)
+            ? typeof requestBodyData === 'object'
+                ? requestBodyData
+                : typeof requestBodyData === 'string' && checkValidJson(requestBodyData) === true
+                ? JSON.parse(requestBodyData)
+                : {}
+            : {},
         // params: paramsSerializer(queryParamsValues),
     };
     let isValidProxyRequest = true;
@@ -135,7 +141,7 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
         headers: props.data.runData?.headers || [],
         queryParams: props.data.runData?.queryParams || [],
         pathParams: props.data.runData?.pathParams || [],
-        body: props.data.runData?.body || '',
+        body: props.data.runData?.method == 'GET' ? null : props.data.runData?.body || '',
         output: props.data.runData?.output || { ...DEFAULT_API_RESPONSE },
     };
 
@@ -213,24 +219,44 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
     useEffect(() => {
         setSelectedNodeCardType(nodes.find((node: any) => node.id === selectedNode)?.type || '');
     }, [nodes, selectedNode]);
-
     function getUpdatedNodeDataFn() {
         const newNodeData = (_.isEmpty(props.data) ? {} : props.data) as NodeData;
+        let updatedRunData;
         setExplicitLoading(false);
-        return {
-            ...newNodeData,
-            commonData: commonData,
-            runData: {
+
+        if (runData.method !== 'GET') {
+            updatedRunData = {
                 ...runData,
                 url: displayedUrlValue,
                 pathParams: pathParams,
                 queryParams: queryParams,
                 headers: headers,
                 body: {
-                    data: typeof requestBodyData === 'object' ? requestBodyData : {},
+                    data:
+                        typeof requestBodyData === 'object'
+                            ? requestBodyData
+                            : typeof requestBodyData === 'string' && checkValidJson(requestBodyData) === true
+                            ? JSON.parse(requestBodyData)
+                            : node?.data?.runData?.body?.data ?? {},
                 },
                 output: runData.output,
-            },
+            };
+        } else {
+            const { body, ...otherRunData } = runData;
+            updatedRunData = {
+                ...otherRunData,
+                url: displayedUrlValue,
+                pathParams: pathParams,
+                queryParams: queryParams,
+                headers: headers,
+                output: runData.output,
+            };
+        }
+
+        return {
+            ...newNodeData,
+            commonData: commonData,
+            runData: updatedRunData,
         };
     }
 
@@ -798,9 +824,9 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                             >
                                 <Tooltip title="Save changes">
                                     {checkValidJson(requestBodyData) === false ? (
-                                        <CloudOff style={{ color: 'grey' }} />
+                                        <CloudOff style={{ color: 'grey', cursor: 'pointer' }} />
                                     ) : (
-                                        <CloudUploadIcon style={{ color: '#2c71c7' }} />
+                                        <CloudUploadIcon style={{ color: '#2c71c7', cursor: 'pointer' }} />
                                     )}
                                 </Tooltip>
                             </div>
