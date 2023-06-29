@@ -14,6 +14,10 @@ export const prepareExternalAPIData = (nodeData: any): ExternalAPI => {
     const data: any = {};
     if (_.isObject(nodeData) && !_.isEmpty(nodeData)) {
         EXTERNAL_API_NODE_DATA_FIELDS.forEach((dataField: string) => {
+            if ((nodeData as any)['method'] === 'GET' && dataField === 'body') {
+                return;
+            }
+
             if (dataField in nodeData) {
                 data[dataField] = (nodeData as any)[dataField];
             }
