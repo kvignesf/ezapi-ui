@@ -11,6 +11,7 @@ export const ValueCard = (props: ValueCardProps): React.ReactElement => {
         disabled = false,
         onChange = () => {},
         onDone,
+        disableKey = false,
         isHeader = false,
         isDrawer = false,
         disableAdd = false,
@@ -153,6 +154,7 @@ export const ValueCard = (props: ValueCardProps): React.ReactElement => {
                                 key={index}
                                 nodeType={nodeType}
                                 data={item}
+                                disableKey={disableKey}
                                 onDone={onDone}
                                 isHeader={isHeader}
                                 cardType={cardType}

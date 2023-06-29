@@ -446,10 +446,10 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
             setRequestBodyData(node.data.runData.body?.data ?? {});
             const outputInfo = node.data.runData?.output;
             const hasResponse = Boolean(outputInfo && outputInfo.status && outputInfo.status > 0);
-            if (hasResponse) {
-                setShowResponse(hasResponse);
-                setResponseValue('1');
-            }
+            // if (hasResponse) {
+            //     setShowResponse(hasResponse);
+            //     setResponseValue('1');
+            // }
             setExecutionNumber(executionNumber + 1);
         }
     }, [node]);
@@ -472,10 +472,10 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
             });
             const outputInfo = props.data.runData?.output;
             const hasResponse = Boolean(outputInfo && outputInfo.status && outputInfo.status > 0);
-            if (hasResponse) {
-                setShowResponse(hasResponse);
-                setResponseValue('1');
-            }
+            // if (hasResponse) {
+            //     setShowResponse(hasResponse);
+            //     setResponseValue('1');
+            // }
             setRequestBodyData(props.data.runData?.body?.data);
         }
     }, [props]);
@@ -697,6 +697,7 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                             <ValueCard
                                 disableAdd={true}
                                 disableDelete={true}
+                                disableKey={true}
                                 value={pathParams}
                                 disabled={apiType === 'system' ? true : false}
                                 onChange={(newPathParams: KeyValueProps[]) => {
