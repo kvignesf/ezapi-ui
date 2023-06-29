@@ -91,7 +91,13 @@ function getExternalAPIRequestAxiosOptions(
             'Content-Type': 'application/json',
             ...headerValues,
         },
-        data: !_.isEmpty(requestBodyData) ? (typeof requestBodyData === 'object' ? requestBodyData : {}) : {},
+        data: !_.isEmpty(requestBodyData)
+            ? typeof requestBodyData === 'object'
+                ? requestBodyData
+                : typeof requestBodyData === 'string' && checkValidJson(requestBodyData) === true
+                ? JSON.parse(requestBodyData)
+                : {}
+            : {},
         // params: paramsSerializer(queryParamsValues),
     };
     let isValidProxyRequest = true;
@@ -227,7 +233,12 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                 queryParams: queryParams,
                 headers: headers,
                 body: {
-                    data: typeof requestBodyData === 'object' ? requestBodyData : {},
+                    data:
+                        typeof requestBodyData === 'object'
+                            ? requestBodyData
+                            : typeof requestBodyData === 'string' && checkValidJson(requestBodyData) === true
+                            ? JSON.parse(requestBodyData)
+                            : node?.data?.runData?.body?.data ?? {},
                 },
                 output: runData.output,
             },
@@ -798,9 +809,9 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                             >
                                 <Tooltip title="Save changes">
                                     {checkValidJson(requestBodyData) === false ? (
-                                        <CloudOff style={{ color: 'grey' }} />
+                                        <CloudOff style={{ color: 'grey', cursor: 'pointer' }} />
                                     ) : (
-                                        <CloudUploadIcon style={{ color: '#2c71c7' }} />
+                                        <CloudUploadIcon style={{ color: '#2c71c7', cursor: 'pointer' }} />
                                     )}
                                 </Tooltip>
                             </div>
