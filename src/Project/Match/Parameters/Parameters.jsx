@@ -125,21 +125,18 @@ const ParametersEditor = ({ projectType, parameters, isFetchingParameters, getPa
         const preprocessed = input.replace(/\[(.*?)\]/g, (match) => match.replace(/,/g, '|'));
         const lines = preprocessed.split(/\r?\n/);
         const keys = lines[0].split(',').map((key) => key.toLowerCase().trim());
+        let objects = [];
 
         for (let line of lines.slice(1)) {
             const values = line.split(/,(?![^\[]*\])/);
-
             if (values.length !== keys.length) {
                 setEditorViewValidation('Each row should have the same number of columns as the header row.');
                 return null;
             }
-        }
 
-        let objects = lines.slice(1).map((line) => {
-            const values = line.split(/,(?![^\[]*\])/);
-
-            const object = {};
-            keys.forEach((key, index) => {
+            let object = {};
+            for (let index in keys) {
+                let key = keys[index];
                 let value = values[index]?.trim();
 
                 if (key === 'required') {
@@ -169,7 +166,7 @@ const ParametersEditor = ({ projectType, parameters, isFetchingParameters, getPa
                 }
 
                 object[key] = value;
-            });
+            }
 
             if (object.hasOwnProperty('attribute')) {
                 object['name'] = object['attribute'];
@@ -189,13 +186,11 @@ const ParametersEditor = ({ projectType, parameters, isFetchingParameters, getPa
             if (object.hasOwnProperty('required')) {
                 object['required'] = object['required'];
             }
-            return object;
-        });
-        objects = objects.filter((obj) => obj !== null);
+            objects.push(object);
+        }
 
         const names = objects.map((obj) => obj.name);
         const hasDuplicates = names.some((name, index) => names.indexOf(name) !== index);
-
         if (hasDuplicates) {
             setEditorViewValidation('Each parameter name must be unique.');
             return null;
@@ -210,6 +205,15 @@ const ParametersEditor = ({ projectType, parameters, isFetchingParameters, getPa
             setSaveBulkParam(false);
         }
     }, [saveBulkParameter, currentView]);
+    useEffect(() => {
+        if (!isEditingParameter) {
+            if (!editParamError && isEditSuccess) {
+                setCurrentView('grid');
+            } else if (!isEditSuccess && editParamError) {
+                setEditorViewValidation('Save Bulk parameter failed. Please try again.');
+            }
+        }
+    }, [editParamError, isEditSuccess]);
     const submitData = () => {
         setEditorViewValidation(null);
         const newData = csvToPayload(value);
@@ -219,7 +223,6 @@ const ParametersEditor = ({ projectType, parameters, isFetchingParameters, getPa
             } else {
                 editParam({ projectId: projectId, data: newData });
             }
-            setCurrentView('grid');
         } else {
             setCurrentView('editor');
         }

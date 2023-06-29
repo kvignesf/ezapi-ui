@@ -74,9 +74,9 @@ export async function fetchAggregateMetaData({ projectId, operationId }: FetchAP
 }
 
 export async function deleteNodesOnServer(props: DeleteNodesAPIProps) {
-    const url = `${process.env.REACT_APP_API_URL}/aggregateCards`;
-
     const { projectId, operationId, cardIdsToDelete, updatedAggregateMetadata, updatedResponseMapper } = props;
+
+    const url = `${process.env.REACT_APP_API_URL}/aggregateCard/${cardIdsToDelete[0]}`;
 
     const deleteDataObj = {
         projectId,

@@ -141,7 +141,7 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
         headers: props.data.runData?.headers || [],
         queryParams: props.data.runData?.queryParams || [],
         pathParams: props.data.runData?.pathParams || [],
-        body: props.data.runData?.body || '',
+        body: props.data.runData?.method == 'GET' ? null : props.data.runData?.body || '',
         output: props.data.runData?.output || { ...DEFAULT_API_RESPONSE },
     };
 
@@ -219,14 +219,13 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
     useEffect(() => {
         setSelectedNodeCardType(nodes.find((node: any) => node.id === selectedNode)?.type || '');
     }, [nodes, selectedNode]);
-
     function getUpdatedNodeDataFn() {
         const newNodeData = (_.isEmpty(props.data) ? {} : props.data) as NodeData;
+        let updatedRunData;
         setExplicitLoading(false);
-        return {
-            ...newNodeData,
-            commonData: commonData,
-            runData: {
+
+        if (runData.method !== 'GET') {
+            updatedRunData = {
                 ...runData,
                 url: displayedUrlValue,
                 pathParams: pathParams,
@@ -241,7 +240,23 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                             : node?.data?.runData?.body?.data ?? {},
                 },
                 output: runData.output,
-            },
+            };
+        } else {
+            const { body, ...otherRunData } = runData;
+            updatedRunData = {
+                ...otherRunData,
+                url: displayedUrlValue,
+                pathParams: pathParams,
+                queryParams: queryParams,
+                headers: headers,
+                output: runData.output,
+            };
+        }
+
+        return {
+            ...newNodeData,
+            commonData: commonData,
+            runData: updatedRunData,
         };
     }
 
