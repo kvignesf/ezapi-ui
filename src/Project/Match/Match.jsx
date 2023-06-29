@@ -32,7 +32,7 @@ const Match = ({ projectType, isBusinessFlow, ...props }) => {
     const [addParamCheck, setAddParamCheck] = useRecoilState(addParamAtom);
     const [saveBulkParameter, setSaveBulkParam] = useRecoilState(saveBulkParamAtom);
 
-    const [currentTab, setTab] = useState(null);
+    const [currentTab, setTab] = useState('param');
     const [schemaState, setSchemaState] = useRecoilState(schemaAtom);
     const resetSchemaState = useResetRecoilState(schemaAtom);
     const [tableState, setTableState] = useRecoilState(tableAtom);
@@ -114,6 +114,12 @@ const Match = ({ projectType, isBusinessFlow, ...props }) => {
     }
 
     const isOperationSelected = projectId && operationData?.operation?.operationId;
+
+    useEffect(() => {
+        if (!isOperationSelected && currentTab == 'business-flow') {
+            setTab('param');
+        }
+    }, [isOperationSelected]);
 
     const useStyles = makeStyles((theme) => ({
         switchBase: {
