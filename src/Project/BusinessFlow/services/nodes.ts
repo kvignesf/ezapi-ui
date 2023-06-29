@@ -33,7 +33,6 @@ export async function createAggregateCard(
     try {
         const { data: responseData } = await client.post(url, newAggregateCard, { cancelToken: source?.token });
         const aggregateCard: AggregateCard = prepareAggregateCard(responseData.data);
-        // console.log('aggregateCard', aggregateCard);
         return aggregateCard;
     } catch (error) {
         throw getApiError(error);
@@ -41,7 +40,6 @@ export async function createAggregateCard(
 }
 
 export async function updateNodeOnServer(props: UpdateNodeAPIProps, _source?: CancelTokenSource) {
-    // console.log('calling updateNodeOnServer.....', props);
     const { card, position, updateNodeData, setNodeType } = props;
 
     const nodeId = card.id;
@@ -58,9 +56,6 @@ export async function updateNodeOnServer(props: UpdateNodeAPIProps, _source?: Ca
     } else {
         node = prepareNodeFromAggregateCardResponse(responseData.data);
     }
-    // console.log('updateNodeOnServer.responseData', responseData);
-
-    // console.log('updateNodeOnServer.response.node', node);
 
     updateNodeData && updateNodeData(nodeId, node.data);
     setNodeType && setNodeType(nodeId, node.type as string, node.data);
