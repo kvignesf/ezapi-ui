@@ -93,7 +93,7 @@ export const ValueCard = (props: ValueCardProps): React.ReactElement => {
                         )}
                         {!isEditor ? (
                             nodeType !== 'main' && (
-                                <Tooltip title="Bulk Edit" arrow placement={'top'}>
+                                <Tooltip title={disableAdd ? 'Cancel' : 'Bulk Edit'} arrow placement={'top'}>
                                     <Create
                                         sx={{ alignSelf: 'center', padding: '0 1px', cursor: 'pointer' }}
                                         onClick={() => {
