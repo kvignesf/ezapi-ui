@@ -185,14 +185,25 @@ function CollectionTabs() {
     const handleSave = () => {
         if (tabs[index]?.onSave === false) {
             setOpen(false);
+            setValue(index);
+            setRequest(tabs[index].request);
+            setResponse(tabs[index].response);
+            setCurrentApi({
+                id: tabs[index]?.id ? tabs[index].id : '0',
+                name: tabs[index]?.label ? tabs[index].label : 'New Request',
+                type: 'file',
+                onSave: tabs[index]?.onSave ? tabs[index].onSave : false,
+                parentFolderId: tabs[index]?.parentFolderId ? tabs[index].parentFolderId : '0',
+            });
+            setBreadCrumbs(tabs[index]?.parentFolderNames ? tabs[index]?.parentFolderNames : []);
             setSaveModalOpen(true);
         }
     };
 
-    const handleDelete = async (index) => {
-        if (tabs[index]?.onSave === false) {
+    const handleDelete = async (idx) => {
+        if (tabs[idx]?.onSave === false) {
             await axios
-                .delete(process.env.REACT_APP_API_URL + endpoint.collectionsRequest + `/${userId}/${tabs[index].id}`)
+                .delete(process.env.REACT_APP_API_URL + endpoint.collectionsRequest + `/${userId}/${tabs[idx].id}`)
                 .catch((error) => {
                     console.error('Error while saving contents:', error);
                 });
@@ -225,13 +236,17 @@ function CollectionTabs() {
             }
         }
 
-        const newTabs = tabs.filter((_, i) => i !== index);
+        const newTabs = tabs.filter((_, i) => i !== idx);
         setTabs(newTabs);
         if (tabs.length > 0) {
-            setResponse({});
-            if (index === value - 1 || index <= value) {
+            if (idx === value - 1 || idx <= value) {
                 setIndex(value - 1);
                 setValue(value - 1);
+            } else {
+                setIndex(value);
+                setValue(value);
+            }
+            if (idx === value) {
                 setRequest(
                     tabs[value - 1]?.request
                         ? tabs[value - 1].request
@@ -254,8 +269,6 @@ function CollectionTabs() {
                 });
                 setBreadCrumbs(tabs[value - 1]?.parentFolderNames ? tabs[value - 1].parentFolderNames : []);
             } else {
-                setIndex(value);
-                setValue(value);
                 setRequest(
                     tabs[value]?.request
                         ? tabs[value].request
@@ -270,7 +283,7 @@ function CollectionTabs() {
                 );
                 setResponse(tabs[value]?.response ? tabs[value].response : {});
                 setCurrentApi({
-                    id: tabs[value]?.id ? tabs[value].id : 0,
+                    id: tabs[value]?.id ? tabs[value].id : '0',
                     name: tabs[value]?.label ? tabs[value].label : 'New Request',
                     type: 'file',
                     onSave: tabs[value]?.onSave ? tabs[value].onSave : false,
@@ -293,7 +306,19 @@ function CollectionTabs() {
             setCurrentApi({ id: 0, name: '', type: 'file', onSave: false, parentFolderId: '0' });
             setBreadCrumbs([]);
         }
-
+        if (value - 1 === -1) {
+            setRequest({
+                method: 'GET',
+                proxy: 'No Proxy',
+                url: '',
+                body: {},
+                header: [],
+                queryParams: [],
+            });
+            setResponse({});
+            setCurrentApi({ id: 0, name: '', type: 'file', onSave: false, parentFolderId: '0' });
+            setBreadCrumbs([]);
+        }
         setOpen(false);
     };
 

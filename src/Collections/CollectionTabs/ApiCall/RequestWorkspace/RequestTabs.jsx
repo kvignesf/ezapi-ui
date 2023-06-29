@@ -3,9 +3,9 @@ import { makeStyles } from '@material-ui/core/styles';
 import { useState } from 'react';
 import { useRecoilState } from 'recoil';
 import { requestParams } from '../../../CollectionsAtom';
-import JsonEditor from '../components/JsonEditor';
 import AuthTab from './AuthenticationTab/AuthTab';
 import KeyValue from './KeyValue/KeyValuePanel';
+import ReqBodyEditor from './ReqBodyEditor';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -76,7 +76,7 @@ export default function RequestTabs() {
         {
             slug: 'body',
             title: 'Body',
-            panel: <JsonEditor value={request.body} type={'reqBody'} readOnly={false} tab={2} />,
+            panel: <ReqBodyEditor tab={2} />,
         },
         {
             slug: 'authorization',

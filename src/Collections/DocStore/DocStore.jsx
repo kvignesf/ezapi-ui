@@ -177,36 +177,53 @@ export default function DocStore({ isModal }) {
     };
 
     useEffect(() => {
+        let source = axios.CancelToken.source(); // Create a cancel token source
+
         const getFilesAndFolders = async () => {
             if (loading === false) {
-                await axios
-                    .get(process.env.REACT_APP_API_URL + endpoint.collectionDirectory + `/${userId}`)
-                    .then((response) => {
-                        const parentFolders = response['data'].data.map((data) => (
-                            <Folder key={data.id} id={data.id} parentId={'0'} name={data.name} /> // Pass onSelect prop to child components
-                        ));
+                try {
+                    const response1 = await axios.get(
+                        process.env.REACT_APP_API_URL + endpoint.collectionDirectory + `/${userId}`,
+                        {
+                            cancelToken: source.token, // Pass the cancel token to the request
+                        },
+                    );
 
-                        setFolders(parentFolders);
-                    })
-                    .catch((error) => {
+                    const parentFolders = response1.data.data.map((data) => (
+                        <Folder key={data.id} id={data.id} parentId={'0'} name={data.name} />
+                    ));
+                    setFolders(parentFolders);
+
+                    const response2 = await axios.get(
+                        process.env.REACT_APP_API_URL + endpoint.collectionDirectory + `/${userId}`,
+                        {
+                            cancelToken: source.token, // Pass the cancel token to the request
+                        },
+                    );
+
+                    const requests = response2.data.files.map((data) => (
+                        <File key={data.id} id={data.id} parentId={'0'} name={data.name} />
+                    ));
+                    setRequests(requests);
+                } catch (error) {
+                    if (axios.isCancel(error)) {
+                        // Handle request cancellation
+                        console.log('Request canceled:', error.message);
+                    } else {
+                        // Handle other errors
                         console.error(error);
-                    });
-                await axios
-                    .get(process.env.REACT_APP_API_URL + endpoint.collectionDirectory + `/${userId}`)
-                    .then((response) => {
-                        const requests = response['data'].files.map((data) => (
-                            <File key={data.id} id={data.id} parentId={'0'} name={data.name} /> // Pass onSelect prop to child components
-                        ));
-                        setRequests(requests);
-                    })
-                    .catch((error) => {
-                        console.error(error);
-                    });
+                    }
+                }
             }
         };
-        getFilesAndFolders();
-    }, [loading, userId, saveModalOpen]);
 
+        getFilesAndFolders();
+
+        // Cleanup function
+        return () => {
+            source.cancel(); // Cancel the request when the component is unmounted
+        };
+    }, [loading, userId, saveModalOpen]);
     const handleSearchChange = (event) => {
         const query = event.target.value;
         setSearchQuery(query);

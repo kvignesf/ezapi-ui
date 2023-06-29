@@ -93,3 +93,7 @@ export const recentRequest = atom({
     key: 'recentRequest',
     default: [],
 });
+export const folderContentLoading = atom({
+    key: 'folderContentLoading',
+    default: false,
+});

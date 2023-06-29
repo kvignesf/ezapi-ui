@@ -300,7 +300,6 @@ export default function File({
                     })
                     .then(async (response) => {
                         const data = response.data;
-                        setResponse({});
                         setTabs((prev) => {
                             return [
                                 ...prev,
@@ -446,14 +445,14 @@ export default function File({
     }, []);
 
     const fileClass = selected && selected.id === id ? classes.selectedFile : classes.root;
-    let method;
+    let method, requestUrl;
     if (api.id === id) {
         method = request.method;
+        requestUrl = request.url;
     } else {
         method = reqMethod ? reqMethod : 'GET';
+        requestUrl = reqUrl ? reqUrl : null;
     }
-
-    const requestUrl = reqUrl ? reqUrl : null;
 
     return loading ? (
         <LoadingDialog />
