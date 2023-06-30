@@ -7,6 +7,7 @@ export const ValueCardRow = (props: ValueCardRowProps) => {
         data,
         onDelete,
         onDone,
+        disableKey,
         isHeader = false,
         disabled = false,
         nodeType = '',
@@ -45,7 +46,7 @@ export const ValueCardRow = (props: ValueCardRowProps) => {
                         required={true}
                         variant="outlined"
                         value={data.key}
-                        disabled={disabled || nodeType === 'main'}
+                        disabled={disabled || nodeType === 'main' || disableKey}
                         onChange={(e) => {
                             onChange({ key: e.target.value, value: data.value });
                         }}
