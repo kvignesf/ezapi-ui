@@ -167,7 +167,7 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
 
     const [apiType, setApiType] = useState<string>('api_call');
     const [_selectedCard, setSelectedCard] = useRecoilState(drawerCardAtom);
-    const [drawerSelected, setDrawerSelected] = useState(false);
+    const [drawerSelected, setDrawerSelected] = useState('');
     const [explicitLoading, setExplicitLoading] = useState(false);
 
     const [isJsonValid, setIsJsonValid] = useState(true);
@@ -736,7 +736,7 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                         <Button
                             sx={{ width: 'fit-content' }}
                             onClick={() => {
-                                setSelectedNode(cardId);
+                                setDrawerSelected('mapping');
                             }}
                             variant="outlined"
                             startIcon={<Add />}
@@ -749,12 +749,16 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
         </>
     );
     useEffect(() => {
-        if (drawerSelected) {
+        if (drawerSelected != '') {
             setCollapse(false);
-
             if (isUpdateNodeOnServerDone) {
-                setSelectedCard(cardId);
-                setDrawerSelected(false);
+                if (drawerSelected == 'drawer') {
+                    setSelectedCard(cardId);
+                } else {
+                    setSelectedNode(cardId);
+                }
+
+                setDrawerSelected('');
             }
         }
     }, [drawerSelected, isUpdateNodeOnServerDone]);
@@ -837,7 +841,7 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                             src={DialogIcon}
                             style={{ width: '24px', height: '24px', alignSelf: 'center', cursor: 'pointer' }}
                             onClick={() => {
-                                setDrawerSelected(true);
+                                setDrawerSelected('drawer');
                             }}
                         />
 
@@ -882,7 +886,7 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                     </Typography>
                 </Stack>
             )}
-            {!collapse && !isUpdateNodeOnServerDone && drawerSelected && (
+            {!collapse && !isUpdateNodeOnServerDone && drawerSelected != '' && (
                 <div className="my-7">
                     <LoaderWithMessage message={'Saving Data'} contained={true} className="" />
                 </div>
