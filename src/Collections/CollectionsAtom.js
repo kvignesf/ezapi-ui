@@ -49,7 +49,7 @@ export const requestParams = atom({
         method: 'GET',
         proxy: 'No Proxy',
         url: '',
-        body: {},
+        body: { '': '' },
         header: [],
         queryParams: [],
     },

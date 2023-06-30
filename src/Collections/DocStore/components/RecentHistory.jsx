@@ -147,7 +147,7 @@ const RecentHistory = () => {
                       method: 'GET',
                       proxy: 'No Proxy',
                       url: '',
-                      body: {},
+                      body: { '': '' },
                       header: [],
                       queryParams: [],
                   },
@@ -172,7 +172,7 @@ const RecentHistory = () => {
                     method: 'GET',
                     proxy: 'No Proxy',
                     url: '',
-                    body: {},
+                    body: { '': '' },
                     header: [],
                     queryParams: [],
                 })

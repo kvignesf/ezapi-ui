@@ -13,7 +13,7 @@ export default function ResponseEditor() {
                     language="json"
                     options={{
                         contextmenu: false,
-                        readOnly: true,
+
                         minimap: {
                             enabled: false,
                         },

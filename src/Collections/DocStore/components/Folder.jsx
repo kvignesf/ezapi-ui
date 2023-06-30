@@ -181,7 +181,7 @@ export default function Folder({ id, parentId, onDelete, selected, onSelect, onR
                 method: 'GET',
                 proxy: 'No Proxy',
                 url: '',
-                body: {},
+                body: { '': '' },
                 header: [],
                 queryParams: [],
             },
@@ -249,7 +249,7 @@ export default function Folder({ id, parentId, onDelete, selected, onSelect, onR
                         method: 'GET',
                         proxy: 'No Proxy',
                         url: '',
-                        body: {},
+                        body: { '': '' },
                         header: [],
                         queryParams: [],
                     });
@@ -351,7 +351,7 @@ export default function Folder({ id, parentId, onDelete, selected, onSelect, onR
     useEffect(() => {
         let isMounted = true; // Add a flag to track component mount status
 
-        if (loading === false && collapsed === false && processing === false && saveModalOpen === false) {
+        if (loading === false && collapsed === false && processing === false) {
             const handleSelect = async () => {
                 const type = selected.type;
                 let requestFiles;
@@ -415,7 +415,7 @@ export default function Folder({ id, parentId, onDelete, selected, onSelect, onR
         return () => {
             isMounted = false; // Update the mount status when the component is unmounted
         };
-    }, [saveModalOpen, collapsed, api]);
+    }, [saveModalOpen, collapsed, api, dataLoading]);
 
     const fileClass = id === selected.id ? classes.selectedFile : classes.root;
 
