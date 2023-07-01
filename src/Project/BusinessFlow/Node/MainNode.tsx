@@ -1,8 +1,10 @@
+import ErrorWithMessage from '@/shared/components/ErrorWithMessage';
 import { operationAtomWithMiddleware } from '@/shared/utils';
 import ArrowCircleRightOutlinedIcon from '@mui/icons-material/ArrowCircleRightOutlined';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { Card, Stack, Tab, Tooltip, Typography } from '@mui/material';
 import { Node } from '@reactflow/core';
+
 import _ from 'lodash';
 import { useGetOperation } from '../../../shared/query/operationDetailsQuery';
 import { checkValidJson } from '../businessFlowHelper';
@@ -24,19 +26,6 @@ type KeyValueProps = {
     key: string;
     value: any;
 };
-type Param = {
-    key: string;
-    value: string;
-};
-
-type OperationStateType = {
-    operationRequest: {
-        headers: { name: string; possibleValues: string[] }[];
-        queryParams: { name: string; possibleValues: string[] }[];
-        pathParams: { name: string; possibleValues: string[] }[];
-        body: any;
-    };
-};
 
 interface MainNodeProps extends NodeProps {}
 
@@ -56,7 +45,7 @@ const MainNode = (props: MainNodeProps) => {
     const { useStore } = useContext<IBusinessFlow>(BusinessFlowContext);
     const nodes = useStore((state: MyReactFlowState) => state.nodes);
     const operationState = useRecoilValue(operationAtomWithMiddleware);
-    // const [isJsonValid, setIsJsonValid] = useState(true);
+    const [isJsonValid, setIsJsonValid] = useState(true);
     const [simulateFailed, setSimulateFailed] = useState<boolean>(true);
     const [savedNodeRB, setSavedNodeRB] = useState<Record<string, any> | undefined>({});
     const [requestBodyData, setRequestBodyData] = useState<Record<string, any> | undefined>({});
@@ -120,6 +109,9 @@ const MainNode = (props: MainNodeProps) => {
         });
         triggerDelayedNodeSaveOnServer(saveDelay);
     }
+    useEffect(() => {
+        console.log('rbd=>', requestBodyData);
+    }, [requestBodyData]);
 
     function transformObject(obj: any): any {
         if (obj === null) {
@@ -210,6 +202,7 @@ const MainNode = (props: MainNodeProps) => {
                 .then((response) => {
                     if (response.message == 'Ok') {
                         simulateAPI().then((response) => {
+                            console.log('inside useeffect where simulate is called');
                             setSimulateFailed(false);
                             setRequestBodyData(transformObject(response));
                             triggerDelayedNodeSaveOnServer(saveDelay);
@@ -271,6 +264,7 @@ const MainNode = (props: MainNodeProps) => {
     }, []);
 
     useEffect(() => {
+        console.log('inside useeffect 1', simulateFailed, savedNodeRB);
         if (simulateFailed) {
             setRequestBodyData(savedNodeRB);
             return;
@@ -297,10 +291,12 @@ const MainNode = (props: MainNodeProps) => {
         );
 
         if (JSON.stringify(requestBodyData) !== JSON.stringify(operationRequestBody)) {
+            console.log('inside useeffect 2', simulateFailed, operationRequestBody);
+
             setRequestBodyData(operationRequestBody);
             setStopTrigger(true);
         }
-    }, [requestBodyData, savedNodeRB]);
+    }, [savedNodeRB]);
 
     type Param = {
         key: string;
@@ -465,9 +461,12 @@ const MainNode = (props: MainNodeProps) => {
                                 <Stack sx={{ width: '100%' }}>
                                     <ResponseTab
                                         onChange={(value: string) => {
+                                            // setRequestBodyData(value);
                                             if (checkValidJson(value) === true) {
-                                                setRequestBodyData(JSON.parse(value));
                                                 setNewRequestData(value);
+                                                setIsJsonValid(true);
+                                            } else {
+                                                setIsJsonValid(false);
                                             }
                                         }}
                                         // isError={isError}
@@ -477,9 +476,9 @@ const MainNode = (props: MainNodeProps) => {
                                         // disabled={apiType === 'system' ? true : false}
                                     />
                                 </Stack>
-                                {/* {!isJsonValid && (
+                                {!isJsonValid && (
                                     <ErrorWithMessage message={'invalid JSON'} className={'mb-3'} contained isError />
-                                )} */}
+                                )}
                             </>
                         )}
                     </>
