@@ -15,6 +15,7 @@ export const ValueCard = (props: ValueCardProps): React.ReactElement => {
         isDrawer = false,
         disableAdd = false,
         onSubmit = () => {},
+        disableKey = false,
         disableDelete = false,
         iconSelector = 'delete',
         cardType = 'node',
@@ -93,7 +94,7 @@ export const ValueCard = (props: ValueCardProps): React.ReactElement => {
                         )}
                         {!isEditor ? (
                             nodeType !== 'main' && (
-                                <Tooltip title={disableAdd ? 'Cancel' : 'Bulk Edit'} arrow placement={'top'}>
+                                <Tooltip title={disableAdd ? 'Editor View' : 'Bulk Edit'} arrow placement={'top'}>
                                     <Create
                                         sx={{ alignSelf: 'center', padding: '0 1px', cursor: 'pointer' }}
                                         onClick={() => {
@@ -154,6 +155,7 @@ export const ValueCard = (props: ValueCardProps): React.ReactElement => {
                                 nodeType={nodeType}
                                 data={item}
                                 onDone={onDone}
+                                disableKey={disableKey}
                                 isHeader={isHeader}
                                 cardType={cardType}
                                 onDelete={() => {
@@ -182,7 +184,6 @@ export const ValueCard = (props: ValueCardProps): React.ReactElement => {
                     {!disableAdd && nodeType !== 'main' && !isEditor && (
                         <Button
                             onClick={() => {
-                                const length = data.length;
                                 setData([
                                     ...data,
                                     {

@@ -81,7 +81,6 @@ export async function deleteNodesOnServer(props: DeleteNodesAPIProps) {
     const deleteDataObj = {
         projectId,
         operationId,
-        cardIdsToDelete,
         updatedAggregateMetadata,
         updatedResponseMapper,
     };
