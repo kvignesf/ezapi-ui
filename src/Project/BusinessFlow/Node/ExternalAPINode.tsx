@@ -446,10 +446,10 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
             setRequestBodyData(node.data.runData.body?.data ?? {});
             const outputInfo = node.data.runData?.output;
             const hasResponse = Boolean(outputInfo && outputInfo.status && outputInfo.status > 0);
-            // if (hasResponse) {
-            //     setShowResponse(hasResponse);
-            //     setResponseValue('1');
-            // }
+            if (hasResponse) {
+                setShowResponse(hasResponse);
+                setResponseValue('1');
+            }
             setExecutionNumber(executionNumber + 1);
         }
     }, [node]);
@@ -715,13 +715,13 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                         <Stack width="100%">
                             <ResponseTab
                                 onChange={(value: any) => {
-                                    setRequestBodyData(value);
                                     if (checkValidJson(value) === true) {
-                                        triggerDelayedNodeSaveOnServer(delayTimeSet);
+                                        setRequestBodyData(value);
                                         setIsJsonValid(true);
                                     } else {
                                         setIsJsonValid(false);
                                     }
+                                    triggerDelayedNodeSaveOnServer(delayTimeSet);
                                 }}
                                 isError={isError}
                                 isResponse={false}
@@ -933,14 +933,13 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                                             value={requestBodyData || {}}
                                             disabled={apiType === 'system' ? true : false}
                                             onChange={(value: any) => {
-                                                setRequestBodyData(value);
-
                                                 if (checkValidJson(value) === true) {
-                                                    triggerDelayedNodeSaveOnServer(delayTimeSet);
+                                                    setRequestBodyData(value);
                                                     setIsJsonValid(true);
                                                 } else {
                                                     setIsJsonValid(false);
                                                 }
+                                                triggerDelayedNodeSaveOnServer(delayTimeSet);
                                             }}
                                         />
                                     </TabPanel>
