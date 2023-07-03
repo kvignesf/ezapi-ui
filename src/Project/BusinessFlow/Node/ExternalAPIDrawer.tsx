@@ -26,13 +26,12 @@ import { useRecoilState } from 'recoil';
 import ApiIcon from '../../../icons/ApiIcon.svg';
 import RunIcon from '../../../icons/runIcon.svg';
 import { BusinessFlowContext } from '../BusinessFlowContext';
-import { checkValidJson, convertObjectToFormData, formDataToObject } from '../businessFlowHelper';
+import { convertObjectToFormData, formDataToObject } from '../businessFlowHelper';
 import { DEFAULT_API_RESPONSE } from '../defaults';
 import useNodeHook from '../hooks/useNodeHook';
 import { ExternalAPI, KeyValueProps } from '../interfaces';
 import { CommonNodeData, NodeData } from '../interfaces/flow';
 import { MyReactFlowState } from '../store';
-import { ResponseTab } from './Components/ResponseTab';
 import { TreeDropDown } from './Components/TreeDropDown';
 import { ValueCard } from './Components/ValueCard';
 
@@ -443,7 +442,11 @@ export const ExternalAPIDrawer = ({ cardId }: ExternalAPIDrawerProps) => {
 
     const renderAPINodeBody = () => (
         <>
-            <Stack justifyContent={'space-around'} sx={{ padding: '24px 16px', height: '300px' }} spacing={2}>
+            <Stack
+                justifyContent={'space-around'}
+                sx={{ padding: '24px 16px', height: '300px', width: '100%', gap: 1 }}
+                spacing={2}
+            >
                 <RadioGroup
                     aria-labelledby="controlled-radio-buttons-group"
                     name="controlled-radio-buttons-group"
@@ -463,30 +466,34 @@ export const ExternalAPIDrawer = ({ cardId }: ExternalAPIDrawerProps) => {
                         />
                     </Stack>
                 </RadioGroup>
-                {apiType === 'system' ? (
-                    <TreeDropDown data={systemApis} />
-                ) : (
-                    <>
-                        <Typography sx={{ fontSize: '14px', fontWeight: 600 }} color="text.primary" gutterBottom>
-                            API endpoint
-                        </Typography>
-                        <TextField
-                            required={true}
-                            variant="outlined"
-                            value={commonData.name}
-                            onChange={(e) => {
-                                setApiName(e.target.value);
-                            }}
-                            sx={{
-                                width: '620px',
-                            }}
-                            inputProps={{ style: { height: '15px' } }}
-                        />
-                    </>
-                )}
+                <div>
+                    {' '}
+                    {apiType === 'system' ? (
+                        <TreeDropDown data={systemApis} />
+                    ) : (
+                        <>
+                            <Typography sx={{ fontSize: '14px', fontWeight: 600 }} color="text.primary" gutterBottom>
+                                API endpoint
+                            </Typography>
+                            <TextField
+                                required={true}
+                                variant="outlined"
+                                value={commonData.name}
+                                onChange={(e) => {
+                                    setApiName(e.target.value);
+                                }}
+                                sx={{
+                                    width: '100%',
+                                    padding: '0px',
+                                }}
+                                inputProps={{ style: { height: '15px' } }}
+                            />
+                        </>
+                    )}
+                </div>
 
-                <Stack direction="row" sx={{ paddingTop: '24px' }}>
-                    <Stack sx={{ paddingRight: '24px' }}>
+                <Stack direction="row" sx={{ width: '100%' }}>
+                    <Stack sx={{ paddingRight: '24px', width: '30%' }}>
                         <Typography sx={{ fontSize: '14px', fontWeight: 600 }} color="text.primary" gutterBottom>
                             Action Type
                         </Typography>
@@ -505,12 +512,12 @@ export const ExternalAPIDrawer = ({ cardId }: ExternalAPIDrawerProps) => {
                             clearIcon={null}
                             openOnFocus={true}
                             fullWidth={true}
-                            style={{
-                                width: '155px',
-                            }}
+                            // style={{
+                            //     width: '155px',
+                            // }}
                         />
                     </Stack>
-                    <Stack>
+                    <Stack sx={{ width: '70%' }}>
                         <Typography sx={{ fontSize: '14px', fontWeight: 600 }} color="text.primary" gutterBottom>
                             URL
                         </Typography>
@@ -527,16 +534,16 @@ export const ExternalAPIDrawer = ({ cardId }: ExternalAPIDrawerProps) => {
                             }}
                             onFocus={() => setIsFocused(true)}
                             onBlur={() => setIsFocused(false)}
-                            sx={{
-                                width: '301px',
-                            }}
+                            // sx={{
+                            //     width: '538px',
+                            // }}
                             style={{ height: '50px' }}
                         />
                     </Stack>
                 </Stack>
             </Stack>
 
-            <Stack sx={{ width: '100%' }}>
+            <Stack sx={{ width: '100%' }} sx={{ paddingX: '16px', paddingY: '0px', width: '100%' }}>
                 <TabContext value={value}>
                     <Stack direction="row" sx={{ borderBottom: 1, borderColor: 'divider', width: '100%' }}>
                         <TabList
@@ -573,7 +580,7 @@ export const ExternalAPIDrawer = ({ cardId }: ExternalAPIDrawerProps) => {
                             />
                         </TabList>
                     </Stack>
-                    <TabPanel value={'0'}>
+                    <TabPanel value={'0'} sx={{ padding: '12px 0px' }}>
                         <ValueCard
                             value={headers}
                             disabled={apiType === 'system' ? true : false}
@@ -587,6 +594,7 @@ export const ExternalAPIDrawer = ({ cardId }: ExternalAPIDrawerProps) => {
                     </TabPanel>
                     <TabPanel
                         value={'1'}
+                        sx={{ padding: '12px 0px' }}
                         key={
                             runData?.queryParams?.length
                                 ? runData.queryParams[runData.queryParams.length - 1].key
@@ -620,6 +628,7 @@ export const ExternalAPIDrawer = ({ cardId }: ExternalAPIDrawerProps) => {
                     </TabPanel>
                     <TabPanel
                         value={'2'}
+                        sx={{ padding: '12px 0px' }}
                         key={
                             runData?.pathParams?.length
                                 ? runData.pathParams[runData.pathParams.length - 1].key
@@ -664,7 +673,7 @@ export const ExternalAPIDrawer = ({ cardId }: ExternalAPIDrawerProps) => {
                         />
                     </TabPanel>
                 </TabContext>
-
+                {/*
                 {!showResponse && runData.method !== 'GET' && (
                     <Stack width="100%">
                         <ResponseTab
@@ -683,7 +692,7 @@ export const ExternalAPIDrawer = ({ cardId }: ExternalAPIDrawerProps) => {
                             disabled={apiType === 'system' ? true : false}
                         />
                     </Stack>
-                )}
+                )} */}
 
                 <Stack sx={{ padding: '0 16px 16px' }} alignItems={'flex-start'}>
                     <Button
@@ -772,10 +781,10 @@ export const ExternalAPIDrawer = ({ cardId }: ExternalAPIDrawerProps) => {
                 </Stack>
             </Stack>
 
-            <Stack sx={{ overflow: 'auto', height: '100%' }} id="scroll">
+            <Stack sx={{ overflow: 'auto', height: '100%', width: '100%' }} id="scroll">
                 {renderAPINodeBody()}
 
-                {isLoading && (
+                {/* {isLoading && (
                     <Stack>
                         <Typography
                             sx={{
@@ -794,7 +803,7 @@ export const ExternalAPIDrawer = ({ cardId }: ExternalAPIDrawerProps) => {
                 )}
 
                 {showResponse && (
-                    <Stack>
+                    <Stack sx={{ padding: '24px 18px', width: '100%' }}>
                         {runData.method !== 'GET' ? (
                             <>
                                 <TabContext value={responseValue}>
@@ -851,7 +860,7 @@ export const ExternalAPIDrawer = ({ cardId }: ExternalAPIDrawerProps) => {
                             </Stack>
                         )}
                     </Stack>
-                )}
+                )} */}
             </Stack>
         </Stack>
     );

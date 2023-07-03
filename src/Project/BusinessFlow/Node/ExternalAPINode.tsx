@@ -750,7 +750,6 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
     );
     useEffect(() => {
         if (drawerSelected != '') {
-            setCollapse(false);
             if (isUpdateNodeOnServerDone) {
                 if (drawerSelected == 'drawer') {
                     setSelectedCard(cardId);
