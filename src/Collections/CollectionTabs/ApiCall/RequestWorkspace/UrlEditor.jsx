@@ -6,6 +6,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import { useState } from 'react';
 
+import LoadingDialog from '@/Collections/components/LoadingDialog';
 import SaveOutlinedIcon from '@material-ui/icons/SaveOutlined';
 import SendIcon from '@material-ui/icons/Send';
 import axios from 'axios';
@@ -18,6 +19,7 @@ import {
     currentBreadCrumbs,
     currentTab,
     currentTabs,
+    folderContentLoading,
     isSaveModalOpen,
     requestName,
     requestParams,
@@ -131,6 +133,7 @@ export default function UrlEditor({ onInputSend }) {
     const [api, setCurrentApi] = useRecoilState(currentApi);
     const setBreadCrumbs = useSetRecoilState(currentBreadCrumbs);
     const [checked, setChecked] = useState(false);
+    const [loading, setLoading] = useRecoilState(folderContentLoading);
 
     const handleCheckChange = (event) => {
         setChecked(event.target.checked);
@@ -148,7 +151,9 @@ export default function UrlEditor({ onInputSend }) {
     };
     const handleSave = async (event) => {
         const newId = uuidv4();
+
         if (checked) {
+            setLoading(true);
             if (selectedFolder.id) {
                 const type = 'file';
                 let parentFolderNames;
@@ -227,7 +232,10 @@ export default function UrlEditor({ onInputSend }) {
                         setBreadCrumbs(parentFolderNames);
                     });
             }
+            setLoading(false);
+            setOpen(false);
         } else {
+            setLoading(true);
             if (api.parentFolderId === '0') {
                 await axios.post(process.env.REACT_APP_API_URL + endpoint.collectionDirectory, {
                     userId: userId,
@@ -237,18 +245,9 @@ export default function UrlEditor({ onInputSend }) {
                     parentFolderId: selectedFolder.id,
                 });
             } else {
-                const currentDate = new Date();
-                const formattedDateTime = currentDate.toLocaleString('en-GB', {
-                    day: '2-digit',
-                    month: '2-digit',
-                    year: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    second: '2-digit',
-                });
                 await axios.put(process.env.REACT_APP_API_URL + endpoint.collectionDirectory + `/${userId}/${api.id}`, {
+                    name: fileName ? fileName : 'New Request',
                     parentFolderId: selectedFolder.id,
-                    modifiedAt: formattedDateTime,
                 });
             }
             const type = 'file';
@@ -313,8 +312,9 @@ export default function UrlEditor({ onInputSend }) {
                     });
                     setBreadCrumbs(parentFolderNames);
                 });
+            setLoading(false);
+            setOpen(false);
         }
-        setOpen(false);
     };
 
     const handleSaveClickOpen = () => {
@@ -431,6 +431,7 @@ export default function UrlEditor({ onInputSend }) {
                     </div>
                 </DialogActions>
             </Dialog>
+            {loading && <LoadingDialog />}
         </div>
     );
 }
