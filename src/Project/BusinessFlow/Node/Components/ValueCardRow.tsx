@@ -36,7 +36,7 @@ export const ValueCardRow = (props: ValueCardRowProps) => {
                                 required
                                 variant="outlined"
                                 disabled={disabled || nodeType === 'main'}
-                                sx={{ width: cardType === 'node' ? '140px' : '320px' }}
+                                sx={{ minWidth: cardType === 'node' ? '140px' : '245px' }}
                                 inputProps={{ ...params.inputProps, style: { height: '15px' } }}
                             />
                         )}
@@ -50,7 +50,7 @@ export const ValueCardRow = (props: ValueCardRowProps) => {
                         onChange={(e) => {
                             onChange({ key: e.target.value, value: data.value });
                         }}
-                        sx={{ minWidth: cardType === 'node' ? '140px' : '320px' }}
+                        sx={{ minWidth: cardType === 'node' ? '140px' : '245px' }}
                         inputProps={{ style: { height: '15px' } }}
                     />
                 )}
@@ -66,7 +66,7 @@ export const ValueCardRow = (props: ValueCardRowProps) => {
                         onChange({ key: data.key, value: e.target.value });
                     }}
                     sx={{
-                        width: cardType === 'node' ? '228px' : '690px',
+                        width: cardType === 'node' ? '228px' : '330px',
                     }}
                     inputProps={{ style: { height: '15px' } }}
                 />
