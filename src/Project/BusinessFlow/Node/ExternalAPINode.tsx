@@ -217,7 +217,7 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
     };
 
     useEffect(() => {
-        setSelectedNodeCardType(nodes.find((node: any) => node.id === selectedNode)?.type || '');
+        setSelectedNodeCardType(props.type ?? (nodes.find((node: any) => node.id === selectedNode)?.type || ''));
     }, [nodes, selectedNode]);
     function getUpdatedNodeDataFn() {
         const newNodeData = (_.isEmpty(props.data) ? {} : props.data) as NodeData;

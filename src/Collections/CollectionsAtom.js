@@ -71,7 +71,7 @@ export const currentTab = atom({
 });
 export const selectedType = atom({
     key: 'selectedType',
-    default: '',
+    default: { id: '0', type: 'folder' },
 });
 export const requestName = atom({
     key: 'requestName',
@@ -92,4 +92,8 @@ export const isSaveModalOpen = atom({
 export const recentRequest = atom({
     key: 'recentRequest',
     default: [],
+});
+export const folderContentLoading = atom({
+    key: 'folderContentLoading',
+    default: false,
 });

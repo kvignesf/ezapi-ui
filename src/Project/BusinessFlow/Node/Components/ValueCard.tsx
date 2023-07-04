@@ -11,11 +11,11 @@ export const ValueCard = (props: ValueCardProps): React.ReactElement => {
         disabled = false,
         onChange = () => {},
         onDone,
-        disableKey = false,
         isHeader = false,
         isDrawer = false,
         disableAdd = false,
         onSubmit = () => {},
+        disableKey = false,
         disableDelete = false,
         iconSelector = 'delete',
         cardType = 'node',
@@ -94,7 +94,7 @@ export const ValueCard = (props: ValueCardProps): React.ReactElement => {
                         )}
                         {!isEditor ? (
                             nodeType !== 'main' && (
-                                <Tooltip title="Bulk Edit" arrow placement={'top'}>
+                                <Tooltip title={disableAdd ? 'Editor View' : 'Bulk Edit'} arrow placement={'top'}>
                                     <Create
                                         sx={{ alignSelf: 'center', padding: '0 1px', cursor: 'pointer' }}
                                         onClick={() => {
@@ -154,8 +154,8 @@ export const ValueCard = (props: ValueCardProps): React.ReactElement => {
                                 key={index}
                                 nodeType={nodeType}
                                 data={item}
-                                disableKey={disableKey}
                                 onDone={onDone}
+                                disableKey={disableKey}
                                 isHeader={isHeader}
                                 cardType={cardType}
                                 onDelete={() => {
@@ -184,7 +184,6 @@ export const ValueCard = (props: ValueCardProps): React.ReactElement => {
                     {!disableAdd && nodeType !== 'main' && !isEditor && (
                         <Button
                             onClick={() => {
-                                const length = data.length;
                                 setData([
                                     ...data,
                                     {
