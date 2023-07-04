@@ -109,9 +109,6 @@ const MainNode = (props: MainNodeProps) => {
         });
         triggerDelayedNodeSaveOnServer(saveDelay);
     }
-    useEffect(() => {
-        console.log('rbd=>', requestBodyData);
-    }, [requestBodyData]);
 
     function transformObject(obj: any): any {
         if (obj === null) {
@@ -202,7 +199,6 @@ const MainNode = (props: MainNodeProps) => {
                 .then((response) => {
                     if (response.message == 'Ok') {
                         simulateAPI().then((response) => {
-                            console.log('inside useeffect where simulate is called');
                             setSimulateFailed(false);
                             setRequestBodyData(transformObject(response));
                             triggerDelayedNodeSaveOnServer(saveDelay);
@@ -264,7 +260,6 @@ const MainNode = (props: MainNodeProps) => {
     }, []);
 
     useEffect(() => {
-        console.log('inside useeffect 1', simulateFailed, savedNodeRB);
         if (simulateFailed) {
             setRequestBodyData(savedNodeRB);
             return;
@@ -291,8 +286,6 @@ const MainNode = (props: MainNodeProps) => {
         );
 
         if (JSON.stringify(requestBodyData) !== JSON.stringify(operationRequestBody)) {
-            console.log('inside useeffect 2', simulateFailed, operationRequestBody);
-
             setRequestBodyData(operationRequestBody);
             setStopTrigger(true);
         }
