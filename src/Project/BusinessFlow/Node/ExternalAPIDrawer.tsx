@@ -90,7 +90,7 @@ export const ExternalAPIDrawer = ({ cardId }: ExternalAPIDrawerProps) => {
     const [pathParams, setPathParams] = useState<KeyValueProps[]>(initialRunData.pathParams || []);
     const [runData, setRunData] = useState<ExternalAPI>(initialRunData);
     const [urlValue, setUrlValue] = useState<string>('');
-    const [displayedUrlValue, setDisplayedUrlValue] = useState(urlValue);
+    const [displayedUrlValue, setDisplayedUrlValue] = useState(initialRunData.url ?? '');
     const [explicitLoading, setExplicitLoading] = useState(false);
     const [isFocused, setIsFocused] = useState(false);
     const [value, setValue] = useState('0');
@@ -126,11 +126,43 @@ export const ExternalAPIDrawer = ({ cardId }: ExternalAPIDrawerProps) => {
     });
 
     function getUpdatedNodeDataFn() {
-        const newNodeData = (_.isEmpty(cardData) ? {} : cardData) as NodeData;
+        const newNodeData = (_.isEmpty(props.data) ? {} : props.data) as NodeData;
+        let updatedRunData;
+        setExplicitLoading(false);
+
+        if (runData.method !== 'GET') {
+            updatedRunData = {
+                ...runData,
+                url: displayedUrlValue,
+                pathParams: pathParams,
+                queryParams: queryParams,
+                headers: headers,
+                body: {
+                    data:
+                        typeof requestBodyData === 'object'
+                            ? requestBodyData
+                            : typeof requestBodyData === 'string' && checkValidJson(requestBodyData) === true
+                            ? JSON.parse(requestBodyData)
+                            : node?.data?.runData?.body?.data ?? {},
+                },
+                output: runData.output,
+            };
+        } else {
+            const { body, ...otherRunData } = runData;
+            updatedRunData = {
+                ...otherRunData,
+                url: displayedUrlValue,
+                pathParams: pathParams,
+                queryParams: queryParams,
+                headers: headers,
+                output: runData.output,
+            };
+        }
+
         return {
             ...newNodeData,
             commonData: commonData,
-            runData: { ...runData, pathParams: pathParams, queryParams: queryParams, headers: headers },
+            runData: updatedRunData,
         };
     }
     const prepareData = async () => {
@@ -528,15 +560,14 @@ export const ExternalAPIDrawer = ({ cardId }: ExternalAPIDrawerProps) => {
                             value={displayedUrlValue}
                             disabled={apiType === 'system' ? true : false}
                             onChange={(event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
-                                const inputValue = event.target.value as string;
-                                setDisplayedUrlValue(inputValue);
-                                setUrl(event.target.value as string);
+                                setDisplayedUrlValue(event.target.value as string);
+                                triggerDelayedNodeSaveOnServer(delayTimeSet);
                             }}
                             onFocus={() => setIsFocused(true)}
                             onBlur={() => setIsFocused(false)}
-                            // sx={{
-                            //     width: '538px',
-                            // }}
+                            sx={{
+                                width: '301px',
+                            }}
                             style={{ height: '50px' }}
                         />
                     </Stack>
