@@ -842,7 +842,7 @@ export const ExternalAPIDrawer = ({ cardId }: ExternalAPIDrawerProps) => {
                     </Stack>
                 )}
 
-                <Stack sx={{ padding: '24px 18px', width: '100%' }}>
+                <Stack sx={{ padding: '9px 11px', width: '100%' }}>
                     {runData.method !== 'GET' ? (
                         <>
                             <TabContext value={responseValue}>
@@ -855,11 +855,12 @@ export const ExternalAPIDrawer = ({ cardId }: ExternalAPIDrawerProps) => {
                                 <Stack width="100%">
                                     <TabPanel
                                         value={'0'}
+                                        sx={{ padding: '3px' }}
                                         key={`request-${runData?.output?.status || 0}-${executionNumber}`}
                                     >
                                         <ResponseTab
                                             onChange={(value: any) => {
-                                                if (checkValidJson(valued) === true) {
+                                                if (checkValidJson(value) === true) {
                                                     setRequestBodyData(value);
                                                     setIsJsonValid(true);
                                                 } else {
@@ -875,6 +876,7 @@ export const ExternalAPIDrawer = ({ cardId }: ExternalAPIDrawerProps) => {
                                     </TabPanel>
                                     <TabPanel
                                         value={'1'}
+                                        sx={{ padding: '3px' }}
                                         key={`response-${runData?.output?.status || 0}-${executionNumber}`}
                                     >
                                         <ResponseTab

@@ -436,7 +436,7 @@ export const AggregateMapping = ({
             <div className="p-4 border-b-1 flex flex-row justify-between">
                 <p className="text-subtitle1">Mapping</p>
                 {/*@ts-ignore */}
-                <AppIcon onClick={onClose}>
+                <AppIcon onClick={() => onClose('cancel')}>
                     {/*@ts-ignore */}
                     <CloseIcon />
                 </AppIcon>
@@ -517,7 +517,7 @@ export const AggregateMapping = ({
 
                 <TextButton
                     onClick={() => {
-                        onClose();
+                        onClose('cancel');
                     }}
                 >
                     Cancel
@@ -655,7 +655,7 @@ export const AggregateMapping = ({
 
                                 await saveAggregateMappings(requestData);
                             }
-                            onClose();
+                            onClose('save');
                         }
                     }}
                 >
