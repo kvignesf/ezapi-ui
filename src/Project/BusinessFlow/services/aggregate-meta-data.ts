@@ -42,7 +42,6 @@ export async function saveAggregateMetaData({ projectId, operationId, nodes, edg
     try {
         if (socket) {
             socket.emit('aggregateMetadata', requestData ?? null);
-            console.log('Data has been sent to the server via socket');
         }
     } catch (error) {
         console.log('An error occurred when sending the data:', error);

@@ -5,7 +5,7 @@ import filterAtom from '@/shared/atom/filterAtom';
 import responseMapperAtom from '@/shared/atom/reponseMapperAtom';
 import selectedNodeAtom from '@/shared/atom/selectedNodeAtom';
 import { operationAtomWithMiddleware } from '@/shared/utils';
-import { Drawer, Stack } from '@mui/material';
+import { CircularProgress, Drawer, Stack } from '@mui/material';
 import axios, { CancelTokenSource } from 'axios';
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router';
@@ -245,8 +245,6 @@ const Flow = () => {
 
     useEffect(() => {
         if (socket) {
-            console.log(socket);
-            console.log(socket.connected);
             socket.on('filterUpdateDone', (data: any) => {
                 if (data && data.cards) {
                     const targetIds = Object.keys(data.cards);
@@ -262,7 +260,6 @@ const Flow = () => {
     const [newNodeInfo, setNewNodeInfo] = useState<{ parentNode: Node | undefined; position: XYPosition } | null>(null);
 
     const undo = () => {
-        console.log('undo');
         const newCurrentIndex = currentIndex - 1;
 
         if (newCurrentIndex < 0) {
@@ -547,8 +544,10 @@ const Flow = () => {
                 edges={edges}
                 onNodesChange={onNodesChange}
                 onNodesDelete={(data: Node[]) => {
-                    setDeleteData(data);
-                    setDeletePopUp(true);
+                    if (data && data[0] && data[0].type !== 'mainNode') {
+                        setDeleteData(data);
+                        setDeletePopUp(true);
+                    }
                 }}
                 onEdgesChange={onEdgesChange}
                 onConnect={onConnect}
@@ -602,6 +601,7 @@ function BusinessFlow() {
                 initialNodes,
                 initialEdges,
                 isInitialStateLoaded: true,
+                setIsLoading,
             };
             const useStore = createStore({
                 ...newInitialStoreState,
@@ -629,8 +629,19 @@ function BusinessFlow() {
                     </ReactFlowProvider>
                 </BusinessFlowContext.Provider>
             ) : (
-                <Stack>
-                    <p>{'Loading...'}</p>
+                <Stack
+                    sx={{
+                        width: '100%',
+                        height: '100%',
+                        background: canvasBackgroundColor,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                    }}
+                    gap={2}
+                >
+                    <CircularProgress size={50} />
+                    <p style={{ color: connectionLineStrokeColor, fontSize: '20px' }}>{'Loading...'}</p>
+                    <div style={{ height: '30px' }} />
                 </Stack>
             )}
         </div>

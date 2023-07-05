@@ -652,15 +652,22 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                                 />
                             </TabList>
                         </Stack>
-                        <TabPanel value={'0'}>
+                        <TabPanel
+                            value={'0'}
+                            key={
+                                runData?.headers?.length
+                                    ? runData.headers[runData.headers.length - 1].key
+                                    : 'headers panel'
+                            }
+                        >
                             <ValueCard
                                 isHeader={true}
                                 value={headers}
                                 disabled={apiType === 'system' ? true : false}
                                 onChange={(newHeaders: KeyValueProps[]) => {
                                     if (!newHeaders) return;
+                                    setHeaders(newHeaders);
                                     if (!_.isEqual(newHeaders, headers)) {
-                                        setHeaders(newHeaders);
                                         triggerDelayedNodeSaveOnServer(delayTimeSet);
                                     }
                                 }}
@@ -679,8 +686,8 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                                 disabled={apiType === 'system' ? true : false}
                                 onChange={(newQueryParams: KeyValueProps[]) => {
                                     if (!newQueryParams) return;
+                                    setQueryParams(newQueryParams);
                                     if (!_.isEqual(newQueryParams, queryParams)) {
-                                        setQueryParams(newQueryParams);
                                         triggerDelayedNodeSaveOnServer(delayTimeSet);
                                     }
                                 }}
@@ -702,8 +709,8 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                                 disabled={apiType === 'system' ? true : false}
                                 onChange={(newPathParams: KeyValueProps[]) => {
                                     if (!newPathParams) return;
+                                    setPathParams(newPathParams);
                                     if (!_.isEqual(newPathParams, pathParams)) {
-                                        setPathParams(newPathParams);
                                         triggerDelayedNodeSaveOnServer(delayTimeSet);
                                     }
                                 }}
@@ -718,8 +725,6 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                                     if (checkValidJson(value) === true) {
                                         setRequestBodyData(value);
                                         setIsJsonValid(true);
-                                    } else {
-                                        setIsJsonValid(false);
                                     }
                                     triggerDelayedNodeSaveOnServer(delayTimeSet);
                                 }}
