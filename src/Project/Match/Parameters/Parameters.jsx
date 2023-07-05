@@ -94,7 +94,6 @@ const ParametersEditor = ({ projectType, parameters, isFetchingParameters, getPa
     };
 
     useEffect(() => {
-        console.log('data=>', parameters);
         if (parameters) {
             setValue(parametersToCsv(parameters));
         }
@@ -345,7 +344,6 @@ const ParametersGrid = ({ parameters, projectType, isFetchingParameters, getPara
                                 }}
                             >
                                 {parameters?.map((param) => {
-                                    //console.log("eachParam:",param);
                                     return (
                                         <ParamRow projectType={projectType} param={param} entireParam={parameters} />
                                     );
@@ -382,7 +380,6 @@ const ParamRow = ({ projectType, param, entireParam }) => {
     );
     const [editParameter, setEditParameter] = useState(false);
 
-    //console.log("editPar:",editParameter);
     const [dialog, setDialog] = useState({
         show: false,
         type: null,
@@ -418,7 +415,6 @@ const ParamRow = ({ projectType, param, entireParam }) => {
     const handleEditParameter = () => {
         setEditParameter(false);
     };
-    //console.log("check:",param);
     return (
         <div
             ref={canEdit() ? drag : null}

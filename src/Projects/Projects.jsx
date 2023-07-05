@@ -809,7 +809,6 @@ const Content = ({ showCreateProjectDialog }) => {
     useEffect(() => {
         // Fetch items from another resources.
         const endOffset = itemOffset + itemsPerPage;
-        console.log(`Loading items from ${itemOffset} to ${endOffset}`);
         setCurrentItems(projects?.slice(itemOffset, endOffset));
         setPageCount(Math.ceil(projects?.length / itemsPerPage));
     }, [itemOffset, itemsPerPage, projects]);
@@ -817,7 +816,6 @@ const Content = ({ showCreateProjectDialog }) => {
     const handlePageClick = (event) => {
         sessionStorage.setItem('pageIndex', event.selected);
         const newOffset = (event.selected * itemsPerPage) % projects.length;
-        console.log(`User requested page number ${event.selected}, which is offset ${newOffset}`);
         setItemOffset(newOffset);
     };
 
