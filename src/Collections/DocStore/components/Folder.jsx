@@ -11,7 +11,8 @@ import EditIcon from '@mui/icons-material/Edit';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import axios from 'axios';
 import React, { useEffect, useRef, useState } from 'react';
-import { useRecoilState, useSetRecoilState } from 'recoil';
+import { ThreeDots } from 'react-loader-spinner';
+import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
 import { v4 as uuidv4 } from 'uuid';
 import { endpoint } from '../../../shared/network/client';
 import { getUserId } from '../../../shared/storage';
@@ -20,6 +21,7 @@ import {
     currentBreadCrumbs,
     currentTab,
     currentTabs,
+    folderContentLoading,
     requestParams,
     responseInfo,
 } from '../../CollectionsAtom';
@@ -122,9 +124,11 @@ export default function Folder({ id, parentId, onDelete, selected, onSelect, onR
     const setCurrentTab = useSetRecoilState(currentTab);
     const setRequest = useSetRecoilState(requestParams);
     const setResponse = useSetRecoilState(responseInfo);
-    const setCurrentApi = useSetRecoilState(currentApi);
+    const [api, setCurrentApi] = useRecoilState(currentApi);
     const setBreadCrumbs = useSetRecoilState(currentBreadCrumbs);
     const [loading, setLoading] = useState(false);
+    const [processing, setProcessing] = useState(false);
+    const dataLoading = useRecoilValue(folderContentLoading);
 
     const handleOptionClick = (event) => {
         setAnchorEl(event.currentTarget);
@@ -136,6 +140,7 @@ export default function Folder({ id, parentId, onDelete, selected, onSelect, onR
     const addFile = async () => {
         const parentId = id;
         const newId = uuidv4();
+        setProcessing(true);
         const newFile = (
             <File
                 key={newId}
@@ -176,7 +181,7 @@ export default function Folder({ id, parentId, onDelete, selected, onSelect, onR
                 method: 'GET',
                 proxy: 'No Proxy',
                 url: '',
-                body: {},
+                body: { '': '' },
                 header: [],
                 queryParams: [],
             },
@@ -187,6 +192,7 @@ export default function Folder({ id, parentId, onDelete, selected, onSelect, onR
             createdAt: formattedDateTime,
             modifiedAt: formattedDateTime,
         });
+        setProcessing(false);
     };
 
     const addFolder = async () => {
@@ -343,58 +349,73 @@ export default function Folder({ id, parentId, onDelete, selected, onSelect, onR
     }, []);
 
     useEffect(() => {
-        if (loading === false && collapsed === false && selected.type === 'folder') {
+        let isMounted = true; // Add a flag to track component mount status
+
+        if (loading === false && collapsed === false && processing === false) {
             const handleSelect = async () => {
                 const type = selected.type;
                 let requestFiles;
-                await axios
-                    .get(process.env.REACT_APP_API_URL + endpoint.collectionsRequest + `/${userId}`)
-                    .then((res) => {
-                        requestFiles = res.data;
+                try {
+                    const res1 = await axios.get(
+                        process.env.REACT_APP_API_URL + endpoint.collectionsRequest + `/${userId}`,
+                    );
+                    requestFiles = res1.data;
+
+                    const response = await axios.get(
+                        process.env.REACT_APP_API_URL + endpoint.collectionDirectory + `/${userId}/${type}/${id}`,
+                    );
+                    const children = response.data.data;
+                    const childComponents = children.map((child) => {
+                        if (child.type === 'File') {
+                            let reqFile = requestFiles.filter((file) => file.id === child.id);
+                            let reqObject = reqFile[0]?.request;
+                            return (
+                                <File
+                                    key={child.id}
+                                    id={child.id}
+                                    parentId={id}
+                                    onDelete={deleteChild}
+                                    selected={selected}
+                                    onSelect={onSelect}
+                                    name={child.name}
+                                    onRename={onRename}
+                                    reqMethod={reqObject ? reqObject.method : null}
+                                    reqUrl={reqObject ? reqObject.url : null}
+                                />
+                            );
+                        } else if (child.type === 'Folder') {
+                            return (
+                                <Folder
+                                    key={child.id}
+                                    id={child.id}
+                                    parentId={id}
+                                    onDelete={deleteChild}
+                                    selected={selected}
+                                    onSelect={onSelect}
+                                    name={child.name}
+                                    onRename={onRename}
+                                />
+                            );
+                        }
                     });
-                await axios
-                    .get(process.env.REACT_APP_API_URL + endpoint.collectionDirectory + `/${userId}/${type}/${id}`)
-                    .then((response) => {
-                        const children = response['data'].data;
-                        const childComponents = children.map((child) => {
-                            if (child.type === 'File') {
-                                let reqFile = requestFiles.filter((file) => file.id === child.id);
-                                let reqObject = reqFile[0]?.request;
-                                return (
-                                    <File
-                                        key={child.id}
-                                        id={child.id}
-                                        parentId={id}
-                                        onDelete={deleteChild}
-                                        selected={selected}
-                                        onSelect={onSelect}
-                                        name={child.name}
-                                        onRename={onRename}
-                                        reqMethod={reqObject ? reqObject.method : null}
-                                        reqUrl={reqObject ? reqObject.url : null}
-                                    />
-                                );
-                            } else if (child.type === 'Folder') {
-                                return (
-                                    <Folder
-                                        key={child.id}
-                                        id={child.id}
-                                        parentId={id}
-                                        onDelete={deleteChild}
-                                        selected={selected}
-                                        onSelect={onSelect}
-                                        name={child.name}
-                                        onRename={onRename}
-                                    />
-                                );
-                            }
-                        });
+
+                    if (isMounted) {
                         setChildComponents(childComponents);
-                    });
+                    }
+                } catch (error) {
+                    // Handle error
+                    console.log(error);
+                }
             };
+
             handleSelect();
         }
-    }, [saveModalOpen, selected]);
+
+        // Cleanup function
+        return () => {
+            isMounted = false; // Update the mount status when the component is unmounted
+        };
+    }, [saveModalOpen, collapsed, api, dataLoading]);
 
     const fileClass = id === selected.id ? classes.selectedFile : classes.root;
 
@@ -481,18 +502,22 @@ export default function Folder({ id, parentId, onDelete, selected, onSelect, onR
             </div>
             {collapsed === true && (editing === true || editing === false) ? null : (
                 <div style={{ paddingLeft: '20px' }}>
-                    {childComponents.map((component) => (
-                        <div key={component.props.id}>
-                            {React.cloneElement(component, {
-                                onDelete: deleteChild,
-                                onSelect: onSelect,
-                                selected: selected,
-                                onRename: onRename,
-                                isModal: isModal,
-                                saveModalOpen: saveModalOpen,
-                            })}
-                        </div>
-                    ))}
+                    {dataLoading ? (
+                        <ThreeDots height="20" width="20" color="grey" visible={true} />
+                    ) : (
+                        childComponents.map((component) => (
+                            <div key={component.props.id}>
+                                {React.cloneElement(component, {
+                                    onDelete: deleteChild,
+                                    onSelect: onSelect,
+                                    selected: selected,
+                                    onRename: onRename,
+                                    isModal: isModal,
+                                    saveModalOpen: saveModalOpen,
+                                })}
+                            </div>
+                        ))
+                    )}
                 </div>
             )}
         </div>

@@ -533,7 +533,7 @@ const Flow = () => {
                 PaperProps={{
                     style: {
                         height: '100%',
-                        width: '66%',
+                        width: '55%',
                         position: 'absolute',
                     },
                 }}
