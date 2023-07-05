@@ -160,6 +160,7 @@ export const ValueCard = (props: ValueCardProps): React.ReactElement => {
                                 cardType={cardType}
                                 onDelete={() => {
                                     const updatedData = data.filter((value, index2) => value && index !== index2);
+                                    console.log(data.filter((value, index2) => value && index !== index2));
                                     onChange(updatedData);
                                 }}
                                 disabled={disabled}

@@ -5,7 +5,7 @@ import filterAtom from '@/shared/atom/filterAtom';
 import responseMapperAtom from '@/shared/atom/reponseMapperAtom';
 import selectedNodeAtom from '@/shared/atom/selectedNodeAtom';
 import { operationAtomWithMiddleware } from '@/shared/utils';
-import { Drawer } from '@mui/material';
+import { Drawer, Stack } from '@mui/material';
 import axios, { CancelTokenSource } from 'axios';
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router';
@@ -55,6 +55,8 @@ import { DEFAULT_BUSINESS_FLOW_STATE } from './defaults';
 import './index.css';
 import { IBusinessFlow } from './interfaces';
 import { NewAggregateCard } from './interfaces/aggregate-cards'; */
+import loaderAtom from '@/shared/atom/loaderAtom';
+import ConfirmDialog from '@/shared/components/ConfirmDialog';
 import { createAggregateCard, fetchAggregateMetaData, fetchNodeFromServer } from './services';
 import createStore, { MyReactFlowState, getInputNodeIdsFromNode } from './store';
 import { prepareNodeFromAggregateCard, prepareNodeFromAggregateCardResponse } from './transformers';
@@ -211,11 +213,14 @@ const Flow = () => {
     const [openFilterDrawer, setOpenFilterDrawer] = useState(false);
     const [selectBranchQuery, setSelectBranchQuery] = useState(false);
     const [showAPIDrawer, setShowAPIDrawer] = useState(false);
+    const [deletePopUp, setDeletePopUp] = useState(false);
+    const [deleteData, setDeleteData] = useState<Node[]>();
     const [selectedNode, setSelectedNode] = useRecoilState(selectedNodeAtom);
     const [selectedBranchCondition, setSelectedBranchCondition] = useRecoilState(branchQueryAtom);
     const [selectedCard, setSelectedCard] = useRecoilState(drawerCardAtom);
     const [showResponseMapping, setShowResponseMapping] = useRecoilState(responseMapperAtom);
     const [filterType, setFilterType] = useRecoilState(filterAtom);
+    const [isLoading, setIsLoading] = useRecoilState(loaderAtom);
     const { project, fitView } = useReactFlow();
     const reactFlowWrapper = useRef<HTMLInputElement>(null);
     const connectionStartParams = useRef<OnConnectStartParams | null>(null);
@@ -244,7 +249,6 @@ const Flow = () => {
             console.log(socket.connected);
             socket.on('filterUpdateDone', (data: any) => {
                 if (data && data.cards) {
-                    console.log(data);
                     const targetIds = Object.keys(data.cards);
                     targetIds.map((id) => {
                         const node = prepareNodeFromAggregateCardResponse(data.cards[`${id}`]);
@@ -258,6 +262,7 @@ const Flow = () => {
     const [newNodeInfo, setNewNodeInfo] = useState<{ parentNode: Node | undefined; position: XYPosition } | null>(null);
 
     const undo = () => {
+        console.log('undo');
         const newCurrentIndex = currentIndex - 1;
 
         if (newCurrentIndex < 0) {
@@ -379,6 +384,20 @@ const Flow = () => {
 
     return (
         <div className="wrapper" ref={reactFlowWrapper}>
+            {deletePopUp && (
+                <ConfirmDialog
+                    title={'Delete Node'}
+                    description={'Are you sure you want to delete the node? Once deleted you cant get it back.'}
+                    onCancel={() => {
+                        setDeletePopUp(false);
+                    }}
+                    onConfirm={() => {
+                        onNodesDelete(deleteData!);
+                        setDeletePopUp(false);
+                        setIsLoading(true);
+                    }}
+                />
+            )}
             <Drawer
                 anchor={'right'}
                 open={openMappingDrawer || showResponseMapping}
@@ -527,7 +546,10 @@ const Flow = () => {
                 nodes={nodes}
                 edges={edges}
                 onNodesChange={onNodesChange}
-                onNodesDelete={onNodesDelete}
+                onNodesDelete={(data: Node[]) => {
+                    setDeleteData(data);
+                    setDeletePopUp(true);
+                }}
                 onEdgesChange={onEdgesChange}
                 onConnect={onConnect}
                 onConnectStart={onConnectStart}
@@ -549,7 +571,8 @@ const Flow = () => {
 
 function BusinessFlow() {
     const [initialState, setInitialState] = useState<IBusinessFlow>({ ...DEFAULT_BUSINESS_FLOW_STATE });
-    const [isLoading, setIsLoading] = useState<boolean>(false);
+
+    const [isLoading, setIsLoading] = useRecoilState(loaderAtom);
 
     const { projectId = '' }: { projectId: string } = useParams();
     const [operationData, _] = useRecoilState(operationAtomWithMiddleware);
@@ -606,7 +629,9 @@ function BusinessFlow() {
                     </ReactFlowProvider>
                 </BusinessFlowContext.Provider>
             ) : (
-                <p>{'Loading...'}</p>
+                <Stack>
+                    <p>{'Loading...'}</p>
+                </Stack>
             )}
         </div>
     );
