@@ -6,6 +6,8 @@ import { Box, Checkbox, FormControlLabel } from '@mui/material';
 import _ from 'lodash';
 import { useEffect, useState } from 'react';
 import { useRecoilValue } from 'recoil';
+import LoaderWithMessage from '../../../../shared/components/LoaderWithMessage';
+
 import { ConvertResponseData, structureBodyForMapping, structureFormData } from '../../businessFlowHelper';
 import {
     getMappingData,
@@ -90,6 +92,7 @@ export const AggregateMapping = ({
     const [currentNodeData, setCurrentNodeData] = useState<TreeNode>();
     const [parentNodeData, setParentNodeData] = useState<TreeNode[]>();
     const [selectedNode, setSelectedNode] = useState<TreeNode>();
+    const [isLoading, setIsLoading] = useState(true);
 
     const [selectedParent, setSelectedParent] = useState<TreeNode>();
     const [selectedData, setSelectedData] = useState<MappingData[]>([]);
@@ -425,7 +428,14 @@ export const AggregateMapping = ({
     };
 
     useEffect(() => {
-        prepareData(selectedNodeCardType ?? '');
+        setIsLoading(true);
+        prepareData(selectedNodeCardType ?? '')
+            .then(() => {
+                setIsLoading(false);
+            })
+            .catch((error) => {
+                console.log(error);
+            });
     }, []);
 
     return (
@@ -441,76 +451,81 @@ export const AggregateMapping = ({
                     <CloseIcon />
                 </AppIcon>
             </div>
-            <div
-                style={{
-                    flexGrow: 1,
-                    overflow: 'auto',
-                    display: 'flex',
-                    flexDirection: 'row',
-                    padding: '16px',
-                    flexWrap: 'nowrap',
-                }}
-            >
-                <div style={{ flex: '20%', marginRight: '16px' }}>
-                    <p className="text-neutral-gray2 mb-4" style={{ marginRight: '12px', fontWeight: 600 }}>
-                        Current Node
-                    </p>
-                    {currentNodeData && (
-                        <MappingTree
-                            disable={selectedData.length === 0}
-                            data={currentNodeData}
-                            onSelect={(data: TreeNode) => {
-                                setSelectedNode(data);
+
+            {isLoading ? (
+                <LoaderWithMessage message="Loading data" />
+            ) : (
+                <div
+                    style={{
+                        flexGrow: 1,
+                        overflow: 'auto',
+                        display: 'flex',
+                        flexDirection: 'row',
+                        padding: '16px',
+                        flexWrap: 'nowrap',
+                    }}
+                >
+                    <div style={{ flex: '20%', marginRight: '16px' }}>
+                        <p className="text-neutral-gray2 mb-4" style={{ marginRight: '12px', fontWeight: 600 }}>
+                            Current Node
+                        </p>
+                        {currentNodeData && (
+                            <MappingTree
+                                disable={selectedData.length === 0}
+                                data={currentNodeData}
+                                onSelect={(data: TreeNode) => {
+                                    setSelectedNode(data);
+                                }}
+                            />
+                        )}
+                    </div>
+                    <div style={{ flex: '60%', margin: '0 16px' }}>
+                        <p className="text-neutral-gray2 mb-4" style={{ marginRight: '12px', fontWeight: 600 }}>
+                            Map Response Element
+                        </p>
+                        <MappingResponse
+                            key={'mapping-response'}
+                            data={selectedData}
+                            onDelete={(dataAfterDelete: MappingData[]) => {
+                                setSelectedData(dataAfterDelete);
+                            }}
+                            onAdd={() => {
+                                const newData = selectedData;
+                                newData.push({
+                                    parent: '',
+                                    id: '',
+                                    relationId: '',
+                                    name: '',
+                                    ref: '',
+                                    relationRef: '',
+                                    relationName: '',
+                                    relationNode: '',
+                                    relationParent: '',
+                                    type: '',
+                                });
+                                setSelectedData(newData);
+                                setTriggerUpdate(!triggerUpdate);
                             }}
                         />
-                    )}
+                    </div>
+                    <div style={{ flex: '20%', marginLeft: '16px' }}>
+                        <p className="text-neutral-gray2 mb-4" style={{ marginRight: '12px', fontWeight: 600 }}>
+                            Aggregate API
+                        </p>
+                        {parentNodeData && (
+                            <MappingTree
+                                // key={`${selectedData.length} + ${triggerUpdate}`}
+                                disable={selectedData.length === 0}
+                                data={parentNodeData}
+                                isCurrentNode={false}
+                                onSelect={(data: TreeNode) => {
+                                    setSelectedParent(data);
+                                }}
+                            />
+                        )}
+                    </div>
                 </div>
-                <div style={{ flex: '60%', margin: '0 16px' }}>
-                    <p className="text-neutral-gray2 mb-4" style={{ marginRight: '12px', fontWeight: 600 }}>
-                        Map Response Element
-                    </p>
-                    <MappingResponse
-                        key={'mapping-response'}
-                        data={selectedData}
-                        onDelete={(dataAfterDelete: MappingData[]) => {
-                            setSelectedData(dataAfterDelete);
-                        }}
-                        onAdd={() => {
-                            const newData = selectedData;
-                            newData.push({
-                                parent: '',
-                                id: '',
-                                relationId: '',
-                                name: '',
-                                ref: '',
-                                relationRef: '',
-                                relationName: '',
-                                relationNode: '',
-                                relationParent: '',
-                                type: '',
-                            });
-                            setSelectedData(newData);
-                            setTriggerUpdate(!triggerUpdate);
-                        }}
-                    />
-                </div>
-                <div style={{ flex: '20%', marginLeft: '16px' }}>
-                    <p className="text-neutral-gray2 mb-4" style={{ marginRight: '12px', fontWeight: 600 }}>
-                        Aggregate API
-                    </p>
-                    {parentNodeData && (
-                        <MappingTree
-                            // key={`${selectedData.length} + ${triggerUpdate}`}
-                            disable={selectedData.length === 0}
-                            data={parentNodeData}
-                            isCurrentNode={false}
-                            onSelect={(data: TreeNode) => {
-                                setSelectedParent(data);
-                            }}
-                        />
-                    )}
-                </div>
-            </div>
+            )}
 
             <div className="p-4 border-t-1 flex flex-row justify-between" style={{ flexShrink: 0 }}>
                 {/*@ts-ignore */}

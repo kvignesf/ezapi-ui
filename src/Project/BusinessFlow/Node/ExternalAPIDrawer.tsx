@@ -6,6 +6,7 @@ import { CircularProgress, Tooltip } from '@material-ui/core';
 import { Add } from '@material-ui/icons';
 import buildURL from 'axios/lib/helpers/buildURL';
 import Qs from 'qs';
+import LoaderWithMessage from '../../../shared/components/LoaderWithMessage';
 
 import CloudUploadIcon from '@material-ui/icons/CloudUpload';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
@@ -822,115 +823,127 @@ export const ExternalAPIDrawer = ({ cardId }: ExternalAPIDrawerProps) => {
             </Stack>
 
             <Stack sx={{ overflow: 'auto', height: '100%', width: '100%' }} id="scroll">
-                {renderAPINodeBody()}
+                {isLoading && <LoaderWithMessage message="Loading data" className="mb-5" />}
 
-                {(isLoading || isExecuting) && (
-                    <Stack>
-                        <Typography
-                            sx={{
-                                fontSize: '16px',
-                                alignSelf: 'center',
-                                marginBottom: '0',
-                                fontWeight: 600,
-                                paddingLeft: '8px',
-                            }}
-                            color="text.primary"
-                            gutterBottom
-                        >
-                            {'Loading...'}
-                        </Typography>
-                    </Stack>
-                )}
+                {!isLoading && (
+                    <>
+                        {renderAPINodeBody()}
 
-                <Stack sx={{ padding: '9px 11px', width: '100%' }}>
-                    {runData.method !== 'GET' ? (
-                        <>
-                            <TabContext value={responseValue}>
-                                <Stack direction="row" sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                                    <TabList onChange={handleResponseChange} aria-label="lab API tabs responses">
-                                        <Tab label="Request" value={'0'} />
-                                        <Tab label="Response" value={'1'} />
-                                    </TabList>
-                                </Stack>
-                                <Stack width="100%">
-                                    <TabPanel
-                                        value={'0'}
-                                        sx={{ padding: '3px' }}
-                                        key={`request-${runData?.output?.status || 0}-${executionNumber}`}
-                                    >
-                                        <ResponseTab
-                                            onChange={(value: any) => {
-                                                if (checkValidJson(value) === true) {
-                                                    setRequestBodyData(value);
-                                                    setIsJsonValid(true);
-                                                } else {
-                                                    setIsJsonValid(false);
-                                                }
-                                                triggerDelayedNodeSaveOnServer(delayTimeSet);
-                                            }}
-                                            isError={isError}
-                                            isResponse={false}
-                                            value={requestBodyData || {}}
-                                            disabled={apiType === 'system' ? true : false}
-                                        />
-                                    </TabPanel>
-                                    <TabPanel
-                                        value={'1'}
-                                        sx={{ padding: '3px' }}
+                        {(isLoading || isExecuting) && (
+                            <Stack>
+                                <Typography
+                                    sx={{
+                                        fontSize: '16px',
+                                        alignSelf: 'center',
+                                        marginBottom: '0',
+                                        fontWeight: 600,
+                                        paddingLeft: '8px',
+                                    }}
+                                    color="text.primary"
+                                    gutterBottom
+                                >
+                                    {'Loading...'}
+                                </Typography>
+                            </Stack>
+                        )}
+
+                        <Stack sx={{ padding: '9px 11px', width: '100%' }}>
+                            {runData.method !== 'GET' ? (
+                                <>
+                                    <TabContext value={responseValue}>
+                                        <Stack direction="row" sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                                            <TabList
+                                                onChange={handleResponseChange}
+                                                aria-label="lab API tabs responses"
+                                            >
+                                                <Tab label="Request" value={'0'} />
+                                                <Tab label="Response" value={'1'} />
+                                            </TabList>
+                                        </Stack>
+                                        <Stack width="100%">
+                                            <TabPanel
+                                                value={'0'}
+                                                sx={{ padding: '3px' }}
+                                                key={`request-${runData?.output?.status || 0}-${executionNumber}`}
+                                            >
+                                                <ResponseTab
+                                                    onChange={(value: any) => {
+                                                        if (checkValidJson(value) === true) {
+                                                            setRequestBodyData(value);
+                                                            setIsJsonValid(true);
+                                                        } else {
+                                                            setIsJsonValid(false);
+                                                        }
+                                                        triggerDelayedNodeSaveOnServer(delayTimeSet);
+                                                    }}
+                                                    isError={isError}
+                                                    isResponse={false}
+                                                    value={requestBodyData || {}}
+                                                    disabled={apiType === 'system' ? true : false}
+                                                />
+                                            </TabPanel>
+                                            <TabPanel
+                                                value={'1'}
+                                                sx={{ padding: '3px' }}
+                                                key={`response-${runData?.output?.status || 0}-${executionNumber}`}
+                                            >
+                                                <ResponseTab
+                                                    message={runData?.output?.status?.toString()}
+                                                    isError={runData?.output?.status != 200}
+                                                    value={runData?.output?.data}
+                                                    disabled={apiType === 'system' ? true : false}
+                                                />
+                                            </TabPanel>
+                                        </Stack>
+                                    </TabContext>
+                                </>
+                            ) : (
+                                <TabContext value={'0'}>
+                                    <Stack direction="row" sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                                        <TabList
+                                            onChange={handleResponseChange}
+                                            aria-label="lab API tabs responses"
+                                            TabIndicatorProps={{ style: { display: 'none' } }}
+                                        >
+                                            <Tab
+                                                label="Response"
+                                                value={'0'}
+                                                sx={{
+                                                    borderBottom: responseValue === '0' ? '2px solid #1976d2' : '',
+                                                    color: responseValue === '0' ? '#1976d2' : '',
+                                                }}
+                                            />
+                                        </TabList>
+                                    </Stack>
+                                    <Stack
+                                        width="100%"
                                         key={`response-${runData?.output?.status || 0}-${executionNumber}`}
                                     >
                                         <ResponseTab
                                             message={runData?.output?.status?.toString()}
                                             isError={runData?.output?.status != 200}
+                                            isResponse={true}
                                             value={runData?.output?.data}
                                             disabled={apiType === 'system' ? true : false}
                                         />
-                                    </TabPanel>
-                                </Stack>
-                            </TabContext>
-                        </>
-                    ) : (
-                        <TabContext value={'0'}>
-                            <Stack direction="row" sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                                <TabList
-                                    onChange={handleResponseChange}
-                                    aria-label="lab API tabs responses"
-                                    TabIndicatorProps={{ style: { display: 'none' } }}
-                                >
-                                    <Tab
-                                        label="Response"
-                                        value={'0'}
-                                        sx={{
-                                            borderBottom: responseValue === '0' ? '2px solid #1976d2' : '',
-                                            color: responseValue === '0' ? '#1976d2' : '',
-                                        }}
-                                    />
-                                </TabList>
-                            </Stack>
-                            <Stack width="100%" key={`response-${runData?.output?.status || 0}-${executionNumber}`}>
-                                <ResponseTab
-                                    message={runData?.output?.status?.toString()}
-                                    isError={runData?.output?.status != 200}
-                                    isResponse={true}
-                                    value={runData?.output?.data}
-                                    disabled={apiType === 'system' ? true : false}
-                                />
-                            </Stack>
-                        </TabContext>
-                    )}
-                </Stack>
-                <Stack sx={{ padding: '0 16px 16px' }} alignItems={'flex-start'}>
-                    <Button
-                        sx={{ width: 'fit-content' }}
-                        onClick={() => {
-                            setSelectedNode(cardId);
-                        }}
-                        variant="outlined"
-                        startIcon={<Add />}
-                    >
-                        Add Mapping
-                    </Button>
-                </Stack>
+                                    </Stack>
+                                </TabContext>
+                            )}
+                        </Stack>
+                        <Stack sx={{ padding: '0 16px 16px' }} alignItems={'flex-start'}>
+                            <Button
+                                sx={{ width: 'fit-content' }}
+                                onClick={() => {
+                                    setSelectedNode(cardId);
+                                }}
+                                variant="outlined"
+                                startIcon={<Add />}
+                            >
+                                Add Mapping
+                            </Button>
+                        </Stack>
+                    </>
+                )}
             </Stack>
         </Stack>
     );

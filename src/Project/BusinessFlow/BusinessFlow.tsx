@@ -508,6 +508,7 @@ const Flow = () => {
                 anchor={'right'}
                 open={showAPIDrawer}
                 onClose={() => {
+                    console.log('closing');
                     setShowAPIDrawer(false);
                     setSelectedCard('');
                 }}
