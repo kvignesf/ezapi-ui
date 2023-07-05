@@ -182,7 +182,7 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
     const [responseValue, setResponseValue] = useState<string>(props.data.runData?.output?.success ? '1' : '0');
     const [viewMore, setViewMore] = useState<boolean>(false);
     const [executionNumber, setExecutionNumber] = useState<number>(0);
-    const delayTimeSet = 2500;
+    const delayTimeSet = 3500;
     const {
         node,
         isLoading,
@@ -454,11 +454,13 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
         }
     }, [node]);
 
-    useEffect(() => {
-        if (!selectedNode && collapse) {
-            loadNodeDataFromServer();
-        }
-    }, [selectedNode]);
+    // useEffect(() => {
+    //     console.log('collapse:', collapse);
+    //     if (!selectedNode && collapse) {
+    //         console.log('get api');
+    //         loadNodeDataFromServer();
+    //     }
+    // }, [collapse]);
 
     useEffect(() => {
         if (props && !_.isEmpty(props.data.commonData)) {
@@ -470,13 +472,16 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
             setRunData({
                 ...props.data.runData,
             });
+            setDisplayedUrlValue(props.data.runData.url ?? '');
+            setHeaders(props.data.runData.headers ?? []);
+            setQueryParams(props.data.runData.queryParams ?? []);
+            setPathParams(props.data.runData.pathParams ?? []);
+            setRequestBodyData(props.data.runData.body?.data ?? {});
             const outputInfo = props.data.runData?.output;
             const hasResponse = Boolean(outputInfo && outputInfo.status && outputInfo.status > 0);
-            // if (hasResponse) {
-            //     setShowResponse(hasResponse);
-            //     setResponseValue('1');
-            // }
-            setRequestBodyData(props.data.runData?.body?.data);
+            if (hasResponse) {
+                setShowResponse(hasResponse);
+            }
         }
     }, [props]);
 
@@ -927,7 +932,7 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                                     >
                                         <ResponseTab
                                             message={''}
-                                            isError={isError}
+                                            isError={runData?.output?.status != 200 && runData?.output?.status != 0}
                                             isResponse={false}
                                             value={requestBodyData || {}}
                                             disabled={apiType === 'system' ? true : false}
@@ -949,7 +954,7 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                                     >
                                         <ResponseTab
                                             message={runData?.output?.status?.toString()}
-                                            isError={runData?.output?.status != 200}
+                                            isError={runData?.output?.status != 200 && runData?.output?.status != 0}
                                             value={runData?.output?.data}
                                             disabled={apiType === 'system' ? true : false}
                                         />
@@ -978,7 +983,7 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                             <Stack width="100%" key={`response-${runData?.output?.status || 0}-${executionNumber}`}>
                                 <ResponseTab
                                     message={runData?.output?.status?.toString()}
-                                    isError={runData?.output?.status != 200}
+                                    isError={runData?.output?.status != 200 && runData?.output?.status != 0}
                                     isResponse={true}
                                     value={runData?.output?.data}
                                     disabled={apiType === 'system' ? true : false}

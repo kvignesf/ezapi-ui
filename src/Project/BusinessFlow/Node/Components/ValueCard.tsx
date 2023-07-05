@@ -57,7 +57,7 @@ export const ValueCard = (props: ValueCardProps): React.ReactElement => {
                 border: '1px solid #C0CCDA',
                 borderRadius: '2.5%',
                 width: cardType === 'node' ? '460px' : '100%',
-                minHeight: cardType === 'node' ? '200px' : '300px',
+                minHeight: cardType === 'node' ? '200px' : '211px',
                 overflow: 'auto',
                 padding: '12px 18px',
                 whiteSpace: 'nowrap',

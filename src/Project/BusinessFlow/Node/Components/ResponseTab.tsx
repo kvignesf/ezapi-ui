@@ -39,7 +39,8 @@ export const ResponseTab = ({
     return (
         <Stack width="100%">
             {isResponse ? (
-                isError !== undefined && (
+                isError !== undefined &&
+                message != '0' && (
                     <Stack
                         height={'32px'}
                         sx={{

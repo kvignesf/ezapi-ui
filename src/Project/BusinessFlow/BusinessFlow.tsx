@@ -407,7 +407,7 @@ const Flow = () => {
                         nodes.find((node: Node) => node.id === selectedNode)?.data.commonData.inputNodeIds || []
                     }
                     selectedNodeCardType={nodes.find((node: Node) => node.id === selectedNode)?.type || ''}
-                    onClose={async () => {
+                    onClose={async (type: string) => {
                         const node = nodes.find((node: Node) => node.id === selectedNode);
                         if (showResponseMapping) {
                             setShowResponseMapping(false);
@@ -415,7 +415,7 @@ const Flow = () => {
                             setOpenMappingDrawer(false);
                             setSelectedNode('');
                         }
-                        if (node) {
+                        if (node && type == 'save') {
                             const getNodeData = {
                                 projectId,
                                 operationId,
@@ -508,6 +508,7 @@ const Flow = () => {
                 anchor={'right'}
                 open={showAPIDrawer}
                 onClose={() => {
+                    console.log('closing');
                     setShowAPIDrawer(false);
                     setSelectedCard('');
                 }}
