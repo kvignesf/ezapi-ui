@@ -307,9 +307,6 @@ const Body = ({ request = true, responseCode, projectType = 'schema', onDelete =
             itemDroppedFromTop = true;
         }
 
-        console.log(data);
-        console.log(valueDropped);
-
         setOperationDetails((operationDetails) => {
             const path = fetchFullPath(valueDropped);
 

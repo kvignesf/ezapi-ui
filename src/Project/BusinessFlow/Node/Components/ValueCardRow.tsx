@@ -77,7 +77,7 @@ export const ValueCardRow = (props: ValueCardRowProps) => {
                 (iconSelector === 'delete' ? (
                     <Delete
                         color={disabled ? 'disabled' : 'error'}
-                        sx={{ alignSelf: 'center' }}
+                        sx={{ alignSelf: 'center', cursor: 'pointer' }}
                         onClick={() => {
                             if (!disabled) {
                                 onDelete();
