@@ -281,14 +281,17 @@ const ParametersGrid = ({ parameters, projectType, isFetchingParameters, getPara
     return (
         <>
             <Dialog
-                onClose={handleCloseDialog}
                 aria-labelledby="dashboard-dialog"
                 open={dialog?.show ?? false}
                 fullWidth
                 PaperProps={{
                     style: { borderRadius: 8 },
                 }}
-                disableBackdropClick
+                onClose={(event, reason) => {
+                    if (reason !== 'backdropClick') {
+                        handleCloseDialog();
+                    }
+                }}
             >
                 {dialog?.type === 'add-parameter' && canEdit() && (
                     <AddOrEditParameter projectType={projectType} onClose={handleCloseDialog} />
@@ -425,14 +428,17 @@ const ParamRow = ({ projectType, param, entireParam }) => {
         >
             <>
                 <Dialog
-                    onClose={handleCloseDialog}
                     aria-labelledby="dashboard-dialog"
                     open={dialog?.show ?? false}
                     fullWidth
                     PaperProps={{
                         style: { borderRadius: 8 },
                     }}
-                    disableBackdropClick
+                    onClose={(event, reason) => {
+                        if (reason !== 'backdropClick') {
+                            handleCloseDialog();
+                        }
+                    }}
                 >
                     {dialog?.type === 'delete-parameter' && canEdit() && (
                         <DeleteParameter onClose={handleCloseDialog} parameter={param} />

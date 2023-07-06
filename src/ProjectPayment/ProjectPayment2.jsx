@@ -20,9 +20,9 @@ import routes from '../shared/routes';
 import { getAccessToken, getEmailId, getFirstName, getLastName } from '../shared/storage';
 import BillingDetailsForm from './BillingDetailsForm';
 import CardDetailsForm from './CardDetailsForm';
-import { useConfirmPayment, useGetBasicProduct, useGetBillingDetails, useInitiatePayment } from './paymentQueries';
 import PaymentStatusDialog from './PaymentStatusDialog';
 import ProductDetails from './ProductDetails';
+import { useConfirmPayment, useGetBasicProduct, useGetBillingDetails, useInitiatePayment } from './paymentQueries';
 
 const acc_token = getAccessToken();
 
@@ -506,7 +506,10 @@ const ProjectPayment = (props) => {
                 PaperProps={{
                     style: { borderRadius: 8 },
                 }}
-                disableBackdropClick
+                onClose={(event, reason) => {
+                    if (reason !== 'backdropClick') {
+                    }
+                }}
             >
                 {shouldShowDialogForPayment() && (
                     <PaymentStatusDialog

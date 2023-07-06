@@ -19,10 +19,10 @@ import routes, { generateRoute } from '../shared/routes';
 import { getEmailId, getFirstName, getLastName } from '../shared/storage';
 import BillingDetailsForm from './BillingDetailsForm';
 import CardDetailsForm from './CardDetailsForm';
-import { useConfirmPayment, useGetBasicProduct, useGetBillingDetails, useInitiatePayment } from './paymentQueries';
 import PaymentStatusDialog from './PaymentStatusDialog';
 import ProductDetails from './ProductDetails';
 import PublishStatusDialog from './PublishStatusDialog';
+import { useConfirmPayment, useGetBasicProduct, useGetBillingDetails, useInitiatePayment } from './paymentQueries';
 
 const Header = ({ projectDetails, logoutMutation: { isLoading: isLoggingOut, mutate: logout } }) => {
     const history = useHistory();
@@ -395,7 +395,10 @@ const ProjectPayment = () => {
                 PaperProps={{
                     style: { borderRadius: 8 },
                 }}
-                disableBackdropClick
+                onClose={(event, reason) => {
+                    if (reason !== 'backdropClick') {
+                    }
+                }}
             >
                 {shouldShowDialogForPayment() && (
                     <PaymentStatusDialog
