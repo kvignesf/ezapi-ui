@@ -316,7 +316,7 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                         },
                     };
                     setRunData(newNodeData);
-                    //triggerDelayedNodeSaveOnServer(delayTimeSet);
+                    // triggerDelayedNodeSaveOnServer(delayTimeSet);
                 })
                 .catch(function (error: any) {
                     // check if the error was thrown from axios
@@ -353,7 +353,7 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                     setShowResponse(true);
                     nullChecker();
 
-                    //triggerDelayedNodeSaveOnServer(delayTimeSet);
+                    triggerDelayedNodeSaveOnServer(delayTimeSet);
                     setExecutionNumber(executionNumber + 1);
                 });
         };
@@ -418,14 +418,13 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                                     await apiCall();
                                 }
                             }
-                            triggerDelayedNodeSaveOnServer(delayTimeSet);
                         }
                     });
                 }
             }
         } else {
             apiCall();
-            triggerDelayedNodeSaveOnServer(delayTimeSet);
+            // triggerDelayedNodeSaveOnServer(delayTimeSet);
         }
     };
 
