@@ -1,7 +1,7 @@
 import { Checkbox, TextField } from '@material-ui/core';
-import { Dialog, Fade, Menu, MenuItem } from '@material-ui/core/index';
 import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
+import { Dialog, Fade, Menu, MenuItem } from '@material-ui/core/index';
 import DeleteIcon from '@material-ui/icons/Delete';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
 import { ErrorMessage, Field, Form, Formik } from 'formik';
@@ -68,14 +68,17 @@ const Row = ({
     return (
         <>
             <Dialog
-                onClose={handleCloseDialog}
                 aria-labelledby="column-dialog"
                 open={dialog?.show ?? false}
                 fullWidth
                 PaperProps={{
                     style: { borderRadius: 8 },
                 }}
-                disableBackdropClick
+                onClose={(event, reason) => {
+                    if (reason !== 'backdropClick') {
+                        handleCloseDialog();
+                    }
+                }}
             >
                 {dialog?.type === 'rename-column' && canEdit() && (
                     <ChangeColumnName

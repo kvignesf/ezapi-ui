@@ -243,7 +243,7 @@ const ProjectRow = ({
             >
                 {project?.projectName}
                 <CustomTooltip
-                    maxWidth={'10px'}
+                    // maxwidth={'10px'}
                     arrow
                     placement="right"
                     title={
@@ -928,14 +928,17 @@ const Content = ({ showCreateProjectDialog }) => {
             {' '}
             <div className="p-3 h-full">
                 <Dialog
-                    onClose={handleCloseDialog}
                     aria-labelledby="projects-dialog"
                     open={dialog?.show ?? false}
                     fullWidth
                     PaperProps={{
                         style: { borderRadius: 8 },
                     }}
-                    disableBackdropClick
+                    onClose={(event, reason) => {
+                        if (reason !== 'backdropClick') {
+                            handleCloseDialog();
+                        }
+                    }}
                 >
                     {dialog?.type === 'members' && (
                         <ModifyCollaborators
