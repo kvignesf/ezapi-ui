@@ -50,11 +50,7 @@ import './index.css';
 import { IBusinessFlow } from './interfaces';
 import { NewAggregateCard } from './interfaces/aggregate-cards';
 
-/* import { NODE_TYPES } from './constants';
-import { DEFAULT_BUSINESS_FLOW_STATE } from './defaults';
-import './index.css';
-import { IBusinessFlow } from './interfaces';
-import { NewAggregateCard } from './interfaces/aggregate-cards'; */
+import deleteNodeAtom from '@/shared/atom/deleteNodeAtom';
 import loaderAtom from '@/shared/atom/loaderAtom';
 import ConfirmDialog from '@/shared/components/ConfirmDialog';
 import { createAggregateCard, fetchAggregateMetaData, fetchNodeFromServer } from './services';
@@ -213,8 +209,7 @@ const Flow = () => {
     const [openFilterDrawer, setOpenFilterDrawer] = useState(false);
     const [selectBranchQuery, setSelectBranchQuery] = useState(false);
     const [showAPIDrawer, setShowAPIDrawer] = useState(false);
-    const [deletePopUp, setDeletePopUp] = useState(false);
-    const [deleteData, setDeleteData] = useState<Node[]>();
+    const [deleteData, setDeleteData] = useRecoilState<Node[] | undefined | string>(deleteNodeAtom);
     const [selectedNode, setSelectedNode] = useRecoilState(selectedNodeAtom);
     const [selectedBranchCondition, setSelectedBranchCondition] = useRecoilState(branchQueryAtom);
     const [selectedCard, setSelectedCard] = useRecoilState(drawerCardAtom);
@@ -229,10 +224,6 @@ const Flow = () => {
     const {
         nodes,
         edges,
-        setCurrentIndex,
-        setElements,
-        history,
-        currentIndex,
         onNodesChange,
         onNodesDelete,
         onEdgesChange,
@@ -259,29 +250,29 @@ const Flow = () => {
 
     const [newNodeInfo, setNewNodeInfo] = useState<{ parentNode: Node | undefined; position: XYPosition } | null>(null);
 
-    const undo = () => {
-        const newCurrentIndex = currentIndex - 1;
+    // const undo = () => {
+    //     const newCurrentIndex = currentIndex - 1;
 
-        if (newCurrentIndex < 0) {
-            setElements(initialNodes, initialEdges);
-            setCurrentIndex(-1);
-        } else {
-            const { nodes: newNodes, edges: newEdges } = history[newCurrentIndex];
-            setElements(newNodes, newEdges);
-            setCurrentIndex(newCurrentIndex);
-        }
-    };
+    //     if (newCurrentIndex < 0) {
+    //         setElements(initialNodes, initialEdges);
+    //         setCurrentIndex(-1);
+    //     } else {
+    //         const { nodes: newNodes, edges: newEdges } = history[newCurrentIndex];
+    //         setElements(newNodes, newEdges);
+    //         setCurrentIndex(newCurrentIndex);
+    //     }
+    // };
 
-    const redo = () => {
-        if (currentIndex === history.length - 1) {
-            return;
-        }
-        const newCurrentIndex = currentIndex + 1;
+    // const redo = () => {
+    //     if (currentIndex === history.length - 1) {
+    //         return;
+    //     }
+    //     const newCurrentIndex = currentIndex + 1;
 
-        const { nodes: newNodes, edges: newEdges } = history[newCurrentIndex];
-        setElements(newNodes, newEdges);
-        setCurrentIndex(newCurrentIndex);
-    };
+    //     const { nodes: newNodes, edges: newEdges } = history[newCurrentIndex];
+    //     setElements(newNodes, newEdges);
+    //     setCurrentIndex(newCurrentIndex);
+    // };
 
     const onKeyDown = (event: KeyboardEvent) => {
         const ctrl = event.ctrlKey ? 'Control-' : '';
@@ -289,8 +280,8 @@ const Flow = () => {
         const meta = event.metaKey ? 'Meta-' : '';
         const shift = event.shiftKey ? 'Shift-' : '';
         const key = `${ctrl}${alt}${shift}${meta}${event.key}`;
-        if (key === 'Meta-z') undo();
-        if (key === 'Shift-Meta-z') redo();
+        // if (key === 'Meta-z')
+        // if (key === 'Shift-Meta-z') redo();
     };
 
     useEffect(() => {
@@ -328,6 +319,15 @@ const Flow = () => {
             fitView(fitViewOptions);
         }
     };
+
+    useEffect(() => {
+        if (typeof deleteData === 'string') {
+            const nodeData = nodes.filter((n) => n.id === deleteData);
+            if (nodeData.length > 0) {
+                setDeleteData(nodeData);
+            }
+        }
+    }, [deleteData]);
 
     useEffect(() => {
         const source: CancelTokenSource = axios.CancelToken.source();
@@ -381,16 +381,16 @@ const Flow = () => {
 
     return (
         <div className="wrapper" ref={reactFlowWrapper}>
-            {deletePopUp && (
+            {deleteData !== undefined && typeof deleteData !== 'string' && (
                 <ConfirmDialog
                     title={'Delete Node'}
                     description={'Are you sure you want to delete the node? Once deleted you cant get it back.'}
                     onCancel={() => {
-                        setDeletePopUp(false);
+                        setDeleteData(undefined);
                     }}
                     onConfirm={() => {
                         onNodesDelete(deleteData!);
-                        setDeletePopUp(false);
+                        setDeleteData(undefined);
                         setIsLoading(true);
                     }}
                 />
@@ -524,7 +524,6 @@ const Flow = () => {
                 anchor={'right'}
                 open={showAPIDrawer}
                 onClose={() => {
-                    console.log('closing');
                     setShowAPIDrawer(false);
                     setSelectedCard('');
                 }}
@@ -547,7 +546,6 @@ const Flow = () => {
                 onNodesDelete={(data: Node[]) => {
                     if (data && data[0] && data[0].type !== 'mainNode') {
                         setDeleteData(data);
-                        setDeletePopUp(true);
                     }
                 }}
                 onEdgesChange={onEdgesChange}
@@ -577,7 +575,6 @@ function BusinessFlow() {
     const { projectId = '' }: { projectId: string } = useParams();
     const [operationData, _] = useRecoilState(operationAtomWithMiddleware);
     const operationId = operationData?.operation?.operationId;
-    const { useStore } = useContext(BusinessFlowContext);
 
     useEffect(() => {
         setIsLoading(true);

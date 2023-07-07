@@ -1,9 +1,8 @@
-// @ts-ignore
-// @ts-nocheck
 import drawerCardAtom from '@/shared/atom/drawerCardAtom';
 import selectedNodeAtom from '@/shared/atom/selectedNodeAtom';
 import { CircularProgress, Tooltip } from '@material-ui/core';
 import { Add } from '@material-ui/icons';
+// @ts-ignore
 import buildURL from 'axios/lib/helpers/buildURL';
 import Qs from 'qs';
 import LoaderWithMessage from '../../../shared/components/LoaderWithMessage';
@@ -30,6 +29,7 @@ import ApiIcon from '../../../icons/ApiIcon.svg';
 import RunIcon from '../../../icons/runIcon.svg';
 import { BusinessFlowContext } from '../BusinessFlowContext';
 import { checkValidJson, convertObjectToFormData, formDataToObject } from '../businessFlowHelper';
+import { getAggregateCard, getMappingData } from '../businessFlowQueries';
 import { DEFAULT_API_RESPONSE } from '../defaults';
 import useNodeHook from '../hooks/useNodeHook';
 import { ExternalAPI, KeyValueProps } from '../interfaces';
@@ -121,8 +121,7 @@ function getExternalAPIRequestAxiosOptions(
     return options;
 }
 export const ExternalAPIDrawer = ({ cardId }: ExternalAPIDrawerProps) => {
-    const { useStore } = useContext(BusinessFlowContext);
-
+    const { projectId, operationId, useStore } = useContext(BusinessFlowContext);
     const [cardData, setCardData] = useState<NodeData>();
 
     const updateNodeData = useStore((state: MyReactFlowState) => state.updateNodeData);
@@ -217,7 +216,7 @@ export const ExternalAPIDrawer = ({ cardId }: ExternalAPIDrawerProps) => {
     });
 
     function getUpdatedNodeDataFn() {
-        const newNodeData = (_.isEmpty(node.data) ? {} : node.data) as NodeData;
+        const newNodeData = (_.isEmpty(node?.data) ? {} : node?.data) as NodeData;
         let updatedRunData;
         setExplicitLoading(false);
 
@@ -474,9 +473,11 @@ export const ExternalAPIDrawer = ({ cardId }: ExternalAPIDrawerProps) => {
         }
     }
 
-    const scrollToBottom = (id) => {
+    const scrollToBottom = (id: any) => {
         const element = document.getElementById(id);
-        element.scrollTop = element.scrollHeight;
+        if (element) {
+            element.scrollTop = element.scrollHeight;
+        }
     };
 
     function setRequestData(newRequestData: string | object) {
@@ -605,7 +606,7 @@ export const ExternalAPIDrawer = ({ cardId }: ExternalAPIDrawerProps) => {
                 </Stack>
             </Stack>
 
-            <Stack sx={{ width: '100%' }} sx={{ paddingX: '16px', paddingY: '0px', width: '100%' }}>
+            <Stack sx={{ paddingX: '16px', paddingY: '0px', width: '100%' }}>
                 <TabContext value={value}>
                     <Stack direction="row" sx={{ borderBottom: 1, borderColor: 'divider', width: '100%' }}>
                         <TabList

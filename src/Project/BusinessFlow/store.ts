@@ -127,7 +127,6 @@ const createStore = ({ projectId, operationId, initialNodes, initialEdges, setIs
         },
 
         saveFlowState: () => {
-            // console.log('meta save called');
             const { projectId, operationId, nodes, edges } = get();
             const props = prepareAggregateMetaData(projectId, operationId, nodes, edges);
             saveAggregateMetaData(props);
@@ -160,8 +159,6 @@ const createStore = ({ projectId, operationId, initialNodes, initialEdges, setIs
                 setElements(updatedNodes, edges);
             }
             // if (parsedChanges.length && parsedChanges[0].type !== 'remove') {
-            //     // console.log('deffered save from updatenodedata!');
-
             //     deferredSave();
             // }
         },
@@ -280,8 +277,6 @@ const createStore = ({ projectId, operationId, initialNodes, initialEdges, setIs
 
             if (parsedChanges.length) {
                 updateHistory();
-                console.log('realtime save from onedgechange!');
-
                 saveFlowState();
             }
         },
@@ -308,8 +303,6 @@ const createStore = ({ projectId, operationId, initialNodes, initialEdges, setIs
 
             setElements(updatedNodes, updatedEdges);
             updateHistory();
-            console.log('5');
-
             saveFlowState();
         },
 
@@ -339,8 +332,6 @@ const createStore = ({ projectId, operationId, initialNodes, initialEdges, setIs
                 updateHistory();
             }
             if (triggerSaveFlowState) {
-                console.log('realtime save from addchild!');
-
                 saveFlowState();
             }
         },
@@ -358,9 +349,6 @@ const createStore = ({ projectId, operationId, initialNodes, initialEdges, setIs
             });
 
             setElements(updatedNodes, edges);
-            // console.log('deffered save from updatenodedata!');
-            console.log('realtime save from updatenodedata!');
-
             saveFlowState();
             // deferredSave();
         },
@@ -379,8 +367,6 @@ const createStore = ({ projectId, operationId, initialNodes, initialEdges, setIs
 
             setElements(updatedNodes, edges);
             updateHistory();
-            console.log('realtime save from setnodetype!');
-
             saveFlowState();
         },
     }));

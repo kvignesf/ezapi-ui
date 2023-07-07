@@ -1,6 +1,6 @@
 import { CircularProgress, Tooltip } from '@material-ui/core';
 import CloudUploadIcon from '@material-ui/icons/CloudUpload';
-import { CloudOff, ExpandLess, ExpandMore } from '@mui/icons-material';
+import { CloudOff, Delete, ExpandLess, ExpandMore } from '@mui/icons-material';
 import {
     Autocomplete,
     AutocompleteRenderInputParams,
@@ -15,6 +15,8 @@ import {
     Typography,
 } from '@mui/material';
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse, Method } from 'axios';
+// @ts-ignore
+import buildURL from 'axios/lib/helpers/buildURL';
 import _ from 'lodash';
 import Qs from 'qs';
 import { SyntheticEvent, useContext, useEffect, useState } from 'react';
@@ -27,7 +29,7 @@ import ErrorWithMessage from '@/shared/components/ErrorWithMessage';
 import { Add } from '@material-ui/icons';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 // @ts-ignore
-import buildURL from 'axios/lib/helpers/buildURL';
+import deleteNodeAtom from '@/shared/atom/deleteNodeAtom';
 import { useRecoilState } from 'recoil';
 import ApiIcon from '../../../icons/ApiIcon.svg';
 import LoopIcon from '../../../icons/LoopIcon.svg';
@@ -166,6 +168,7 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
     const { projectId, operationId } = useContext(BusinessFlowContext);
 
     const [apiType, setApiType] = useState<string>('api_call');
+    const [_deleteData, setDeleteData] = useRecoilState<Node[] | undefined | string>(deleteNodeAtom);
     const [_selectedCard, setSelectedCard] = useRecoilState(drawerCardAtom);
     const [drawerSelected, setDrawerSelected] = useState('');
     const [explicitLoading, setExplicitLoading] = useState(false);
@@ -452,14 +455,6 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
             setExecutionNumber(executionNumber + 1);
         }
     }, [node]);
-
-    // useEffect(() => {
-    //     console.log('collapse:', collapse);
-    //     if (!selectedNode && collapse) {
-    //         console.log('get api');
-    //         loadNodeDataFromServer();
-    //     }
-    // }, [collapse]);
 
     useEffect(() => {
         if (props && !_.isEmpty(props.data.commonData)) {
@@ -826,17 +821,19 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                                 onClick={() => {
                                     nullChecker();
 
-                                    if (checkValidJson(requestBodyData) === true) {
+                                    if (
+                                        checkValidJson(requestBodyData) === true ||
+                                        props.data.runData?.method === 'GET'
+                                    ) {
                                         setIsJsonValid(true);
                                         triggerDelayedNodeSaveOnServer(1);
                                         setExplicitLoading(true);
-                                    } else {
-                                        setIsJsonValid(false);
                                     }
                                 }}
                             >
                                 <Tooltip title="Save changes">
-                                    {checkValidJson(requestBodyData) === false ? (
+                                    {checkValidJson(requestBodyData) === false &&
+                                    props.data.runData?.method !== 'GET' ? (
                                         <CloudOff style={{ color: 'grey', cursor: 'pointer' }} />
                                     ) : (
                                         <CloudUploadIcon style={{ color: '#2c71c7', cursor: 'pointer' }} />
@@ -845,6 +842,13 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                             </div>
                         )}
 
+                        <Delete
+                            sx={{ alignSelf: 'center' }}
+                            color={'primary'}
+                            onClick={() => {
+                                setDeleteData(cardId);
+                            }}
+                        />
                         <img
                             src={DialogIcon}
                             style={{ width: '24px', height: '24px', alignSelf: 'center', cursor: 'pointer' }}
