@@ -471,11 +471,11 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
             setQueryParams(props.data.runData.queryParams ?? []);
             setPathParams(props.data.runData.pathParams ?? []);
             setRequestBodyData(props.data.runData.body?.data ?? {});
-            const outputInfo = props.data.runData?.output;
-            const hasResponse = Boolean(outputInfo && outputInfo.status && outputInfo.status > 0);
-            if (hasResponse) {
-                setShowResponse(hasResponse);
-            }
+            // const outputInfo = props.data.runData?.output;
+            // const hasResponse = Boolean(outputInfo && outputInfo.status && outputInfo.status > 0);
+            // if (hasResponse) {
+            //     setShowResponse(hasResponse);
+            // }
         }
     }, [props]);
 
@@ -727,7 +727,7 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                                     }
                                     triggerDelayedNodeSaveOnServer(delayTimeSet);
                                 }}
-                                isError={isError}
+                                // isError={runData?.output?.status != 200 && runData?.output?.status != 0}
                                 isResponse={false}
                                 displayTitle="Request Body"
                                 value={requestBodyData || {}}
