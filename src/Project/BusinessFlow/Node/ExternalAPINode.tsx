@@ -291,7 +291,7 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
 
     const execute = async (event: React.MouseEvent) => {
         event.preventDefault();
-        if (!isNodeDataLoaded || isLoading || isExecuting || !runData.url) {
+        if (!isNodeDataLoaded || isLoading || isExecuting || !runData.url || displayedUrlValue === '') {
             return;
         }
 
@@ -845,7 +845,7 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                         )}
 
                         <Delete
-                            sx={{ alignSelf: 'center' }}
+                            sx={{ alignSelf: 'center', cursor: 'pointer' }}
                             color={'primary'}
                             onClick={() => {
                                 setDeleteData(cardId);

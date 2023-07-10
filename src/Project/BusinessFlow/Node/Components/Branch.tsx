@@ -143,7 +143,11 @@ export const Branch = ({
                         inputProps={{ style: { height: '15px' } }}
                     />
                 )}
-                <Delete color={branchCondition.conditionType === 'if' ? 'disabled' : 'error'} onClick={handleDelete} />
+                <Delete
+                    sx={{ cursor: 'pointer' }}
+                    color={branchCondition.conditionType === 'if' ? 'disabled' : 'error'}
+                    onClick={handleDelete}
+                />
             </Stack>
         </Stack>
     );

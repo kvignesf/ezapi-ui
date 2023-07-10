@@ -156,7 +156,7 @@ const PayloadNode = (props: PayloadNodeProps): React.ReactElement => {
                 </Stack>
                 <Stack direction={'row'} spacing={1}>
                     <Delete
-                        sx={{ alignSelf: 'center' }}
+                        sx={{ alignSelf: 'center', cursor: 'pointer' }}
                         color={'primary'}
                         onClick={() => {
                             setDeleteData(cardId);

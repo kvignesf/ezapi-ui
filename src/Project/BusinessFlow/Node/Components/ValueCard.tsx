@@ -71,7 +71,7 @@ export const ValueCard = (props: ValueCardProps): React.ReactElement => {
                             <>
                                 <p
                                     className="flex-1 text-smallLabel uppercase text-neutral-gray2"
-                                    style={{ width: cardType === 'node' ? '300px' : '750px' }}
+                                    style={{ width: cardType === 'node' ? '300px' : disableAdd ? '841px' : '845px' }}
                                 ></p>
                                 <div className="w-9" />
                             </>
@@ -79,13 +79,13 @@ export const ValueCard = (props: ValueCardProps): React.ReactElement => {
                             <>
                                 <p
                                     className="flex-1 text-smallLabel ml-7 text-neutral-gray2 uppercase"
-                                    style={{ width: cardType === 'node' ? '130px' : '170px' }}
+                                    style={{ width: cardType === 'node' ? '130px' : '225px' }}
                                 >
                                     Key
                                 </p>
                                 <p
                                     className="flex-1 text-smallLabel uppercase text-neutral-gray2"
-                                    style={{ width: cardType === 'node' ? '200px' : '390px' }}
+                                    style={{ width: cardType === 'node' ? '200px' : '650px' }}
                                 >
                                     Value
                                 </p>
@@ -195,7 +195,7 @@ export const ValueCard = (props: ValueCardProps): React.ReactElement => {
                             startIcon={<Add />}
                             variant="contained"
                             color="primary"
-                            sx={{ mt: 2, textTransform: 'none', height: '36px' }}
+                            sx={{ mt: 2, textTransform: 'none', height: '36px', cursor: 'pointer' }}
                             disabled={disabled}
                         >
                             Add
