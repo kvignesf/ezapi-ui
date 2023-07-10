@@ -40,7 +40,7 @@ const PayloadNode = (props: PayloadNodeProps): React.ReactElement => {
     const [_deleteData, setDeleteData] = useRecoilState<Node[] | undefined | string>(deleteNodeAtom);
     const [_showResponseMapping, setShowResponseMapping] = useRecoilState(responseMapperAtom);
     const [isJsonValid, setIsJsonValid] = useState(true);
-    const [tabValue, setTabValue] = useState('0');
+    const [tabValue, setTabValue] = useState('1');
     const [headerData, setHeaderData] = useState<KeyValueProps[]>();
     const [responseBodyData, setResponseBodyData] = useState<KeyValueProps[]>();
 
@@ -76,11 +76,12 @@ const PayloadNode = (props: PayloadNodeProps): React.ReactElement => {
     const handleChange = (_event: React.SyntheticEvent, newValue: string) => {
         setTabValue(newValue);
     };
-    useEffect(() => {
-        if (collapse) {
-            loadNodeDataFromServer();
-        }
-    }, [collapse]);
+    // useEffect(() => {
+    //     if (collapse) {
+    //         console.log('loading from server now here!!');
+    //         loadNodeDataFromServer();
+    //     }
+    // }, [collapse]);
     const socket = useContext(SocketContext);
 
     useEffect(() => {
