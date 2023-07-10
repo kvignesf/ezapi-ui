@@ -58,6 +58,7 @@ interface InitialStoreProps {
     operationId: string;
     initialNodes: Node[];
     initialEdges: Edge[];
+    setIsLoading: Function;
 }
 
 export function getInputNodeIdsFromNode(nodeId: string, edges: Edge[]): string[] {
@@ -90,7 +91,7 @@ export function updateInputNodeIdsForNodes(nodes: Node[], edges: Edge[]) {
     });
 }
 
-const createStore = ({ projectId, operationId, initialNodes, initialEdges }: InitialStoreProps) =>
+const createStore = ({ projectId, operationId, initialNodes, initialEdges, setIsLoading }: InitialStoreProps) =>
     create<MyReactFlowState>((set: any, get: any) => ({
         projectId,
         operationId,
@@ -126,7 +127,6 @@ const createStore = ({ projectId, operationId, initialNodes, initialEdges }: Ini
         },
 
         saveFlowState: () => {
-            // console.log('meta save called');
             const { projectId, operationId, nodes, edges } = get();
             const props = prepareAggregateMetaData(projectId, operationId, nodes, edges);
             saveAggregateMetaData(props);
@@ -158,15 +158,13 @@ const createStore = ({ projectId, operationId, initialNodes, initialEdges }: Ini
                 const updatedNodes = applyNodeChanges(parsedChanges, nodes);
                 setElements(updatedNodes, edges);
             }
-            if (parsedChanges.length && parsedChanges[0].type !== 'remove') {
-                // console.log('deffered save from updatenodedata!');
-
-                deferredSave();
-            }
+            // if (parsedChanges.length && parsedChanges[0].type !== 'remove') {
+            //     deferredSave();
+            // }
         },
 
         onNodesDelete: async (rfDeletedNodes: Node[]) => {
-            const { nodes, edges, setElements, resetHistory } = get();
+            const { nodes, edges, setElements, resetHistory, saveFlowState } = get();
 
             // remove non deletable nodes from the list of deleted nodes
             rfDeletedNodes = rfDeletedNodes.filter((deletedNode: Node) => {
@@ -244,7 +242,9 @@ const createStore = ({ projectId, operationId, initialNodes, initialEdges }: Ini
                 });
 
                 setElements(updatedNodes, updatedEdges);
-                resetHistory();
+                // resetHistory();
+                saveFlowState();
+                setIsLoading(false);
             } else {
                 setElements(nodes, edges);
             }
@@ -277,8 +277,6 @@ const createStore = ({ projectId, operationId, initialNodes, initialEdges }: Ini
 
             if (parsedChanges.length) {
                 updateHistory();
-                // console.log('realtime save from onedgechange!');
-
                 saveFlowState();
             }
         },
@@ -305,8 +303,6 @@ const createStore = ({ projectId, operationId, initialNodes, initialEdges }: Ini
 
             setElements(updatedNodes, updatedEdges);
             updateHistory();
-            // console.log('realtime save from onconnnect!');
-
             saveFlowState();
         },
 
@@ -336,8 +332,6 @@ const createStore = ({ projectId, operationId, initialNodes, initialEdges }: Ini
                 updateHistory();
             }
             if (triggerSaveFlowState) {
-                // console.log('realtime save from addchild!');
-
                 saveFlowState();
             }
         },
@@ -355,9 +349,6 @@ const createStore = ({ projectId, operationId, initialNodes, initialEdges }: Ini
             });
 
             setElements(updatedNodes, edges);
-            // console.log('deffered save from updatenodedata!');
-            // console.log('realtime save from updatenodedata!');
-
             saveFlowState();
             // deferredSave();
         },
@@ -376,8 +367,6 @@ const createStore = ({ projectId, operationId, initialNodes, initialEdges }: Ini
 
             setElements(updatedNodes, edges);
             updateHistory();
-            // console.log('realtime save from setnodetype!');
-
             saveFlowState();
         },
     }));

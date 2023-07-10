@@ -63,7 +63,6 @@ const Database = () => {
                 ref: newRef,
             });
         } else if (isArray(item) && !item.is_child) {
-            console.log('array', item);
             let newRef;
             if (tableState.ref === '') {
                 newRef = `${item.tableName}.attributes.${item.name}.ezapi_array.ezapi_object`;

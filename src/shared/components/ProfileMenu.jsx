@@ -43,7 +43,6 @@ const ProfileMenu = ({ onLogout, profileMenuAnchorEl, setProfilemenuAnchorEl }) 
                         user: userId,
                     });
                     socket.disconnect();
-                    console.log('socket connectio :' + socket.connected);
                     onLogout();
                 }}
                 style={{

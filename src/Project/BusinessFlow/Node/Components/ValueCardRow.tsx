@@ -7,6 +7,7 @@ export const ValueCardRow = (props: ValueCardRowProps) => {
         data,
         onDelete,
         onDone,
+        disableKey,
         isHeader = false,
         disabled = false,
         nodeType = '',
@@ -35,7 +36,7 @@ export const ValueCardRow = (props: ValueCardRowProps) => {
                                 required
                                 variant="outlined"
                                 disabled={disabled || nodeType === 'main'}
-                                sx={{ width: cardType === 'node' ? '140px' : '320px' }}
+                                sx={{ minWidth: cardType === 'node' ? '140px' : '245px' }}
                                 inputProps={{ ...params.inputProps, style: { height: '15px' } }}
                             />
                         )}
@@ -45,11 +46,11 @@ export const ValueCardRow = (props: ValueCardRowProps) => {
                         required={true}
                         variant="outlined"
                         value={data.key}
-                        disabled={disabled || nodeType === 'main'}
+                        disabled={disabled || nodeType === 'main' || disableKey}
                         onChange={(e) => {
                             onChange({ key: e.target.value, value: data.value });
                         }}
-                        sx={{ minWidth: cardType === 'node' ? '140px' : '320px' }}
+                        sx={{ minWidth: cardType === 'node' ? '140px' : '245px' }}
                         inputProps={{ style: { height: '15px' } }}
                     />
                 )}
@@ -65,7 +66,7 @@ export const ValueCardRow = (props: ValueCardRowProps) => {
                         onChange({ key: data.key, value: e.target.value });
                     }}
                     sx={{
-                        width: cardType === 'node' ? '228px' : '690px',
+                        width: cardType === 'node' ? '228px' : '330px',
                     }}
                     inputProps={{ style: { height: '15px' } }}
                 />
@@ -76,7 +77,7 @@ export const ValueCardRow = (props: ValueCardRowProps) => {
                 (iconSelector === 'delete' ? (
                     <Delete
                         color={disabled ? 'disabled' : 'error'}
-                        sx={{ alignSelf: 'center' }}
+                        sx={{ alignSelf: 'center', cursor: 'pointer' }}
                         onClick={() => {
                             if (!disabled) {
                                 onDelete();

@@ -16,6 +16,7 @@ import Scrollbar from 'react-smooth-scrollbar';
 import { useRecoilValue } from 'recoil';
 import Colors from '../../../shared/colors';
 import AppIcon from '../../../shared/components/AppIcon';
+import LoaderWithMessage from '../../../shared/components/LoaderWithMessage';
 import { operationAtomWithMiddleware, useCanEdit } from '../../../shared/utils';
 import AddOrEditParameter from './AddOrEditParameter/AddOrEditParameter';
 import { useBulkChange } from './AddOrEditParameter/modifyParameterQueries';
@@ -93,7 +94,6 @@ const ParametersEditor = ({ projectType, parameters, isFetchingParameters, getPa
     };
 
     useEffect(() => {
-        console.log('data=>', parameters);
         if (parameters) {
             setValue(parametersToCsv(parameters));
         }
@@ -229,28 +229,34 @@ const ParametersEditor = ({ projectType, parameters, isFetchingParameters, getPa
     };
     return (
         <div className="h-full">
-            <div
-                className="bg-neutral-gray7 mt-16 p-3 rounded-md flex flex-col"
-                style={{ height: `calc(100% - 80px)` }}
-            >
-                <Scrollbar
-                    style={{
-                        height: !operationState?.operationIndex ? `calc(100vh - 210px)` : `calc(100vh - 300px)`,
-                    }}
+            {isEditingParameter ? (
+                <div className="flex flex-col items-center justify-center" style={{ height: `calc(100% - 80px)` }}>
+                    <LoaderWithMessage message="Saving Parameters" />
+                </div>
+            ) : (
+                <div
+                    className="bg-neutral-gray7 mt-16 p-3 rounded-md flex flex-col"
+                    style={{ height: `calc(100% - 80px)` }}
                 >
-                    <MonacoEditor
-                        height={!operationState?.operationIndex ? `calc(100vh - 240px)` : `calc(24vh)`}
-                        language="plaintext"
-                        value={value}
-                        options={options}
-                        onChange={handleChange}
-                        style={{ border: '1px solid lightgrey', borderRadius: '4px', backgroundColor: '#f5f5f5' }}
-                    />{' '}
-                    {editorViewValidation && (
-                        <p className="text-overline2 mb-1 text-accent-red">{editorViewValidation}</p>
-                    )}
-                </Scrollbar>
-            </div>
+                    <Scrollbar
+                        style={{
+                            height: !operationState?.operationIndex ? `calc(100vh - 210px)` : `calc(100vh - 300px)`,
+                        }}
+                    >
+                        <MonacoEditor
+                            height={!operationState?.operationIndex ? `calc(100vh - 240px)` : `calc(24vh)`}
+                            language="plaintext"
+                            value={value}
+                            options={options}
+                            onChange={handleChange}
+                            style={{ border: '1px solid lightgrey', borderRadius: '4px', backgroundColor: '#f5f5f5' }}
+                        />{' '}
+                        {editorViewValidation && (
+                            <p className="text-overline2 mb-1 text-accent-red">{editorViewValidation}</p>
+                        )}
+                    </Scrollbar>
+                </div>
+            )}
         </div>
     );
 };
@@ -275,14 +281,17 @@ const ParametersGrid = ({ parameters, projectType, isFetchingParameters, getPara
     return (
         <>
             <Dialog
-                onClose={handleCloseDialog}
                 aria-labelledby="dashboard-dialog"
                 open={dialog?.show ?? false}
                 fullWidth
                 PaperProps={{
                     style: { borderRadius: 8 },
                 }}
-                disableBackdropClick
+                onClose={(event, reason) => {
+                    if (reason !== 'backdropClick') {
+                        handleCloseDialog();
+                    }
+                }}
             >
                 {dialog?.type === 'add-parameter' && canEdit() && (
                     <AddOrEditParameter projectType={projectType} onClose={handleCloseDialog} />
@@ -338,7 +347,6 @@ const ParametersGrid = ({ parameters, projectType, isFetchingParameters, getPara
                                 }}
                             >
                                 {parameters?.map((param) => {
-                                    //console.log("eachParam:",param);
                                     return (
                                         <ParamRow projectType={projectType} param={param} entireParam={parameters} />
                                     );
@@ -375,7 +383,6 @@ const ParamRow = ({ projectType, param, entireParam }) => {
     );
     const [editParameter, setEditParameter] = useState(false);
 
-    //console.log("editPar:",editParameter);
     const [dialog, setDialog] = useState({
         show: false,
         type: null,
@@ -411,7 +418,6 @@ const ParamRow = ({ projectType, param, entireParam }) => {
     const handleEditParameter = () => {
         setEditParameter(false);
     };
-    //console.log("check:",param);
     return (
         <div
             ref={canEdit() ? drag : null}
@@ -422,14 +428,17 @@ const ParamRow = ({ projectType, param, entireParam }) => {
         >
             <>
                 <Dialog
-                    onClose={handleCloseDialog}
                     aria-labelledby="dashboard-dialog"
                     open={dialog?.show ?? false}
                     fullWidth
                     PaperProps={{
                         style: { borderRadius: 8 },
                     }}
-                    disableBackdropClick
+                    onClose={(event, reason) => {
+                        if (reason !== 'backdropClick') {
+                            handleCloseDialog();
+                        }
+                    }}
                 >
                     {dialog?.type === 'delete-parameter' && canEdit() && (
                         <DeleteParameter onClose={handleCloseDialog} parameter={param} />

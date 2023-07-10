@@ -103,6 +103,7 @@ export interface ValueCardRowProps {
     disabled?: boolean;
     onChange: Function;
     iconSelector?: string;
+    disableKey?: boolean;
     onDone?: Function;
 }
 export interface ValueCardProps {
@@ -119,6 +120,7 @@ export interface ValueCardProps {
     disabled?: boolean;
     onChange?: Function;
     isDrawer?: boolean;
+    disableKey?: boolean;
 }
 
 export interface ResponseMapper {

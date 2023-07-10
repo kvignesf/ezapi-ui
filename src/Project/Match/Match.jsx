@@ -140,14 +140,17 @@ const Match = ({ projectType, isBusinessFlow, ...props }) => {
     return (
         <div className="flex-1 relative w-full" {...props}>
             <Dialog
-                onClose={handleCloseDialog}
                 aria-labelledby="match-dialog"
                 open={dialog?.show ?? false}
                 fullWidth
                 PaperProps={{
                     style: { borderRadius: 8 },
                 }}
-                disableBackdropClick
+                onClose={(event, reason) => {
+                    if (reason !== 'backdropClick') {
+                        handleCloseDialog();
+                    }
+                }}
             >
                 {dialog?.type === 'add-parameter' && canEdit() && <AddOrEditParameter onClose={handleCloseDialog} />}
                 {dialog?.type === 'add-custom-parameter' && canEdit() && (
