@@ -573,12 +573,11 @@ export default function DocStore({ isModal }) {
                         ) : (
                             <input
                                 type="text"
-                                placeholder="Enter the Request Name"
+                                placeholder="Enter the Request Name & Select the folder"
                                 style={{
                                     marginTop: isModal ? '0px' : '-8px',
                                 }}
                                 className={classes.searchBar}
-                                value={fileName}
                                 onChange={(e) => setFileName(e.target.value)}
                             />
                         )}
