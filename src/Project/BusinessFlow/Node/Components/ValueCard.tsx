@@ -15,6 +15,7 @@ export const ValueCard = (props: ValueCardProps): React.ReactElement => {
         isDrawer = false,
         disableAdd = false,
         onSubmit = () => {},
+        disableKey = false,
         disableDelete = false,
         iconSelector = 'delete',
         cardType = 'node',
@@ -55,8 +56,8 @@ export const ValueCard = (props: ValueCardProps): React.ReactElement => {
             sx={{
                 border: '1px solid #C0CCDA',
                 borderRadius: '2.5%',
-                width: cardType === 'node' ? '460px' : '920px',
-                minHeight: cardType === 'node' ? '200px' : '300px',
+                width: cardType === 'node' ? '460px' : '100%',
+                minHeight: cardType === 'node' ? '200px' : '211px',
                 overflow: 'auto',
                 padding: '12px 18px',
                 whiteSpace: 'nowrap',
@@ -78,7 +79,7 @@ export const ValueCard = (props: ValueCardProps): React.ReactElement => {
                             <>
                                 <p
                                     className="flex-1 text-smallLabel ml-7 text-neutral-gray2 uppercase"
-                                    style={{ width: cardType === 'node' ? '130px' : '390px' }}
+                                    style={{ width: cardType === 'node' ? '130px' : '170px' }}
                                 >
                                     Key
                                 </p>
@@ -93,7 +94,7 @@ export const ValueCard = (props: ValueCardProps): React.ReactElement => {
                         )}
                         {!isEditor ? (
                             nodeType !== 'main' && (
-                                <Tooltip title="Bulk Edit" arrow placement={'top'}>
+                                <Tooltip title={disableAdd ? 'Editor View' : 'Bulk Edit'} arrow placement={'top'}>
                                     <Create
                                         sx={{ alignSelf: 'center', padding: '0 1px', cursor: 'pointer' }}
                                         onClick={() => {
@@ -154,6 +155,7 @@ export const ValueCard = (props: ValueCardProps): React.ReactElement => {
                                 nodeType={nodeType}
                                 data={item}
                                 onDone={onDone}
+                                disableKey={disableKey}
                                 isHeader={isHeader}
                                 cardType={cardType}
                                 onDelete={() => {
@@ -182,7 +184,6 @@ export const ValueCard = (props: ValueCardProps): React.ReactElement => {
                     {!disableAdd && nodeType !== 'main' && !isEditor && (
                         <Button
                             onClick={() => {
-                                const length = data.length;
                                 setData([
                                     ...data,
                                     {

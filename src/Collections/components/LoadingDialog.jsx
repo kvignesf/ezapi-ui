@@ -6,7 +6,11 @@ const LoadingDialog = () => {
         <Dialog
             open={true}
             disableEscapeKeyDown
-            disableBackdropClick
+            onClose={(event, reason) => {
+                if (reason !== 'backdropClick') {
+                    // Handle your close dialog logic here
+                }
+            }}
             PaperProps={{ style: { backgroundColor: 'transparent', boxShadow: 'none' } }}
         >
             <DialogContent>

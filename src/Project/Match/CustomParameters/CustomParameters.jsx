@@ -14,8 +14,8 @@ import AppIcon from '../../../shared/components/AppIcon';
 import { operationAtomWithMiddleware, useCanEdit } from '../../../shared/utils';
 import EmptyParameters from '../../../static/images/empty-parameters.svg';
 import AddOrEditCustomParameter from './AddOrEditCustomParameter/AddOrEditCustomParameter';
-import { useGetCustomParameters } from './customParametersQuery';
 import DeleteCustomParameter from './DeleteCustomParameter/DeleteCustomParameter';
+import { useGetCustomParameters } from './customParametersQuery';
 
 const CustomParameters = () => {
     const { projectId } = useParams();
@@ -53,14 +53,17 @@ const CustomParameters = () => {
     return (
         <>
             <Dialog
-                onClose={handleCloseDialog}
                 aria-labelledby="dashboard-dialog"
                 open={dialog?.show ?? false}
                 fullWidth
                 PaperProps={{
                     style: { borderRadius: 8 },
                 }}
-                disableBackdropClick
+                onClose={(event, reason) => {
+                    if (reason !== 'backdropClick') {
+                        handleCloseDialog();
+                    }
+                }}
             >
                 {dialog?.type === 'add-custom-parameter' && canEdit() && (
                     <AddOrEditCustomParameter onClose={handleCloseDialog} />
@@ -219,14 +222,17 @@ const CustomParamRow = ({ param }) => {
         >
             <>
                 <Dialog
-                    onClose={handleCloseDialog}
                     aria-labelledby="dashboard-dialog"
                     open={dialog?.show ?? false}
                     fullWidth
                     PaperProps={{
                         style: { borderRadius: 8 },
                     }}
-                    disableBackdropClick
+                    onClose={(event, reason) => {
+                        if (reason !== 'backdropClick') {
+                            handleCloseDialog();
+                        }
+                    }}
                 >
                     {dialog?.type === 'edit-custom-parameter' && canEdit() && (
                         <AddOrEditCustomParameter onClose={handleCloseDialog} parameter={param} />

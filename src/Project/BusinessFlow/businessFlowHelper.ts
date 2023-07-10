@@ -1,6 +1,7 @@
 import { KeyValueProps, TreeNode } from './interfaces';
 
 export const checkValidJson = (value: any) => {
+    if (!value) return;
     if (typeof value === 'object') {
         return true;
     }

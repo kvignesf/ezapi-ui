@@ -88,7 +88,6 @@ export const tableMappings = async (projectId, filters, relations, password) => 
 };
 
 export const publishProject = async ({ projectId, newProjectDetails }) => {
-    console.log('newProjectDetails...', newProjectDetails);
     let keys = null;
     let certificates = null;
     let caCertificates = null;
@@ -115,7 +114,6 @@ export const publishProject = async ({ projectId, newProjectDetails }) => {
             test: false,
         });
     }
-    console.log('keys', keys, certificates, caCertificates);
 
     var ciphertext = aes.encrypt(newProjectDetails?.password, process.env.REACT_APP_AES_ENCRYPTION_KEY).toString();
     try {

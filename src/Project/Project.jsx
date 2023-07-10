@@ -660,7 +660,11 @@ const Project = () => {
                     PaperProps={{
                         style: { borderRadius: 8 },
                     }}
-                    disableBackdropClick
+                    onClose={(event, reason) => {
+                        if (reason !== 'backdropClick') {
+                            // Handle your close dialog logic here
+                        }
+                    }}
                 >
                     {(isPublishingProject || inProgress || isVerifying || isLoggingOut) && (
                         <div className="p-6">

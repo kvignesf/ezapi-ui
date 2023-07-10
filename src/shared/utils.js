@@ -1,8 +1,8 @@
 import _ from 'lodash';
 import { useEffect, useState } from 'react';
 import { selector, useGetRecoilValueInfo_UNSTABLE } from 'recoil';
-import operationAtom, { defaultState } from '../Project/operationAtom';
 import { useUserRole } from '../Project/UserRoleContext';
+import operationAtom, { defaultState } from '../Project/operationAtom';
 import schemaAtom from './atom/schemaAtom';
 import tableAtom from './atom/tableAtom';
 import Constants from './constants';

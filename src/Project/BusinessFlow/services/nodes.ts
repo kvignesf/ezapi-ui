@@ -43,6 +43,7 @@ export async function updateNodeOnServer(props: UpdateNodeAPIProps, _source?: Ca
     const { card, position, updateNodeData, setNodeType } = props;
 
     const nodeId = card.id;
+    if (!nodeId) return;
     const url = `${process.env.REACT_APP_API_URL}/aggregateCard/${nodeId}`;
 
     const putDataObj: NewAggregateCard = { ...card };

@@ -1,6 +1,6 @@
 import { CircularProgress, Tooltip } from '@material-ui/core';
 import CloudUploadIcon from '@material-ui/icons/CloudUpload';
-import { CloudOff, ExpandLess, ExpandMore } from '@mui/icons-material';
+import { CloudOff, Delete, ExpandLess, ExpandMore } from '@mui/icons-material';
 import {
     Autocomplete,
     AutocompleteRenderInputParams,
@@ -15,6 +15,8 @@ import {
     Typography,
 } from '@mui/material';
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse, Method } from 'axios';
+// @ts-ignore
+import buildURL from 'axios/lib/helpers/buildURL';
 import _ from 'lodash';
 import Qs from 'qs';
 import { SyntheticEvent, useContext, useEffect, useState } from 'react';
@@ -27,7 +29,7 @@ import ErrorWithMessage from '@/shared/components/ErrorWithMessage';
 import { Add } from '@material-ui/icons';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 // @ts-ignore
-import buildURL from 'axios/lib/helpers/buildURL';
+import deleteNodeAtom from '@/shared/atom/deleteNodeAtom';
 import { useRecoilState } from 'recoil';
 import ApiIcon from '../../../icons/ApiIcon.svg';
 import LoopIcon from '../../../icons/LoopIcon.svg';
@@ -166,8 +168,9 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
     const { projectId, operationId } = useContext(BusinessFlowContext);
 
     const [apiType, setApiType] = useState<string>('api_call');
+    const [_deleteData, setDeleteData] = useRecoilState<Node[] | undefined | string>(deleteNodeAtom);
     const [_selectedCard, setSelectedCard] = useRecoilState(drawerCardAtom);
-    const [drawerSelected, setDrawerSelected] = useState(false);
+    const [drawerSelected, setDrawerSelected] = useState('');
     const [explicitLoading, setExplicitLoading] = useState(false);
 
     const [isJsonValid, setIsJsonValid] = useState(true);
@@ -182,7 +185,7 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
     const [responseValue, setResponseValue] = useState<string>(props.data.runData?.output?.success ? '1' : '0');
     const [viewMore, setViewMore] = useState<boolean>(false);
     const [executionNumber, setExecutionNumber] = useState<number>(0);
-    const delayTimeSet = 2500;
+    const delayTimeSet = 3500;
     const {
         node,
         isLoading,
@@ -217,7 +220,7 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
     };
 
     useEffect(() => {
-        setSelectedNodeCardType(nodes.find((node: any) => node.id === selectedNode)?.type || '');
+        setSelectedNodeCardType(props.type ?? (nodes.find((node: any) => node.id === selectedNode)?.type || ''));
     }, [nodes, selectedNode]);
     function getUpdatedNodeDataFn() {
         const newNodeData = (_.isEmpty(props.data) ? {} : props.data) as NodeData;
@@ -316,7 +319,7 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                         },
                     };
                     setRunData(newNodeData);
-                    //triggerDelayedNodeSaveOnServer(delayTimeSet);
+                    // triggerDelayedNodeSaveOnServer(delayTimeSet);
                 })
                 .catch(function (error: any) {
                     // check if the error was thrown from axios
@@ -353,7 +356,7 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                     setShowResponse(true);
                     nullChecker();
 
-                    //triggerDelayedNodeSaveOnServer(delayTimeSet);
+                    triggerDelayedNodeSaveOnServer(delayTimeSet);
                     setExecutionNumber(executionNumber + 1);
                 });
         };
@@ -418,14 +421,13 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                                     await apiCall();
                                 }
                             }
-                            triggerDelayedNodeSaveOnServer(delayTimeSet);
                         }
                     });
                 }
             }
         } else {
             apiCall();
-            triggerDelayedNodeSaveOnServer(delayTimeSet);
+            // triggerDelayedNodeSaveOnServer(delayTimeSet);
         }
     };
 
@@ -455,12 +457,6 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
     }, [node]);
 
     useEffect(() => {
-        if (!selectedNode && collapse) {
-            loadNodeDataFromServer();
-        }
-    }, [selectedNode]);
-
-    useEffect(() => {
         if (props && !_.isEmpty(props.data.commonData)) {
             setCommonData({
                 ...props.data.commonData,
@@ -470,13 +466,16 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
             setRunData({
                 ...props.data.runData,
             });
-            const outputInfo = props.data.runData?.output;
-            const hasResponse = Boolean(outputInfo && outputInfo.status && outputInfo.status > 0);
-            if (hasResponse) {
-                setShowResponse(hasResponse);
-                setResponseValue('1');
-            }
-            setRequestBodyData(props.data.runData?.body?.data);
+            setDisplayedUrlValue(props.data.runData.url ?? '');
+            setHeaders(props.data.runData.headers ?? []);
+            setQueryParams(props.data.runData.queryParams ?? []);
+            setPathParams(props.data.runData.pathParams ?? []);
+            setRequestBodyData(props.data.runData.body?.data ?? {});
+            // const outputInfo = props.data.runData?.output;
+            // const hasResponse = Boolean(outputInfo && outputInfo.status && outputInfo.status > 0);
+            // if (hasResponse) {
+            //     setShowResponse(hasResponse);
+            // }
         }
     }, [props]);
 
@@ -652,15 +651,22 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                                 />
                             </TabList>
                         </Stack>
-                        <TabPanel value={'0'}>
+                        <TabPanel
+                            value={'0'}
+                            key={
+                                runData?.headers?.length
+                                    ? runData.headers[runData.headers.length - 1].key
+                                    : 'headers panel'
+                            }
+                        >
                             <ValueCard
                                 isHeader={true}
                                 value={headers}
                                 disabled={apiType === 'system' ? true : false}
                                 onChange={(newHeaders: KeyValueProps[]) => {
                                     if (!newHeaders) return;
+                                    setHeaders(newHeaders);
                                     if (!_.isEqual(newHeaders, headers)) {
-                                        setHeaders(newHeaders);
                                         triggerDelayedNodeSaveOnServer(delayTimeSet);
                                     }
                                 }}
@@ -679,8 +685,8 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                                 disabled={apiType === 'system' ? true : false}
                                 onChange={(newQueryParams: KeyValueProps[]) => {
                                     if (!newQueryParams) return;
+                                    setQueryParams(newQueryParams);
                                     if (!_.isEqual(newQueryParams, queryParams)) {
-                                        setQueryParams(newQueryParams);
                                         triggerDelayedNodeSaveOnServer(delayTimeSet);
                                     }
                                 }}
@@ -697,12 +703,13 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                             <ValueCard
                                 disableAdd={true}
                                 disableDelete={true}
+                                disableKey={true}
                                 value={pathParams}
                                 disabled={apiType === 'system' ? true : false}
                                 onChange={(newPathParams: KeyValueProps[]) => {
                                     if (!newPathParams) return;
+                                    setPathParams(newPathParams);
                                     if (!_.isEqual(newPathParams, pathParams)) {
-                                        setPathParams(newPathParams);
                                         triggerDelayedNodeSaveOnServer(delayTimeSet);
                                     }
                                 }}
@@ -714,15 +721,13 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                         <Stack width="100%">
                             <ResponseTab
                                 onChange={(value: any) => {
-                                    setRequestBodyData(value);
                                     if (checkValidJson(value) === true) {
-                                        triggerDelayedNodeSaveOnServer(delayTimeSet);
+                                        setRequestBodyData(value);
                                         setIsJsonValid(true);
-                                    } else {
-                                        setIsJsonValid(false);
                                     }
+                                    triggerDelayedNodeSaveOnServer(delayTimeSet);
                                 }}
-                                isError={isError}
+                                // isError={runData?.output?.status != 200 && runData?.output?.status != 0}
                                 isResponse={false}
                                 displayTitle="Request Body"
                                 value={requestBodyData || {}}
@@ -735,7 +740,7 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                         <Button
                             sx={{ width: 'fit-content' }}
                             onClick={() => {
-                                setSelectedNode(cardId);
+                                setDrawerSelected('mapping');
                             }}
                             variant="outlined"
                             startIcon={<Add />}
@@ -748,12 +753,15 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
         </>
     );
     useEffect(() => {
-        if (drawerSelected) {
-            setCollapse(false);
-
+        if (drawerSelected != '') {
             if (isUpdateNodeOnServerDone) {
-                setSelectedCard(cardId);
-                setDrawerSelected(false);
+                if (drawerSelected == 'drawer') {
+                    setSelectedCard(cardId);
+                } else {
+                    setSelectedNode(cardId);
+                }
+
+                setDrawerSelected('');
             }
         }
     }, [drawerSelected, isUpdateNodeOnServerDone]);
@@ -813,17 +821,19 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                                 onClick={() => {
                                     nullChecker();
 
-                                    if (checkValidJson(requestBodyData) === true) {
+                                    if (
+                                        checkValidJson(requestBodyData) === true ||
+                                        props.data.runData?.method === 'GET'
+                                    ) {
                                         setIsJsonValid(true);
                                         triggerDelayedNodeSaveOnServer(1);
                                         setExplicitLoading(true);
-                                    } else {
-                                        setIsJsonValid(false);
                                     }
                                 }}
                             >
                                 <Tooltip title="Save changes">
-                                    {checkValidJson(requestBodyData) === false ? (
+                                    {checkValidJson(requestBodyData) === false &&
+                                    props.data.runData?.method !== 'GET' ? (
                                         <CloudOff style={{ color: 'grey', cursor: 'pointer' }} />
                                     ) : (
                                         <CloudUploadIcon style={{ color: '#2c71c7', cursor: 'pointer' }} />
@@ -832,11 +842,18 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                             </div>
                         )}
 
+                        <Delete
+                            sx={{ alignSelf: 'center' }}
+                            color={'primary'}
+                            onClick={() => {
+                                setDeleteData(cardId);
+                            }}
+                        />
                         <img
                             src={DialogIcon}
                             style={{ width: '24px', height: '24px', alignSelf: 'center', cursor: 'pointer' }}
                             onClick={() => {
-                                setDrawerSelected(true);
+                                setDrawerSelected('drawer');
                             }}
                         />
 
@@ -881,7 +898,7 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                     </Typography>
                 </Stack>
             )}
-            {!collapse && !isUpdateNodeOnServerDone && drawerSelected && (
+            {!collapse && !isUpdateNodeOnServerDone && drawerSelected != '' && (
                 <div className="my-7">
                     <LoaderWithMessage message={'Saving Data'} contained={true} className="" />
                 </div>
@@ -923,19 +940,18 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                                     >
                                         <ResponseTab
                                             message={''}
-                                            isError={isError}
+                                            isError={runData?.output?.status != 200 && runData?.output?.status != 0}
                                             isResponse={false}
                                             value={requestBodyData || {}}
                                             disabled={apiType === 'system' ? true : false}
                                             onChange={(value: any) => {
-                                                setRequestBodyData(value);
-
                                                 if (checkValidJson(value) === true) {
-                                                    triggerDelayedNodeSaveOnServer(delayTimeSet);
+                                                    setRequestBodyData(value);
                                                     setIsJsonValid(true);
                                                 } else {
                                                     setIsJsonValid(false);
                                                 }
+                                                triggerDelayedNodeSaveOnServer(delayTimeSet);
                                             }}
                                         />
                                     </TabPanel>
@@ -946,7 +962,7 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                                     >
                                         <ResponseTab
                                             message={runData?.output?.status?.toString()}
-                                            isError={runData?.output?.status != 200}
+                                            isError={runData?.output?.status != 200 && runData?.output?.status != 0}
                                             value={runData?.output?.data}
                                             disabled={apiType === 'system' ? true : false}
                                         />
@@ -975,7 +991,7 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                             <Stack width="100%" key={`response-${runData?.output?.status || 0}-${executionNumber}`}>
                                 <ResponseTab
                                     message={runData?.output?.status?.toString()}
-                                    isError={runData?.output?.status != 200}
+                                    isError={runData?.output?.status != 200 && runData?.output?.status != 0}
                                     isResponse={true}
                                     value={runData?.output?.data}
                                     disabled={apiType === 'system' ? true : false}
