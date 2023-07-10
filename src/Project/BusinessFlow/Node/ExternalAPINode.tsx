@@ -822,8 +822,9 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                                     nullChecker();
 
                                     if (
-                                        checkValidJson(requestBodyData) === true ||
-                                        props.data.runData?.method === 'GET'
+                                        (checkValidJson(requestBodyData) === true ||
+                                            props.data.runData?.method === 'GET') &&
+                                        displayedUrlValue !== ''
                                     ) {
                                         setIsJsonValid(true);
                                         triggerDelayedNodeSaveOnServer(1);
@@ -832,8 +833,9 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                                 }}
                             >
                                 <Tooltip title="Save changes">
-                                    {checkValidJson(requestBodyData) === false &&
-                                    props.data.runData?.method !== 'GET' ? (
+                                    {(checkValidJson(requestBodyData) === false &&
+                                        props.data.runData?.method !== 'GET') ||
+                                    displayedUrlValue === '' ? (
                                         <CloudOff style={{ color: 'grey', cursor: 'pointer' }} />
                                     ) : (
                                         <CloudUploadIcon style={{ color: '#2c71c7', cursor: 'pointer' }} />

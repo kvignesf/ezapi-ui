@@ -370,6 +370,7 @@ export const ExternalAPIDrawer = ({ cardId }: ExternalAPIDrawerProps) => {
                     setResponseValue('1');
                     setShowResponse(true);
                     nullChecker();
+                    scrollToBottom('scroll');
 
                     //triggerDelayedNodeSaveOnServer(delayTimeSet);
                     setExecutionNumber(executionNumber + 1);
