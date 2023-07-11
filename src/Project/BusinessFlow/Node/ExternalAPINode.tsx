@@ -477,7 +477,7 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
             //     setShowResponse(hasResponse);
             // }
         }
-    }, [props]);
+    }, []);
 
     useEffect(() => {
         if (!displayedUrlValue || !isValidUrl(displayedUrlValue) || !isFocused) return;
@@ -741,6 +741,7 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                             sx={{ width: 'fit-content' }}
                             onClick={() => {
                                 setDrawerSelected('mapping');
+                                setCollapse(false);
                             }}
                             variant="outlined"
                             startIcon={<Add />}

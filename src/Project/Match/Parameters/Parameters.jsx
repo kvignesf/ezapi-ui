@@ -328,14 +328,14 @@ const ParametersGrid = ({ parameters, projectType, isFetchingParameters, getPara
                             <p className="flex-1 text-smallLabel ml-7 text-neutral-gray2 uppercase">Attribute</p>
                             <p className="flex-1 text-smallLabel uppercase text-neutral-gray2">Data Type</p>
                             <p className="flex-1 text-smallLabel uppercase text-neutral-gray2">Possible Values</p>
-                            <p className="flex-1">
+                            <div className="flex-1">
                                 <p
                                     style={{ marginRight: '24px' }}
                                     className="text-center uppercase text-neutral-gray2 text-smallLabel"
                                 >
                                     Required
                                 </p>
-                            </p>
+                            </div>
                             <p className="flex-1 text-smallLabel uppercase text-neutral-gray2">Description</p>
                             <div className="w-12"></div>
                         </div>
