@@ -5,7 +5,7 @@ import filterAtom from '@/shared/atom/filterAtom';
 import responseMapperAtom from '@/shared/atom/reponseMapperAtom';
 import selectedNodeAtom from '@/shared/atom/selectedNodeAtom';
 import { operationAtomWithMiddleware } from '@/shared/utils';
-import { Drawer } from '@mui/material';
+import { CircularProgress, Drawer, Stack } from '@mui/material';
 import axios, { CancelTokenSource } from 'axios';
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router';
@@ -50,11 +50,9 @@ import './index.css';
 import { IBusinessFlow } from './interfaces';
 import { NewAggregateCard } from './interfaces/aggregate-cards';
 
-/* import { NODE_TYPES } from './constants';
-import { DEFAULT_BUSINESS_FLOW_STATE } from './defaults';
-import './index.css';
-import { IBusinessFlow } from './interfaces';
-import { NewAggregateCard } from './interfaces/aggregate-cards'; */
+import deleteNodeAtom from '@/shared/atom/deleteNodeAtom';
+import loaderAtom from '@/shared/atom/loaderAtom';
+import ConfirmDialog from '@/shared/components/ConfirmDialog';
 import { createAggregateCard, fetchAggregateMetaData, fetchNodeFromServer } from './services';
 import createStore, { MyReactFlowState, getInputNodeIdsFromNode } from './store';
 import { prepareNodeFromAggregateCard, prepareNodeFromAggregateCardResponse } from './transformers';
@@ -211,11 +209,13 @@ const Flow = () => {
     const [openFilterDrawer, setOpenFilterDrawer] = useState(false);
     const [selectBranchQuery, setSelectBranchQuery] = useState(false);
     const [showAPIDrawer, setShowAPIDrawer] = useState(false);
+    const [deleteData, setDeleteData] = useRecoilState<Node[] | undefined | string>(deleteNodeAtom);
     const [selectedNode, setSelectedNode] = useRecoilState(selectedNodeAtom);
     const [selectedBranchCondition, setSelectedBranchCondition] = useRecoilState(branchQueryAtom);
     const [selectedCard, setSelectedCard] = useRecoilState(drawerCardAtom);
     const [showResponseMapping, setShowResponseMapping] = useRecoilState(responseMapperAtom);
     const [filterType, setFilterType] = useRecoilState(filterAtom);
+    const [isLoading, setIsLoading] = useRecoilState(loaderAtom);
     const { project, fitView } = useReactFlow();
     const reactFlowWrapper = useRef<HTMLInputElement>(null);
     const connectionStartParams = useRef<OnConnectStartParams | null>(null);
@@ -224,10 +224,6 @@ const Flow = () => {
     const {
         nodes,
         edges,
-        setCurrentIndex,
-        setElements,
-        history,
-        currentIndex,
         onNodesChange,
         onNodesDelete,
         onEdgesChange,
@@ -240,11 +236,8 @@ const Flow = () => {
 
     useEffect(() => {
         if (socket) {
-            console.log(socket);
-            console.log(socket.connected);
             socket.on('filterUpdateDone', (data: any) => {
                 if (data && data.cards) {
-                    console.log(data);
                     const targetIds = Object.keys(data.cards);
                     targetIds.map((id) => {
                         const node = prepareNodeFromAggregateCardResponse(data.cards[`${id}`]);
@@ -257,29 +250,29 @@ const Flow = () => {
 
     const [newNodeInfo, setNewNodeInfo] = useState<{ parentNode: Node | undefined; position: XYPosition } | null>(null);
 
-    const undo = () => {
-        const newCurrentIndex = currentIndex - 1;
+    // const undo = () => {
+    //     const newCurrentIndex = currentIndex - 1;
 
-        if (newCurrentIndex < 0) {
-            setElements(initialNodes, initialEdges);
-            setCurrentIndex(-1);
-        } else {
-            const { nodes: newNodes, edges: newEdges } = history[newCurrentIndex];
-            setElements(newNodes, newEdges);
-            setCurrentIndex(newCurrentIndex);
-        }
-    };
+    //     if (newCurrentIndex < 0) {
+    //         setElements(initialNodes, initialEdges);
+    //         setCurrentIndex(-1);
+    //     } else {
+    //         const { nodes: newNodes, edges: newEdges } = history[newCurrentIndex];
+    //         setElements(newNodes, newEdges);
+    //         setCurrentIndex(newCurrentIndex);
+    //     }
+    // };
 
-    const redo = () => {
-        if (currentIndex === history.length - 1) {
-            return;
-        }
-        const newCurrentIndex = currentIndex + 1;
+    // const redo = () => {
+    //     if (currentIndex === history.length - 1) {
+    //         return;
+    //     }
+    //     const newCurrentIndex = currentIndex + 1;
 
-        const { nodes: newNodes, edges: newEdges } = history[newCurrentIndex];
-        setElements(newNodes, newEdges);
-        setCurrentIndex(newCurrentIndex);
-    };
+    //     const { nodes: newNodes, edges: newEdges } = history[newCurrentIndex];
+    //     setElements(newNodes, newEdges);
+    //     setCurrentIndex(newCurrentIndex);
+    // };
 
     const onKeyDown = (event: KeyboardEvent) => {
         const ctrl = event.ctrlKey ? 'Control-' : '';
@@ -287,8 +280,8 @@ const Flow = () => {
         const meta = event.metaKey ? 'Meta-' : '';
         const shift = event.shiftKey ? 'Shift-' : '';
         const key = `${ctrl}${alt}${shift}${meta}${event.key}`;
-        if (key === 'Meta-z') undo();
-        if (key === 'Shift-Meta-z') redo();
+        // if (key === 'Meta-z')
+        // if (key === 'Shift-Meta-z') redo();
     };
 
     useEffect(() => {
@@ -326,6 +319,15 @@ const Flow = () => {
             fitView(fitViewOptions);
         }
     };
+
+    useEffect(() => {
+        if (typeof deleteData === 'string') {
+            const nodeData = nodes.filter((n) => n.id === deleteData);
+            if (nodeData.length > 0) {
+                setDeleteData(nodeData);
+            }
+        }
+    }, [deleteData]);
 
     useEffect(() => {
         const source: CancelTokenSource = axios.CancelToken.source();
@@ -379,6 +381,20 @@ const Flow = () => {
 
     return (
         <div className="wrapper" ref={reactFlowWrapper}>
+            {deleteData !== undefined && typeof deleteData !== 'string' && (
+                <ConfirmDialog
+                    title={'Delete Node'}
+                    description={'Are you sure you want to delete the node? Once deleted you cant get it back.'}
+                    onCancel={() => {
+                        setDeleteData(undefined);
+                    }}
+                    onConfirm={() => {
+                        onNodesDelete(deleteData!);
+                        setDeleteData(undefined);
+                        setIsLoading(true);
+                    }}
+                />
+            )}
             <Drawer
                 anchor={'right'}
                 open={openMappingDrawer || showResponseMapping}
@@ -407,7 +423,7 @@ const Flow = () => {
                         nodes.find((node: Node) => node.id === selectedNode)?.data.commonData.inputNodeIds || []
                     }
                     selectedNodeCardType={nodes.find((node: Node) => node.id === selectedNode)?.type || ''}
-                    onClose={async () => {
+                    onClose={async (type: string) => {
                         const node = nodes.find((node: Node) => node.id === selectedNode);
                         if (showResponseMapping) {
                             setShowResponseMapping(false);
@@ -415,7 +431,7 @@ const Flow = () => {
                             setOpenMappingDrawer(false);
                             setSelectedNode('');
                         }
-                        if (node) {
+                        if (node && type == 'save') {
                             const getNodeData = {
                                 projectId,
                                 operationId,
@@ -514,7 +530,7 @@ const Flow = () => {
                 PaperProps={{
                     style: {
                         height: '100%',
-                        width: '66%',
+                        width: '55%',
                         position: 'absolute',
                     },
                 }}
@@ -527,7 +543,11 @@ const Flow = () => {
                 nodes={nodes}
                 edges={edges}
                 onNodesChange={onNodesChange}
-                onNodesDelete={onNodesDelete}
+                onNodesDelete={(data: Node[]) => {
+                    if (data && data[0] && data[0].type !== 'mainNode') {
+                        setDeleteData(data);
+                    }
+                }}
                 onEdgesChange={onEdgesChange}
                 onConnect={onConnect}
                 onConnectStart={onConnectStart}
@@ -549,12 +569,12 @@ const Flow = () => {
 
 function BusinessFlow() {
     const [initialState, setInitialState] = useState<IBusinessFlow>({ ...DEFAULT_BUSINESS_FLOW_STATE });
-    const [isLoading, setIsLoading] = useState<boolean>(false);
+
+    const [isLoading, setIsLoading] = useRecoilState(loaderAtom);
 
     const { projectId = '' }: { projectId: string } = useParams();
     const [operationData, _] = useRecoilState(operationAtomWithMiddleware);
     const operationId = operationData?.operation?.operationId;
-    const { useStore } = useContext(BusinessFlowContext);
 
     useEffect(() => {
         setIsLoading(true);
@@ -579,6 +599,7 @@ function BusinessFlow() {
                 initialNodes,
                 initialEdges,
                 isInitialStateLoaded: true,
+                setIsLoading,
             };
             const useStore = createStore({
                 ...newInitialStoreState,
@@ -606,7 +627,20 @@ function BusinessFlow() {
                     </ReactFlowProvider>
                 </BusinessFlowContext.Provider>
             ) : (
-                <p>{'Loading...'}</p>
+                <Stack
+                    sx={{
+                        width: '100%',
+                        height: '100%',
+                        background: canvasBackgroundColor,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                    }}
+                    gap={2}
+                >
+                    <CircularProgress size={50} />
+                    <p style={{ color: connectionLineStrokeColor, fontSize: '20px' }}>{'Loading...'}</p>
+                    <div style={{ height: '30px' }} />
+                </Stack>
             )}
         </div>
     );

@@ -3,10 +3,9 @@ import { makeStyles } from '@material-ui/core/styles';
 import { useState } from 'react';
 import { useRecoilState } from 'recoil';
 import { requestParams } from '../../../CollectionsAtom';
-import JsonEditor from '../components/JsonEditor';
 import AuthTab from './AuthenticationTab/AuthTab';
 import KeyValue from './KeyValue/KeyValuePanel';
-
+import ReqBodyEditor from './ReqBodyEditor';
 const useStyles = makeStyles((theme) => ({
     root: {
         flexGrow: 1,
@@ -47,12 +46,11 @@ const useStyles = makeStyles((theme) => ({
 export default function RequestTabs() {
     const classes = useStyles();
     const [value, setValue] = useState(0);
+    const [request, setRequest] = useRecoilState(requestParams);
 
     const handleChange = (event, newValue) => {
         setValue(newValue);
     };
-
-    const [request, setRequest] = useRecoilState(requestParams);
 
     const handleSelect = (event) => {
         const { name, value } = event.target;
@@ -62,6 +60,18 @@ export default function RequestTabs() {
         }));
     };
 
+    const handleFormatClick = () => {
+        try {
+            const formattedValue = JSON.stringify(JSON.parse(request.body), null, 2);
+            setRequest((prevData) => ({
+                ...prevData,
+                body: formattedValue,
+            }));
+        } catch (error) {
+            // Handle any parsing errors here
+            console.error('Invalid JSON:', error);
+        }
+    };
     const requestTabs = [
         {
             slug: 'query-params',
@@ -76,7 +86,7 @@ export default function RequestTabs() {
         {
             slug: 'body',
             title: 'Body',
-            panel: <JsonEditor value={request.body} type={'reqBody'} readOnly={false} tab={2} />,
+            panel: <ReqBodyEditor tab={2} />,
         },
         {
             slug: 'authorization',
@@ -87,32 +97,40 @@ export default function RequestTabs() {
 
     return (
         <div className={classes.root}>
-            <div className={classes.container}>
-                <Select
-                    className={classes.select}
-                    value={request.proxy ? request.proxy : 'No Proxy'}
-                    onChange={handleSelect}
-                    variant="outlined"
-                    name="proxy"
-                >
-                    <MenuItem value="No Proxy">No Proxy</MenuItem>
-                    <MenuItem value="Proxy">Proxy</MenuItem>
-                </Select>
-                <Tabs
-                    value={value}
-                    onChange={handleChange}
-                    variant="standard"
-                    indicatorColor="transparent"
-                    textColor="primary"
-                    style={{
-                        borderBottom: 'none',
-                    }}
-                >
-                    {requestTabs.map((tab) => (
-                        <Tab className={classes.tab} key={tab.slug} label={tab.title} />
-                    ))}
-                </Tabs>
+            <div className="flex flex-wrap justify-between">
+                <div className={classes.container}>
+                    <Select
+                        className={classes.select}
+                        value={request.proxy ? request.proxy : 'No Proxy'}
+                        onChange={handleSelect}
+                        variant="outlined"
+                        name="proxy"
+                    >
+                        <MenuItem value="No Proxy">No Proxy</MenuItem>
+                        <MenuItem value="Proxy">Proxy</MenuItem>
+                    </Select>
+                    <Tabs
+                        value={value}
+                        onChange={handleChange}
+                        variant="standard"
+                        indicatorColor="transparent"
+                        textColor="primary"
+                        style={{
+                            borderBottom: 'none',
+                        }}
+                    >
+                        {requestTabs.map((tab) => (
+                            <Tab className={classes.tab} key={tab.slug} label={tab.title} />
+                        ))}
+                    </Tabs>
+                </div>
+                {value === 2 ? (
+                    <button className={classes.tab} style={{ paddingRight: '30px' }} onClick={handleFormatClick}>
+                        Format JSON
+                    </button>
+                ) : null}
             </div>
+
             {requestTabs.map((tab, index) => (
                 <TabPanel className={classes.panel} value={value} index={index} key={tab.slug}>
                     {tab.panel}

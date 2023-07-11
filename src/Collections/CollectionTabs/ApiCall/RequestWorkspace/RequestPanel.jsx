@@ -33,7 +33,7 @@ export default function Request({ setLoading }) {
         let data;
         const startTime = Date.now(); // Start tracking elapsed time
         if (request.body === undefined || request.body === null) {
-            console.error('The request body is undefined or null.');
+            data = {};
         } else {
             try {
                 data = request.body;
@@ -56,6 +56,12 @@ export default function Request({ setLoading }) {
                 headers.Authorization = `Bearer ${authToken}`;
             }
             if (newProxy === 'Proxy') {
+                const req = {
+                    ...request,
+                    url: newUrl,
+                    proxy: newProxy,
+                };
+                let res = {};
                 const data = {
                     url: request.url,
                     method: request.method,
@@ -63,49 +69,41 @@ export default function Request({ setLoading }) {
                     headers,
                     data: request.body,
                 };
-                const response = await axios({
+
+                await axios({
                     url: 'https://proxy.ezapi.ai',
                     data,
                     method: 'POST',
-                });
-                const responseData = {
-                    status: response.status,
-                    headers: response.headers,
-                    data: response.data,
-                    time: ((Date.now() - startTime) / 1000).toFixed(2),
-                    size: (new Blob([JSON.stringify(response)]).size / 1024).toFixed(2),
-                    error: false,
-                };
-                setResponse(responseData);
-            } else {
-                const requestOptions = {
-                    method: request.method,
-                    headers,
-                };
+                })
+                    .then(async (response) => {
+                        const responseData = {
+                            status: response.status,
+                            headers: response.headers,
+                            data: response.data,
+                            time: ((Date.now() - startTime) / 1000).toFixed(2),
+                            size: (new Blob([JSON.stringify(response)]).size / 1024).toFixed(2),
+                            error: false,
+                        };
+                        setResponse(responseData);
+                        res = responseData;
+                    })
+                    .catch(async function (error) {
+                        if (error.response) {
+                            setResponse({
+                                time: ((Date.now() - startTime) / 1000).toFixed(2),
+                                data: error.response.data,
+                                status: error.response.status,
+                                headers: error.response.headers,
+                            });
+                            res = {
+                                time: ((Date.now() - startTime) / 1000).toFixed(2),
+                                data: error.response.data,
+                                status: error.response.status,
+                                headers: error.response.headers,
+                            };
+                        }
+                    });
 
-                if (request.method === 'GET' || request.method === 'HEAD') {
-                    requestOptions.body = undefined;
-                } else {
-                    requestOptions.body = data;
-                }
-
-                const response = await fetch(newUrl, requestOptions);
-
-                const responseHeaders = response.headers;
-                // Convert the headers to an object
-                const headersObject = {};
-                for (const [key, value] of responseHeaders) {
-                    headersObject[key] = value;
-                }
-                const responseData = {
-                    status: response.status,
-                    headers: headersObject,
-                    data: await response.json(),
-                    time: ((Date.now() - startTime) / 1000).toFixed(2),
-                    size: (new Blob([JSON.stringify(response)]).size / 1024).toFixed(2),
-                    error: false,
-                };
-                setResponse(responseData);
                 const currentDate = new Date();
                 const formattedDateTime = currentDate.toLocaleString('en-GB', {
                     day: '2-digit',
@@ -117,8 +115,8 @@ export default function Request({ setLoading }) {
                 });
                 await axios
                     .put(process.env.REACT_APP_API_URL + endpoint.collectionsRequest + `/${userId}/${api.id}`, {
-                        request: request,
-                        response: responseData,
+                        request: req,
+                        response: res,
                         modifiedAt: formattedDateTime,
                     })
                     .then((response) => {
@@ -145,6 +143,85 @@ export default function Request({ setLoading }) {
                     .catch((error) => {
                         console.error('Error:', error);
                     });
+            } else {
+                const requestOptions = {
+                    method: request.method,
+                    headers,
+                };
+
+                if (request.method === 'GET' || request.method === 'HEAD') {
+                    requestOptions.body = undefined;
+                } else {
+                    requestOptions.body = data;
+                }
+                // console.log(requestOptions);
+                const response = await fetch(newUrl, requestOptions);
+                if (!response.ok) {
+                    const errorStatus = response.status || 404;
+                    const errorMessage = await response.text();
+                    const responseData = {
+                        status: errorStatus,
+                        headers: {},
+                        data: errorMessage && errorMessage !== '{}' ? errorMessage : { error: 'Data Not Found' },
+                        time: ((Date.now() - startTime) / 1000).toFixed(2),
+                    };
+                    setResponse(responseData);
+                } else {
+                    const responseHeaders = response.headers;
+                    // Convert the headers to an object
+                    const headersObject = {};
+                    for (const [key, value] of responseHeaders) {
+                        headersObject[key] = value;
+                    }
+                    const responseData = {
+                        status: response.status,
+                        headers: headersObject,
+                        data: await response.json(),
+                        time: ((Date.now() - startTime) / 1000).toFixed(2),
+                        size: (new Blob([JSON.stringify(response)]).size / 1024).toFixed(2),
+                        error: false,
+                    };
+                    setResponse(responseData);
+                    const currentDate = new Date();
+                    const formattedDateTime = currentDate.toLocaleString('en-GB', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                    });
+                    await axios
+                        .put(process.env.REACT_APP_API_URL + endpoint.collectionsRequest + `/${userId}/${api.id}`, {
+                            request: request,
+                            response: responseData,
+                            modifiedAt: formattedDateTime,
+                        })
+                        .then((response) => {
+                            const data = response.data;
+                            setTabs((prev) => {
+                                const isTabExists = prev.some((tab) => tab.id === data.id);
+                                if (isTabExists) {
+                                    // If the tab already exists, update the existing tab with new data
+                                    return prev.map((tab) => {
+                                        if (tab.id === data.id) {
+                                            return {
+                                                ...tab,
+                                                request: data.request,
+                                                response: data.response,
+                                            };
+                                        }
+                                        return tab;
+                                    });
+                                } else {
+                                    return [...prev];
+                                }
+                            });
+                        })
+                        .catch((error) => {
+                            console.error('Error:', error);
+                        });
+                }
             }
             setRequest((oldRequestParams) => ({
                 ...oldRequestParams,

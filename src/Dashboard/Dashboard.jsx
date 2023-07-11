@@ -1,6 +1,6 @@
 import { List, ListItem } from '@material-ui/core';
-import { Dialog, makeStyles } from '@material-ui/core/index';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
+import { Dialog, makeStyles } from '@material-ui/core/index';
 import AddIcon from '@material-ui/icons/Add';
 import LibraryBooksIcon from '@material-ui/icons/LibraryBooks';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
@@ -197,14 +197,17 @@ const Dashboard = ({ selectedIndex, children, pricingDefaultCheck }) => {
         <div className="flex flex-col h-screen">
             {showFirework && BackgroundParticles()}
             <Dialog
-                onClose={handleCloseDialog}
+                onClose={(event, reason) => {
+                    if (reason !== 'backdropClick') {
+                        handleCloseDialog();
+                    }
+                }}
                 aria-labelledby="dashboard-dialog"
                 open={isLoggingOut || (dialog?.show ?? false)}
                 fullWidth
                 PaperProps={{
                     style: { borderRadius: 8 },
                 }}
-                disableBackdropClick
             >
                 {dialog?.type === 'add-project' && (
                     <AddProject

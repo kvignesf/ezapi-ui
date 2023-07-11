@@ -13,6 +13,7 @@ import schemaAtom from '../../shared/atom/schemaAtom';
 import storedProcedureAtom from '../../shared/atom/storedProcedureAtom';
 import tableAtom from '../../shared/atom/tableAtom';
 import tablesDataAtom from '../../shared/atom/tablesDataAtom';
+import { PrimaryButton } from '../../shared/components/AppButton';
 import AppIcon from '../../shared/components/AppIcon';
 import TabLabel from '../../shared/components/TabLabel';
 import { isArray, isMongoDb, isObject, operationAtomWithMiddleware, useCanEdit } from '../../shared/utils';
@@ -31,7 +32,7 @@ const Match = ({ projectType, isBusinessFlow, ...props }) => {
     const [addParamCheck, setAddParamCheck] = useRecoilState(addParamAtom);
     const [saveBulkParameter, setSaveBulkParam] = useRecoilState(saveBulkParamAtom);
 
-    const [currentTab, setTab] = useState(null);
+    const [currentTab, setTab] = useState('param');
     const [schemaState, setSchemaState] = useRecoilState(schemaAtom);
     const resetSchemaState = useResetRecoilState(schemaAtom);
     const [tableState, setTableState] = useRecoilState(tableAtom);
@@ -114,6 +115,12 @@ const Match = ({ projectType, isBusinessFlow, ...props }) => {
 
     const isOperationSelected = projectId && operationData?.operation?.operationId;
 
+    useEffect(() => {
+        if (!isOperationSelected && currentTab == 'business-flow') {
+            setTab('param');
+        }
+    }, [isOperationSelected]);
+
     const useStyles = makeStyles((theme) => ({
         switchBase: {
             color: theme.palette.grey[500],
@@ -133,14 +140,17 @@ const Match = ({ projectType, isBusinessFlow, ...props }) => {
     return (
         <div className="flex-1 relative w-full" {...props}>
             <Dialog
-                onClose={handleCloseDialog}
                 aria-labelledby="match-dialog"
                 open={dialog?.show ?? false}
                 fullWidth
                 PaperProps={{
                     style: { borderRadius: 8 },
                 }}
-                disableBackdropClick
+                onClose={(event, reason) => {
+                    if (reason !== 'backdropClick') {
+                        handleCloseDialog();
+                    }
+                }}
             >
                 {dialog?.type === 'add-parameter' && canEdit() && <AddOrEditParameter onClose={handleCloseDialog} />}
                 {dialog?.type === 'add-custom-parameter' && canEdit() && (
@@ -462,28 +472,26 @@ const Match = ({ projectType, isBusinessFlow, ...props }) => {
                                 </div>
                             </div>
                         </div>
-
-                        <div
-                            className="flex flex-row items-center cursor-pointer hover:opacity-80 mr-16 border-1 rounded-md border-brand-secondary px-2 py-2"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                if (currentTab === 'param') {
-                                    if (currentView === 'editor') {
-                                        setSaveBulkParam(true);
-                                    } else {
-                                        setAddParamCheck(true);
+                        <div className="mr-16 px-2 py-2">
+                            {' '}
+                            <PrimaryButton
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    if (currentTab === 'param') {
+                                        if (currentView === 'editor') {
+                                            setSaveBulkParam(true);
+                                        } else {
+                                            setAddParamCheck(true);
+                                        }
                                     }
-                                }
-                                if (currentTab === 'customParam') {
-                                    showAddCustomParameterDialog();
-                                }
-                            }}
-                        >
-                            {/* <AppIcon size="20px" color={Colors.brand.secondary} style={{ marginRight: '0.5rem' }}>
-                                <AddIcon style={{ fontSize: '20px' }} />
-                            </AppIcon> */}
-                            <p className="text-overline2 text-brand-secondary">Save</p>
+                                    if (currentTab === 'customParam') {
+                                        showAddCustomParameterDialog();
+                                    }
+                                }}
+                            >
+                                Save
+                            </PrimaryButton>
                         </div>
                     </div>
                 )}

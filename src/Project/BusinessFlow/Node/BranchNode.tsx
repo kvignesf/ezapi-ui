@@ -1,6 +1,7 @@
 import branchQueryAtom from '@/shared/atom/branchQueryAtom';
+import deleteNodeAtom from '@/shared/atom/deleteNodeAtom';
 import selectedNodeAtom from '@/shared/atom/selectedNodeAtom';
-import { Add } from '@mui/icons-material';
+import { Add, Delete } from '@mui/icons-material';
 import { Button, Card, Stack, Tooltip, Typography } from '@mui/material';
 import _ from 'lodash';
 import { useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
@@ -31,13 +32,12 @@ const BranchNode = (props: BranchNodeProps) => {
     const outEdges = edges.filter((edge: Edge) => edge.source === cardId && edge.sourceHandle);
 
     const nodeRef: any = useRef();
-
     const [disableAdd, setDisableAdd] = useState(false);
     const [showResponse, setShowResponse] = useState(false);
     const [collapse, setCollapse] = useState(true);
-
-    const [selectedBranchCondition, setSelectedBranchCondition] = useRecoilState(branchQueryAtom);
-    const [selectedNode, setSelectedNode] = useRecoilState(selectedNodeAtom);
+    const [_deleteData, setDeleteData] = useRecoilState<Node[] | undefined | string>(deleteNodeAtom);
+    const [_selectedBranchCondition, setSelectedBranchCondition] = useRecoilState(branchQueryAtom);
+    const [_selectedNode, setSelectedNode] = useRecoilState(selectedNodeAtom);
 
     const [dimensions, setDimensions] = useState({ width: 20, height: 100 });
 
@@ -215,17 +215,28 @@ const BranchNode = (props: BranchNodeProps) => {
                             </Typography>
                         </Stack>
                         <Stack direction={'row'} spacing={1}>
+                            <Delete
+                                sx={{ alignSelf: 'center', cursor: 'pointer' }}
+                                color={'primary'}
+                                onClick={() => {
+                                    setDeleteData(cardId);
+                                }}
+                            />
+                            <img
+                                src={DialogIcon}
+                                style={{ width: '24px', height: '24px', alignSelf: 'center', cursor: 'pointer' }}
+                            />
                             <img
                                 src={Collapse}
-                                style={{ width: '24px', height: '24px', alignSelf: 'center' }}
+                                style={{ width: '24px', height: '24px', alignSelf: 'center', cursor: 'pointer' }}
                                 onClick={() => {
                                     setCollapse(!collapse);
                                 }}
                             />
-                            <img src={DialogIcon} style={{ width: '24px', height: '24px', alignSelf: 'center' }} />
+
                             <img
                                 src={RunIcon}
-                                style={{ width: '24px', height: '24px', alignSelf: 'center' }}
+                                style={{ width: '24px', height: '24px', alignSelf: 'center', cursor: 'pointer' }}
                                 onClick={() => {
                                     setShowResponse(!showResponse);
                                 }}

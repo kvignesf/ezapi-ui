@@ -1,6 +1,6 @@
 import Editor from '@monaco-editor/react';
-import { Add, Create, Upload } from '@mui/icons-material';
-import { Button, Stack } from '@mui/material';
+import { Add, Close, Create, Upload } from '@mui/icons-material';
+import { Button, Stack, Tooltip } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { KeyValueProps, ValueCardProps } from '../../interfaces';
 import { ValueCardRow } from './ValueCardRow';
@@ -11,11 +11,11 @@ export const ValueCard = (props: ValueCardProps): React.ReactElement => {
         disabled = false,
         onChange = () => {},
         onDone,
-        onDelete,
         isHeader = false,
         isDrawer = false,
         disableAdd = false,
         onSubmit = () => {},
+        disableKey = false,
         disableDelete = false,
         iconSelector = 'delete',
         cardType = 'node',
@@ -56,8 +56,8 @@ export const ValueCard = (props: ValueCardProps): React.ReactElement => {
             sx={{
                 border: '1px solid #C0CCDA',
                 borderRadius: '2.5%',
-                width: cardType === 'node' ? '460px' : '920px',
-                minHeight: cardType === 'node' ? '200px' : '300px',
+                width: cardType === 'node' ? '460px' : '100%',
+                minHeight: cardType === 'node' ? '200px' : '211px',
                 overflow: 'auto',
                 padding: '12px 18px',
                 whiteSpace: 'nowrap',
@@ -71,7 +71,7 @@ export const ValueCard = (props: ValueCardProps): React.ReactElement => {
                             <>
                                 <p
                                     className="flex-1 text-smallLabel uppercase text-neutral-gray2"
-                                    style={{ width: cardType === 'node' ? '300px' : '750px' }}
+                                    style={{ width: cardType === 'node' ? '300px' : disableAdd ? '841px' : '845px' }}
                                 ></p>
                                 <div className="w-9" />
                             </>
@@ -79,13 +79,13 @@ export const ValueCard = (props: ValueCardProps): React.ReactElement => {
                             <>
                                 <p
                                     className="flex-1 text-smallLabel ml-7 text-neutral-gray2 uppercase"
-                                    style={{ width: cardType === 'node' ? '130px' : '390px' }}
+                                    style={{ width: cardType === 'node' ? '130px' : '225px' }}
                                 >
                                     Key
                                 </p>
                                 <p
                                     className="flex-1 text-smallLabel uppercase text-neutral-gray2"
-                                    style={{ width: cardType === 'node' ? '200px' : '390px' }}
+                                    style={{ width: cardType === 'node' ? '200px' : '650px' }}
                                 >
                                     Value
                                 </p>
@@ -94,12 +94,14 @@ export const ValueCard = (props: ValueCardProps): React.ReactElement => {
                         )}
                         {!isEditor ? (
                             nodeType !== 'main' && (
-                                <Create
-                                    sx={{ alignSelf: 'center', padding: '0 1px' }}
-                                    onClick={() => {
-                                        prepareEditorData();
-                                    }}
-                                />
+                                <Tooltip title={disableAdd ? 'Editor View' : 'Bulk Edit'} arrow placement={'top'}>
+                                    <Create
+                                        sx={{ alignSelf: 'center', padding: '0 1px', cursor: 'pointer' }}
+                                        onClick={() => {
+                                            prepareEditorData();
+                                        }}
+                                    />
+                                </Tooltip>
                             )
                         ) : (
                             <Stack
@@ -107,14 +109,28 @@ export const ValueCard = (props: ValueCardProps): React.ReactElement => {
                                 onClick={() => {
                                     prepareFormData();
                                 }}
+                                sx={{ cursor: 'pointer' }}
                             >
-                                <p
-                                    className="flex-1 text-smallLabel ml-7 text-neutral-gray2 uppercase pt-1"
-                                    style={{ width: '30px' }}
-                                >
-                                    save
-                                </p>
-                                <Upload sx={{ alignSelf: 'center', padding: '0 1px' }} />
+                                {disableAdd ? (
+                                    <p
+                                        className="flex-1 text-smallLabel ml-3 text-neutral-gray2 uppercase pt-1"
+                                        style={{ width: '50px' }}
+                                    >
+                                        cancel
+                                    </p>
+                                ) : (
+                                    <p
+                                        className="flex-1 text-smallLabel ml-7 text-neutral-gray2 uppercase pt-1"
+                                        style={{ width: '30px' }}
+                                    >
+                                        save
+                                    </p>
+                                )}
+                                {disableAdd ? (
+                                    <Close sx={{ alignSelf: 'center', padding: '0 1px' }} />
+                                ) : (
+                                    <Upload sx={{ alignSelf: 'center', padding: '0 1px' }} />
+                                )}
                             </Stack>
                         )}
                     </div>
@@ -139,12 +155,12 @@ export const ValueCard = (props: ValueCardProps): React.ReactElement => {
                                 nodeType={nodeType}
                                 data={item}
                                 onDone={onDone}
+                                disableKey={disableKey}
                                 isHeader={isHeader}
                                 cardType={cardType}
                                 onDelete={() => {
                                     const updatedData = data.filter((value, index2) => value && index !== index2);
                                     onChange(updatedData);
-                                    onDelete;
                                 }}
                                 disabled={disabled}
                                 disableDelete={disableDelete}
@@ -168,7 +184,6 @@ export const ValueCard = (props: ValueCardProps): React.ReactElement => {
                     {!disableAdd && nodeType !== 'main' && !isEditor && (
                         <Button
                             onClick={() => {
-                                const length = data.length;
                                 setData([
                                     ...data,
                                     {
@@ -180,7 +195,7 @@ export const ValueCard = (props: ValueCardProps): React.ReactElement => {
                             startIcon={<Add />}
                             variant="contained"
                             color="primary"
-                            sx={{ mt: 2, textTransform: 'none', height: '36px' }}
+                            sx={{ mt: 2, textTransform: 'none', height: '36px', cursor: 'pointer' }}
                             disabled={disabled}
                         >
                             Add

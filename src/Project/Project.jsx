@@ -5,6 +5,7 @@ import { useHistory, useParams } from 'react-router';
 import MappingDrawer from './MappingDrawer';
 import { useGetResources } from './Resources/resourcesQuery';
 //import { useGetTables } from "./AttributeDetails/recommendationQueries";
+import currentViewAtom from '@/shared/atom/currentViewAtom';
 import { CircularProgress, Dialog, Tab, Tabs, Tooltip } from '@material-ui/core';
 import CloudUploadIcon from '@material-ui/icons/CloudUpload';
 import classNames from 'classnames';
@@ -68,6 +69,7 @@ const Project = () => {
     const [inProgress, setInProgress] = useState(false);
     const [entityMappingData, setEntityMappingData] = useState();
     const [entityMappingError, setEntityMappingError] = useState();
+    const [currentView, setCurrentView] = useRecoilState(currentViewAtom);
 
     const {
         isLoading: isFetchingProjectDetails,
@@ -314,6 +316,7 @@ const Project = () => {
         resetTableState();
         resetOperationState();
         resetSchemaState();
+        setCurrentView('grid');
     };
 
     const saveProject = () => {
@@ -657,7 +660,11 @@ const Project = () => {
                     PaperProps={{
                         style: { borderRadius: 8 },
                     }}
-                    disableBackdropClick
+                    onClose={(event, reason) => {
+                        if (reason !== 'backdropClick') {
+                            // Handle your close dialog logic here
+                        }
+                    }}
                 >
                     {(isPublishingProject || inProgress || isVerifying || isLoggingOut) && (
                         <div className="p-6">

@@ -2,7 +2,7 @@ import { CircularProgress } from '@material-ui/core';
 import classNames from 'classnames';
 import Colors from '../colors';
 
-const LoaderWithMessage = ({ message, contained = false, className, ...rest }) => {
+const LoaderWithMessage = ({ message, contained = false, className = '', ...rest }) => {
     return (
         <div
             className={classNames(

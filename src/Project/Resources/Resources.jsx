@@ -123,14 +123,17 @@ const Resources = ({
     return (
         <div {...props} style={{ maxHeight: '88vh', overflowY: 'auto' }}>
             <Dialog
-                onClose={handleCloseDialog}
                 aria-labelledby="project-dialog"
                 open={dialog?.show ?? false}
                 fullWidth
                 PaperProps={{
                     style: { borderRadius: 8 },
                 }}
-                disableBackdropClick
+                onClose={(event, reason) => {
+                    if (reason !== 'backdropClick') {
+                        handleCloseDialog();
+                    }
+                }}
             >
                 {dialog?.type === 'add-resource' && canEdit() && (
                     <AddOrEditResource

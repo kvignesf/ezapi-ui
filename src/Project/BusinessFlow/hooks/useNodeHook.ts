@@ -4,7 +4,7 @@ import { useContext, useEffect, useState } from 'react';
 import { BusinessFlowContext } from '../BusinessFlowContext';
 import { GetNodeAPIProps, Node, UpdateNodeAPIProps } from '../interfaces';
 import { fetchNodeFromServer, updateNodeOnServer } from '../services';
-import { getInputNodeIdsFromNode, MyReactFlowState } from '../store';
+import { MyReactFlowState, getInputNodeIdsFromNode } from '../store';
 import { prepareAggregateCardFromNode } from '../transformers';
 
 interface NodeHookProps {
@@ -77,7 +77,6 @@ const useNodeHook = ({ nodeId, getUpdatedNodeData, collapse = false }: NodeHookP
                 card: prepareAggregateCardFromNode(_node, projectId, operationId),
                 updateNodeData,
             };
-            console.log('updating node on server=> ');
             updateNodeOnServer(updatedNodeRequestData, source);
             setIsUpdateNodeOnServerDone(true);
 
@@ -87,7 +86,6 @@ const useNodeHook = ({ nodeId, getUpdatedNodeData, collapse = false }: NodeHookP
     }
 
     function triggerDelayedNodeSaveOnServer(delayTime: number = 2000) {
-        console.log('triggered a delayed save=> ', delayTime);
         setIsUpdateNodeOnServerDone(false);
         intervalManager(
             true,
@@ -104,7 +102,11 @@ const useNodeHook = ({ nodeId, getUpdatedNodeData, collapse = false }: NodeHookP
         }
     }, [collapse]);
 
-    useEffect(nodeSaveHandler, [triggerNodeSaveOnServer]);
+    useEffect(() => {
+        if (triggerNodeSaveOnServer) {
+            nodeSaveHandler();
+        }
+    }, [triggerNodeSaveOnServer]);
 
     return {
         node,

@@ -42,7 +42,6 @@ export async function saveAggregateMetaData({ projectId, operationId, nodes, edg
     try {
         if (socket) {
             socket.emit('aggregateMetadata', requestData ?? null);
-            console.log('Data has been sent to the server via socket');
         }
     } catch (error) {
         console.log('An error occurred when sending the data:', error);
@@ -74,18 +73,18 @@ export async function fetchAggregateMetaData({ projectId, operationId }: FetchAP
 }
 
 export async function deleteNodesOnServer(props: DeleteNodesAPIProps) {
-    const url = `${process.env.REACT_APP_API_URL}/aggregateCards`;
-
     const { projectId, operationId, cardIdsToDelete, updatedAggregateMetadata, updatedResponseMapper } = props;
+
+    const url = `${process.env.REACT_APP_API_URL}/aggregateCard/${cardIdsToDelete[0]}`;
 
     const deleteDataObj = {
         projectId,
         operationId,
-        cardIdsToDelete,
         updatedAggregateMetadata,
         updatedResponseMapper,
     };
     try {
+        //add a loader here
         const response = await client.delete(url, { data: deleteDataObj });
         console.log(response);
     } catch (error) {

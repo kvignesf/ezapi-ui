@@ -307,9 +307,6 @@ const Body = ({ request = true, responseCode, projectType = 'schema', onDelete =
             itemDroppedFromTop = true;
         }
 
-        console.log(data);
-        console.log(valueDropped);
-
         setOperationDetails((operationDetails) => {
             const path = fetchFullPath(valueDropped);
 
@@ -2658,14 +2655,17 @@ const DatabaseLabel = ({
                 return (
                     <>
                         <Dialog
-                            onClose={handleCloseDialog}
                             aria-labelledby="dashboard-dialog"
                             open={dialog?.show ?? false}
                             fullWidth
                             PaperProps={{
                                 style: { borderRadius: 8 },
                             }}
-                            disableBackdropClick
+                            onClose={(event, reason) => {
+                                if (reason !== 'backdropClick') {
+                                    handleCloseDialog();
+                                }
+                            }}
                         >
                             {dialog?.type === 'rename-table' && canEdit() && !isArrayOfObject && (
                                 <ChangeTableName
@@ -2914,14 +2914,17 @@ const ColumnLabel = ({
                 return (
                     <>
                         <Dialog
-                            onClose={handleCloseDialog}
                             aria-labelledby="column-dialog"
                             open={dialog?.show ?? false}
                             fullWidth
                             PaperProps={{
                                 style: { borderRadius: 8 },
                             }}
-                            disableBackdropClick
+                            onClose={(event, reason) => {
+                                if (reason !== 'backdropClick') {
+                                    handleCloseDialog();
+                                }
+                            }}
                         >
                             {dialog?.type === 'rename-column' && canEdit() && !isArrayOfObject && (
                                 <ChangeColumnName
@@ -3165,14 +3168,17 @@ const StoredProcedureLabel = ({
                 return (
                     <>
                         <Dialog
-                            onClose={handleCloseDialog}
                             aria-labelledby="dashboard-dialog"
                             open={dialog?.show ?? false}
                             fullWidth
                             PaperProps={{
                                 style: { borderRadius: 8 },
                             }}
-                            disableBackdropClick
+                            onClose={(event, reason) => {
+                                if (reason !== 'backdropClick') {
+                                    handleCloseDialog();
+                                }
+                            }}
                         >
                             {dialog?.type === 'rename-table' && canEdit() && (
                                 <ChangeTableName

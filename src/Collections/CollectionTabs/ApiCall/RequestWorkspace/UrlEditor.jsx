@@ -1,14 +1,15 @@
-import { Button, Checkbox, FormControl, FormControlLabel, Input, MenuItem, Select } from '@material-ui/core';
+import LoadingDialog from '@/Collections/components/LoadingDialog';
+import { Button, Checkbox, FormControl, FormControlLabel, Input, Menu, MenuItem, Select } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
+import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
+import SaveOutlinedIcon from '@material-ui/icons/SaveOutlined';
+import SendIcon from '@material-ui/icons/Send';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
-import { useState } from 'react';
-
-import SaveOutlinedIcon from '@material-ui/icons/SaveOutlined';
-import SendIcon from '@material-ui/icons/Send';
 import axios from 'axios';
+import { useState } from 'react';
 import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
 import { v4 as uuidv4 } from 'uuid';
 import { endpoint } from '../../../../shared/network/client';
@@ -18,6 +19,7 @@ import {
     currentBreadCrumbs,
     currentTab,
     currentTabs,
+    folderContentLoading,
     isSaveModalOpen,
     requestName,
     requestParams,
@@ -49,88 +51,126 @@ const requestMethods = [
     },
 ];
 
-const useStyles = makeStyles((theme) => ({
-    formControl: {
-        margin: theme.spacing(1),
-        minWidth: 100,
-    },
-    input: {
-        flex: 1,
-        marginLeft: theme.spacing(1),
-        marginRight: theme.spacing(1),
-        border: '1px solid #e6e6e6',
-        borderRadius: '4px',
-        padding: '8px 12px', // reduce the padding on the top and bottom
-        fontSize: '14px',
-        height: '35px',
-    },
-    button: {
-        marginLeft: theme.spacing(1),
-        marginRight: theme.spacing(1),
-        padding: '8px 16px', // reduce the padding on the top and bottom
-        fontSize: '14px',
-        fontWeight: 600,
-        height: '45px',
-    },
-    modalButton: {
-        margin: theme.spacing(1),
-        padding: '5px 12px', // reduce the padding on the top and bottom
-        fontSize: '12px',
-        fontWeight: 600,
-        height: '33px',
-        boxShadow: 'none',
-    },
-    label: {
-        fontSize: '12px',
-        padding: '2px 4px',
-        marginTop: '-5px',
-    },
-    select: {
-        fontSize: '13px',
-        padding: '8px',
-        height: '35px',
-        fontWeight: 400,
-        marginTop: '-7px',
-    },
-    sendButton: {
-        width: '100px',
-        height: '35px',
-        fontSize: '12px',
-        fontWeight: 500,
-    },
-    cancel: {
-        backgroundColor: 'black',
-        color: 'white',
-        '&:hover': {
-            backgroundColor: 'black',
+const useStyles = (api) =>
+    makeStyles((theme) => ({
+        formControl: {
+            margin: theme.spacing(1),
+            minWidth: 100,
         },
-    },
-    saveButton: {
-        width: '100px',
-        height: '35px',
-        fontSize: '12px',
-        fontWeight: 500,
-        backgroundColor: 'black',
-        color: 'white',
-        '&:hover': {
-            backgroundColor: 'black',
+        input: {
+            flex: 1,
+            marginLeft: theme.spacing(1),
+            marginRight: theme.spacing(1),
+            border: '1px solid #e6e6e6',
+            borderRadius: '4px',
+            padding: '8px 12px', // reduce the padding on the top and bottom
+            fontSize: '14px',
+            height: '35px',
         },
-    },
-}));
+        button: {
+            marginLeft: theme.spacing(1),
+            marginRight: theme.spacing(1),
+            padding: '8px 16px', // reduce the padding on the top and bottom
+            fontSize: '14px',
+            fontWeight: 600,
+            height: '45px',
+            textTransform: 'none',
+            boxShadow: 'none',
+        },
+
+        modalButton: {
+            margin: theme.spacing(1),
+            padding: '5px 12px', // reduce the padding on the top and bottom
+            fontSize: '12px',
+            fontWeight: 600,
+            height: '33px',
+            boxShadow: 'none',
+        },
+        label: {
+            fontSize: '12px',
+            padding: '2px 4px',
+            marginTop: '-5px',
+        },
+        select: {
+            fontSize: '13px',
+            padding: '8px',
+            height: '35px',
+            fontWeight: 400,
+            marginTop: '-7px',
+        },
+        sendButton: {
+            marginLeft: theme.spacing(1),
+            marginRight: theme.spacing(1),
+            padding: '8px 16px', // reduce the padding on the top and bottom
+            fontSize: '14px',
+            fontWeight: 600,
+            height: '45px',
+            textTransform: 'none',
+            boxShadow: 'none',
+            width: '100px',
+            height: '35px',
+            fontSize: '14px',
+            fontWeight: 500,
+        },
+        cancel: {
+            backgroundColor: 'black',
+            color: 'white',
+            '&:hover': {
+                backgroundColor: 'black',
+            },
+        },
+        saveButton: {
+            marginLeft: theme.spacing(1),
+            marginRight: api.onSave === true ? null : theme.spacing(1),
+            padding: '8px 16px',
+            paddingRight: api.onSave === true ? 0 : null,
+            fontWeight: 600,
+            height: '45px',
+            textTransform: 'none',
+            width: '90px',
+            height: '35px',
+            fontSize: '14px',
+            fontWeight: 500,
+            backgroundColor: 'black',
+            boxShadow: 'none',
+            color: 'white',
+            '&:hover': {
+                backgroundColor: 'black',
+            },
+        },
+        saveAsButton: {
+            height: '35px',
+            fontSize: '14px',
+            marginRight: theme.spacing(1.5),
+            width: '30px',
+            paddingLeft: 0,
+            fontWeight: 500,
+            backgroundColor: 'black',
+            borderRadius: '0 4px 4px 0',
+            color: 'white',
+            '&:hover': {
+                backgroundColor: 'black',
+            },
+        },
+    }));
 
 export default function UrlEditor({ onInputSend }) {
     const [request, setRequest] = useRecoilState(requestParams);
     const [response, setResponse] = useRecoilState(responseInfo);
-    const fileName = useRecoilValue(requestName);
     const selectedFolder = useRecoilValue(selectedType);
     const [open, setOpen] = useRecoilState(isSaveModalOpen);
-    const classes = useStyles();
+
     const userId = getUserId();
     let setTabs = useSetRecoilState(currentTabs);
     const currenttab = useRecoilValue(currentTab);
     const [api, setCurrentApi] = useRecoilState(currentApi);
+    const classes = useStyles(api)();
     const setBreadCrumbs = useSetRecoilState(currentBreadCrumbs);
     const [checked, setChecked] = useState(false);
+    const [loading, setLoading] = useRecoilState(folderContentLoading);
+    const selected = useRecoilValue(selectedType);
+    const [fileName, setFileName] = useRecoilState(requestName);
+    const [anchorEl, setAnchorEl] = useState(null);
 
     const handleCheckChange = (event) => {
         setChecked(event.target.checked);
@@ -146,9 +186,39 @@ export default function UrlEditor({ onInputSend }) {
     const handleSendClick = async (event) => {
         onInputSend(event);
     };
+    const handleClick = (event) => {
+        setAnchorEl(event.currentTarget);
+    };
+
+    const handleCloseMenu = () => {
+        setAnchorEl(null);
+    };
+    const SaveCurrent = async () => {
+        const currentDate = new Date();
+        const formattedDateTime = currentDate.toLocaleString('en-GB', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+        });
+        await axios.put(process.env.REACT_APP_API_URL + endpoint.collectionsRequest + `/${userId}/${api.id}`, {
+            request: request
+                ? request
+                : { method: 'GET', proxy: 'No Proxy', url: '', body: { '': '' }, header: [], queryParams: [] },
+            response: response ? response : { status: null, headers: {}, data: {}, time: 0, size: 0 },
+            parentFolderId: selectedFolder.id,
+            name: fileName ? fileName : 'New Request',
+            onSave: true,
+            modifiedAt: formattedDateTime,
+        });
+    };
     const handleSave = async (event) => {
         const newId = uuidv4();
+
         if (checked) {
+            setLoading(true);
             if (selectedFolder.id) {
                 const type = 'file';
                 let parentFolderNames;
@@ -227,7 +297,11 @@ export default function UrlEditor({ onInputSend }) {
                         setBreadCrumbs(parentFolderNames);
                     });
             }
+            setFileName('');
+            setLoading(false);
+            setOpen(false);
         } else {
+            setLoading(true);
             if (api.parentFolderId === '0') {
                 await axios.post(process.env.REACT_APP_API_URL + endpoint.collectionDirectory, {
                     userId: userId,
@@ -237,18 +311,9 @@ export default function UrlEditor({ onInputSend }) {
                     parentFolderId: selectedFolder.id,
                 });
             } else {
-                const currentDate = new Date();
-                const formattedDateTime = currentDate.toLocaleString('en-GB', {
-                    day: '2-digit',
-                    month: '2-digit',
-                    year: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    second: '2-digit',
-                });
                 await axios.put(process.env.REACT_APP_API_URL + endpoint.collectionDirectory + `/${userId}/${api.id}`, {
+                    name: fileName ? fileName : 'New Request',
                     parentFolderId: selectedFolder.id,
-                    modifiedAt: formattedDateTime,
                 });
             }
             const type = 'file';
@@ -263,6 +328,10 @@ export default function UrlEditor({ onInputSend }) {
                 second: '2-digit',
             });
             await axios.put(process.env.REACT_APP_API_URL + endpoint.collectionsRequest + `/${userId}/${api.id}`, {
+                request: request
+                    ? request
+                    : { method: 'GET', proxy: 'No Proxy', url: '', body: { '': '' }, header: [], queryParams: [] },
+                response: response ? response : { status: null, headers: {}, data: {}, time: 0, size: 0 },
                 parentFolderId: selectedFolder.id,
                 name: fileName ? fileName : 'New Request',
                 onSave: true,
@@ -313,11 +382,14 @@ export default function UrlEditor({ onInputSend }) {
                     });
                     setBreadCrumbs(parentFolderNames);
                 });
+            setFileName('');
+            setLoading(false);
+            setOpen(false);
         }
-        setOpen(false);
     };
 
     const handleSaveClickOpen = () => {
+        setAnchorEl(null);
         setOpen(true);
     };
     const handleSaveClose = () => {
@@ -330,6 +402,7 @@ export default function UrlEditor({ onInputSend }) {
             handleSendClick(event);
         }
     };
+
     return (
         <div>
             <form className="flex">
@@ -362,7 +435,7 @@ export default function UrlEditor({ onInputSend }) {
                     onKeyUp={handleKeyPress}
                 />
                 <Button
-                    className={`${classes.button} ${classes.sendButton}`}
+                    className={classes.sendButton}
                     variant="contained"
                     color="primary"
                     size="small"
@@ -372,15 +445,38 @@ export default function UrlEditor({ onInputSend }) {
                     Send
                 </Button>
                 <Button
-                    className={`${classes.button} ${classes.saveButton}`}
+                    className={classes.saveButton}
                     variant="contained"
                     color="grey"
                     size="small"
                     startIcon={<SaveOutlinedIcon />}
-                    onClick={handleSaveClickOpen}
+                    onClick={api.onSave === true ? SaveCurrent : handleSaveClickOpen}
+                    style={{ borderRadius: api.onSave === true ? '4px 0 0 4px' : '4px' }}
                 >
                     Save
                 </Button>
+                {api.onSave === true ? (
+                    <>
+                        <button type="button" className={classes.saveAsButton} onClick={handleClick}>
+                            <ArrowDropDownIcon style={{ margin: 0, padding: 0 }} />
+                        </button>
+                        <Menu
+                            anchorEl={anchorEl}
+                            open={Boolean(anchorEl)}
+                            onClose={handleCloseMenu}
+                            anchorOrigin={{
+                                vertical: 'bottom',
+                                horizontal: 'left',
+                            }}
+                            transformOrigin={{
+                                vertical: 'top',
+                                horizontal: 'left',
+                            }}
+                        >
+                            <MenuItem onClick={handleSaveClickOpen}>Save As</MenuItem>
+                        </Menu>
+                    </>
+                ) : null}
             </form>
             <Dialog
                 open={open}
@@ -405,7 +501,7 @@ export default function UrlEditor({ onInputSend }) {
                                     inputProps={{ 'aria-label': 'controlled' }}
                                 />
                             }
-                            label={<span style={{ fontWeight: 500, fontSize: '15px' }}>Save as duplicate</span>}
+                            label={<span style={{ fontWeight: 500, fontSize: '15px' }}>Save a Copy</span>}
                         />
                     )}
 
@@ -425,12 +521,14 @@ export default function UrlEditor({ onInputSend }) {
                             color="primary"
                             size="small"
                             onClick={handleSave}
+                            disabled={fileName.length > 0 && selected.type === 'folder' ? false : true}
                         >
                             Save
                         </Button>
                     </div>
                 </DialogActions>
             </Dialog>
+            {loading && <LoadingDialog />}
         </div>
     );
 }
