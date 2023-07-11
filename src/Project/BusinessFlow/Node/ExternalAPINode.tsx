@@ -291,7 +291,7 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
 
     const execute = async (event: React.MouseEvent) => {
         event.preventDefault();
-        if (!isNodeDataLoaded || isLoading || isExecuting || !runData.url) {
+        if (!isNodeDataLoaded || isLoading || isExecuting || !runData.url || displayedUrlValue === '') {
             return;
         }
 
@@ -477,7 +477,7 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
             //     setShowResponse(hasResponse);
             // }
         }
-    }, [props]);
+    }, []);
 
     useEffect(() => {
         if (!displayedUrlValue || !isValidUrl(displayedUrlValue) || !isFocused) return;
@@ -741,6 +741,7 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                             sx={{ width: 'fit-content' }}
                             onClick={() => {
                                 setDrawerSelected('mapping');
+                                setCollapse(false);
                             }}
                             variant="outlined"
                             startIcon={<Add />}
@@ -822,8 +823,9 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                                     nullChecker();
 
                                     if (
-                                        checkValidJson(requestBodyData) === true ||
-                                        props.data.runData?.method === 'GET'
+                                        (checkValidJson(requestBodyData) === true ||
+                                            props.data.runData?.method === 'GET') &&
+                                        displayedUrlValue !== ''
                                     ) {
                                         setIsJsonValid(true);
                                         triggerDelayedNodeSaveOnServer(1);
@@ -832,8 +834,9 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                                 }}
                             >
                                 <Tooltip title="Save changes">
-                                    {checkValidJson(requestBodyData) === false &&
-                                    props.data.runData?.method !== 'GET' ? (
+                                    {(checkValidJson(requestBodyData) === false &&
+                                        props.data.runData?.method !== 'GET') ||
+                                    displayedUrlValue === '' ? (
                                         <CloudOff style={{ color: 'grey', cursor: 'pointer' }} />
                                     ) : (
                                         <CloudUploadIcon style={{ color: '#2c71c7', cursor: 'pointer' }} />
@@ -843,7 +846,7 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                         )}
 
                         <Delete
-                            sx={{ alignSelf: 'center' }}
+                            sx={{ alignSelf: 'center', cursor: 'pointer' }}
                             color={'primary'}
                             onClick={() => {
                                 setDeleteData(cardId);

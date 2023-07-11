@@ -209,6 +209,8 @@ const Flow = () => {
     const [openFilterDrawer, setOpenFilterDrawer] = useState(false);
     const [selectBranchQuery, setSelectBranchQuery] = useState(false);
     const [showAPIDrawer, setShowAPIDrawer] = useState(false);
+    const [refreshDrawer, setRefreshDrawer] = useState(false);
+
     const [deleteData, setDeleteData] = useRecoilState<Node[] | undefined | string>(deleteNodeAtom);
     const [selectedNode, setSelectedNode] = useRecoilState(selectedNodeAtom);
     const [selectedBranchCondition, setSelectedBranchCondition] = useRecoilState(branchQueryAtom);
@@ -439,6 +441,7 @@ const Flow = () => {
                             };
                             const latestNodeInfo = await fetchNodeFromServer(getNodeData);
                             updateNodeData(node.id, latestNodeInfo.data);
+                            setRefreshDrawer(true);
                         }
                     }}
                 />
@@ -536,7 +539,7 @@ const Flow = () => {
                 }}
                 sx={{ overflow: 'unset' }}
             >
-                <ExternalAPIDrawer cardId={selectedCard} />
+                <ExternalAPIDrawer cardId={selectedCard} refresh={refreshDrawer} setRefresh={setRefreshDrawer} />
             </Drawer>
             <ReactFlow
                 onLoad={onLoad}

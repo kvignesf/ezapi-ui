@@ -96,7 +96,7 @@ export const BranchQueryRow = ({
             </Stack>
             <Delete
                 color={'error'}
-                sx={{ alignSelf: 'flex-end' }}
+                sx={{ alignSelf: 'flex-end', cursor: 'pointer' }}
                 onClick={() => {
                     onDelete();
                 }}

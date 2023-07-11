@@ -107,13 +107,16 @@ const FilterNode = (props: FilterNodeProps) => {
                         </Stack>
                         <Stack direction={'row'} spacing={1}>
                             <Delete
-                                sx={{ alignSelf: 'center' }}
+                                sx={{ alignSelf: 'center', cursor: 'pointer' }}
                                 color={'primary'}
                                 onClick={() => {
                                     setDeleteData(cardId);
                                 }}
                             />
-                            <img src={DialogIcon} style={{ width: '24px', height: '24px', alignSelf: 'center' }} />
+                            <img
+                                src={DialogIcon}
+                                style={{ width: '24px', height: '24px', alignSelf: 'center', cursor: 'pointer' }}
+                            />
                             <img
                                 src={Collapse}
                                 style={{ width: '24px', height: '24px', alignSelf: 'center', cursor: 'pointer' }}

@@ -109,7 +109,7 @@ const PayloadNode = (props: PayloadNodeProps): React.ReactElement => {
             setResponseBodyData(node?.data?.responsePayloadData?.data?.body);
             setHeaderData(node?.data?.responsePayloadData?.data?.headers);
         }
-    }, [node]);
+    }, [node, dropDownData]);
 
     const prepareData = async () => {
         const allCardsDataFromServer = await fetchAllAggregateCards({ operationId, projectId });
@@ -157,7 +157,7 @@ const PayloadNode = (props: PayloadNodeProps): React.ReactElement => {
                 </Stack>
                 <Stack direction={'row'} spacing={1}>
                     <Delete
-                        sx={{ alignSelf: 'center' }}
+                        sx={{ alignSelf: 'center', cursor: 'pointer' }}
                         color={'primary'}
                         onClick={() => {
                             setDeleteData(cardId);
