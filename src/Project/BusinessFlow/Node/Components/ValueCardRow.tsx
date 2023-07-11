@@ -36,7 +36,7 @@ export const ValueCardRow = (props: ValueCardRowProps) => {
                                 required
                                 variant="outlined"
                                 disabled={disabled || nodeType === 'main'}
-                                sx={{ minWidth: cardType === 'node' ? '140px' : '245px' }}
+                                sx={{ minWidth: cardType === 'node' ? '140px' : '400px' }}
                                 inputProps={{ ...params.inputProps, style: { height: '15px' } }}
                             />
                         )}
@@ -50,7 +50,7 @@ export const ValueCardRow = (props: ValueCardRowProps) => {
                         onChange={(e) => {
                             onChange({ key: e.target.value, value: data.value });
                         }}
-                        sx={{ minWidth: cardType === 'node' ? '140px' : '245px' }}
+                        sx={{ minWidth: cardType === 'node' ? '140px' : '400px' }}
                         inputProps={{ style: { height: '15px' } }}
                     />
                 )}
@@ -66,7 +66,7 @@ export const ValueCardRow = (props: ValueCardRowProps) => {
                         onChange({ key: data.key, value: e.target.value });
                     }}
                     sx={{
-                        width: cardType === 'node' ? '228px' : '330px',
+                        width: cardType === 'node' ? '228px' : '495px',
                     }}
                     inputProps={{ style: { height: '15px' } }}
                 />
@@ -87,7 +87,7 @@ export const ValueCardRow = (props: ValueCardRowProps) => {
                 ) : (
                     <DoneIcon
                         color="primary"
-                        sx={{ alignSelf: 'center' }}
+                        sx={{ alignSelf: 'center', cursor: 'pointer' }}
                         onClick={() => {
                             // @ts-expect-error
                             onDone();
