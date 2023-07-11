@@ -24,7 +24,7 @@ import { endpoint } from '../../shared/network/client';
 import routes from '../../shared/routes';
 import { getUserId } from '../../shared/storage';
 import imageLogo from '../../static/images/logo/newconnectoLogo.svg';
-import { isSaveModalOpen, requestName, selectedType, toggle } from '../CollectionsAtom';
+import { isSaveModalOpen, requestName, rootFolderIdAtom, selectedType, toggle } from '../CollectionsAtom';
 import LoadingDialog from '../components/LoadingDialog';
 import File from './components/File';
 import Folder from './components/Folder';
@@ -92,7 +92,7 @@ export default function DocStore({ isModal }) {
         });
     };
     const classes = useStyles();
-    let [folders, setFolders] = useState([]);
+    let [folders, setFolders] = useRecoilState(rootFolderIdAtom);
     let [requests, setRequests] = useState([]);
     const [fileName, setFileName] = useRecoilState(requestName);
     const [searchQuery, setSearchQuery] = useState('');
@@ -178,7 +178,6 @@ export default function DocStore({ isModal }) {
 
     useEffect(() => {
         let source = axios.CancelToken.source(); // Create a cancel token source
-
         const getFilesAndFolders = async () => {
             if (loading === false) {
                 try {
@@ -188,20 +187,12 @@ export default function DocStore({ isModal }) {
                             cancelToken: source.token, // Pass the cancel token to the request
                         },
                     );
-
                     const parentFolders = response1.data.data.map((data) => (
                         <Folder key={data.id} id={data.id} parentId={'0'} name={data.name} />
                     ));
                     setFolders(parentFolders);
 
-                    const response2 = await axios.get(
-                        process.env.REACT_APP_API_URL + endpoint.collectionDirectory + `/${userId}`,
-                        {
-                            cancelToken: source.token, // Pass the cancel token to the request
-                        },
-                    );
-
-                    const requests = response2.data.files.map((data) => (
+                    const requests = response1.data.files.map((data) => (
                         <File key={data.id} id={data.id} parentId={'0'} name={data.name} />
                     ));
                     setRequests(requests);
@@ -223,7 +214,7 @@ export default function DocStore({ isModal }) {
         return () => {
             source.cancel(); // Cancel the request when the component is unmounted
         };
-    }, [loading, userId, saveModalOpen]);
+    }, [loading, userId]);
     const handleSearchChange = (event) => {
         const query = event.target.value;
         setSearchQuery(query);

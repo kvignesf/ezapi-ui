@@ -1,9 +1,21 @@
+import File from '@/Collections/DocStore/components/File';
 import LoadingDialog from '@/Collections/components/LoadingDialog';
-import { Button, Checkbox, FormControl, FormControlLabel, Input, Menu, MenuItem, Select } from '@material-ui/core';
+import {
+    Button,
+    Checkbox,
+    FormControl,
+    FormControlLabel,
+    Input,
+    Menu,
+    MenuItem,
+    Select,
+    Snackbar,
+} from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import SaveOutlinedIcon from '@material-ui/icons/SaveOutlined';
 import SendIcon from '@material-ui/icons/Send';
+import MuiAlert from '@mui/material/Alert';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -20,6 +32,7 @@ import {
     currentTab,
     currentTabs,
     folderContentLoading,
+    folderState,
     isSaveModalOpen,
     requestName,
     requestParams,
@@ -157,9 +170,8 @@ const useStyles = (api) =>
 export default function UrlEditor({ onInputSend }) {
     const [request, setRequest] = useRecoilState(requestParams);
     const [response, setResponse] = useRecoilState(responseInfo);
-    const selectedFolder = useRecoilValue(selectedType);
+    const selected = useRecoilValue(selectedType);
     const [open, setOpen] = useRecoilState(isSaveModalOpen);
-
     const userId = getUserId();
     let setTabs = useSetRecoilState(currentTabs);
     const currenttab = useRecoilValue(currentTab);
@@ -168,10 +180,12 @@ export default function UrlEditor({ onInputSend }) {
     const setBreadCrumbs = useSetRecoilState(currentBreadCrumbs);
     const [checked, setChecked] = useState(false);
     const [loading, setLoading] = useRecoilState(folderContentLoading);
-    const selected = useRecoilValue(selectedType);
     const [fileName, setFileName] = useRecoilState(requestName);
     const [anchorEl, setAnchorEl] = useState(null);
-
+    const [snackbar, setSnackbar] = useState(false);
+    const setFolderData = useSetRecoilState(folderState(api.parentFolderId));
+    const setSaveFolder = useSetRecoilState(folderState(selected.id));
+    selected;
     const handleCheckChange = (event) => {
         setChecked(event.target.checked);
     };
@@ -193,6 +207,7 @@ export default function UrlEditor({ onInputSend }) {
     const handleCloseMenu = () => {
         setAnchorEl(null);
     };
+
     const SaveCurrent = async () => {
         const currentDate = new Date();
         const formattedDateTime = currentDate.toLocaleString('en-GB', {
@@ -203,23 +218,48 @@ export default function UrlEditor({ onInputSend }) {
             minute: '2-digit',
             second: '2-digit',
         });
-        await axios.put(process.env.REACT_APP_API_URL + endpoint.collectionsRequest + `/${userId}/${api.id}`, {
-            request: request
-                ? request
-                : { method: 'GET', proxy: 'No Proxy', url: '', body: { '': '' }, header: [], queryParams: [] },
-            response: response ? response : { status: null, headers: {}, data: {}, time: 0, size: 0 },
-            parentFolderId: selectedFolder.id,
-            name: fileName ? fileName : 'New Request',
-            onSave: true,
-            modifiedAt: formattedDateTime,
-        });
+        await axios
+            .put(process.env.REACT_APP_API_URL + endpoint.collectionsRequest + `/${userId}/${api.id}`, {
+                request: request
+                    ? request
+                    : { method: 'GET', proxy: 'No Proxy', url: '', body: { '': '' }, header: [], queryParams: [] },
+                response: response ? response : { status: null, headers: {}, data: {}, time: 0, size: 0 },
+                parentFolderId: api.parentFolderId,
+                name: fileName ? fileName : 'New Request',
+                onSave: true,
+                modifiedAt: formattedDateTime,
+            })
+            .then(() => {
+                setFolderData((folderData) => {
+                    return folderData.map((file) => {
+                        if (file.props.id === api.id) {
+                            return (
+                                <File
+                                    key={file.props.id}
+                                    id={file.props.id}
+                                    parentId={file.props.parentId}
+                                    selected={file.props.selected}
+                                    onSelect={file.props.onSelect}
+                                    name={file.props.name}
+                                    reqMethod={request.method ? request.method : 'GET'}
+                                    reqUrl={request.url ? request.url : ''}
+                                />
+                            );
+                        }
+                    });
+                });
+                setSnackbar(true);
+            })
+            .catch((error) => {
+                console.log(error);
+            });
     };
+
     const handleSave = async (event) => {
         const newId = uuidv4();
-
         if (checked) {
             setLoading(true);
-            if (selectedFolder.id) {
+            if (selected.id) {
                 const type = 'file';
                 let parentFolderNames;
                 await axios.post(process.env.REACT_APP_API_URL + endpoint.collectionDirectory, {
@@ -227,7 +267,7 @@ export default function UrlEditor({ onInputSend }) {
                     id: newId,
                     name: fileName ? fileName : 'New Request',
                     type: 'File',
-                    parentFolderId: selectedFolder.id,
+                    parentFolderId: selected.id,
                 });
                 const currentDate = new Date();
                 const formattedDateTime = currentDate.toLocaleString('en-GB', {
@@ -239,17 +279,31 @@ export default function UrlEditor({ onInputSend }) {
                     second: '2-digit',
                 });
 
-                await axios.post(process.env.REACT_APP_API_URL + endpoint.collectionsRequest + `/${userId}/${newId}`, {
-                    name: fileName ? fileName : 'New Request',
-                    request: request
-                        ? request
-                        : { method: 'GET', proxy: 'No Proxy', url: '', body: { '': '' }, header: [], queryParams: [] },
-                    response: response ? response : { status: null, headers: {}, data: {}, time: 0, size: 0 },
-                    onSave: true,
-                    parentFolderId: selectedFolder.id,
-                    createdAt: formattedDateTime,
-                    modifiedAt: formattedDateTime,
-                });
+                await axios
+                    .post(process.env.REACT_APP_API_URL + endpoint.collectionsRequest + `/${userId}/${newId}`, {
+                        name: fileName ? fileName : 'New Request',
+                        request: request
+                            ? request
+                            : {
+                                  method: 'GET',
+                                  proxy: 'No Proxy',
+                                  url: '',
+                                  body: { '': '' },
+                                  header: [],
+                                  queryParams: [],
+                              },
+                        response: response ? response : { status: null, headers: {}, data: {}, time: 0, size: 0 },
+                        onSave: true,
+                        parentFolderId: selected.id,
+                        createdAt: formattedDateTime,
+                        modifiedAt: formattedDateTime,
+                    })
+                    .then(() => {
+                        setSnackbar(true);
+                    })
+                    .catch((error) => {
+                        console.log(error);
+                    });
                 await axios
                     .get(process.env.REACT_APP_API_URL + endpoint.collectionDirectory + `/${userId}/${type}/${newId}`)
                     .then((response) => {
@@ -297,24 +351,78 @@ export default function UrlEditor({ onInputSend }) {
                         setBreadCrumbs(parentFolderNames);
                     });
             }
+            setSaveFolder((folderData) => {
+                return [
+                    ...folderData,
+                    <File
+                        key={newId}
+                        id={newId}
+                        parentId={selected.id}
+                        selected={selected}
+                        onSelect={selected}
+                        name={fileName}
+                        reqMethod={request.method ? request.method : 'GET'}
+                        reqUrl={request.url ? request.url : ''}
+                    />,
+                ];
+            });
             setFileName('');
             setLoading(false);
             setOpen(false);
         } else {
             setLoading(true);
             if (api.parentFolderId === '0') {
-                await axios.post(process.env.REACT_APP_API_URL + endpoint.collectionDirectory, {
-                    userId: userId,
-                    id: api.id,
-                    name: fileName ? fileName : 'New Request',
-                    type: 'File',
-                    parentFolderId: selectedFolder.id,
-                });
+                await axios
+                    .post(process.env.REACT_APP_API_URL + endpoint.collectionDirectory, {
+                        userId: userId,
+                        id: api.id,
+                        name: fileName ? fileName : 'New Request',
+                        type: 'File',
+                        parentFolderId: selected.id,
+                    })
+                    .then(() => {
+                        setSaveFolder((folderData) => {
+                            return [
+                                ...folderData,
+                                <File
+                                    key={api.id}
+                                    id={api.id}
+                                    parentId={selected.id}
+                                    selected={selected}
+                                    onSelect={selected}
+                                    name={fileName}
+                                    reqMethod={request.method ? request.method : 'GET'}
+                                    reqUrl={request.url ? request.url : ''}
+                                />,
+                            ];
+                        });
+                    });
             } else {
-                await axios.put(process.env.REACT_APP_API_URL + endpoint.collectionDirectory + `/${userId}/${api.id}`, {
-                    name: fileName ? fileName : 'New Request',
-                    parentFolderId: selectedFolder.id,
-                });
+                await axios
+                    .put(process.env.REACT_APP_API_URL + endpoint.collectionDirectory + `/${userId}/${api.id}`, {
+                        name: fileName ? fileName : 'New Request',
+                        parentFolderId: selected.id,
+                    })
+                    .then(() => {
+                        setFolderData((folderData) => {
+                            return folderData.filter((file) => file.props.id !== api.id);
+                        });
+                        setSaveFolder((folderData) => {
+                            return [
+                                ...folderData,
+                                <File
+                                    key={api.id}
+                                    id={api.id}
+                                    parentId={selected.id}
+                                    selected={selected}
+                                    onSelect={selected}
+                                    name={fileName}
+                                    reqMethod={request.method ? request.method : 'GET'}
+                                    reqUrl={request.url ? request.url : ''}
+                                />,
+                            ];
+                        });
+                    });
             }
             const type = 'file';
             let parentFolderNames;
@@ -327,17 +435,6 @@ export default function UrlEditor({ onInputSend }) {
                 minute: '2-digit',
                 second: '2-digit',
             });
-            await axios.put(process.env.REACT_APP_API_URL + endpoint.collectionsRequest + `/${userId}/${api.id}`, {
-                request: request
-                    ? request
-                    : { method: 'GET', proxy: 'No Proxy', url: '', body: { '': '' }, header: [], queryParams: [] },
-                response: response ? response : { status: null, headers: {}, data: {}, time: 0, size: 0 },
-                parentFolderId: selectedFolder.id,
-                name: fileName ? fileName : 'New Request',
-                onSave: true,
-                modifiedAt: formattedDateTime,
-            });
-
             await axios
                 .get(process.env.REACT_APP_API_URL + endpoint.collectionDirectory + `/${userId}/${type}/${api.id}`)
                 .then((response) => {
@@ -348,8 +445,18 @@ export default function UrlEditor({ onInputSend }) {
                     console.log(err);
                 });
             await axios
-                .get(process.env.REACT_APP_API_URL + `${endpoint.collectionsRequest}/${userId}/${api.id}`)
-                .then(async (response) => {
+                .put(process.env.REACT_APP_API_URL + endpoint.collectionsRequest + `/${userId}/${api.id}`, {
+                    request: request
+                        ? request
+                        : { method: 'GET', proxy: 'No Proxy', url: '', body: { '': '' }, header: [], queryParams: [] },
+                    response: response ? response : { status: null, headers: {}, data: {}, time: 0, size: 0 },
+                    parentFolderId: selected.id,
+                    name: fileName ? fileName : 'New Request',
+                    onSave: true,
+                    modifiedAt: formattedDateTime,
+                })
+                .then((response) => {
+                    setSnackbar(true);
                     const data = response.data;
                     setTabs((prev) => {
                         return prev.map((tab, index) => {
@@ -370,7 +477,6 @@ export default function UrlEditor({ onInputSend }) {
                             return tab;
                         });
                     });
-
                     setRequest(data.request);
                     setResponse(data.response);
                     setCurrentApi({
@@ -381,7 +487,11 @@ export default function UrlEditor({ onInputSend }) {
                         parentFolderId: data.parentFolderId,
                     });
                     setBreadCrumbs(parentFolderNames);
+                })
+                .catch((error) => {
+                    console.log(error);
                 });
+
             setFileName('');
             setLoading(false);
             setOpen(false);
@@ -402,7 +512,6 @@ export default function UrlEditor({ onInputSend }) {
             handleSendClick(event);
         }
     };
-
     return (
         <div>
             <form className="flex">
@@ -529,6 +638,22 @@ export default function UrlEditor({ onInputSend }) {
                 </DialogActions>
             </Dialog>
             {loading && <LoadingDialog />}
+            <Snackbar open={snackbar} autoHideDuration={1800} onClose={() => setSnackbar(false)}>
+                <MuiAlert
+                    onClose={() => setSnackbar(false)}
+                    elevation={6}
+                    severity="info"
+                    sx={{
+                        width: '100%',
+                        alignItems: 'center',
+                        backgroundColor: '#2c71c7', // Set the background color to #2c71c7
+                    }}
+                    variant="filled"
+                    icon={false}
+                >
+                    Request Saved!
+                </MuiAlert>
+            </Snackbar>
         </div>
     );
 }

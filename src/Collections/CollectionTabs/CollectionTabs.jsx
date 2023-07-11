@@ -21,12 +21,15 @@ import {
     currentBreadCrumbs,
     currentTab,
     currentTabs,
+    folderState,
     isSaveModalOpen,
     requestParams,
     responseInfo,
 } from '../CollectionsAtom';
+import File from '../DocStore/components/File';
 import ApiCall from './ApiCall/ApiCall';
 import DefaultPage from './ApiCall/components/DefaultPage';
+
 const useStyles = makeStyles((theme) => ({
     tabPanel: {
         margin: '-25px',
@@ -82,6 +85,7 @@ const useStyles = makeStyles((theme) => ({
         height: '33px',
     },
 }));
+
 function CollectionTabs() {
     const userId = getUserId();
     const classes = useStyles();
@@ -94,6 +98,7 @@ function CollectionTabs() {
     const [breadCrumbs, setBreadCrumbs] = useRecoilState(currentBreadCrumbs);
     const [open, setOpen] = useState(false);
     const setSaveModalOpen = useSetRecoilState(isSaveModalOpen);
+    const setFolderData = useSetRecoilState(folderState(api.parentFolderId));
 
     const handleClickOpen = (index) => {
         setIndex(index);
@@ -158,6 +163,24 @@ function CollectionTabs() {
                         } else {
                             return [...prev];
                         }
+                    });
+                    setFolderData((folderData) => {
+                        return folderData.map((file) => {
+                            if (file.props.id === api.id) {
+                                return (
+                                    <File
+                                        key={file.props.id}
+                                        id={file.props.id}
+                                        parentId={file.props.parentId}
+                                        selected={file.props.selected}
+                                        onSelect={file.props.onSelect}
+                                        name={file.props.name}
+                                        reqMethod={request.method ? request.method : 'GET'}
+                                        reqUrl={request.url ? request.url : ''}
+                                    />
+                                );
+                            }
+                        });
                     });
                 })
                 .catch((error) => {
@@ -230,6 +253,26 @@ function CollectionTabs() {
                             modifiedAt: formattedDateTime,
                         },
                     )
+                    .then(() => {
+                        setFolderData((folderData) => {
+                            return folderData.map((file) => {
+                                if (file.props.id === tabs[value]?.id) {
+                                    return (
+                                        <File
+                                            key={file.props.id}
+                                            id={file.props.id}
+                                            parentId={file.props.parentId}
+                                            selected={file.props.selected}
+                                            onSelect={file.props.onSelect}
+                                            name={file.props.name}
+                                            reqMethod={request.method ? request.method : 'GET'}
+                                            reqUrl={request.url ? request.url : ''}
+                                        />
+                                    );
+                                }
+                            });
+                        });
+                    })
                     .catch((error) => {
                         console.error('Error:', error);
                     });
@@ -374,6 +417,24 @@ function CollectionTabs() {
                         } else {
                             return [...prev];
                         }
+                    });
+                    setFolderData((folderData) => {
+                        return folderData.map((file) => {
+                            if (file.props.id === api.id) {
+                                return (
+                                    <File
+                                        key={file.props.id}
+                                        id={file.props.id}
+                                        parentId={file.props.parentId}
+                                        selected={file.props.selected}
+                                        onSelect={file.props.onSelect}
+                                        name={file.props.name}
+                                        reqMethod={request.method ? request.method : 'GET'}
+                                        reqUrl={request.url ? request.url : ''}
+                                    />
+                                );
+                            }
+                        });
                     });
                 })
                 .catch((error) => {

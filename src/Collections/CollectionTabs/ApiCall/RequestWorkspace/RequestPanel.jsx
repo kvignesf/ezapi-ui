@@ -1,11 +1,13 @@
+import { Snackbar } from '@material-ui/core';
+import MuiAlert from '@mui/material/Alert';
 import axios from 'axios';
+import { useState } from 'react';
 import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
 import { endpoint } from '../../../../shared/network/client';
 import { getUserId } from '../../../../shared/storage';
 import { accessToken, currentApi, currentTabs, requestParams, responseInfo } from '../../../CollectionsAtom';
 import RequestTabs from './RequestTabs';
 import UrlEditor from './UrlEditor';
-
 export default function Request({ setLoading }) {
     const [request, setRequest] = useRecoilState(requestParams);
     const authToken = useRecoilValue(accessToken);
@@ -13,6 +15,7 @@ export default function Request({ setLoading }) {
     const userId = getUserId();
     const api = useRecoilValue(currentApi);
     const setTabs = useSetRecoilState(currentTabs);
+    const [snackbar, setSnackbar] = useState(false);
 
     const convertKeyValueToObject = (keyPairs) => {
         return [...keyPairs].reduce((data, pair) => {
@@ -156,24 +159,26 @@ export default function Request({ setLoading }) {
                 }
                 // console.log(requestOptions);
                 const response = await fetch(newUrl, requestOptions);
+                let responseData;
                 if (!response.ok) {
                     const errorStatus = response.status || 404;
                     const errorMessage = await response.text();
-                    const responseData = {
+                    responseData = {
                         status: errorStatus,
                         headers: {},
                         data: errorMessage && errorMessage !== '{}' ? errorMessage : { error: 'Data Not Found' },
                         time: ((Date.now() - startTime) / 1000).toFixed(2),
                     };
                     setResponse(responseData);
-                } else {
+                }
+                if (response.ok) {
                     const responseHeaders = response.headers;
                     // Convert the headers to an object
                     const headersObject = {};
                     for (const [key, value] of responseHeaders) {
                         headersObject[key] = value;
                     }
-                    const responseData = {
+                    responseData = {
                         status: response.status,
                         headers: headersObject,
                         data: await response.json(),
@@ -182,46 +187,46 @@ export default function Request({ setLoading }) {
                         error: false,
                     };
                     setResponse(responseData);
-                    const currentDate = new Date();
-                    const formattedDateTime = currentDate.toLocaleString('en-GB', {
-                        day: '2-digit',
-                        month: '2-digit',
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        second: '2-digit',
-                    });
-                    await axios
-                        .put(process.env.REACT_APP_API_URL + endpoint.collectionsRequest + `/${userId}/${api.id}`, {
-                            request: request,
-                            response: responseData,
-                            modifiedAt: formattedDateTime,
-                        })
-                        .then((response) => {
-                            const data = response.data;
-                            setTabs((prev) => {
-                                const isTabExists = prev.some((tab) => tab.id === data.id);
-                                if (isTabExists) {
-                                    // If the tab already exists, update the existing tab with new data
-                                    return prev.map((tab) => {
-                                        if (tab.id === data.id) {
-                                            return {
-                                                ...tab,
-                                                request: data.request,
-                                                response: data.response,
-                                            };
-                                        }
-                                        return tab;
-                                    });
-                                } else {
-                                    return [...prev];
-                                }
-                            });
-                        })
-                        .catch((error) => {
-                            console.error('Error:', error);
-                        });
                 }
+                const currentDate = new Date();
+                const formattedDateTime = currentDate.toLocaleString('en-GB', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                });
+                await axios
+                    .put(process.env.REACT_APP_API_URL + endpoint.collectionsRequest + `/${userId}/${api.id}`, {
+                        request: request,
+                        response: responseData,
+                        modifiedAt: formattedDateTime,
+                    })
+                    .then((response) => {
+                        const data = response.data;
+                        setTabs((prev) => {
+                            const isTabExists = prev.some((tab) => tab.id === data.id);
+                            if (isTabExists) {
+                                // If the tab already exists, update the existing tab with new data
+                                return prev.map((tab) => {
+                                    if (tab.id === data.id) {
+                                        return {
+                                            ...tab,
+                                            request: data.request,
+                                            response: data.response,
+                                        };
+                                    }
+                                    return tab;
+                                });
+                            } else {
+                                return [...prev];
+                            }
+                        });
+                    })
+                    .catch((error) => {
+                        console.error('Error:', error);
+                    });
             }
             setRequest((oldRequestParams) => ({
                 ...oldRequestParams,
@@ -229,12 +234,16 @@ export default function Request({ setLoading }) {
                 proxy: newProxy,
             }));
         } catch (error) {
+            if (error.name === 'TypeError') {
+                setSnackbar(true);
+            } else {
+                console.error('An error occurred:', error);
+            }
             setResponse({
                 status: error.status || 404,
                 headers: {},
                 data: {},
                 time: ((Date.now() - startTime) / 1000).toFixed(2),
-                size: 0,
                 error: true,
                 errorMessage: error.message,
             });
@@ -246,6 +255,21 @@ export default function Request({ setLoading }) {
         <>
             <UrlEditor onInputSend={handleOnInputSend} />
             <RequestTabs />
+            <Snackbar open={snackbar} autoHideDuration={1800} onClose={() => setSnackbar(false)}>
+                <MuiAlert
+                    onClose={() => setSnackbar(false)}
+                    elevation={6}
+                    sx={{
+                        width: '100%',
+                        alignItems: 'center',
+                        backgroundColor: 'grey',
+                    }}
+                    variant="filled"
+                    icon={false}
+                >
+                    Network Error! Try with proxy
+                </MuiAlert>
+            </Snackbar>
         </>
     );
 }
