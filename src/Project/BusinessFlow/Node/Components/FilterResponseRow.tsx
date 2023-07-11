@@ -53,7 +53,7 @@ export const FilterResponseRow = ({ data, onDelete = () => {}, onCheckbox = () =
             />
             <Delete
                 color={'error'}
-                sx={{ alignSelf: 'center' }}
+                sx={{ alignSelf: 'center', cursor: 'pointer' }}
                 onClick={() => {
                     onDelete();
                 }}
