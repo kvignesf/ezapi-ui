@@ -14,6 +14,8 @@ export default function Request({ setLoading }) {
     const api = useRecoilValue(currentApi);
     const setTabs = useSetRecoilState(currentTabs);
 
+    const proxyURL = process.env.REACT_APP_PROXY_URL;
+
     const convertKeyValueToObject = (keyPairs) => {
         return [...keyPairs].reduce((data, pair) => {
             const key = pair.keyItem;
@@ -71,7 +73,8 @@ export default function Request({ setLoading }) {
                 };
 
                 await axios({
-                    url: 'https://proxy.ezapi.ai',
+                    //url: 'https://proxy.ezapi.ai',
+                    url: proxyURL,
                     data,
                     method: 'POST',
                 })

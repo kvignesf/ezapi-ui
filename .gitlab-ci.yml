@@ -17,6 +17,7 @@ before_script:
   - 'echo \REACT_APP_DISABLE_APIGOV\ = \"$TEST_DISABLE_APIGOV\">> .env.dev'
   - 'echo \REACT_APP_DISABLE_ORACLEDB\ = \"$TEST_DISABLE_ORACLEDB\">> .env.dev'
   - 'echo \REACT_APP_DISPLAY_COLLECTIONS\ = \"$TEST_DISPLAY_COLLECTIONS\">> .env.dev'
+  - 'echo \REACT_APP_PROXY_URL\ = \"$LOWER_REACT_APP_PROXY_URL\">> .env.dev'
   -  cat .env.dev
   - 'echo \REACT_APP_API_URL\ = \"$APIURL\">> .env.test'
   - 'echo \REACT_APP_LINKEDIN_CLIENT_ID\ = \"$LINKEDINCLIENTID\">> .env.test'
@@ -35,6 +36,7 @@ before_script:
   - 'echo \REACT_APP_DISABLE_APIGOV\ = \"$TEST_DISABLE_APIGOV\">> .env.test'
   - 'echo \REACT_APP_DISABLE_ORACLEDB\ = \"$TEST_DISABLE_ORACLEDB\">> .env.test'
   - 'echo \REACT_APP_DISPLAY_COLLECTIONS\ = \"$TEST_DISPLAY_COLLECTIONS\">> .env.test'
+  - 'echo \REACT_APP_PROXY_URL\ = \"$LOWER_REACT_APP_PROXY_URL\">> .env.test'
   -  cat .env.test
   - 'echo \REACT_APP_API_URL\ = \"$SAPIURL\">> .env.stage'
   - 'echo \REACT_APP_LINKEDIN_CLIENT_ID\ = \"$SLINKEDINCLIENTID\">> .env.stage'
@@ -53,6 +55,7 @@ before_script:
   - 'echo \REACT_APP_DISABLE_APIGOV\ = \"$STAGE_DISABLE_APIGOV\">> .env.stage'
   - 'echo \REACT_APP_DISABLE_ORACLEDB\ = \"$STAGE_DISABLE_ORACLEDB\">> .env.stage'
   - 'echo \REACT_APP_DISPLAY_COLLECTIONS\ = \"$STAGE_DISPLAY_COLLECTIONS\">> .env.stage'
+  - 'echo \REACT_APP_PROXY_URL\ = \"$LOWER_REACT_APP_PROXY_URL\">> .env.stage'
   -  cat .env.stage
   - 'echo \REACT_APP_API_URL\ = \"$PAPIURL\">> .env.prod'
   - 'echo \REACT_APP_LINKEDIN_CLIENT_ID\ = \"$PLINKEDINCLIENTID\">> .env.prod'
@@ -71,6 +74,7 @@ before_script:
   - 'echo \REACT_APP_DISABLE_APIGOV\ = \"$PROD_DISABLE_APIGOV\">> .env.prod'
   - 'echo \REACT_APP_DISABLE_ORACLEDB\ = \"$PROD_DISABLE_ORACLEDB\">> .env.prod'
   - 'echo \REACT_APP_DISPLAY_COLLECTIONS\ = \"$PROD_DISPLAY_COLLECTIONS\">> .env.prod'
+  - 'echo \REACT_APP_PROXY_URL\ = \"$PROD_REACT_APP_PROXY_URL\">> .env.prod'
   -  cat .env.prod
 include:
   project: 'ezapi_poc/infra_poc'

@@ -3,6 +3,9 @@
 const axios = require('axios');
 const Qs = require('qs');
 
+
+const proxyURL = process.env.REACT_APP_PROXY_URL;
+
 const runData = {
     url: 'https://api.fedex.com/rate/v2/rates/quotes',
     method: 'post',
@@ -167,7 +170,8 @@ const postData = {
 };
 
 const options = {
-    url: 'http://proxy.ezapi.ai',
+    //url: 'http://proxy.ezapi.ai',
+    url: proxyURL,
     method: 'post',
     paramsSerializer: (params) => Qs.stringify(params, { arrayFormat: 'repeat' }),
     data: postData,
