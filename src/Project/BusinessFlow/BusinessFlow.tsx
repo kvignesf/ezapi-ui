@@ -436,6 +436,9 @@ const Flow = () => {
                         } else {
                             setOpenMappingDrawer(false);
                             setSelectedNode('');
+                            if (node) {
+                                setTriggerCollapseNode(node.id);
+                            }
                         }
                         if (node && type == 'save') {
                             const getNodeData = {
