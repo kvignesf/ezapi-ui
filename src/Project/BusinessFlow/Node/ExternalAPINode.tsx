@@ -879,20 +879,22 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                                 onClick={toggleCollapse}
                             />
                         </Tooltip>
-                        <Tooltip title="Execute API">
-                            <img
-                                src={RunIcon}
-                                style={{ width: '24px', height: '24px', alignSelf: 'center', cursor: 'pointer' }}
-                                onClick={
-                                    apiType === 'system'
-                                        ? () => {
-                                              setCollapse(true);
-                                              setResponseValue('1');
-                                          }
-                                        : execute
-                                }
-                            />
-                        </Tooltip>
+                        {isNodeDataLoaded && (
+                            <Tooltip title="Execute API">
+                                <img
+                                    src={RunIcon}
+                                    style={{ width: '24px', height: '24px', alignSelf: 'center', cursor: 'pointer' }}
+                                    onClick={
+                                        apiType === 'system'
+                                            ? () => {
+                                                  setCollapse(true);
+                                                  setResponseValue('1');
+                                              }
+                                            : execute
+                                    }
+                                />
+                            </Tooltip>
+                        )}
                     </Stack>
                 </Stack>
             </Tooltip>
