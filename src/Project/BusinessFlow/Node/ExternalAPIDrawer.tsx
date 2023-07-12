@@ -42,6 +42,8 @@ import { ValueCard } from './Components/ValueCard';
 
 interface ExternalAPIDrawerProps {
     cardId: string;
+    refresh?: boolean;
+    setRefresh?: any;
 }
 const NON_PROXY_HOST_NAMES = ['localhost', '127.0.0.1'];
 
@@ -121,7 +123,7 @@ function getExternalAPIRequestAxiosOptions(
 
     return options;
 }
-export const ExternalAPIDrawer = ({ cardId }: ExternalAPIDrawerProps) => {
+export const ExternalAPIDrawer = ({ cardId, refresh, setRefresh }: ExternalAPIDrawerProps) => {
     const { projectId, operationId, useStore } = useContext(BusinessFlowContext);
     const [cardData, setCardData] = useState<NodeData>();
 
@@ -201,7 +203,7 @@ export const ExternalAPIDrawer = ({ cardId }: ExternalAPIDrawerProps) => {
     const [responseValue, setResponseValue] = useState<string>(cardData?.runData?.output?.success ? '1' : '0');
 
     const [executionNumber, setExecutionNumber] = useState<number>(0);
-    const delayTimeSet = 2500;
+    const delayTimeSet = 4000;
 
     const {
         node,
@@ -222,6 +224,7 @@ export const ExternalAPIDrawer = ({ cardId }: ExternalAPIDrawerProps) => {
         setExplicitLoading(false);
 
         if (runData.method !== 'GET') {
+            console.log('requestbodydata:', requestBodyData, typeof requestBodyData);
             updatedRunData = {
                 ...runData,
                 url: displayedUrlValue,
@@ -234,6 +237,8 @@ export const ExternalAPIDrawer = ({ cardId }: ExternalAPIDrawerProps) => {
                             ? requestBodyData
                             : typeof requestBodyData === 'string' && checkValidJson(requestBodyData) === true
                             ? JSON.parse(requestBodyData)
+                            : requestBodyData === ''
+                            ? {}
                             : node?.data?.runData?.body?.data ?? {},
                 },
                 output: runData.output,
@@ -281,7 +286,12 @@ export const ExternalAPIDrawer = ({ cardId }: ExternalAPIDrawerProps) => {
             setExecutionNumber(executionNumber + 1);
         }
     }, [node]);
-
+    useEffect(() => {
+        if (refresh) {
+            loadNodeDataFromServer();
+            setRefresh(false);
+        }
+    }, [refresh]);
     const handleChange = (_event: React.SyntheticEvent, newValue: string) => {
         nullChecker();
 
@@ -822,17 +832,19 @@ export const ExternalAPIDrawer = ({ cardId }: ExternalAPIDrawerProps) => {
                             </Tooltip>
                         </div>
                     )}
-                    <img
-                        src={RunIcon}
-                        style={{ width: '24px', height: '24px', alignSelf: 'center', cursor: 'pointer' }}
-                        onClick={
-                            apiType === 'system'
-                                ? () => {
-                                      setResponseValue('1');
-                                  }
-                                : execute
-                        }
-                    />
+                    <Tooltip title="Execute API">
+                        <img
+                            src={RunIcon}
+                            style={{ width: '24px', height: '24px', alignSelf: 'center', cursor: 'pointer' }}
+                            onClick={
+                                apiType === 'system'
+                                    ? () => {
+                                          setResponseValue('1');
+                                      }
+                                    : execute
+                            }
+                        />
+                    </Tooltip>
                 </Stack>
             </Stack>
 
@@ -866,11 +878,12 @@ export const ExternalAPIDrawer = ({ cardId }: ExternalAPIDrawerProps) => {
                                 <ResponseTab
                                     onChange={(value: any) => {
                                         if (checkValidJson(value) === true) {
-                                            setRequestBodyData(value);
                                             setIsJsonValid(true);
                                         } else {
                                             setIsJsonValid(false);
                                         }
+                                        setRequestBodyData(value);
+
                                         triggerDelayedNodeSaveOnServer(delayTimeSet);
                                     }}
                                     isError={isError}
@@ -905,11 +918,12 @@ export const ExternalAPIDrawer = ({ cardId }: ExternalAPIDrawerProps) => {
                                                     <ResponseTab
                                                         onChange={(value: any) => {
                                                             if (checkValidJson(value) === true) {
-                                                                setRequestBodyData(value);
                                                                 setIsJsonValid(true);
                                                             } else {
                                                                 setIsJsonValid(false);
                                                             }
+                                                            setRequestBodyData(value);
+
                                                             triggerDelayedNodeSaveOnServer(delayTimeSet);
                                                         }}
                                                         isError={isError}

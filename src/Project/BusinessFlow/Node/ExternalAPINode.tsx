@@ -21,6 +21,7 @@ import _ from 'lodash';
 import Qs from 'qs';
 import { SyntheticEvent, useContext, useEffect, useState } from 'react';
 import { Handle, Position, useNodeId } from 'reactflow';
+
 import LoaderWithMessage from '../../../shared/components/LoaderWithMessage';
 // @ts-ignore
 import drawerCardAtom from '@/shared/atom/drawerCardAtom';
@@ -30,6 +31,7 @@ import { Add } from '@material-ui/icons';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 // @ts-ignore
 import deleteNodeAtom from '@/shared/atom/deleteNodeAtom';
+import triggerCollapseNodeAtom from '@/shared/atom/triggerCollapseNodeAtom';
 import { useRecoilState } from 'recoil';
 import ApiIcon from '../../../icons/ApiIcon.svg';
 import LoopIcon from '../../../icons/LoopIcon.svg';
@@ -166,6 +168,7 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
     const [value, setValue] = useState('0');
     const [systemApis, _setSystemApis] = useState();
     const { projectId, operationId } = useContext(BusinessFlowContext);
+    const [triggerCollapseNode, setTriggerCollapseNode] = useRecoilState(triggerCollapseNodeAtom);
 
     const [apiType, setApiType] = useState<string>('api_call');
     const [_deleteData, setDeleteData] = useRecoilState<Node[] | undefined | string>(deleteNodeAtom);
@@ -477,7 +480,14 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
             //     setShowResponse(hasResponse);
             // }
         }
-    }, [props]);
+    }, []);
+    useEffect(() => {
+        if (triggerCollapseNode == '') return;
+        if (triggerCollapseNode === cardId) {
+            setCollapse(true);
+            setTriggerCollapseNode('');
+        }
+    }, [triggerCollapseNode]);
 
     useEffect(() => {
         if (!displayedUrlValue || !isValidUrl(displayedUrlValue) || !isFocused) return;
@@ -741,6 +751,7 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                             sx={{ width: 'fit-content' }}
                             onClick={() => {
                                 setDrawerSelected('mapping');
+                                setCollapse(false);
                             }}
                             variant="outlined"
                             startIcon={<Add />}
@@ -843,40 +854,45 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                                 </Tooltip>
                             </div>
                         )}
-
-                        <Delete
-                            sx={{ alignSelf: 'center', cursor: 'pointer' }}
-                            color={'primary'}
-                            onClick={() => {
-                                setDeleteData(cardId);
-                            }}
-                        />
-                        <img
-                            src={DialogIcon}
-                            style={{ width: '24px', height: '24px', alignSelf: 'center', cursor: 'pointer' }}
-                            onClick={() => {
-                                setDrawerSelected('drawer');
-                            }}
-                        />
-
-                        <img
-                            src={Collapse}
-                            style={{ width: '24px', height: '24px', alignSelf: 'center', cursor: 'pointer' }}
-                            onClick={toggleCollapse}
-                        />
-
-                        <img
-                            src={RunIcon}
-                            style={{ width: '24px', height: '24px', alignSelf: 'center', cursor: 'pointer' }}
-                            onClick={
-                                apiType === 'system'
-                                    ? () => {
-                                          setCollapse(true);
-                                          setResponseValue('1');
-                                      }
-                                    : execute
-                            }
-                        />
+                        <Tooltip title="Delete">
+                            <Delete
+                                sx={{ alignSelf: 'center', cursor: 'pointer' }}
+                                color={'primary'}
+                                onClick={() => {
+                                    setDeleteData(cardId);
+                                }}
+                            />
+                        </Tooltip>
+                        <Tooltip title="Zoom-In View">
+                            <img
+                                src={DialogIcon}
+                                style={{ width: '24px', height: '24px', alignSelf: 'center', cursor: 'pointer' }}
+                                onClick={() => {
+                                    setDrawerSelected('drawer');
+                                }}
+                            />
+                        </Tooltip>
+                        <Tooltip title="Expand/Collapse">
+                            <img
+                                src={Collapse}
+                                style={{ width: '24px', height: '24px', alignSelf: 'center', cursor: 'pointer' }}
+                                onClick={toggleCollapse}
+                            />
+                        </Tooltip>
+                        <Tooltip title="Execute API">
+                            <img
+                                src={RunIcon}
+                                style={{ width: '24px', height: '24px', alignSelf: 'center', cursor: 'pointer' }}
+                                onClick={
+                                    apiType === 'system'
+                                        ? () => {
+                                              setCollapse(true);
+                                              setResponseValue('1');
+                                          }
+                                        : execute
+                                }
+                            />
+                        </Tooltip>
                     </Stack>
                 </Stack>
             </Tooltip>

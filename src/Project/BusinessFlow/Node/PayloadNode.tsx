@@ -109,7 +109,7 @@ const PayloadNode = (props: PayloadNodeProps): React.ReactElement => {
             setResponseBodyData(node?.data?.responsePayloadData?.data?.body);
             setHeaderData(node?.data?.responsePayloadData?.data?.headers);
         }
-    }, [node]);
+    }, [node, dropDownData]);
 
     const prepareData = async () => {
         const allCardsDataFromServer = await fetchAllAggregateCards({ operationId, projectId });

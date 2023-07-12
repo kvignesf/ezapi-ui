@@ -247,13 +247,21 @@ const ProjectRow = ({
                     arrow
                     placement="right"
                     title={
-                        project?.projectType === 'both' ? (
+                        project?.projectType === 'noinput' ? (
+                            <span>Free Format API</span>
+                        ) : project?.projectType === 'aggregate' ? (
+                            <span>Aggregate API</span>
+                        ) : project?.projectType === 'both' ? (
                             <span>
-                                Spec Name: {project?.apiSpec[0]?.name ?? ''}
+                                Data API
+                                <br /> Spec Name: {project?.apiSpec[0]?.name ?? ''}
                                 <br /> db Name: {project?.dbDetails?.database ?? ''}
                             </span>
                         ) : (
-                            <span>db Name: {project?.dbDetails?.database ?? ''}</span>
+                            <span>
+                                Data API
+                                <br /> db Name: {project?.dbDetails?.database ?? ''}
+                            </span>
                         )
                     }
                 >

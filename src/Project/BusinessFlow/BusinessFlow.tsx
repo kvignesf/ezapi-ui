@@ -52,6 +52,7 @@ import { NewAggregateCard } from './interfaces/aggregate-cards';
 
 import deleteNodeAtom from '@/shared/atom/deleteNodeAtom';
 import loaderAtom from '@/shared/atom/loaderAtom';
+import triggerCollapseNodeAtom from '@/shared/atom/triggerCollapseNodeAtom';
 import ConfirmDialog from '@/shared/components/ConfirmDialog';
 import { createAggregateCard, fetchAggregateMetaData, fetchNodeFromServer } from './services';
 import createStore, { MyReactFlowState, getInputNodeIdsFromNode } from './store';
@@ -209,8 +210,12 @@ const Flow = () => {
     const [openFilterDrawer, setOpenFilterDrawer] = useState(false);
     const [selectBranchQuery, setSelectBranchQuery] = useState(false);
     const [showAPIDrawer, setShowAPIDrawer] = useState(false);
+    const [refreshDrawer, setRefreshDrawer] = useState(false);
+
     const [deleteData, setDeleteData] = useRecoilState<Node[] | undefined | string>(deleteNodeAtom);
     const [selectedNode, setSelectedNode] = useRecoilState(selectedNodeAtom);
+    const [triggerCollapseNode, setTriggerCollapseNode] = useRecoilState(triggerCollapseNodeAtom);
+
     const [selectedBranchCondition, setSelectedBranchCondition] = useRecoilState(branchQueryAtom);
     const [selectedCard, setSelectedCard] = useRecoilState(drawerCardAtom);
     const [showResponseMapping, setShowResponseMapping] = useRecoilState(responseMapperAtom);
@@ -384,7 +389,8 @@ const Flow = () => {
             {deleteData !== undefined && typeof deleteData !== 'string' && (
                 <ConfirmDialog
                     title={'Delete Node'}
-                    description={'Are you sure you want to delete the node? Once deleted you cant get it back.'}
+                    //description={'Are you sure you want to delete the node? Once deleted you cant get it back.'}
+                    description={'This Action will delete the node permanently. Do you wish to proceed ?'}
                     onCancel={() => {
                         setDeleteData(undefined);
                     }}
@@ -439,6 +445,8 @@ const Flow = () => {
                             };
                             const latestNodeInfo = await fetchNodeFromServer(getNodeData);
                             updateNodeData(node.id, latestNodeInfo.data);
+                            setRefreshDrawer(true);
+                            setTriggerCollapseNode(node.id);
                         }
                     }}
                 />
@@ -536,7 +544,7 @@ const Flow = () => {
                 }}
                 sx={{ overflow: 'unset' }}
             >
-                <ExternalAPIDrawer cardId={selectedCard} />
+                <ExternalAPIDrawer cardId={selectedCard} refresh={refreshDrawer} setRefresh={setRefreshDrawer} />
             </Drawer>
             <ReactFlow
                 onLoad={onLoad}

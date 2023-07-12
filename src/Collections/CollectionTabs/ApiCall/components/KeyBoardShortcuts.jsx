@@ -61,7 +61,7 @@ export default function KeyBoardShortcuts() {
                     <span style={{ color: 'black', marginRight: '5px', fontSize: '12px', fontWeight: 500 }}>+</span>
                 </div>
                 <div className={classes.letterContainer}>
-                    <span className={classes.letterSpan}>A</span>
+                    <span className={classes.letterSpan}>Q</span>
                 </div>
                 <span style={{ color: 'grey', marginTop: '5px', fontSize: '12px', fontWeight: 500 }}>
                     - Add New Request

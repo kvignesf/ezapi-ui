@@ -1,6 +1,6 @@
 import { Drawer } from '@material-ui/core';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { useHistory, useParams } from 'react-router';
 import MappingDrawer from './MappingDrawer';
 import { useGetResources } from './Resources/resourcesQuery';
@@ -11,6 +11,9 @@ import CloudUploadIcon from '@material-ui/icons/CloudUpload';
 import classNames from 'classnames';
 import _ from 'lodash';
 import { DndProvider } from 'react-dnd';
+import { SocketContext } from '../Context/socket';
+import { getAccessToken, getUserId } from '../shared/storage';
+
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useGetRecoilValueInfo_UNSTABLE, useRecoilState, useResetRecoilState } from 'recoil';
 import ModifyCollaborators from '../ModifyCollaborators/ModifyCollaborators';
@@ -28,7 +31,7 @@ import client, { endpoint } from '../shared/network/client';
 import { useLogout } from '../shared/query/authQueries';
 import { useSyncOperation } from '../shared/query/operationDetailsQuery';
 import routes, { generateRoute } from '../shared/routes';
-import { getAccessToken, getEmailId, getFirstName, getLastName } from '../shared/storage';
+import { getEmailId, getFirstName, getLastName } from '../shared/storage';
 import {
     canEdit,
     generateSyncOperationRequestRequest,
@@ -164,6 +167,18 @@ const Project = () => {
     const [showUnsavedPopup, setUnsavedPopup] = useState(true);
     const [apiError, setApiError] = useState(null);
     const [checkBusinessFlow, setBusinessFlow] = useState(false);
+    const socket = useContext(SocketContext);
+    const userId = getUserId();
+
+    useEffect(() => {
+        if (socket) {
+            if (!socket.connected) {
+                socket.emit('userConnected', {
+                    user: getUserId(),
+                });
+            }
+        }
+    }, []);
 
     useEffect(() => {
         if (canEdit(userRole)) {
