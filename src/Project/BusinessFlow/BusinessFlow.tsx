@@ -52,6 +52,7 @@ import { NewAggregateCard } from './interfaces/aggregate-cards';
 
 import deleteNodeAtom from '@/shared/atom/deleteNodeAtom';
 import loaderAtom from '@/shared/atom/loaderAtom';
+import triggerCollapseNodeAtom from '@/shared/atom/triggerCollapseNodeAtom';
 import ConfirmDialog from '@/shared/components/ConfirmDialog';
 import { createAggregateCard, fetchAggregateMetaData, fetchNodeFromServer } from './services';
 import createStore, { MyReactFlowState, getInputNodeIdsFromNode } from './store';
@@ -213,6 +214,8 @@ const Flow = () => {
 
     const [deleteData, setDeleteData] = useRecoilState<Node[] | undefined | string>(deleteNodeAtom);
     const [selectedNode, setSelectedNode] = useRecoilState(selectedNodeAtom);
+    const [triggerCollapseNode, setTriggerCollapseNode] = useRecoilState(triggerCollapseNodeAtom);
+
     const [selectedBranchCondition, setSelectedBranchCondition] = useRecoilState(branchQueryAtom);
     const [selectedCard, setSelectedCard] = useRecoilState(drawerCardAtom);
     const [showResponseMapping, setShowResponseMapping] = useRecoilState(responseMapperAtom);
@@ -443,6 +446,7 @@ const Flow = () => {
                             const latestNodeInfo = await fetchNodeFromServer(getNodeData);
                             updateNodeData(node.id, latestNodeInfo.data);
                             setRefreshDrawer(true);
+                            setTriggerCollapseNode(node.id);
                         }
                     }}
                 />
