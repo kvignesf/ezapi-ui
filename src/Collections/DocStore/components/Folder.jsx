@@ -17,11 +17,13 @@ import { v4 as uuidv4 } from 'uuid';
 import { endpoint } from '../../../shared/network/client';
 import { getUserId } from '../../../shared/storage';
 import {
+    collapsedState,
     currentApi,
     currentBreadCrumbs,
     currentTab,
     currentTabs,
     folderContentLoading,
+    folderState,
     requestParams,
     responseInfo,
 } from '../../CollectionsAtom';
@@ -112,8 +114,11 @@ const useStyles = makeStyles((theme) => ({
 
 export default function Folder({ id, parentId, onDelete, selected, onSelect, onRename, name, isModal, saveModalOpen }) {
     const classes = useStyles();
-    const [childComponents, setChildComponents] = useState([]);
-    const [collapsed, setCollapsed] = useState(true);
+    const childComponents = useRecoilValue(folderState(id));
+    const setChildComponents = useSetRecoilState(folderState(id));
+    const setParentComponent = useSetRecoilState(folderState(parentId));
+    const collapsed = useRecoilValue(collapsedState(id));
+    const setCollapsed = useSetRecoilState(collapsedState(id));
     const [folderName, setFolderName] = useState(name);
     const [editing, setEditing] = useState(false); // Add editing state
     const userId = getUserId();
@@ -124,12 +129,10 @@ export default function Folder({ id, parentId, onDelete, selected, onSelect, onR
     const setCurrentTab = useSetRecoilState(currentTab);
     const setRequest = useSetRecoilState(requestParams);
     const setResponse = useSetRecoilState(responseInfo);
-    const [api, setCurrentApi] = useRecoilState(currentApi);
+    const setCurrentApi = useSetRecoilState(currentApi);
     const setBreadCrumbs = useSetRecoilState(currentBreadCrumbs);
     const [loading, setLoading] = useState(false);
-    const [processing, setProcessing] = useState(false);
-    const dataLoading = useRecoilValue(folderContentLoading);
-
+    const [dataLoading, setDataLoading] = useRecoilState(folderContentLoading);
     const handleOptionClick = (event) => {
         setAnchorEl(event.currentTarget);
     };
@@ -140,17 +143,14 @@ export default function Folder({ id, parentId, onDelete, selected, onSelect, onR
     const addFile = async () => {
         const parentId = id;
         const newId = uuidv4();
-        setProcessing(true);
         const newFile = (
             <File
                 key={newId}
                 id={newId}
                 reqMethod="GET"
                 parentId={parentId}
-                onDelete={deleteChild}
                 selected={selected}
                 onSelect={onSelect}
-                onRename={onRename}
                 editable={true}
                 name="New Request"
             /> // Pass onSelect prop to child components
@@ -192,7 +192,6 @@ export default function Folder({ id, parentId, onDelete, selected, onSelect, onR
             createdAt: formattedDateTime,
             modifiedAt: formattedDateTime,
         });
-        setProcessing(false);
     };
 
     const addFolder = async () => {
@@ -224,7 +223,7 @@ export default function Folder({ id, parentId, onDelete, selected, onSelect, onR
     };
 
     const deleteChild = (childId) => {
-        const newChildComponents = childComponents.filter((child) => child.props.id !== childId);
+        const newChildComponents = childComponents.filter((child) => child?.props.id !== childId);
         setChildComponents(newChildComponents);
         onDelete(childId);
     };
@@ -263,9 +262,62 @@ export default function Folder({ id, parentId, onDelete, selected, onSelect, onR
     };
 
     const toggleCollapsed = async (event) => {
-        // Check if the click target is one of the icon buttons
         if (!collapsed === false) {
             setCollapsed(false);
+            const type = selected.type;
+            let requestFiles;
+            if (childComponents.length > 0) {
+                return;
+            }
+            try {
+                const res1 = await axios.get(
+                    process.env.REACT_APP_API_URL + endpoint.collectionsRequest + `/${userId}`,
+                );
+                requestFiles = res1.data;
+
+                const response = await axios.get(
+                    process.env.REACT_APP_API_URL + endpoint.collectionDirectory + `/${userId}/${type}/${id}`,
+                );
+                const children = response.data.data;
+                const QchildComponents = children.map((child) => {
+                    if (child.type === 'File') {
+                        let reqFile = requestFiles.filter((file) => file.id === child.id);
+                        let reqObject = reqFile[0]?.request;
+                        return (
+                            <File
+                                key={child.id}
+                                id={child.id}
+                                parentId={child.parentFolderId}
+                                onDelete={deleteChild}
+                                selected={selected}
+                                onSelect={onSelect}
+                                name={child.name}
+                                onRename={onRename}
+                                reqMethod={reqObject ? reqObject.method : null}
+                                reqUrl={reqObject ? reqObject.url : null}
+                            />
+                        );
+                    } else if (child.type === 'Folder') {
+                        return (
+                            <Folder
+                                key={child.id}
+                                id={child.id}
+                                parentId={child.parentFolderId}
+                                onDelete={deleteChild}
+                                selected={selected}
+                                onSelect={onSelect}
+                                name={child.name}
+                                onRename={onRename}
+                            />
+                        );
+                    }
+                });
+
+                setChildComponents(QchildComponents);
+            } catch (error) {
+                // Handle error
+                console.log(error);
+            }
         } else {
             setCollapsed(!collapsed);
         }
@@ -297,7 +349,25 @@ export default function Folder({ id, parentId, onDelete, selected, onSelect, onR
 
     const handleInputBlur = async () => {
         if (folderName) {
-            await onRename(id, folderName);
+            setParentComponent((folderData) => {
+                return folderData.map((data) => {
+                    if (data.props.id === id) {
+                        return {
+                            ...data,
+                            props: {
+                                ...data.props,
+                                name: folderName,
+                            },
+                        };
+                    }
+                    return data;
+                });
+            });
+            if (parentId === '0') {
+                setDataLoading(true);
+                onRename(id, folderName);
+                setDataLoading(false);
+            }
             const folderData = {
                 name: folderName,
             };
@@ -347,75 +417,6 @@ export default function Folder({ id, parentId, onDelete, selected, onSelect, onR
             isMountedRef.current = false;
         };
     }, []);
-
-    useEffect(() => {
-        let isMounted = true; // Add a flag to track component mount status
-
-        if (loading === false && collapsed === false && processing === false) {
-            const handleSelect = async () => {
-                const type = selected.type;
-                let requestFiles;
-                try {
-                    const res1 = await axios.get(
-                        process.env.REACT_APP_API_URL + endpoint.collectionsRequest + `/${userId}`,
-                    );
-                    requestFiles = res1.data;
-
-                    const response = await axios.get(
-                        process.env.REACT_APP_API_URL + endpoint.collectionDirectory + `/${userId}/${type}/${id}`,
-                    );
-                    const children = response.data.data;
-                    const childComponents = children.map((child) => {
-                        if (child.type === 'File') {
-                            let reqFile = requestFiles.filter((file) => file.id === child.id);
-                            let reqObject = reqFile[0]?.request;
-                            return (
-                                <File
-                                    key={child.id}
-                                    id={child.id}
-                                    parentId={id}
-                                    onDelete={deleteChild}
-                                    selected={selected}
-                                    onSelect={onSelect}
-                                    name={child.name}
-                                    onRename={onRename}
-                                    reqMethod={reqObject ? reqObject.method : null}
-                                    reqUrl={reqObject ? reqObject.url : null}
-                                />
-                            );
-                        } else if (child.type === 'Folder') {
-                            return (
-                                <Folder
-                                    key={child.id}
-                                    id={child.id}
-                                    parentId={id}
-                                    onDelete={deleteChild}
-                                    selected={selected}
-                                    onSelect={onSelect}
-                                    name={child.name}
-                                    onRename={onRename}
-                                />
-                            );
-                        }
-                    });
-
-                    if (isMounted) {
-                        setChildComponents(childComponents);
-                    }
-                } catch (error) {
-                    // Handle error
-                    console.log(error);
-                }
-            };
-
-            handleSelect();
-        }
-
-        // Cleanup function
-        return () => {
-            isMounted = false; // Update the mount status when the component is unmounted
-        };
-    }, [saveModalOpen, collapsed, api, dataLoading]);
 
     const fileClass = id === selected.id ? classes.selectedFile : classes.root;
 
@@ -505,18 +506,25 @@ export default function Folder({ id, parentId, onDelete, selected, onSelect, onR
                     {dataLoading ? (
                         <ThreeDots height="20" width="20" color="grey" visible={true} />
                     ) : (
-                        childComponents.map((component) => (
-                            <div key={component.props.id}>
-                                {React.cloneElement(component, {
-                                    onDelete: deleteChild,
-                                    onSelect: onSelect,
-                                    selected: selected,
-                                    onRename: onRename,
-                                    isModal: isModal,
-                                    saveModalOpen: saveModalOpen,
-                                })}
-                            </div>
-                        ))
+                        childComponents &&
+                        childComponents.map((component) => {
+                            if (component) {
+                                return (
+                                    <div key={component.props.id}>
+                                        {React.cloneElement(component, {
+                                            onDelete: deleteChild,
+                                            onSelect: onSelect,
+                                            selected: selected,
+                                            onRename: onRename,
+                                            isModal: isModal,
+                                            saveModalOpen: saveModalOpen,
+                                        })}
+                                    </div>
+                                );
+                            } else {
+                                return null;
+                            }
+                        })
                     )}
                 </div>
             )}

@@ -62,9 +62,12 @@ const RecentHistory = () => {
     };
 
     useEffect(() => {
+        let source = axios.CancelToken.source(); // Create a cancel token source
         const getFiles = async () => {
             await axios
-                .get(process.env.REACT_APP_API_URL + endpoint.collectionsRequest + `/${userId}`)
+                .get(process.env.REACT_APP_API_URL + endpoint.collectionsRequest + `/${userId}`, {
+                    cancelToken: source.token, // Pass the cancel token to the request
+                })
                 .then((response) => {
                     let req = response.data;
                     req.sort((dateStr1, dateStr2) => {
@@ -97,7 +100,12 @@ const RecentHistory = () => {
                 });
         };
         getFiles();
-    }, [userId, tabs]);
+
+        // Cleanup function
+        return () => {
+            source.cancel(); // Cancel the request when the component is unmounted
+        };
+    }, [tabs]);
 
     // Get the current date
     const today = new Date();
