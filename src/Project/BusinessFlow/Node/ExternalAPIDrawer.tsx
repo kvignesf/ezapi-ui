@@ -47,6 +47,8 @@ interface ExternalAPIDrawerProps {
 }
 const NON_PROXY_HOST_NAMES = ['localhost', '127.0.0.1'];
 
+const proxyURL = process.env.REACT_APP_PROXY_URL;
+
 function getExternalAPIRequestAxiosOptions(
     runData: ExternalAPI,
     displayedUrlValue: String,
@@ -112,7 +114,8 @@ function getExternalAPIRequestAxiosOptions(
     }
 
     const options: AxiosRequestConfig = {
-        url: 'https://proxy.ezapi.ai',
+        //url: 'https://proxy.ezapi.ai',
+        url: proxyURL,
         method: 'post',
         headers: {
             Accept: 'application/json',
