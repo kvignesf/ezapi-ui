@@ -386,7 +386,8 @@ const Flow = () => {
             {deleteData !== undefined && typeof deleteData !== 'string' && (
                 <ConfirmDialog
                     title={'Delete Node'}
-                    description={'Are you sure you want to delete the node? Once deleted you cant get it back.'}
+                    //description={'Are you sure you want to delete the node? Once deleted you cant get it back.'}
+                    description={'This Action will delete the node permanently. Do you wish to proceed ?'}
                     onCancel={() => {
                         setDeleteData(undefined);
                     }}

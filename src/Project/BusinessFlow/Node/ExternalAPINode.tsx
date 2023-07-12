@@ -844,40 +844,45 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
                                 </Tooltip>
                             </div>
                         )}
-
-                        <Delete
-                            sx={{ alignSelf: 'center', cursor: 'pointer' }}
-                            color={'primary'}
-                            onClick={() => {
-                                setDeleteData(cardId);
-                            }}
-                        />
-                        <img
-                            src={DialogIcon}
-                            style={{ width: '24px', height: '24px', alignSelf: 'center', cursor: 'pointer' }}
-                            onClick={() => {
-                                setDrawerSelected('drawer');
-                            }}
-                        />
-
-                        <img
-                            src={Collapse}
-                            style={{ width: '24px', height: '24px', alignSelf: 'center', cursor: 'pointer' }}
-                            onClick={toggleCollapse}
-                        />
-
-                        <img
-                            src={RunIcon}
-                            style={{ width: '24px', height: '24px', alignSelf: 'center', cursor: 'pointer' }}
-                            onClick={
-                                apiType === 'system'
-                                    ? () => {
-                                          setCollapse(true);
-                                          setResponseValue('1');
-                                      }
-                                    : execute
-                            }
-                        />
+                        <Tooltip title="Delete">
+                            <Delete
+                                sx={{ alignSelf: 'center', cursor: 'pointer' }}
+                                color={'primary'}
+                                onClick={() => {
+                                    setDeleteData(cardId);
+                                }}
+                            />
+                        </Tooltip>
+                        <Tooltip title="Zoom-In View">
+                            <img
+                                src={DialogIcon}
+                                style={{ width: '24px', height: '24px', alignSelf: 'center', cursor: 'pointer' }}
+                                onClick={() => {
+                                    setDrawerSelected('drawer');
+                                }}
+                            />
+                        </Tooltip>
+                        <Tooltip title="Expand/Collapse">
+                            <img
+                                src={Collapse}
+                                style={{ width: '24px', height: '24px', alignSelf: 'center', cursor: 'pointer' }}
+                                onClick={toggleCollapse}
+                            />
+                        </Tooltip>
+                        <Tooltip title="Execute API">
+                            <img
+                                src={RunIcon}
+                                style={{ width: '24px', height: '24px', alignSelf: 'center', cursor: 'pointer' }}
+                                onClick={
+                                    apiType === 'system'
+                                        ? () => {
+                                              setCollapse(true);
+                                              setResponseValue('1');
+                                          }
+                                        : execute
+                                }
+                            />
+                        </Tooltip>
                     </Stack>
                 </Stack>
             </Tooltip>
