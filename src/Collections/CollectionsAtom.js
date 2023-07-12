@@ -1,4 +1,4 @@
-import { atom } from 'recoil';
+import { atom, atomFamily } from 'recoil';
 
 export const accessToken = atom({
     key: 'accessToken',
@@ -97,3 +97,27 @@ export const folderContentLoading = atom({
     key: 'folderContentLoading',
     default: false,
 });
+
+//for Docstore state management
+export const folderState = atomFamily({
+    key: 'folderStateAtom',
+    default: [],
+});
+
+export const rootFolderIdAtom = atom({
+    key: 'rootFolderIdAtom',
+    default: [],
+});
+
+export const collapsedState = atomFamily({ key: 'collapsedState', default: true });
+
+// // Recoil selector to get child components of a folder
+// export const folderStateSelector = selectorFamily({
+//     key: 'folderStateSelector',
+//     get:
+//         (id) =>
+//         ({ get }) => {
+//             const childComponents = get(folderStateAtom(id));
+//             return childComponents || [];
+//         },
+// });

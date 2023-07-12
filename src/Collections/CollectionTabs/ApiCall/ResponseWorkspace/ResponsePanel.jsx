@@ -131,7 +131,7 @@ export default function Response({ loading }) {
                     <ThreeDots height="30" width="30" color="gray" visible={true} />
                 ) : (
                     <>
-                        {selectedTabIndex === 0 && response && <ResponseEditor value={response} />}
+                        {selectedTabIndex === 0 && response && response.data && <ResponseEditor value={response} />}
                         {selectedTabIndex === 1 && <ResponseHeader response={response} />}
                     </>
                 )}

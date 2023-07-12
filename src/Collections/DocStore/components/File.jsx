@@ -16,6 +16,7 @@ import {
     currentBreadCrumbs,
     currentTab,
     currentTabs,
+    folderState,
     requestParams,
     responseInfo,
     toggle,
@@ -96,11 +97,10 @@ const useStyles = makeStyles((theme) => ({
 
 export default function File({
     id,
-    parentFolderId,
+    parentId,
     onDelete,
     onSelect,
     selected,
-    onRename,
     name,
     isModal,
     saveModalOpen,
@@ -115,7 +115,7 @@ export default function File({
     const [anchorEl, setAnchorEl] = useState(null);
     const inputRef = useRef(null);
     const isMountedRef = useRef(true);
-    let [tabs, setTabs] = useRecoilState(currentTabs);
+    const [tabs, setTabs] = useRecoilState(currentTabs);
     const [currenttab, setCurrentTab] = useRecoilState(currentTab);
     const [request, setRequest] = useRecoilState(requestParams);
     const [response, setResponse] = useRecoilState(responseInfo);
@@ -124,7 +124,7 @@ export default function File({
     const [isApiHappening, setApiHappening] = useState(false);
     const [loading, setLoading] = useState(false);
     const alignment = useRecoilValue(toggle);
-
+    const [folderData, setFolderData] = useRecoilState(folderState(parentId));
     const handleOptionClick = (event) => {
         setAnchorEl(event.currentTarget);
     };
@@ -145,12 +145,15 @@ export default function File({
             .delete(process.env.REACT_APP_API_URL + `${endpoint.collectionsRequest}/${userId}/${id}`)
             .then(() => {
                 const index = tabs.findIndex((child) => child.id === id);
-                tabs = tabs.filter((child) => child.id !== id);
-                setTabs(tabs);
-                if (tabs.length > 0 && index !== -1) {
+                const newTabs = tabs.filter((child) => child.id !== id);
+                setTabs(newTabs);
+                if (tabs.length > 0) {
                     if (index === currenttab - 1 || index <= currenttab) {
                         setCurrentTab(currenttab - 1);
-
+                    } else {
+                        setCurrentTab(currenttab);
+                    }
+                    if (index === currenttab) {
                         setRequest(
                             tabs[currenttab - 1]?.request
                                 ? tabs[currenttab - 1].request
@@ -165,7 +168,7 @@ export default function File({
                         );
                         setResponse(tabs[currenttab - 1]?.response ? tabs[currenttab - 1].response : {});
                         setCurrentApi({
-                            id: tabs[currenttab - 1]?.id ? tabs[currenttab - 1].id : 0,
+                            id: tabs[currenttab - 1]?.id ? tabs[currenttab - 1].id : '0',
                             name: tabs[currenttab - 1]?.label ? tabs[currenttab - 1].label : 'New Request',
                             type: 'file',
                             onSave: tabs[currenttab - 1]?.onSave ? tabs[currenttab - 1].onSave : false,
@@ -177,7 +180,6 @@ export default function File({
                             tabs[currenttab - 1]?.parentFolderNames ? tabs[currenttab - 1].parentFolderNames : [],
                         );
                     } else {
-                        setCurrentTab(currenttab);
                         setRequest(
                             tabs[currenttab]?.request
                                 ? tabs[currenttab].request
@@ -192,13 +194,11 @@ export default function File({
                         );
                         setResponse(tabs[currenttab]?.response ? tabs[currenttab].response : {});
                         setCurrentApi({
-                            id: tabs[currenttab]?.id ? tabs[currenttab].id : 0,
+                            id: tabs[currenttab]?.id ? tabs[currenttab].id : '0',
                             name: tabs[currenttab]?.label ? tabs[currenttab].label : 'New Request',
                             type: 'file',
                             onSave: tabs[currenttab]?.onSave ? tabs[currenttab].onSave : false,
-                            parentFolderId: tabs[currenttab - 1]?.parentFolderId
-                                ? tabs[currenttab - 1].parentFolderId
-                                : '0',
+                            parentFolderId: tabs[currenttab]?.parentFolderId ? tabs[currenttab].parentFolderId : '0',
                         });
                         setBreadCrumbs(tabs[currenttab]?.parentFolderNames ? tabs[currenttab].parentFolderNames : []);
                     }
@@ -221,7 +221,15 @@ export default function File({
                 console.log(err);
             });
         onSelect({});
-        onDelete(id);
+
+        setFolderData((folderData) => {
+            return folderData.filter((file) => file.props.id !== id);
+        });
+
+        onSelect({
+            type: '',
+            id: '',
+        }); // Clear selected if the selected component is delet
         setLoading(false);
     };
     const handleSelect = async (event) => {
@@ -304,30 +312,51 @@ export default function File({
                             return [
                                 ...prev,
                                 {
-                                    id: data.id,
-                                    parentFolderNames: parentFolderNames,
-                                    request: data.request,
-                                    response: data.response,
-                                    parentFolderId: data.parentFolderId,
-                                    label: data.name,
-                                    onSave: data.onSave,
+                                    id: data.id ? data.id : '0',
+                                    parentFolderNames: parentFolderNames ? parentFolderNames : [],
+                                    request: data.request
+                                        ? data.request
+                                        : {
+                                              method: 'GET',
+                                              proxy: 'No Proxy',
+                                              url: '',
+                                              body: { '': '' },
+                                              header: [],
+                                              queryParams: [],
+                                          },
+                                    response: data.response ? data.response : {},
+                                    label: data.name ? data.name : 'New Request',
+                                    onSave: data.onSave ? data.onSave : false,
                                     type: 'file',
+                                    parentFolderId: data.parentFolderId ? data.parentFolderId : '0',
                                     content: <ApiCall />,
                                 },
                             ];
                         });
 
                         setCurrentTab(tabs.length);
-                        setRequest(data.request);
-                        setResponse(data.response);
+                        setRequest(
+                            data.request
+                                ? data.request
+                                : {
+                                      method: 'GET',
+                                      proxy: 'No Proxy',
+                                      url: '',
+                                      body: { '': '' },
+                                      header: [],
+                                      queryParams: [],
+                                  },
+                        );
+                        setResponse(data.response ? data.response : {});
+
                         setCurrentApi({
                             id: data.id,
-                            name: data.name,
+                            name: data.name ? data.name : 'New Request',
                             onSave: data.onSave,
                             type: 'file',
                             parentFolderId: data.parentFolderId,
                         });
-                        setBreadCrumbs(parentFolderNames);
+                        setBreadCrumbs(parentFolderNames ? parentFolderNames : []);
                         setApiHappening(false);
                     })
                     .catch((error) => {
@@ -358,9 +387,20 @@ export default function File({
 
     const handleInputBlur = async (event) => {
         if (fileName) {
+            const nameChangedFolderData = folderData.map((file) => {
+                if (file.props.id === id) {
+                    return {
+                        ...file,
+                        props: {
+                            ...file.props,
+                            name: fileName,
+                        },
+                    };
+                }
+                return file;
+            });
+            setFolderData(nameChangedFolderData);
             let parentFolderNames;
-            await onRename(id, fileName);
-
             await axios
                 .put(process.env.REACT_APP_API_URL + `${endpoint.collectionDirectory}/${userId}/${id}`, {
                     name: fileName,
@@ -415,6 +455,7 @@ export default function File({
                     return [...prev];
                 }
             });
+
             if (selected.id === api.id)
                 setBreadCrumbs((prev) => {
                     const newArray = [...prev];
@@ -447,8 +488,8 @@ export default function File({
     const fileClass = selected && selected.id === id ? classes.selectedFile : classes.root;
     let method, requestUrl;
     if (api.id === id) {
-        method = request.method;
-        requestUrl = request.url;
+        method = request?.method && request.method;
+        requestUrl = request?.url && request.url;
     } else {
         method = reqMethod ? reqMethod : 'GET';
         requestUrl = reqUrl ? reqUrl : null;

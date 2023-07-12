@@ -125,8 +125,12 @@ export default function RequestTabs() {
                     </Tabs>
                 </div>
                 {value === 2 ? (
-                    <button className={classes.tab} style={{ paddingRight: '30px' }} onClick={handleFormatClick}>
-                        Format JSON
+                    <button
+                        className={classes.tab}
+                        style={{ paddingRight: '30px', color: '#c71c72', fontWeight: 700 }}
+                        onClick={handleFormatClick}
+                    >
+                        Indent
                     </button>
                 ) : null}
             </div>
