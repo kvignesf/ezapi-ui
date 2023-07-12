@@ -8,7 +8,7 @@ import apiNameSchema from '../shared/schemas/apiNameSchema';
 //import { ReactComponent as Logo } from "../static/images/logo/connectoLogo.svg";
 import CloseIcon from '@material-ui/icons/Close';
 import Button from '@mui/material/Button';
-import { ReactComponent as Logo } from '../static/images/logo/newconnectoLogo.svg';
+import Logo from '../static/images/logo/newconnectoLogo.svg';
 //import InfoIcon from '@mui/icons-material/Info';
 import Box from '@material-ui/core/Box';
 import Checkbox from '@material-ui/core/Checkbox';
@@ -33,11 +33,11 @@ import routes from '../shared/routes';
 import { getUserId } from '../shared/storage';
 import { isEmailValid } from '../shared/utils';
 import ProductHunt from '../static/images/ProductHunt.jpg';
-import { useAddProject, usePricingData, useUserProfile } from './addProjectQuery';
 import ConnectDatabase from './ConnectDatabase';
 import NoSpecNoDb from './NoSpecNoDb';
-import projectAtom from './projectAtom';
 import ProjectDetails from './ProjectDetails';
+import { useAddProject, usePricingData, useUserProfile } from './addProjectQuery';
+import projectAtom from './projectAtom';
 
 const AddProject = ({ onClose, onSuccess }) => {
     const [currentTab, setTab] = useState(0);
@@ -1288,7 +1288,8 @@ const AddProject = ({ onClose, onSuccess }) => {
                         </AppIcon>
                     </div>{' '}
                     <div className="flex justify-center py-4">
-                        <Logo alt="conektto logo" className=" w-28 h-28" />
+                        <img src={Logo} alt="conektto logo" className=" w-28 h-28" />
+                        {/* <Logo alt="conektto logo" className=" w-28 h-28" /> */}
                     </div>
                     <div className="flex justify-center p-2 px-36">
                         <PrimaryButton
