@@ -6,6 +6,8 @@ import { Button } from '@material-ui/core';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { Card, FormControlLabel, Radio, RadioGroup, Stack, Tab, Typography } from '@mui/material';
 
+import deleteNodeAtom from '@/shared/atom/deleteNodeAtom';
+import { Delete } from '@mui/icons-material';
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 import React, { SyntheticEvent, useContext, useEffect, useState } from 'react';
@@ -19,7 +21,6 @@ import { NODE_TYPES } from '../constants';
 import useNodeHook from '../hooks/useNodeHook';
 import { AggregateCard, KeyValueProps } from '../interfaces';
 import { NodeData } from '../interfaces/flow';
-
 import { fetchAllAggregateCards } from '../services';
 import { ResponseTab } from './Components/ResponseTab';
 import { ValueCard } from './Components/ValueCard';
@@ -36,9 +37,10 @@ const PayloadNode = (props: PayloadNodeProps): React.ReactElement => {
     const delayTimeSet = 2500;
 
     const [isFullMapping, setIsFullMapping] = useState(true);
-    const [showResponseMapping, setShowResponseMapping] = useRecoilState(responseMapperAtom);
+    const [_deleteData, setDeleteData] = useRecoilState<Node[] | undefined | string>(deleteNodeAtom);
+    const [_showResponseMapping, setShowResponseMapping] = useRecoilState(responseMapperAtom);
     const [isJsonValid, setIsJsonValid] = useState(true);
-    const [tabValue, setTabValue] = useState('0');
+    const [tabValue, setTabValue] = useState('1');
     const [headerData, setHeaderData] = useState<KeyValueProps[]>();
     const [responseBodyData, setResponseBodyData] = useState<KeyValueProps[]>();
 
@@ -74,11 +76,12 @@ const PayloadNode = (props: PayloadNodeProps): React.ReactElement => {
     const handleChange = (_event: React.SyntheticEvent, newValue: string) => {
         setTabValue(newValue);
     };
-    useEffect(() => {
-        if (collapse) {
-            loadNodeDataFromServer();
-        }
-    }, [collapse]);
+    // useEffect(() => {
+    //     if (collapse) {
+    //         console.log('loading from server now here!!');
+    //         loadNodeDataFromServer();
+    //     }
+    // }, [collapse]);
     const socket = useContext(SocketContext);
 
     useEffect(() => {
@@ -106,7 +109,7 @@ const PayloadNode = (props: PayloadNodeProps): React.ReactElement => {
             setResponseBodyData(node?.data?.responsePayloadData?.data?.body);
             setHeaderData(node?.data?.responsePayloadData?.data?.headers);
         }
-    }, [node]);
+    }, [node, dropDownData]);
 
     const prepareData = async () => {
         const allCardsDataFromServer = await fetchAllAggregateCards({ operationId, projectId });
@@ -153,14 +156,24 @@ const PayloadNode = (props: PayloadNodeProps): React.ReactElement => {
                     </Typography>
                 </Stack>
                 <Stack direction={'row'} spacing={1}>
+                    <Delete
+                        sx={{ alignSelf: 'center', cursor: 'pointer' }}
+                        color={'primary'}
+                        onClick={() => {
+                            setDeleteData(cardId);
+                        }}
+                    />
+                    <img
+                        src={DialogIcon}
+                        style={{ width: '24px', height: '24px', alignSelf: 'center', cursor: 'pointer' }}
+                    />
                     <img
                         src={Collapse}
-                        style={{ width: '24px', height: '24px', alignSelf: 'center' }}
+                        style={{ width: '24px', height: '24px', alignSelf: 'center', cursor: 'pointer' }}
                         onClick={() => {
                             setCollapse(!collapse);
                         }}
                     />
-                    <img src={DialogIcon} style={{ width: '24px', height: '24px', alignSelf: 'center' }} />
                 </Stack>
             </Stack>
             {collapse && (

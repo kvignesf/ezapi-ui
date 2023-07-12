@@ -66,7 +66,7 @@ export const MappingResponseRow = ({ data, onDelete = () => {} }: MappingRespons
             </Stack>
             <Delete
                 color={'error'}
-                sx={{ alignSelf: 'center' }}
+                sx={{ alignSelf: 'center', cursor: 'pointer' }}
                 onClick={() => {
                     onDelete();
                 }}

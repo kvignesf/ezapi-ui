@@ -1,5 +1,7 @@
+import deleteNodeAtom from '@/shared/atom/deleteNodeAtom';
 import filterAtom from '@/shared/atom/filterAtom';
 import selectedNodeAtom from '@/shared/atom/selectedNodeAtom';
+import { Delete } from '@mui/icons-material';
 import { Card, Stack, TextField, Tooltip, Typography } from '@mui/material';
 import _ from 'lodash';
 import { useEffect, useState } from 'react';
@@ -17,12 +19,13 @@ interface FilterNodeProps extends NodeProps {}
 const FilterNode = (props: FilterNodeProps) => {
     const [collapse, setCollapse] = useState(false);
     const cardId: string = useNodeId() || '';
-    const [selectedNode, setSelectedNode] = useRecoilState(selectedNodeAtom);
-    const [filterType, setFilterType] = useRecoilState(filterAtom);
+    const [_selectedNode, setSelectedNode] = useRecoilState(selectedNodeAtom);
+    const [_filterType, setFilterType] = useRecoilState(filterAtom);
     const [replacedValue, setReplacedValue] = useState('');
     const [excludedValue, setExcludedValue] = useState('');
+    const [_deleteData, setDeleteData] = useRecoilState<Node[] | undefined | string>(deleteNodeAtom);
 
-    const { node, loadNodeDataFromServer, isNodeDataLoaded, isLoading } = useNodeHook({
+    const { node, isNodeDataLoaded, isLoading } = useNodeHook({
         nodeId: cardId,
         getUpdatedNodeData: () => {},
         collapse: collapse,
@@ -103,17 +106,27 @@ const FilterNode = (props: FilterNodeProps) => {
                             </Typography>
                         </Stack>
                         <Stack direction={'row'} spacing={1}>
+                            <Delete
+                                sx={{ alignSelf: 'center', cursor: 'pointer' }}
+                                color={'primary'}
+                                onClick={() => {
+                                    setDeleteData(cardId);
+                                }}
+                            />
+                            <img
+                                src={DialogIcon}
+                                style={{ width: '24px', height: '24px', alignSelf: 'center', cursor: 'pointer' }}
+                            />
                             <img
                                 src={Collapse}
-                                style={{ width: '24px', height: '24px', alignSelf: 'center' }}
+                                style={{ width: '24px', height: '24px', alignSelf: 'center', cursor: 'pointer' }}
                                 onClick={() => {
                                     setCollapse(!collapse);
                                 }}
                             />
-                            <img src={DialogIcon} style={{ width: '24px', height: '24px', alignSelf: 'center' }} />
                             <img
                                 src={RunIcon}
-                                style={{ width: '24px', height: '24px', alignSelf: 'center' }}
+                                style={{ width: '24px', height: '24px', alignSelf: 'center', cursor: 'pointer' }}
                                 onClick={() => {}}
                             />
                         </Stack>

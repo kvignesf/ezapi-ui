@@ -243,17 +243,25 @@ const ProjectRow = ({
             >
                 {project?.projectName}
                 <CustomTooltip
-                    maxWidth={'10px'}
+                    // maxwidth={'10px'}
                     arrow
                     placement="right"
                     title={
-                        project?.projectType === 'both' ? (
+                        project?.projectType === 'noinput' ? (
+                            <span>Free Format API</span>
+                        ) : project?.projectType === 'aggregate' ? (
+                            <span>Aggregate API</span>
+                        ) : project?.projectType === 'both' ? (
                             <span>
-                                Spec Name: {project?.apiSpec[0]?.name ?? ''}
+                                Data API
+                                <br /> Spec Name: {project?.apiSpec[0]?.name ?? ''}
                                 <br /> db Name: {project?.dbDetails?.database ?? ''}
                             </span>
                         ) : (
-                            <span>db Name: {project?.dbDetails?.database ?? ''}</span>
+                            <span>
+                                Data API
+                                <br /> db Name: {project?.dbDetails?.database ?? ''}
+                            </span>
                         )
                     }
                 >
@@ -809,7 +817,6 @@ const Content = ({ showCreateProjectDialog }) => {
     useEffect(() => {
         // Fetch items from another resources.
         const endOffset = itemOffset + itemsPerPage;
-        console.log(`Loading items from ${itemOffset} to ${endOffset}`);
         setCurrentItems(projects?.slice(itemOffset, endOffset));
         setPageCount(Math.ceil(projects?.length / itemsPerPage));
     }, [itemOffset, itemsPerPage, projects]);
@@ -817,7 +824,6 @@ const Content = ({ showCreateProjectDialog }) => {
     const handlePageClick = (event) => {
         sessionStorage.setItem('pageIndex', event.selected);
         const newOffset = (event.selected * itemsPerPage) % projects.length;
-        console.log(`User requested page number ${event.selected}, which is offset ${newOffset}`);
         setItemOffset(newOffset);
     };
 
@@ -930,14 +936,17 @@ const Content = ({ showCreateProjectDialog }) => {
             {' '}
             <div className="p-3 h-full">
                 <Dialog
-                    onClose={handleCloseDialog}
                     aria-labelledby="projects-dialog"
                     open={dialog?.show ?? false}
                     fullWidth
                     PaperProps={{
                         style: { borderRadius: 8 },
                     }}
-                    disableBackdropClick
+                    onClose={(event, reason) => {
+                        if (reason !== 'backdropClick') {
+                            handleCloseDialog();
+                        }
+                    }}
                 >
                     {dialog?.type === 'members' && (
                         <ModifyCollaborators

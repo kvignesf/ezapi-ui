@@ -1,15 +1,19 @@
 import { Drawer } from '@material-ui/core';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { useHistory, useParams } from 'react-router';
 import MappingDrawer from './MappingDrawer';
 import { useGetResources } from './Resources/resourcesQuery';
 //import { useGetTables } from "./AttributeDetails/recommendationQueries";
+import currentViewAtom from '@/shared/atom/currentViewAtom';
 import { CircularProgress, Dialog, Tab, Tabs, Tooltip } from '@material-ui/core';
 import CloudUploadIcon from '@material-ui/icons/CloudUpload';
 import classNames from 'classnames';
 import _ from 'lodash';
 import { DndProvider } from 'react-dnd';
+import { SocketContext } from '../Context/socket';
+import { getAccessToken, getUserId } from '../shared/storage';
+
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useGetRecoilValueInfo_UNSTABLE, useRecoilState, useResetRecoilState } from 'recoil';
 import ModifyCollaborators from '../ModifyCollaborators/ModifyCollaborators';
@@ -27,7 +31,7 @@ import client, { endpoint } from '../shared/network/client';
 import { useLogout } from '../shared/query/authQueries';
 import { useSyncOperation } from '../shared/query/operationDetailsQuery';
 import routes, { generateRoute } from '../shared/routes';
-import { getAccessToken, getEmailId, getFirstName, getLastName } from '../shared/storage';
+import { getEmailId, getFirstName, getLastName } from '../shared/storage';
 import {
     canEdit,
     generateSyncOperationRequestRequest,
@@ -68,6 +72,7 @@ const Project = () => {
     const [inProgress, setInProgress] = useState(false);
     const [entityMappingData, setEntityMappingData] = useState();
     const [entityMappingError, setEntityMappingError] = useState();
+    const [currentView, setCurrentView] = useRecoilState(currentViewAtom);
 
     const {
         isLoading: isFetchingProjectDetails,
@@ -162,6 +167,18 @@ const Project = () => {
     const [showUnsavedPopup, setUnsavedPopup] = useState(true);
     const [apiError, setApiError] = useState(null);
     const [checkBusinessFlow, setBusinessFlow] = useState(false);
+    const socket = useContext(SocketContext);
+    const userId = getUserId();
+
+    useEffect(() => {
+        if (socket) {
+            if (!socket.connected) {
+                socket.emit('userConnected', {
+                    user: getUserId(),
+                });
+            }
+        }
+    }, []);
 
     useEffect(() => {
         if (canEdit(userRole)) {
@@ -314,6 +331,7 @@ const Project = () => {
         resetTableState();
         resetOperationState();
         resetSchemaState();
+        setCurrentView('grid');
     };
 
     const saveProject = () => {
@@ -657,7 +675,11 @@ const Project = () => {
                     PaperProps={{
                         style: { borderRadius: 8 },
                     }}
-                    disableBackdropClick
+                    onClose={(event, reason) => {
+                        if (reason !== 'backdropClick') {
+                            // Handle your close dialog logic here
+                        }
+                    }}
                 >
                     {(isPublishingProject || inProgress || isVerifying || isLoggingOut) && (
                         <div className="p-6">
@@ -899,7 +921,10 @@ const Project = () => {
                     />
                 </Drawer>
                 <DndProvider backend={HTML5Backend}>
-                    <header className="fixed top-0 w-full px-2 border-b-2 flex flex-row items-center bg-white z-50">
+                    <header
+                        className="fixed top-0 w-full px-2 border-b-2 flex flex-row items-center bg-white z-50"
+                        style={{ height: '50px' }}
+                    >
                         <div className="flex flex-row py-2 items-center">
                             <AppIcon
                                 style={{ marginRight: '1rem' }}

@@ -244,7 +244,6 @@ const AddOrEditParameter = ({ projectType, parameter, onClose, stopEdit }) => {
                                                 {({ field }) => (
                                                     <Checkbox
                                                         onChange={(e) => {
-                                                            console.log('testing', e);
                                                             setFieldValue('required', e.target.checked);
                                                         }}
                                                         checked={field.value}

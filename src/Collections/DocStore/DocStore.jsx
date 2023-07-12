@@ -33,6 +33,10 @@ import RecentHistory from './components/RecentHistory';
 const useStyles = makeStyles((theme) => ({
     app: {
         height: '100vh',
+        overflow: 'hidden',
+    },
+    main: {
+        height: '100vh',
         overflow: 'auto',
         '&::-webkit-scrollbar': {
             width: '5px',
@@ -173,36 +177,53 @@ export default function DocStore({ isModal }) {
     };
 
     useEffect(() => {
+        let source = axios.CancelToken.source(); // Create a cancel token source
+
         const getFilesAndFolders = async () => {
             if (loading === false) {
-                await axios
-                    .get(process.env.REACT_APP_API_URL + endpoint.collectionDirectory + `/${userId}`)
-                    .then((response) => {
-                        const parentFolders = response['data'].data.map((data) => (
-                            <Folder key={data.id} id={data.id} parentId={'0'} name={data.name} /> // Pass onSelect prop to child components
-                        ));
+                try {
+                    const response1 = await axios.get(
+                        process.env.REACT_APP_API_URL + endpoint.collectionDirectory + `/${userId}`,
+                        {
+                            cancelToken: source.token, // Pass the cancel token to the request
+                        },
+                    );
 
-                        setFolders(parentFolders);
-                    })
-                    .catch((error) => {
+                    const parentFolders = response1.data.data.map((data) => (
+                        <Folder key={data.id} id={data.id} parentId={'0'} name={data.name} />
+                    ));
+                    setFolders(parentFolders);
+
+                    const response2 = await axios.get(
+                        process.env.REACT_APP_API_URL + endpoint.collectionDirectory + `/${userId}`,
+                        {
+                            cancelToken: source.token, // Pass the cancel token to the request
+                        },
+                    );
+
+                    const requests = response2.data.files.map((data) => (
+                        <File key={data.id} id={data.id} parentId={'0'} name={data.name} />
+                    ));
+                    setRequests(requests);
+                } catch (error) {
+                    if (axios.isCancel(error)) {
+                        // Handle request cancellation
+                        console.log('Request canceled:', error.message);
+                    } else {
+                        // Handle other errors
                         console.error(error);
-                    });
-                await axios
-                    .get(process.env.REACT_APP_API_URL + endpoint.collectionDirectory + `/${userId}`)
-                    .then((response) => {
-                        const requests = response['data'].files.map((data) => (
-                            <File key={data.id} id={data.id} parentId={'0'} name={data.name} /> // Pass onSelect prop to child components
-                        ));
-                        setRequests(requests);
-                    })
-                    .catch((error) => {
-                        console.error(error);
-                    });
+                    }
+                }
             }
         };
-        getFilesAndFolders();
-    }, [loading, userId, saveModalOpen]);
 
+        getFilesAndFolders();
+
+        // Cleanup function
+        return () => {
+            source.cancel(); // Cancel the request when the component is unmounted
+        };
+    }, [loading, userId, saveModalOpen]);
     const handleSearchChange = (event) => {
         const query = event.target.value;
         setSearchQuery(query);
@@ -552,45 +573,45 @@ export default function DocStore({ isModal }) {
                         ) : (
                             <input
                                 type="text"
-                                placeholder="Enter the Request Name"
+                                placeholder="Enter the Request Name & Select the folder"
                                 style={{
                                     marginTop: isModal ? '0px' : '-8px',
                                 }}
                                 className={classes.searchBar}
-                                value={fileName}
                                 onChange={(e) => setFileName(e.target.value)}
                             />
                         )}
                     </div>
-
-                    {searchQuery.length > 0
-                        ? filteredFiles.map((request) => (
-                              <div key={request.props.id}>
-                                  {React.cloneElement(request, {
-                                      onDelete: handleDelete,
-                                      onSelect: setSelected,
-                                      selected: selected,
-                                      onRename: handleRename,
-                                      setLoading: setLoading,
-                                      loading: loading,
-                                  })}
-                              </div>
-                          ))
-                        : folders.map((folder) => (
-                              <div key={folder.props.id}>
-                                  {React.cloneElement(folder, {
-                                      onDelete: handleDelete,
-                                      onSelect: setSelected,
-                                      selected: selected,
-                                      onRename: handleRename,
-                                      parentId: '0',
-                                      isModal: isModal,
-                                      saveModalOpen: saveModalOpen,
-                                      setLoading: setLoading,
-                                      loading: loading,
-                                  })}
-                              </div>
-                          ))}
+                    <div className={classes.main}>
+                        {searchQuery.length > 0
+                            ? filteredFiles.map((request) => (
+                                  <div key={request.props.id}>
+                                      {React.cloneElement(request, {
+                                          onDelete: handleDelete,
+                                          onSelect: setSelected,
+                                          selected: selected,
+                                          onRename: handleRename,
+                                          setLoading: setLoading,
+                                          loading: loading,
+                                      })}
+                                  </div>
+                              ))
+                            : folders.map((folder) => (
+                                  <div key={folder.props.id}>
+                                      {React.cloneElement(folder, {
+                                          onDelete: handleDelete,
+                                          onSelect: setSelected,
+                                          selected: selected,
+                                          onRename: handleRename,
+                                          parentId: '0',
+                                          isModal: isModal,
+                                          saveModalOpen: saveModalOpen,
+                                          setLoading: setLoading,
+                                          loading: loading,
+                                      })}
+                                  </div>
+                              ))}
+                    </div>
                 </div>
             ) : null}
         </div>

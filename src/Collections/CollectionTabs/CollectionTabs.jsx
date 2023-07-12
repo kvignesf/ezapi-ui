@@ -90,7 +90,7 @@ function CollectionTabs() {
     const [value, setValue] = useRecoilState(currentTab);
     const [request, setRequest] = useRecoilState(requestParams);
     const [response, setResponse] = useRecoilState(responseInfo);
-    const setCurrentApi = useSetRecoilState(currentApi);
+    const [api, setCurrentApi] = useRecoilState(currentApi);
     const [breadCrumbs, setBreadCrumbs] = useRecoilState(currentBreadCrumbs);
     const [open, setOpen] = useState(false);
     const setSaveModalOpen = useSetRecoilState(isSaveModalOpen);
@@ -185,48 +185,68 @@ function CollectionTabs() {
     const handleSave = () => {
         if (tabs[index]?.onSave === false) {
             setOpen(false);
+            setValue(index);
+            setRequest(tabs[index].request);
+            setResponse(tabs[index].response);
+            setCurrentApi({
+                id: tabs[index]?.id ? tabs[index].id : '0',
+                name: tabs[index]?.label ? tabs[index].label : 'New Request',
+                type: 'file',
+                onSave: tabs[index]?.onSave ? tabs[index].onSave : false,
+                parentFolderId: tabs[index]?.parentFolderId ? tabs[index].parentFolderId : '0',
+            });
+            setBreadCrumbs(tabs[index]?.parentFolderNames ? tabs[index]?.parentFolderNames : []);
             setSaveModalOpen(true);
         }
     };
 
-    const handleDelete = async (index) => {
-        if (tabs[index]?.onSave === false) {
+    const handleDelete = async (idx) => {
+        if (tabs[idx]?.onSave === false) {
             await axios
-                .delete(process.env.REACT_APP_API_URL + endpoint.collectionsRequest + `/${userId}/${tabs[index].id}`)
+                .delete(process.env.REACT_APP_API_URL + endpoint.collectionsRequest + `/${userId}/${tabs[idx].id}`)
                 .catch((error) => {
                     console.error('Error while saving contents:', error);
                 });
-        }
-        if (
-            JSON.stringify(request) !== JSON.stringify(tabs[value]?.request) ||
-            JSON.stringify(response) !== JSON.stringify(tabs[value]?.response)
-        ) {
-            const currentDate = new Date();
-            const formattedDateTime = currentDate.toLocaleString('en-GB', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit',
-            });
-            await axios
-                .put(process.env.REACT_APP_API_URL + endpoint.collectionsRequest + `/${userId}/${tabs[value]?.id}`, {
-                    request: request,
-                    response: response,
-                    modifiedAt: formattedDateTime,
-                })
-                .catch((error) => {
-                    console.error('Error:', error);
+        } else {
+            if (
+                JSON.stringify(request) !== JSON.stringify(tabs[value]?.request) ||
+                JSON.stringify(response) !== JSON.stringify(tabs[value]?.response)
+            ) {
+                const currentDate = new Date();
+                const formattedDateTime = currentDate.toLocaleString('en-GB', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
                 });
+                await axios
+                    .put(
+                        process.env.REACT_APP_API_URL + endpoint.collectionsRequest + `/${userId}/${tabs[value]?.id}`,
+                        {
+                            request: request,
+                            response: response,
+                            modifiedAt: formattedDateTime,
+                        },
+                    )
+                    .catch((error) => {
+                        console.error('Error:', error);
+                    });
+            }
         }
 
-        const newTabs = tabs.filter((_, i) => i !== index);
+        const newTabs = tabs.filter((_, i) => i !== idx);
         setTabs(newTabs);
         if (tabs.length > 0) {
-            if (index === value - 1 || index <= value) {
+            if (idx === value - 1 || idx <= value) {
                 setIndex(value - 1);
                 setValue(value - 1);
+            } else {
+                setIndex(value);
+                setValue(value);
+            }
+            if (idx === value) {
                 setRequest(
                     tabs[value - 1]?.request
                         ? tabs[value - 1].request
@@ -249,8 +269,6 @@ function CollectionTabs() {
                 });
                 setBreadCrumbs(tabs[value - 1]?.parentFolderNames ? tabs[value - 1].parentFolderNames : []);
             } else {
-                setIndex(value);
-                setValue(value);
                 setRequest(
                     tabs[value]?.request
                         ? tabs[value].request
@@ -265,7 +283,7 @@ function CollectionTabs() {
                 );
                 setResponse(tabs[value]?.response ? tabs[value].response : {});
                 setCurrentApi({
-                    id: tabs[value]?.id ? tabs[value].id : 0,
+                    id: tabs[value]?.id ? tabs[value].id : '0',
                     name: tabs[value]?.label ? tabs[value].label : 'New Request',
                     type: 'file',
                     onSave: tabs[value]?.onSave ? tabs[value].onSave : false,
@@ -288,7 +306,19 @@ function CollectionTabs() {
             setCurrentApi({ id: 0, name: '', type: 'file', onSave: false, parentFolderId: '0' });
             setBreadCrumbs([]);
         }
-
+        if (value - 1 === -1) {
+            setRequest({
+                method: 'GET',
+                proxy: 'No Proxy',
+                url: '',
+                body: { '': '' },
+                header: [],
+                queryParams: [],
+            });
+            setResponse({});
+            setCurrentApi({ id: 0, name: '', type: 'file', onSave: false, parentFolderId: '0' });
+            setBreadCrumbs([]);
+        }
         setOpen(false);
     };
 
@@ -371,7 +401,7 @@ function CollectionTabs() {
                 method: 'GET',
                 proxy: 'No Proxy',
                 url: '',
-                body: {},
+                body: { '': '' },
                 header: [],
                 queryParams: [],
             },
@@ -441,7 +471,7 @@ function CollectionTabs() {
     useEffect(() => {
         const handleKeyDown = (event) => {
             if (event.ctrlKey) {
-                if (event.key === 'a') {
+                if (event.key === 'q') {
                     event.preventDefault(); // Prevent browser's default Save dialog
                     // Call your function here
                     handleAdd();
@@ -492,7 +522,19 @@ function CollectionTabs() {
                                     <span>
                                         <span
                                             style={
-                                                tab.request.method === 'GET'
+                                                api.id === tab.id
+                                                    ? request.method === 'GET'
+                                                        ? { color: '#03C988', fontSize: '14px', fontWeight: 500 }
+                                                        : request.method === 'POST'
+                                                        ? { color: '#F29727', fontSize: '14px', fontWeight: 500 }
+                                                        : request.method === 'DELETE'
+                                                        ? { color: '#CD1818', fontSize: '14px', fontWeight: 500 }
+                                                        : request.method === 'PATCH'
+                                                        ? { color: '#4F709C', fontSize: '14px', fontWeight: 500 }
+                                                        : request.method === 'PUT'
+                                                        ? { color: '#5B8FF9', fontSize: '14px', fontWeight: 500 }
+                                                        : null
+                                                    : tab.request.method === 'GET'
                                                     ? { color: '#03C988', fontSize: '14px', fontWeight: 500 }
                                                     : tab.request.method === 'POST'
                                                     ? { color: '#F29727', fontSize: '14px', fontWeight: 500 }
@@ -505,7 +547,7 @@ function CollectionTabs() {
                                                     : null
                                             }
                                         >
-                                            {tab.request.method}
+                                            {api.id === tab.id ? request.method : tab.request.method}
                                         </span>
                                         {tab.label.length > 15 ? ` ${tab.label.substring(0, 10)}...` : ` ${tab.label}`}
                                     </span>

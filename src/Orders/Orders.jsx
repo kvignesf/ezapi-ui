@@ -233,16 +233,17 @@ const Content = () => {
           </Dialog> */}
 
                     <Dialog
-                        onClose={() => {
-                            setUnsubscribeDialogBox(false);
-                        }}
                         aria-labelledby="dashboard-dialog"
                         open={unsubscribeDialogBox}
                         // maxWidth={5000}
                         PaperProps={{
                             style: { borderRadius: 8 },
                         }}
-                        disableBackdropClick
+                        onClose={(event, reason) => {
+                            if (reason !== 'backdropClick') {
+                                setUnsubscribeDialogBox;
+                            }
+                        }}
                     >
                         <div className="p-4">
                             <div className="flex flex-row items-center justify-between mb-3">
