@@ -348,7 +348,7 @@ function NodeTypeSectionNode(props: NodeProps) {
                                                 button
                                                 onClick={() => handleSubNodeType('BRANCH')}
                                             >
-                                                <ListItemButton disableGutters>
+                                                <ListItemButton disableGutters disabled>
                                                     <ListItemIcon sx={{ minWidth: '35px', marginLeft: '14px' }}>
                                                         <img
                                                             src={branchLoop}
@@ -367,7 +367,7 @@ function NodeTypeSectionNode(props: NodeProps) {
                                                 button
                                                 onClick={() => handleSubNodeType('FILTER')}
                                             >
-                                                <ListItemButton disableGutters>
+                                                <ListItemButton disableGutters disabled>
                                                     <ListItemIcon sx={{ minWidth: '35px', marginLeft: '14px' }}>
                                                         <img
                                                             src={filterLoop}
@@ -399,7 +399,7 @@ function NodeTypeSectionNode(props: NodeProps) {
                             </ListItemButton>
                         </ListItem>
                         <ListItem sx={{ padding: '0' }} onClick={() => handleNodeType('FUNCTION')}>
-                            <ListItemButton disableGutters>
+                            <ListItemButton disableGutters disabled>
                                 <ListItemIcon sx={{ minWidth: '35px', marginLeft: '14px' }}>
                                     <img
                                         src={FunctionIcon}
