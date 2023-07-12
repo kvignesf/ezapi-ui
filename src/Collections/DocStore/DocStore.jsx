@@ -1,12 +1,13 @@
-import { styled } from '@material-ui/core';
+import { Tooltip, styled } from '@material-ui/core';
 import IconButton from '@material-ui/core/IconButton';
 import { makeStyles } from '@material-ui/core/styles';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import AddIcon from '@mui/icons-material/Add';
+import ClearIcon from '@mui/icons-material/Clear';
 import CloseIcon from '@mui/icons-material/Close';
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 import WorkHistoryOutlinedIcon from '@mui/icons-material/WorkHistoryOutlined';
-import { Button } from '@mui/material';
+import { Button, Input, InputAdornment } from '@mui/material';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -15,6 +16,7 @@ import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Typography from '@mui/material/Typography';
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
+import { ThreeDots } from 'react-loader-spinner';
 import { useHistory } from 'react-router-dom';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { v4 as uuidv4 } from 'uuid';
@@ -24,7 +26,14 @@ import { endpoint } from '../../shared/network/client';
 import routes from '../../shared/routes';
 import { getUserId } from '../../shared/storage';
 import imageLogo from '../../static/images/logo/newconnectoLogo.svg';
-import { isSaveModalOpen, requestName, rootFolderIdAtom, selectedType, toggle } from '../CollectionsAtom';
+import {
+    folderContentLoading,
+    isSaveModalOpen,
+    requestName,
+    rootFolderIdAtom,
+    selectedType,
+    toggle,
+} from '../CollectionsAtom';
 import LoadingDialog from '../components/LoadingDialog';
 import File from './components/File';
 import Folder from './components/Folder';
@@ -77,7 +86,6 @@ const useStyles = makeStyles((theme) => ({
         padding: '5px 10px',
         boxSizing: 'border-box',
         color: '#000',
-        fontSize: '13px',
         marginBottom: '10px',
         marginTop: '-8px',
     },
@@ -107,6 +115,11 @@ export default function DocStore({ isModal }) {
     const [connectOpen, setConnectOpen] = useState(false);
     const [file, setFile] = useState(null);
     const [alignment, setAlignment] = useRecoilState(toggle);
+    const dataLoading = useRecoilValue(folderContentLoading);
+
+    const handleClearSearch = () => {
+        setSearchQuery('');
+    };
 
     const handleToggle = (event, newAlignment) => {
         setAlignment(newAlignment);
@@ -161,19 +174,20 @@ export default function DocStore({ isModal }) {
         }); // Clear selected if the selected component is deleted
     };
     const handleRename = (id, newName) => {
-        const updatedFolders = [...folders];
-        const folderIndex = updatedFolders.findIndex((folder) => folder.props.id === id);
-        if (folderIndex !== -1) {
-            updatedFolders[folderIndex] = React.cloneElement(updatedFolders[folderIndex], {
-                id: id,
-                parentId: updatedFolders[folderIndex].props.parentId,
-                selected: updatedFolders[folderIndex].props.selected,
-                onSelect: updatedFolders[folderIndex].props.onSelect,
-                onRename: updatedFolders[folderIndex].props.onRename,
-                name: newName,
+        setFolders((folderData) => {
+            return folderData.map((data) => {
+                if (data.props.id === id) {
+                    return {
+                        ...data,
+                        props: {
+                            ...data.props,
+                            name: newName,
+                        },
+                    };
+                }
+                return data;
             });
-            setFolders(updatedFolders);
-        }
+        });
     };
 
     useEffect(() => {
@@ -260,7 +274,7 @@ export default function DocStore({ isModal }) {
 
                 // Modify the property names to match the required structure recursively
                 function modifyRequests(item) {
-                    delete item.response;
+                    item.response = {};
                     if (item.request) {
                         if (item.name === item.request?.raw) {
                             item.name = 'New Request';
@@ -378,10 +392,15 @@ export default function DocStore({ isModal }) {
                     </div>
                     <ToggleButtonGroup color="primary" value={alignment} size="small" exclusive onChange={handleToggle}>
                         <ToggleButton value="folders">
-                            <Inventory2OutlinedIcon fontSize="small" />
+                            <Tooltip title="Collections">
+                                <Inventory2OutlinedIcon fontSize="small" />
+                            </Tooltip>
                         </ToggleButton>
+
                         <ToggleButton value="recent">
-                            <WorkHistoryOutlinedIcon fontSize="small" />
+                            <Tooltip title="Recent History">
+                                <WorkHistoryOutlinedIcon fontSize="small" />
+                            </Tooltip>
                         </ToggleButton>
                     </ToggleButtonGroup>
                     <div>
@@ -554,12 +573,22 @@ export default function DocStore({ isModal }) {
                             New
                         </Button>
                         {isModal === false ? (
-                            <input
+                            <Input
                                 type="text"
                                 placeholder="Search Request"
                                 className={classes.searchBar}
+                                style={{ fontWeight: 500, fontSize: '13px' }}
                                 value={searchQuery}
                                 onChange={handleSearchChange}
+                                endAdornment={
+                                    <InputAdornment position="end">
+                                        {searchQuery && (
+                                            <IconButton onClick={handleClearSearch}>
+                                                <ClearIcon fontSize="small" />
+                                            </IconButton>
+                                        )}
+                                    </InputAdornment>
+                                }
                             />
                         ) : (
                             <input
@@ -574,34 +603,35 @@ export default function DocStore({ isModal }) {
                         )}
                     </div>
                     <div className={classes.main}>
-                        {searchQuery.length > 0
-                            ? filteredFiles.map((request) => (
-                                  <div key={request.props.id}>
-                                      {React.cloneElement(request, {
-                                          onDelete: handleDelete,
-                                          onSelect: setSelected,
-                                          selected: selected,
-                                          onRename: handleRename,
-                                          setLoading: setLoading,
-                                          loading: loading,
-                                      })}
-                                  </div>
-                              ))
-                            : folders.map((folder) => (
-                                  <div key={folder.props.id}>
-                                      {React.cloneElement(folder, {
-                                          onDelete: handleDelete,
-                                          onSelect: setSelected,
-                                          selected: selected,
-                                          onRename: handleRename,
-                                          parentId: '0',
-                                          isModal: isModal,
-                                          saveModalOpen: saveModalOpen,
-                                          setLoading: setLoading,
-                                          loading: loading,
-                                      })}
-                                  </div>
-                              ))}
+                        {searchQuery.length > 0 ? (
+                            filteredFiles.map((request) => (
+                                <div key={request.props.id}>
+                                    {React.cloneElement(request, {
+                                        onDelete: handleDelete,
+                                        onSelect: setSelected,
+                                        selected: selected,
+                                        onRename: handleRename,
+                                    })}
+                                </div>
+                            ))
+                        ) : dataLoading ? (
+                            <ThreeDots height="20" width="20" color="grey" visible={true} />
+                        ) : (
+                            folders &&
+                            folders.map((folder) => (
+                                <div key={folder.props.id}>
+                                    {React.cloneElement(folder, {
+                                        onDelete: handleDelete,
+                                        onSelect: setSelected,
+                                        selected: selected,
+                                        onRename: handleRename,
+                                        parentId: '0',
+                                        isModal: isModal,
+                                        saveModalOpen: saveModalOpen,
+                                    })}
+                                </div>
+                            ))
+                        )}
                     </div>
                 </div>
             ) : null}

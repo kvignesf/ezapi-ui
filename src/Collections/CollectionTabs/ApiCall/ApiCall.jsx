@@ -170,7 +170,7 @@ export default function ApiCall() {
                     onMouseUp={onMouseUp}
                 >
                     <div className={classes.requestContainer} style={{ height: `${height}px` }}>
-                        <Request setLoading={setLoading} />
+                        <Request setLoading={setLoading} loading={loading} />
                     </div>
                     <div className={classes.responseContainer}>
                         <div className={classes.resizeBar} onMouseDown={onMouseDown} />

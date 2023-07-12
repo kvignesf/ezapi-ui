@@ -164,24 +164,6 @@ function CollectionTabs() {
                             return [...prev];
                         }
                     });
-                    setFolderData((folderData) => {
-                        return folderData.map((file) => {
-                            if (file.props.id === api.id) {
-                                return (
-                                    <File
-                                        key={file.props.id}
-                                        id={file.props.id}
-                                        parentId={file.props.parentId}
-                                        selected={file.props.selected}
-                                        onSelect={file.props.onSelect}
-                                        name={file.props.name}
-                                        reqMethod={request.method ? request.method : 'GET'}
-                                        reqUrl={request.url ? request.url : ''}
-                                    />
-                                );
-                            }
-                        });
-                    });
                 })
                 .catch((error) => {
                     console.error('Error:', error);
@@ -203,6 +185,26 @@ function CollectionTabs() {
                 isRecent: true,
             })
             .catch((error) => console.log(error));
+        setFolderData((folderData) => {
+            return folderData.map((file) => {
+                if (file.props.id === api.id) {
+                    return (
+                        <File
+                            key={file.props.id}
+                            id={file.props.id}
+                            parentId={file.props.parentId}
+                            selected={file.props.selected}
+                            onSelect={file.props.onSelect}
+                            name={file.props.name}
+                            reqMethod={request.method ? request.method : 'GET'}
+                            reqUrl={request.url ? request.url : ''}
+                        />
+                    );
+                } else {
+                    return file; // Return the original file object for non-matching IDs
+                }
+            });
+        });
     };
 
     const handleSave = () => {
@@ -244,6 +246,7 @@ function CollectionTabs() {
                     minute: '2-digit',
                     second: '2-digit',
                 });
+
                 await axios
                     .put(
                         process.env.REACT_APP_API_URL + endpoint.collectionsRequest + `/${userId}/${tabs[value]?.id}`,
@@ -256,7 +259,7 @@ function CollectionTabs() {
                     .then(() => {
                         setFolderData((folderData) => {
                             return folderData.map((file) => {
-                                if (file.props.id === tabs[value]?.id) {
+                                if (file.props.id === api.id) {
                                     return (
                                         <File
                                             key={file.props.id}
@@ -269,6 +272,8 @@ function CollectionTabs() {
                                             reqUrl={request.url ? request.url : ''}
                                         />
                                     );
+                                } else {
+                                    return file; // Return the original file object for non-matching IDs
                                 }
                             });
                         });
@@ -433,6 +438,8 @@ function CollectionTabs() {
                                         reqUrl={request.url ? request.url : ''}
                                     />
                                 );
+                            } else {
+                                return file; // Return the original file object for non-matching IDs
                             }
                         });
                     });
@@ -584,28 +591,28 @@ function CollectionTabs() {
                                         <span
                                             style={
                                                 api.id === tab.id
-                                                    ? request.method === 'GET'
+                                                    ? request.method && request.method === 'GET'
                                                         ? { color: '#03C988', fontSize: '14px', fontWeight: 500 }
-                                                        : request.method === 'POST'
+                                                        : request.method && request.method === 'POST'
                                                         ? { color: '#F29727', fontSize: '14px', fontWeight: 500 }
-                                                        : request.method === 'DELETE'
+                                                        : request.method && request.method === 'DELETE'
                                                         ? { color: '#CD1818', fontSize: '14px', fontWeight: 500 }
-                                                        : request.method === 'PATCH'
+                                                        : request.method && request.method === 'PATCH'
                                                         ? { color: '#4F709C', fontSize: '14px', fontWeight: 500 }
-                                                        : request.method === 'PUT'
+                                                        : request.method && request.method === 'PUT'
                                                         ? { color: '#5B8FF9', fontSize: '14px', fontWeight: 500 }
-                                                        : null
-                                                    : tab.request.method === 'GET'
+                                                        : 'GET'
+                                                    : tab.request.method && tab.request.method === 'GET'
                                                     ? { color: '#03C988', fontSize: '14px', fontWeight: 500 }
-                                                    : tab.request.method === 'POST'
+                                                    : tab.request.method && tab.request.method === 'POST'
                                                     ? { color: '#F29727', fontSize: '14px', fontWeight: 500 }
-                                                    : tab.request.method === 'DELETE'
+                                                    : tab.request.method && tab.request.method === 'DELETE'
                                                     ? { color: '#CD1818', fontSize: '14px', fontWeight: 500 }
-                                                    : tab.request.method === 'PATCH'
+                                                    : tab.request.method && tab.request.method === 'PATCH'
                                                     ? { color: '#4F709C', fontSize: '14px', fontWeight: 500 }
-                                                    : tab.request.method === 'PUT'
+                                                    : tab.request.method && tab.request.method === 'PUT'
                                                     ? { color: '#5B8FF9', fontSize: '14px', fontWeight: 500 }
-                                                    : null
+                                                    : 'GET'
                                             }
                                         >
                                             {api.id === tab.id ? request.method : tab.request.method}

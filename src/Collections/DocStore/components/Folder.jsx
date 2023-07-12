@@ -116,6 +116,7 @@ export default function Folder({ id, parentId, onDelete, selected, onSelect, onR
     const classes = useStyles();
     const childComponents = useRecoilValue(folderState(id));
     const setChildComponents = useSetRecoilState(folderState(id));
+    const setParentComponent = useSetRecoilState(folderState(parentId));
     const collapsed = useRecoilValue(collapsedState(id));
     const setCollapsed = useSetRecoilState(collapsedState(id));
     const [folderName, setFolderName] = useState(name);
@@ -128,12 +129,10 @@ export default function Folder({ id, parentId, onDelete, selected, onSelect, onR
     const setCurrentTab = useSetRecoilState(currentTab);
     const setRequest = useSetRecoilState(requestParams);
     const setResponse = useSetRecoilState(responseInfo);
-    const [api, setCurrentApi] = useRecoilState(currentApi);
+    const setCurrentApi = useSetRecoilState(currentApi);
     const setBreadCrumbs = useSetRecoilState(currentBreadCrumbs);
     const [loading, setLoading] = useState(false);
-    const [processing, setProcessing] = useState(false);
-    const dataLoading = useRecoilValue(folderContentLoading);
-
+    const [dataLoading, setDataLoading] = useRecoilState(folderContentLoading);
     const handleOptionClick = (event) => {
         setAnchorEl(event.currentTarget);
     };
@@ -144,7 +143,6 @@ export default function Folder({ id, parentId, onDelete, selected, onSelect, onR
     const addFile = async () => {
         const parentId = id;
         const newId = uuidv4();
-        setProcessing(true);
         const newFile = (
             <File
                 key={newId}
@@ -194,7 +192,6 @@ export default function Folder({ id, parentId, onDelete, selected, onSelect, onR
             createdAt: formattedDateTime,
             modifiedAt: formattedDateTime,
         });
-        setProcessing(false);
     };
 
     const addFolder = async () => {
@@ -226,7 +223,7 @@ export default function Folder({ id, parentId, onDelete, selected, onSelect, onR
     };
 
     const deleteChild = (childId) => {
-        const newChildComponents = childComponents.filter((child) => child.props.id !== childId);
+        const newChildComponents = childComponents.filter((child) => child?.props.id !== childId);
         setChildComponents(newChildComponents);
         onDelete(childId);
     };
@@ -352,7 +349,25 @@ export default function Folder({ id, parentId, onDelete, selected, onSelect, onR
 
     const handleInputBlur = async () => {
         if (folderName) {
-            await onRename(id, folderName);
+            setParentComponent((folderData) => {
+                return folderData.map((data) => {
+                    if (data.props.id === id) {
+                        return {
+                            ...data,
+                            props: {
+                                ...data.props,
+                                name: folderName,
+                            },
+                        };
+                    }
+                    return data;
+                });
+            });
+            if (parentId === '0') {
+                setDataLoading(true);
+                onRename(id, folderName);
+                setDataLoading(false);
+            }
             const folderData = {
                 name: folderName,
             };

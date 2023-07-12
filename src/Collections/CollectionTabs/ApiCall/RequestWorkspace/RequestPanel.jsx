@@ -8,7 +8,7 @@ import { getUserId } from '../../../../shared/storage';
 import { accessToken, currentApi, currentTabs, requestParams, responseInfo } from '../../../CollectionsAtom';
 import RequestTabs from './RequestTabs';
 import UrlEditor from './UrlEditor';
-export default function Request({ setLoading }) {
+export default function Request({ loading, setLoading }) {
     const [request, setRequest] = useRecoilState(requestParams);
     const authToken = useRecoilValue(accessToken);
     const setResponse = useSetRecoilState(responseInfo);
@@ -25,7 +25,7 @@ export default function Request({ setLoading }) {
             if (key === '') return data;
             return {
                 ...data,
-                [key]: value,
+                [key.trim()]: value,
             };
         }, {});
     };
@@ -55,6 +55,11 @@ export default function Request({ setLoading }) {
                 newProxy = 'No Proxy';
             }
             const headers = convertKeyValueToObject(request.header);
+
+            if (!Object.keys(headers).includes('content-type')) {
+                headers['content-type'] = 'application/json';
+            }
+
             if (authToken && authToken.length > 0) {
                 headers.Authorization = `Bearer ${authToken}`;
             }
@@ -79,7 +84,7 @@ export default function Request({ setLoading }) {
                     method: 'POST',
                 })
                     .then(async (response) => {
-                        const responseData = {
+                        res = {
                             status: response.status,
                             headers: response.headers,
                             data: response.data,
@@ -87,23 +92,17 @@ export default function Request({ setLoading }) {
                             size: (new Blob([JSON.stringify(response)]).size / 1024).toFixed(2),
                             error: false,
                         };
-                        setResponse(responseData);
-                        res = responseData;
+                        setResponse(res);
                     })
                     .catch(async function (error) {
                         if (error.response) {
-                            setResponse({
-                                time: ((Date.now() - startTime) / 1000).toFixed(2),
-                                data: error.response.data,
-                                status: error.response.status,
-                                headers: error.response.headers,
-                            });
                             res = {
                                 time: ((Date.now() - startTime) / 1000).toFixed(2),
                                 data: error.response.data,
                                 status: error.response.status,
                                 headers: error.response.headers,
                             };
+                            setResponse(res);
                         }
                     });
 
@@ -253,7 +252,7 @@ export default function Request({ setLoading }) {
 
     return (
         <>
-            <UrlEditor onInputSend={handleOnInputSend} />
+            <UrlEditor onInputSend={handleOnInputSend} loading={loading} />
             <RequestTabs />
             <Snackbar open={snackbar} autoHideDuration={1800} onClose={() => setSnackbar(false)}>
                 <MuiAlert

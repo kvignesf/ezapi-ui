@@ -312,31 +312,51 @@ export default function File({
                             return [
                                 ...prev,
                                 {
-                                    id: data.id,
-                                    parentFolderNames: parentFolderNames,
-                                    request: data.request,
-                                    response: data.response,
-                                    parentFolderId: data.parentFolderId,
-                                    label: data.name,
-                                    onSave: data.onSave,
+                                    id: data.id ? data.id : '0',
+                                    parentFolderNames: parentFolderNames ? parentFolderNames : [],
+                                    request: data.request
+                                        ? data.request
+                                        : {
+                                              method: 'GET',
+                                              proxy: 'No Proxy',
+                                              url: '',
+                                              body: { '': '' },
+                                              header: [],
+                                              queryParams: [],
+                                          },
+                                    response: data.response ? data.response : {},
+                                    label: data.name ? data.name : 'New Request',
+                                    onSave: data.onSave ? data.onSave : false,
                                     type: 'file',
+                                    parentFolderId: data.parentFolderId ? data.parentFolderId : '0',
                                     content: <ApiCall />,
                                 },
                             ];
                         });
 
                         setCurrentTab(tabs.length);
-                        setRequest(data.request);
-                        setResponse(data.response);
+                        setRequest(
+                            data.request
+                                ? data.request
+                                : {
+                                      method: 'GET',
+                                      proxy: 'No Proxy',
+                                      url: '',
+                                      body: { '': '' },
+                                      header: [],
+                                      queryParams: [],
+                                  },
+                        );
+                        setResponse(data.response ? data.response : {});
 
                         setCurrentApi({
                             id: data.id,
-                            name: data.name,
+                            name: data.name ? data.name : 'New Request',
                             onSave: data.onSave,
                             type: 'file',
                             parentFolderId: data.parentFolderId,
                         });
-                        setBreadCrumbs(parentFolderNames);
+                        setBreadCrumbs(parentFolderNames ? parentFolderNames : []);
                         setApiHappening(false);
                     })
                     .catch((error) => {
@@ -468,8 +488,8 @@ export default function File({
     const fileClass = selected && selected.id === id ? classes.selectedFile : classes.root;
     let method, requestUrl;
     if (api.id === id) {
-        method = request.method;
-        requestUrl = request.url;
+        method = request?.method && request.method;
+        requestUrl = request?.url && request.url;
     } else {
         method = reqMethod ? reqMethod : 'GET';
         requestUrl = reqUrl ? reqUrl : null;
