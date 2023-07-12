@@ -21,6 +21,7 @@ import _ from 'lodash';
 import Qs from 'qs';
 import { SyntheticEvent, useContext, useEffect, useState } from 'react';
 import { Handle, Position, useNodeId } from 'reactflow';
+
 import LoaderWithMessage from '../../../shared/components/LoaderWithMessage';
 // @ts-ignore
 import drawerCardAtom from '@/shared/atom/drawerCardAtom';
@@ -30,6 +31,7 @@ import { Add } from '@material-ui/icons';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 // @ts-ignore
 import deleteNodeAtom from '@/shared/atom/deleteNodeAtom';
+import triggerCollapseNodeAtom from '@/shared/atom/triggerCollapseNodeAtom';
 import { useRecoilState } from 'recoil';
 import ApiIcon from '../../../icons/ApiIcon.svg';
 import LoopIcon from '../../../icons/LoopIcon.svg';
@@ -166,6 +168,7 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
     const [value, setValue] = useState('0');
     const [systemApis, _setSystemApis] = useState();
     const { projectId, operationId } = useContext(BusinessFlowContext);
+    const [triggerCollapseNode, setTriggerCollapseNode] = useRecoilState(triggerCollapseNodeAtom);
 
     const [apiType, setApiType] = useState<string>('api_call');
     const [_deleteData, setDeleteData] = useRecoilState<Node[] | undefined | string>(deleteNodeAtom);
@@ -478,6 +481,13 @@ const ExternalAPINodeComponent = (props: NodeProps): React.ReactElement => {
             // }
         }
     }, []);
+    useEffect(() => {
+        if (triggerCollapseNode == '') return;
+        if (triggerCollapseNode === cardId) {
+            setCollapse(true);
+            setTriggerCollapseNode('');
+        }
+    }, [triggerCollapseNode]);
 
     useEffect(() => {
         if (!displayedUrlValue || !isValidUrl(displayedUrlValue) || !isFocused) return;
