@@ -471,7 +471,7 @@ function CollectionTabs() {
     useEffect(() => {
         const handleKeyDown = (event) => {
             if (event.ctrlKey) {
-                if (event.key === 'a') {
+                if (event.key === 'q') {
                     event.preventDefault(); // Prevent browser's default Save dialog
                     // Call your function here
                     handleAdd();

@@ -832,17 +832,19 @@ export const ExternalAPIDrawer = ({ cardId, refresh, setRefresh }: ExternalAPIDr
                             </Tooltip>
                         </div>
                     )}
-                    <img
-                        src={RunIcon}
-                        style={{ width: '24px', height: '24px', alignSelf: 'center', cursor: 'pointer' }}
-                        onClick={
-                            apiType === 'system'
-                                ? () => {
-                                      setResponseValue('1');
-                                  }
-                                : execute
-                        }
-                    />
+                    <Tooltip title="Execute API">
+                        <img
+                            src={RunIcon}
+                            style={{ width: '24px', height: '24px', alignSelf: 'center', cursor: 'pointer' }}
+                            onClick={
+                                apiType === 'system'
+                                    ? () => {
+                                          setResponseValue('1');
+                                      }
+                                    : execute
+                            }
+                        />
+                    </Tooltip>
                 </Stack>
             </Stack>
 
