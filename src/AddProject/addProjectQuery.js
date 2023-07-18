@@ -57,6 +57,7 @@ const exportDBSchema = async ({
     keyPath,
     certPath,
     rootPath,
+    authdb,
 }) => {
     try {
         var ciphertext = aes.encrypt(password, process.env.REACT_APP_AES_ENCRYPTION_KEY).toString();
@@ -74,6 +75,7 @@ const exportDBSchema = async ({
                 keyPath: keyPath,
                 certPath: certPath,
                 rootPath: rootPath,
+                authdb: type === 'mongo' ? authdb : false,
             },
             {
                 timeout: 240000,
@@ -265,6 +267,7 @@ export const useAddProject = (onSuccess) => {
                             keyPath: '',
                             certPath: '',
                             rootPath: '',
+                            authdb: projectDetails?.authdb,
                         });
                     }
                 } else {
@@ -469,6 +472,7 @@ export const useUploadProjectCACertificate = (dbConnectionTestMutation, exportDB
                         database: projectDetails?.database,
                         type: projectDetails?.type,
                         keyPath: keyPath,
+                        authdb: projectDetails?.authdb,
                         certPath: certPath,
                         rootPath: caCertPath,
                     });
@@ -524,6 +528,7 @@ export const useUploadProjectSpecs = (exportDBSchemaMutation, keyMutation, dbMut
                             type: projectDetails?.type,
                             keyPath: '',
                             certPath: '',
+                            authdb: projectDetails?.authdb,
                             rootPath: '',
                         });
                     }
