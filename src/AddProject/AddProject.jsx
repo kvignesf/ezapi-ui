@@ -221,6 +221,7 @@ const AddProject = ({ onClose, onSuccess }) => {
                 isDefaultAdvWorks: defaultAdvWorks,
                 isDefaultMflix: defaultMflix,
                 projectType: projectFlowType,
+                authdb: projectDetails.authdb,
             });
         } else if (
             ((!defaultClaimSpec || !defaultAdvSpec || !defaultAdvWorks || !defaultMflix) &&
@@ -271,6 +272,7 @@ const AddProject = ({ onClose, onSuccess }) => {
                 isDefaultAdvWorks: defaultAdvWorks,
                 isDefaultMflix: defaultMflix,
                 projectType: 'none',
+                authdb: projectDetails.authdb,
             });
         }
     };
@@ -326,6 +328,7 @@ const AddProject = ({ onClose, onSuccess }) => {
                     isDesign: isDesign,
                     isDefaultClaimSpec: defaultClaimSpec,
                     isDefaultAdvSpec: defaultAdvSpec,
+                    authdb: projectDetails.authdb,
                 });
             }
         }
@@ -410,6 +413,7 @@ const AddProject = ({ onClose, onSuccess }) => {
                 password: ciphertext,
                 database: projectDetails.database,
                 type: projectDetails.type,
+                authdb: projectDetails.authdb,
             };
             testDatabase(payload);
         }

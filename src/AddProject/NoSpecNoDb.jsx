@@ -15,9 +15,9 @@ import TabLabel from '../shared/components/TabLabel';
 import routes from '../shared/routes';
 import { getUserId } from '../shared/storage';
 import { isEmailValid } from '../shared/utils';
+import ProjectDetails from './ProjectDetails';
 import { useAddProject, useUserProfile } from './addProjectQuery';
 import projectAtom from './projectAtom';
-import ProjectDetails from './ProjectDetails';
 
 const NoSpecNoDb = ({ onClose, onSuccess, noSpecNoDb, projectFlowType }) => {
     const [currentTab, setTab] = useState(1);
@@ -136,6 +136,7 @@ const NoSpecNoDb = ({ onClose, onSuccess, noSpecNoDb, projectFlowType }) => {
                 isDefaultAdvWorks: defaultAdvWorks,
                 isDefaultMflix: defaultMflix,
                 projectType: projectFlowType,
+                authdb: projectDetails.authdb,
             });
         }
     };
@@ -179,6 +180,7 @@ const NoSpecNoDb = ({ onClose, onSuccess, noSpecNoDb, projectFlowType }) => {
                     isDefaultAdvWorks: defaultAdvWorks,
                     isDefaultMflix: defaultMflix,
                     projectType: projectFlowType,
+                    authdb: projectDetails.authdb,
                 });
             }
         }
