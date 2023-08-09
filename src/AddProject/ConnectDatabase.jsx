@@ -1,27 +1,21 @@
 import { createTheme, Grid, IconButton, Tab, Tabs, TextField } from '@material-ui/core';
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import React, { useCallback, useEffect, useState } from 'react';
-// import TabsUnstyled from '@mui/base/TabsUnstyled';
-// import TabsListUnstyled from '@mui/base/TabUnstyled';
-// import TabUnstyled from '@mui/base/TabUnstyled';
-// import TabPanelUnstyled from '@mui/base/TabPanelUnstyled';
+import Snackbar from '@material-ui/core/Snackbar';
+import { withStyles } from '@material-ui/core/styles';
 import CloseIcon from '@material-ui/icons/Close';
+import MuiAlert from '@material-ui/lab/Alert';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import { Checkbox, FormControlLabel, FormGroup, FormHelperText } from '@mui/material';
+import Button from '@mui/material/Button';
+import { ConnectedFocusError } from 'focus-formik-error';
 import { ErrorMessage, Field, Form, Formik } from 'formik';
 import _ from 'lodash';
 import debounce from 'lodash.debounce';
+import React, { useCallback, useEffect, useState } from 'react';
 import Scrollbar from 'react-smooth-scrollbar';
 import { useRecoilState } from 'recoil';
 import * as Yup from 'yup';
-
-import Snackbar from '@material-ui/core/Snackbar';
-import { withStyles } from '@material-ui/core/styles';
-import MuiAlert from '@material-ui/lab/Alert';
-import { FormHelperText } from '@mui/material';
-import Button from '@mui/material/Button';
-import { ConnectedFocusError } from 'focus-formik-error';
 import AppIcon from '../shared/components/AppIcon';
 import TabLabel from '../shared/components/TabLabel';
-
 import projectAtom from './projectAtom';
 
 const displayOracleDB = process.env.REACT_APP_DISABLE_ORACLEDB;
@@ -506,6 +500,7 @@ const ConnectDatabase = ({
                             <Formik
                                 initialValues={{
                                     type: projectDetails?.type ?? '',
+                                    authdb: projectDetails?.authdb ?? false,
                                     host: projectDetails?.host ?? '',
                                     port: projectDetails?.port ?? '',
                                     database: projectDetails?.database ?? '',
@@ -643,6 +638,26 @@ const ConnectDatabase = ({
                                                     // disabled={addProjectMutation?.isSuccess}
                                                     as={TextField}
                                                 />
+                                                {values.type === 'mongo' && (
+                                                    <FormGroup id="authdb" name="authdb">
+                                                        <FormControlLabel
+                                                            control={
+                                                                <Checkbox
+                                                                    checked={projectDetails.authdb}
+                                                                    onChange={(e) => {
+                                                                        setProjectDetails((currProjectDetails) => {
+                                                                            return {
+                                                                                ...currProjectDetails,
+                                                                                authdb: e.target.checked,
+                                                                            };
+                                                                        });
+                                                                    }}
+                                                                />
+                                                            }
+                                                            label="mark db as auth db"
+                                                        />
+                                                    </FormGroup>
+                                                )}
                                             </Grid>
                                             <Grid item xs={6}>
                                                 <p className="text-mediumLabel mb-2">Host</p>
