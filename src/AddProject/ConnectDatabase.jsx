@@ -688,7 +688,7 @@ const ConnectDatabase = ({
                                                         debouncedSetHost(value);
                                                     }}
                                                     variant="outlined"
-                                                    inputProps={{ maxLength: 55 }}
+                                                    inputProps={{ maxLength: 128 }}
                                                     disabled={isClaimSpec || isAdvSpec || isAdvWorks || isMflix}
                                                     // disabled={addProjectMutation?.isSuccess}
                                                     as={TextField}
