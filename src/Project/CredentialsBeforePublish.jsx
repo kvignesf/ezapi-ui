@@ -338,7 +338,7 @@ const CredentialsBeforePublish = ({ onClose, onPublish, newProjectDetails, isDef
                                                 InputProps={{ style: { height: '50px', background: '#E0E0E0' } }}
                                                 placeholder="127.0.0.1"
                                                 variant="outlined"
-                                                inputProps={{ maxLength: 55 }}
+                                                inputProps={{ maxLength: 128 }}
                                                 // disabled={addProjectMutation?.isSuccess}
                                                 as={TextField}
                                             />
