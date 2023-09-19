@@ -11,4 +11,4 @@
 
     y = l.getElementsByTagName(r)[0];
     y.parentNode.insertBefore(t, y);
-})(window, document, 'clarity', 'script', 'byoxhi6rgx');
+})(window, document, 'clarity', 'script', 'iitgirm7yx');
