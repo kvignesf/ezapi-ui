@@ -69,7 +69,16 @@ const AddOrEditParameter = ({ projectType, parameter, onClose, stopEdit }) => {
 
     useEffect(() => {
         if (addParamCheck) {
-            formRef.current.submitForm();
+            if (
+                formRef.current.values.attribute === '' &&
+                formRef.current.values.dataType === '' &&
+                formRef.current.values.description === '' &&
+                formRef.current.values.possibleValues === '' &&
+                formRef.current.values.required === false
+            ) {
+            } else {
+                formRef.current.submitForm();
+            }
             setAddParamCheck(false);
         }
     }, [addParamCheck]);
