@@ -12,18 +12,26 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
+      - name: Debug root folder contents
+        run: ls -la
+
+      - name: Debug ezapi_designer_ui folder existence
+        run: ls -la ezapi_designer_ui || echo "Directory not found"
+
       - name: Use Node 18
         uses: actions/setup-node@v4
         with:
           node-version: 18
 
       - name: Install dependencies
-        working-directory: ezapi_designer_ui
-        run: npm ci
+        run: |
+          cd ezapi_designer_ui
+          npm ci
 
       - name: Build React App
-        working-directory: ezapi_designer_ui
-        run: npm run build
+        run: |
+          cd ezapi_designer_ui
+          npm run build
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
@@ -59,6 +67,5 @@ jobs:
           rm -rf ${{ secrets.DEPLOY_PATH }}/build
           mkdir -p ${{ secrets.DEPLOY_PATH }}/build
           EOF
-
           scp -r build/* ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/build
 
