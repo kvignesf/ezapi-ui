@@ -12,19 +12,25 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-        # Optional: load node version from .nvmrc if exists
       - name: Use Node 18
         uses: actions/setup-node@v4
         with:
           node-version: 18
 
+      - name: Clean build folder
+        run: rm -rf build
+
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Build React App
         run: npm run build
 
+      - name: List files
+        run: ls -R .
+
       - name: Upload build artifact
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: web-build
