@@ -17,24 +17,22 @@ jobs:
         with:
           node-version: 18
 
-      - name: Clean build folder
-        run: rm -rf build
-
       - name: Install dependencies
+        working-directory: ezapi_designer_ui
         run: npm ci
 
       - name: Build React App
+        working-directory: ezapi_designer_ui
         run: npm run build
 
       - name: List files
-        run: ls -R .
+        run: ls -R ezapi_designer_ui
 
       - name: Upload build artifact
-        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: web-build
-          path: build/
+          path: ezapi_designer_ui/build/
 
   deploy:
     needs: build
@@ -63,6 +61,5 @@ jobs:
           ssh ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} << 'EOF'
           rm -rf ${{ secrets.DEPLOY_PATH }}/build
           EOF
-
           scp -r build/* ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/build
 
