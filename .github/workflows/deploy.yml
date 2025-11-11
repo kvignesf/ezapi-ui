@@ -12,36 +12,29 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Debug repo root
-        run: ls -la
-
-      - name: Debug subfolders one level down
-        run: ls -la */ || echo "No subfolders found"
-
-      - name: Print working directory
-        run: pwd
-
       - name: Use Node 18
         uses: actions/setup-node@v4
         with:
           node-version: 18
 
+      - name: Clean build folder
+        run: rm -rf build
+
       - name: Install dependencies
-        run: |
-          # Adjust 'path/to/ezapi_designer_ui' based on above debug output
-          cd path/to/ezapi_designer_ui
-          npm ci
+        run: npm ci
 
       - name: Build React App
-        run: |
-          cd path/to/ezapi_designer_ui
-          npm run build
+        run: npm run build
+
+      - name: List files
+        run: ls -R .
 
       - name: Upload build artifact
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: web-build
-          path: path/to/ezapi_designer_ui/build/
+          path: build/
 
   deploy:
     needs: build
