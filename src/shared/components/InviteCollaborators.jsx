@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import ChipInput from 'material-ui-chip-input';
+import { MuiChipsInput } from 'mui-chips-input';
 import { useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { useRecoilState } from 'recoil';
