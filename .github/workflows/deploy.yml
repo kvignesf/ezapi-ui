@@ -1,0 +1,105 @@
+name: CI Build & (Optional) SSH Deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build React App
+    runs-on: ubuntu-latest
+    outputs:
+      artifact-name: web-build
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Show minimal env info (non-secret)
+        run: |
+          echo "DEPLOY_ENV=${{ secrets.REACT_APP_DEPLOY_ENV }}"
+          # Do NOT echo any secret values you care about
+
+      - name: Build
+        run: npm run build
+        env:
+          REACT_APP_API_URL: ${{ secrets.REACT_APP_API_URL }}
+          REACT_APP_SOCKET_URI: ${{ secrets.REACT_APP_SOCKET_URI }}
+          REACT_APP_AES_ENCRYPTION_KEY: ${{ secrets.REACT_APP_AES_ENCRYPTION_KEY }}
+          REACT_APP_REDIRECT_URI: ${{ secrets.REACT_APP_REDIRECT_URI }}
+          REACT_APP_STRIPE_KEY: ${{ secrets.REACT_APP_STRIPE_KEY }}
+          REACT_APP_DEPLOY_ENV: ${{ secrets.REACT_APP_DEPLOY_ENV }}
+          REACT_APP_LINKEDIN_CLIENT_ID: ${{ secrets.REACT_APP_LINKEDIN_CLIENT_ID }}
+          REACT_APP_GOOGLE_CLIENT_ID: ${{ secrets.REACT_APP_GOOGLE_CLIENT_ID }}
+          REACT_APP_GITHUB_CLIENT_ID: ${{ secrets.REACT_APP_GITHUB_CLIENT_ID }}
+          REACT_APP_DISABLE_DDL: ${{ secrets.REACT_APP_DISABLE_DDL }}
+          REACT_APP_DISABLE_AGGREGATE: ${{ secrets.REACT_APP_DISABLE_AGGREGATE }}
+          REACT_APP_DISABLE_APIGOV: ${{ secrets.REACT_APP_DISABLE_APIGOV }}
+          REACT_APP_DISABLE_ORACLEDB: ${{ secrets.REACT_APP_DISABLE_ORACLEDB }}
+          REACT_APP_DISPLAY_COLLECTIONS: ${{ secrets.REACT_APP_DISPLAY_COLLECTIONS }}
+          REACT_APP_FEATURE_CUSTOM_PARAMETER: ${{ secrets.REACT_APP_FEATURE_CUSTOM_PARAMETER }}
+          REACT_APP_FEATURE_STORED_PROCS: ${{ secrets.REACT_APP_FEATURE_STORED_PROCS }}
+          REACT_APP_PROXY_URL: ${{ secrets.REACT_APP_PROXY_URL }}
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-build
+          path: build
+
+  # Optional: Deploy to VPS using SSH + rsync.
+  # This job only runs for pushes to main and only if you have set the SSH secrets.
+  deploy:
+    name: Deploy to VPS (optional)
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: web-build
+          path: ./build
+
+      - name: Start ssh-agent and add key
+        uses: webfactory/ssh-agent@v0.8.1
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Ensure known hosts (optional)
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Rsync build to server
+        env:
+          SSH_USER: ${{ secrets.DEPLOY_USER }}
+          SSH_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEST: ${{ secrets.DEPLOY_PATH }}
+        run: |
+          ssh -o StrictHostKeyChecking=no $SSH_USER@$SSH_HOST "mkdir -p $DEST"
+          rsync -e "ssh -o StrictHostKeyChecking=no" -avz --delete ./build/ $SSH_USER@$SSH_HOST:$DEST/
+
+      - name: Optional server restart
+        env:
+          SSH_USER: ${{ secrets.DEPLOY_USER }}
+          SSH_HOST: ${{ secrets.DEPLOY_HOST }}
+        run: |
+          # If your server needs a service restart (nginx/systemd), uncomment and modify:
+          # ssh $SSH_USER@$SSH_HOST "sudo systemctl restart nginx"
+          echo "Deploy finished"
