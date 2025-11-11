@@ -3,7 +3,6 @@ name: CI Build & (Optional) SSH Deploy
 on:
   push:
     branches: [ main ]
-  workflow_dispatch:
 
 jobs:
   build:
@@ -13,57 +12,24 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Show repo root (debug)
-        run: ls -la
-
-      - name: Detect frontend dir and set BUILD_DIR
-        id: detect
-        run: |
-          # List top-level directories for debugging
-          echo "Top-level:"
-          ls -1
-          # Detect common frontend directories
-          if [ -d "ezapi_designer_ui" ]; then
-            echo "FOUND=ezapi_designer_ui" >> $GITHUB_ENV
-          elif [ -d "frontend" ]; then
-            echo "FOUND=frontend" >> $GITHUB_ENV
-          elif [ -d "client" ]; then
-            echo "FOUND=client" >> $GITHUB_ENV
-          else
-            # fallback to repo root
-            echo "FOUND=." >> $GITHUB_ENV
-          fi
-          echo "BUILD_DIR is set to $FOUND"
-      - name: Print BUILD_DIR
-        run: echo "BUILD_DIR=$FOUND"
-
       - name: Use Node 18
         uses: actions/setup-node@v4
         with:
           node-version: 18
 
-      - name: Install dependencies (in BUILD_DIR)
-        run: |
-          cd "${FOUND}" || exit 1
-          npm ci
-        # note: not using `working-directory` to keep debugging output clearer
+      - name: Install dependencies
+        working-directory: ezapi_designer_ui
+        run: npm ci
 
-      - name: Build React App (in BUILD_DIR)
-        run: |
-          cd "${FOUND}" || exit 1
-          npm run build
-
-      - name: List build output (debug)
-        run: |
-          echo "Listing build dir:"
-          ls -la "${FOUND}/build" || echo "No build folder at ${FOUND}/build"
+      - name: Build React App
+        working-directory: ezapi_designer_ui
+        run: npm run build
 
       - name: Upload build artifact
-        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: web-build
-          path: ${{ env.FOUND }}/build/
+          path: ezapi_designer_ui/build/
 
   deploy:
     needs: build
@@ -91,6 +57,8 @@ jobs:
         run: |
           ssh ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} << 'EOF'
           rm -rf ${{ secrets.DEPLOY_PATH }}/build
+          mkdir -p ${{ secrets.DEPLOY_PATH }}/build
           EOF
+
           scp -r build/* ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/build
 
